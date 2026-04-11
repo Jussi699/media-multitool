@@ -8,6 +8,7 @@ module converter {
     requires org.kordamp.bootstrapfx.core;
     requires java.desktop;
     requires image4j;
+    requires org.slf4j;
 
     opens converter to javafx.fxml;
     exports converter;
