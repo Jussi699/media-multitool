@@ -1,9 +1,9 @@
 package converter;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import model.converter.ConverterImage;
 import model.converter.DetermineType;
@@ -16,12 +16,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import net.ifok.image.image4j.codec.ico.ICODecoder;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Controller {
     private static final int SUCCESS_MESSAGE_DURATION_SECONDS = 5;
@@ -86,6 +88,10 @@ public class Controller {
     private StackPane imageContainer;
 
     @FXML
+    private ToggleButton btnToWEBM;
+
+
+    @FXML
     public void initialize() {
         assert AnchorPane != null : "fx:id=\"AnchorPane\" was not injected!";
         assert mainPane != null : "fx:id=\"mainPane\" was not injected!";
@@ -103,6 +109,7 @@ public class Controller {
         assert rightPane != null : "fx:id=\"rightPane\" was not injected!";
         assert imageScaleSlider != null : "fx:id=\"imageScaleSlider\" was not injected!";
         assert scrollPanePhoto != null : "fx:id=\"scrollPanePhoto\" was not injected!";
+        assert btnToWEBM != null : "fx:id=\"btnToWEBM\" was not injected!";
 
         Tooltip tooltipChoiceDir = new Tooltip("Standard directory, Desktop");
         btnChoiceDirForSaveImage.setTooltip(tooltipChoiceDir);
@@ -220,6 +227,7 @@ public class Controller {
         typeImage = "ico";
         btnToPNG.setSelected(false);
         btnToJPEG.setSelected(false);
+        btnToWEBM.setSelected(false);
     }
 
     @FXML
@@ -233,7 +241,7 @@ public class Controller {
         LabelSelectImageName.setText(image.getName());
 
         try {
-            BufferedImage bi = ImageIO.read(image);
+            BufferedImage bi = readPreviewImage(image);
             if (bi == null) {
                 ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Unsupported image format!");
                 return;
@@ -246,6 +254,32 @@ public class Controller {
         } catch (IOException e) {
             ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Error", "IO", "File error!");
         }
+    }
+
+    private BufferedImage readPreviewImage(File imageFile) throws IOException {
+        if ("ico".equals(getFileExtension(imageFile))) {
+            List<BufferedImage> images = ICODecoder.read(imageFile);
+            if (images == null || images.isEmpty()) {
+                return null;
+            }
+
+            return getLargestImage(images);
+        }
+
+        return ImageIO.read(imageFile);
+    }
+
+    private BufferedImage getLargestImage(List<BufferedImage> images) {
+        BufferedImage largestImage = images.getFirst();
+
+        for (BufferedImage imageCandidate : images) {
+            if (imageCandidate.getWidth() * imageCandidate.getHeight()
+                    > largestImage.getWidth() * largestImage.getHeight()) {
+                largestImage = imageCandidate;
+            }
+        }
+
+        return largestImage;
     }
 
 
@@ -376,6 +410,7 @@ public class Controller {
         typeImage = format;
         btnToPNG.setSelected("png".equals(format));
         btnToJPEG.setSelected("jpeg".equals(format));
+        btnToWEBM.setSelected("webp".equals(format));
         ComboBoxIcoSize.setValue(ICO_PLACEHOLDER);
     }
 
@@ -403,5 +438,9 @@ public class Controller {
         LabelSuccessConvert.setVisible(false);
         LabelSuccessConvert.setManaged(false);
         LabelSuccessConvert.setText("");
+    }
+
+    public void ActionBtnToWEBM() {
+        selectRasterFormat("webp");
     }
 }

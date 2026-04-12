@@ -17,7 +17,7 @@ public class ClassSelect implements SelectFile {
         }
 
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico")
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico", "*.webp")
         );
 
         return fileChooser.showOpenDialog(stage);

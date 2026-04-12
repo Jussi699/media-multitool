@@ -117,3 +117,7 @@
     -fx-text-fill: #32CD32;
     -fx-font-size: 10px;
 }
+
+.combo-box{
+    -fx-pref-height: 22px;
+}
