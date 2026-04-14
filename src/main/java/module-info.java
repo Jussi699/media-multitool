@@ -10,6 +10,7 @@ module converter {
     requires image4j;
     requires org.slf4j;
     requires javafx.swing;
+    requires ch.qos.logback.classic;
 
     opens converter to javafx.fxml;
     exports converter;

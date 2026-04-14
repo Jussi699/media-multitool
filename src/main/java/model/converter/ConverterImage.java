@@ -1,5 +1,6 @@
 package model.converter;
 
+import model.logger.ErrorLogger;
 import net.ifok.image.image4j.codec.ico.ICOEncoder;
 import net.ifok.image.image4j.codec.ico.ICODecoder;
 
@@ -17,6 +18,8 @@ public class ConverterImage {
         validateSourceImage(image);
         validateOutputDirectory(pathForSave);
 
+        ErrorLogger.info("Starting conversion for image: " + image.getName() + " to " + typeFile);
+
         BufferedImage bufImage = readImage(image);
         String outputFormat = normalizeOutputFormat(typeFile);
         BufferedImage preparedImage = prepareImageForFormat(bufImage, outputFormat);
@@ -27,6 +30,7 @@ public class ConverterImage {
             throw new IOException("Unsupported output format: " + typeFile);
         }
 
+        ErrorLogger.info("Conversion successful. Saved to: " + outputImage.getAbsolutePath());
         return outputImage;
     }
 
@@ -38,11 +42,14 @@ public class ConverterImage {
             throw new IllegalArgumentException("Size must be greater than 0");
         }
 
+        ErrorLogger.info("Converting image: " + image.getName() + " to ICO (size: " + size + ")");
+
         BufferedImage bufImage = readImage(image);
         BufferedImage resized = resizeImage(bufImage, size, size);
         File outputImage = createOutputFile(image, pathForSave, "ico");
 
         ICOEncoder.write(resized, outputImage);
+        ErrorLogger.info("ICO conversion successful. Saved to: " + outputImage.getAbsolutePath());
         return outputImage;
     }
 
@@ -50,9 +57,11 @@ public class ConverterImage {
         validateSourceImage(image);
         validateOutputDirectory(pathForSave);
 
+        ErrorLogger.info("Converting from ICO: " + image.getName() + " to " + typeFile);
+
         List<BufferedImage> images = ICODecoder.read(image);
         if (images.isEmpty()) {
-            throw new IOException("ICO file does not contain images");
+            throw new IOException("ICO file does not contain images!");
         }
 
         String outputFormat = normalizeOutputFormat(typeFile);
@@ -64,6 +73,7 @@ public class ConverterImage {
             throw new IOException("Unsupported output format: " + typeFile);
         }
 
+        ErrorLogger.info("Conversion from ICO successful. Saved to: " + outputImage.getAbsolutePath());
         return outputImage;
     }
 
@@ -130,7 +140,7 @@ public class ConverterImage {
     private static BufferedImage readImage(File image) throws IOException {
         BufferedImage bufferedImage = ImageIO.read(image);
         if (bufferedImage == null) {
-            throw new IOException("Unable to read image");
+            throw new IOException("Unable to read image: " + image.getName());
         }
 
         return bufferedImage;
