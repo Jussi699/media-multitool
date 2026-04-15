@@ -1,4 +1,4 @@
-package model.converter;
+package model.converterImage;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;

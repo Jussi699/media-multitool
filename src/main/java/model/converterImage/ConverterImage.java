@@ -1,4 +1,4 @@
-package model.converter;
+package model.converterImage;
 
 import com.luciad.imageio.webp.WebPWriteParam;
 import model.logger.ErrorLogger;

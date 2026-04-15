@@ -6,7 +6,8 @@ import javafx.scene.layout.VBox;
 
 public class HomeViewController {
     @FXML private VBox homePage;
-    @FXML private Button btnOpenConverter;
+    @FXML private Button btnOpenImageConverter;
+    @FXML private Button btnOpenVideoConverter;
     private ControllerView mainController;
 
     public void setMainController(ControllerView mainController) {
@@ -14,9 +15,16 @@ public class HomeViewController {
     }
 
     @FXML
-    private void onOpenConverterPressed() {
+    private void onOpenImageConverterPressed() {
         if (mainController != null) {
-            mainController.showConverterPage();
+            mainController.showConverterImagePage();
+        }
+    }
+
+    @FXML
+    private void onOpenVideoConverterPressed() {
+        if (mainController != null) {
+            mainController.showConverterVideoPage();
         }
     }
 }

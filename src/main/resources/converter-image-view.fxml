@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="converterPage"
+<VBox fx:id="converterImagePage"
       alignment="TOP_CENTER"
       prefHeight="600.0"
       prefWidth="630.0"
@@ -59,7 +59,7 @@
                               prefWidth="85.0"
                               text="to WEBP" />
 
-                <ComboBox fx:id="ComboBoxIcoSize"
+                <ComboBox fx:id="comboBoxIcoSize"
                           onAction="#onChoiceIcoSize"
                           prefWidth="85.0"/>
         </HBox>
@@ -73,7 +73,7 @@
                                 text="Convert and Download" />
                 </VBox>
 
-                <Label fx:id="LabelSuccessConvert"
+                <Label fx:id="labelSuccessConvert"
                        alignment="CENTER"
                        prefWidth="280.0"
                        textFill="#32CD32"
@@ -116,7 +116,7 @@
                         <Label fx:id="LabelPlus" text="+" textFill="RED" />
                 </HBox>
 
-                <Label fx:id="LabelSelectImageName"
+                <Label fx:id="labelSelectImageName"
                        alignment="CENTER"
                        prefWidth="400.0"
                        text="none"

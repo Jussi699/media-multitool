@@ -116,7 +116,7 @@
     -fx-background-radius: 0 10 10 0;
 }
 
-#LabelSuccessConvert {
+#labelSuccessConvert {
     -fx-font-family: "Cascadia Code";
     -fx-font-weight: bold;
     -fx-text-fill: #32CD32;

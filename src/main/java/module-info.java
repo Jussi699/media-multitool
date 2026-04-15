@@ -1,5 +1,5 @@
 module converter {
-    exports model.converter;
+    exports model.converterImage;
 
     requires javafx.controls;
     requires javafx.fxml;
@@ -11,7 +11,9 @@ module converter {
     requires javafx.swing;
     requires ch.qos.logback.classic;
     requires com.luciad.imageio.webp;
+    requires jave.core;
 
     opens converter to javafx.fxml;
     exports converter;
+    exports model.converterMP3;
 }

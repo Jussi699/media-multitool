@@ -7,10 +7,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import model.converter.ConverterImage;
-import model.converter.DetermineType;
+import model.converterImage.ConverterImage;
+import model.converterImage.DetermineType;
 import model.logger.ErrorLogger;
-import model.workWithFiles.ClassSelect;
+import model.workWithFiles.SelectImageFile;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static model.workWithFiles.Util.*;
+
 public class ConverterImageViewController {
     private static final int SUCCESS_MESSAGE_DURATION_SECONDS = 5;
     private static final String ICO_PLACEHOLDER = "to ICO";
@@ -36,8 +38,9 @@ public class ConverterImageViewController {
     private final PauseTransition hideSuccessMessageTimer =
             new PauseTransition(Duration.seconds(SUCCESS_MESSAGE_DURATION_SECONDS));
 
+    @FXML private VBox converterImagePage;
     @FXML private VBox converterPage;
-    @FXML private Label LabelSelectImageName;
+    @FXML private Label labelSelectImageName;
     @FXML private Slider imageScaleSlider;
     @FXML private ImageView imageViewPhoto;
     @FXML private Button btnReset;
@@ -47,8 +50,8 @@ public class ConverterImageViewController {
     @FXML private ToggleButton btnToJPEG;
     @FXML private Button btnSubmitConvert;
     @FXML private Button btnChoiceDirForSaveImage;
-    @FXML private ComboBox<String> ComboBoxIcoSize;
-    @FXML private Label LabelSuccessConvert;
+    @FXML private ComboBox<String> comboBoxIcoSize;
+    @FXML private Label labelSuccessConvert;
     @FXML private ScrollPane scrollPanePhoto;
     @FXML private StackPane imageContainer;
     @FXML private ToggleButton btnToWEBM;
@@ -81,21 +84,15 @@ public class ConverterImageViewController {
         imageViewPhoto.imageProperty().addListener((_, _, _) -> updateImageSize());
 
         outputPath = Paths.get(System.getProperty("user.home"), "Desktop").toFile();
-        LabelSuccessConvert.setVisible(false);
-        LabelSuccessConvert.setManaged(false);
-        LabelSuccessConvert.setText("");
+        setupClearMessageTimer(labelSuccessConvert, hideSuccessMessageTimer);
 
-        hideSuccessMessageTimer.setOnFinished(_ -> {
-            LabelSuccessConvert.setVisible(false);
-            LabelSuccessConvert.setManaged(false);
-            LabelSuccessConvert.setText("");
-        });
+        labelSelectImageName.setText("Select image: none");
 
-        ComboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256");
-        ComboBoxIcoSize.setDisable(false);
-        ComboBoxIcoSize.setValue(ICO_PLACEHOLDER);
+        comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256");
+        comboBoxIcoSize.setDisable(false);
+        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
 
-        ComboBoxIcoSize.setButtonCell(new ListCell<>() {
+        comboBoxIcoSize.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -122,7 +119,7 @@ public class ConverterImageViewController {
             }
         });
 
-        ComboBoxIcoSize.setCellFactory(_ -> new ListCell<>() {
+        comboBoxIcoSize.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -139,7 +136,7 @@ public class ConverterImageViewController {
             }
         });
 
-        ComboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
+        comboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
             if (newVal != null && !newVal.equals(ICO_PLACEHOLDER) && imageViewPhoto.getImage() != null) {
                 if (image != null && image.getName().toLowerCase().endsWith(".ico")) {
                     try {
@@ -169,7 +166,7 @@ public class ConverterImageViewController {
 
     @FXML
     private void onChoiceIcoSize() {
-        String selected = ComboBoxIcoSize.getValue();
+        String selected = comboBoxIcoSize.getValue();
 
         if (selected == null || selected.equals(ICO_PLACEHOLDER)) {
             return;
@@ -184,14 +181,14 @@ public class ConverterImageViewController {
 
     @FXML
     public void ActionBtnSelectFile() {
-        ClassSelect selectImageFile = new ClassSelect();
+        SelectImageFile selectImageFile = new SelectImageFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         image = selectImageFile.choiceFile(stage);
 
         if (image == null) return;
 
         ErrorLogger.info("User selected file: " + image.getAbsolutePath());
-        LabelSelectImageName.setText(image.getName());
+        labelSelectImageName.setText("Select image: " + image.getName());
 
         try {
             BufferedImage bi = readPreviewImage(image);
@@ -270,7 +267,7 @@ public class ConverterImageViewController {
     @FXML
     public void btnChoiceDirForSaveImage() {
         Stage stage = getStage(btnChoiceDirForSaveImage);
-        File selectedPath = ClassSelect.setPathForSave(stage, outputPath);
+        File selectedPath = setPathForSave(stage, outputPath);
         if (selectedPath != null) {
             outputPath = selectedPath;
         }
@@ -325,7 +322,7 @@ public class ConverterImageViewController {
         }
 
         try {
-            hideSuccessMessage();
+            hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
             String inputExtension = getSourceImageFormat(image);
             String targetFormat = normalizeFormat(typeImage);
 
@@ -349,10 +346,7 @@ public class ConverterImageViewController {
             }
 
             if (isValidConvertedFile(convertedFile)) {
-                LabelSuccessConvert.setText("Successfully converted to " + targetFormat.toUpperCase());
-                LabelSuccessConvert.setManaged(true);
-                LabelSuccessConvert.setVisible(true);
-                hideSuccessMessageTimer.playFromStart();
+                showSuccessMessage(labelSuccessConvert, targetFormat, hideSuccessMessageTimer);
                 ErrorLogger.info("Conversion completed: " + convertedFile.getName());
             } else {
                 ErrorLogger.warn("Conversion finished but file not found or empty: " + convertedFile.getName());
@@ -377,7 +371,7 @@ public class ConverterImageViewController {
         btnToPNG.setSelected("png".equals(format));
         btnToJPEG.setSelected("jpeg".equals(format));
         btnToWEBM.setSelected("webp".equals(format));
-        ComboBoxIcoSize.setValue(ICO_PLACEHOLDER);
+        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
     }
 
     private Stage getStage(Control control) {
@@ -391,30 +385,22 @@ public class ConverterImageViewController {
                 && convertedFile.length() > 0;
     }
 
-    private void hideSuccessMessage() {
-        hideSuccessMessageTimer.stop();
-        LabelSuccessConvert.setVisible(false);
-        LabelSuccessConvert.setManaged(false);
-        LabelSuccessConvert.setText("");
-    }
-
     public void ActionBtnToWEBM() {
         selectRasterFormat("webp");
     }
 
     public void isPressedReset() {
         image = null;
-        LabelSelectImageName.setText("none");
+        labelSelectImageName.setText("Select image: none");
         imageViewPhoto.setImage(null);
 
         btnToPNG.setSelected(false);
         btnToJPEG.setSelected(false);
         btnToWEBM.setSelected(false);
-        ComboBoxIcoSize.setValue(ICO_PLACEHOLDER);
+        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
 
         sizeIcoImage = 0;
         imageScaleSlider.setValue(1.0);
-        hideSuccessMessage();
+        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
     }
-
 }

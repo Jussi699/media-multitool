@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 
 <VBox fx:id="homePage"
       alignment="CENTER_LEFT"
@@ -14,20 +15,28 @@
       fx:controller="converter.HomeViewController">
 
         <Label style="-fx-font-size: 30px; -fx-font-weight: bold;"
-               text="Image Converter"
+               text="Converter"
                textFill="WHITE" />
 
         <Label prefWidth="520.0"
                style="-fx-font-size: 16px;"
-               text="Converter"
+               text="Select the type of converter you want to use:"
                textFill="#d6d6d6"
                wrapText="true" />
 
-        <Button mnemonicParsing="false"
-                fx:id="btnOpenConverter"
-                onAction="#onOpenConverterPressed"
-                prefWidth="220.0"
-                text="Open converter" />
+        <HBox spacing="20.0">
+            <Button mnemonicParsing="false"
+                    fx:id="btnOpenImageConverter"
+                    onAction="#onOpenImageConverterPressed"
+                    prefWidth="220.0"
+                    text="Image Converter" />
+
+            <Button mnemonicParsing="false"
+                    fx:id="btnOpenVideoConverter"
+                    onAction="#onOpenVideoConverterPressed"
+                    prefWidth="220.0"
+                    text="Video Converter" />
+        </HBox>
 
     <padding>
         <Insets left="40.0" right="40.0" top="40.0" bottom="40.0" />
