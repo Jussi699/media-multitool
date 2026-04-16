@@ -374,10 +374,6 @@ public class ConverterImageViewController {
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
     }
 
-    private Stage getStage(Control control) {
-        return (Stage) control.getScene().getWindow();
-    }
-
     private boolean isValidConvertedFile(File convertedFile) {
         return convertedFile != null
                 && convertedFile.exists()

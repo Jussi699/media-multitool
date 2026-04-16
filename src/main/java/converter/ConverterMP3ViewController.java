@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import model.converterMP3.ConverterToMP3;
 import model.logger.ErrorLogger;
 import model.workWithFiles.SelectAudioVideoFile;
 
@@ -16,15 +17,14 @@ import static model.workWithFiles.Util.*;
 
 public class ConverterMP3ViewController {
     private static final String DEFAULT_FILE_TEXT_SELECT_FILE = "Selected file: none";
+    private static final String DEFAULT_FILE_TEXT_SUCCESS_CONVERT = "Successfully converted!";
+    private static final String DEFAULT_FILE_TEXT_SUCCESS_DOES_NOT_CONVERT = "So close, yet no success";
     private static final int SUCCESS_MESSAGE_DURATION_SECONDS = 5;
 
     private final File DEFAULT_PATH = Paths.get(System.getProperty("user.home"), "Desktop").toFile();
-    private final String DEFAULT_TEXT_BIT_RATE = "BitRate";
-    private final String DEFAULT_TEXT_CHANNELS = "Channels";
-    private final String DEFAULT_TEXT_SAMPLING_RATE = "Sampling Rate";
-    private int BitRate;
-    private int Channel;
-    private int SamplingRate;
+    private int bitRate;
+    private int channel;
+    private int samplingRate;
     private File outputPath;
     private File file;
     private final PauseTransition hideSuccessMessageTimer =
@@ -54,18 +54,20 @@ public class ConverterMP3ViewController {
         setupComboBox(comboBoxChoiceChannels);
         setupComboBox(comboBoxChoiceSamplingRate);
 
-        comboBoxChoiceBitRate.setValue(DEFAULT_TEXT_BIT_RATE);
-        comboBoxChoiceChannels.setValue(DEFAULT_TEXT_CHANNELS);
-        comboBoxChoiceSamplingRate.setValue(DEFAULT_TEXT_SAMPLING_RATE);
-
         comboBoxChoiceBitRate.getItems().addAll("128 kbps", "192 kbps", "256 kbps", "320 kbps");
         comboBoxChoiceChannels.getItems().addAll("1 Channels", "2 Channels");
-        comboBoxChoiceSamplingRate.getItems().addAll("8000 kHz", "11025 kHz",
-                                                        "12000 kHz", "16000 kHz",
-                                                        "22050 kHz", "24000 kHz",
-                                                        "32000 kHz", "44100 kHz", "48000 kHz");
+        comboBoxChoiceSamplingRate.getItems().addAll("8000 Hz", "11025 Hz",
+                                                        "12000 Hz", "16000 Hz",
+                                                        "22050 Hz", "24000 Hz",
+                                                        "32000 Hz", "44100 Hz", "48000 Hz");
 
+        comboBoxChoiceBitRate.setValue("128 kbps");
+        comboBoxChoiceChannels.setValue("2 Channels");
+        comboBoxChoiceSamplingRate.setValue("44100 Hz");
 
+        bitRate = 128;
+        channel = 2;
+        samplingRate = 44100;
     }
 
     @FXML
@@ -82,33 +84,48 @@ public class ConverterMP3ViewController {
 
     @FXML
     public void onSelectOutputDirectoryPressed() {
+        Stage stage = getStage(btnChoiceDirForSaveMP3);
+        File selectedPath = setPathForSave(stage, outputPath);
+        if(selectedPath != null) {
+            outputPath = selectedPath;
+        }
     }
 
     @FXML
     public void onFormatMp3Pressed() {
+
     }
 
     @FXML
     public void onStartConversionPressed() {
+        ConverterToMP3.convert(file, outputPath, bitRate, channel, samplingRate);
     }
 
     @FXML
     public void onResetPressed() {
-        comboBoxChoiceBitRate.setValue(DEFAULT_TEXT_BIT_RATE);
-        comboBoxChoiceChannels.setValue(DEFAULT_TEXT_CHANNELS);
-        comboBoxChoiceSamplingRate.setValue(DEFAULT_TEXT_SAMPLING_RATE);
+        comboBoxChoiceBitRate.setValue("128 kbps");
+        comboBoxChoiceChannels.setValue("2 Channels");
+        comboBoxChoiceSamplingRate.setValue("44100 Hz");
+        bitRate = 128;
+        channel = 2;
+        samplingRate = 44100;
     }
 
     public void onChoiceBitRate() {
+        bitRate = parseComboBoxStringToInt(comboBoxChoiceBitRate);
+        ErrorLogger.info("Select bitRate: " + bitRate);
 
     }
 
     public void onChoiceChannels() {
+        channel = parseComboBoxStringToInt(comboBoxChoiceChannels);
+        ErrorLogger.info("Select channels: " + channel);
 
     }
 
     public void onChoiceSamplingRate() {
-
+        samplingRate = parseComboBoxStringToInt(comboBoxChoiceSamplingRate);
+        ErrorLogger.info("Select sampling rate: " + samplingRate);
     }
 
     private void setupComboBox(ComboBox<String> cb) {

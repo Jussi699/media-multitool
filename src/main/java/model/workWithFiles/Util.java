@@ -1,6 +1,8 @@
 package model.workWithFiles;
 
 import javafx.animation.PauseTransition;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -55,5 +57,13 @@ public class Util {
         label.setVisible(false);
         label.setManaged(false);
         label.setText("");
+    }
+
+    public static Stage getStage(Control control) {
+        return (Stage) control.getScene().getWindow();
+    }
+
+    public static int parseComboBoxStringToInt(ComboBox<String> cb) {
+        return Integer.parseInt(cb.getValue().replaceAll("[^0-9]", ""));
     }
 }
