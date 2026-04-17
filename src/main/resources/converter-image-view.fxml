@@ -18,7 +18,8 @@
         <Label alignment="CENTER"
                prefWidth="200.0"
                text="Convert Photo"
-               textFill="RED">
+               textFill="RED"
+               style="-fx-font-size: 22px; -fx-font-weight: bold;">
             <VBox.margin>
                 <Insets top="8.0" />
             </VBox.margin>

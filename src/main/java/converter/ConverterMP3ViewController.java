@@ -4,6 +4,8 @@ import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -14,9 +16,9 @@ import model.converterMP3.ConverterToMP3;
 import model.logger.ErrorLogger;
 import model.workWithFiles.SelectAudioVideoFile;
 
+import java.awt.*;
 import java.io.File;
 import java.nio.file.Paths;
-
 import static model.workWithFiles.Util.*;
 
 public class ConverterMP3ViewController {
@@ -45,6 +47,9 @@ public class ConverterMP3ViewController {
 
     @FXML
     public void initialize() {
+        btnChoiceDirForSaveMP3.setTooltip(new Tooltip("Default path \"Desktop\""));
+        btnSubmitConvert.setTooltip(new Tooltip("Converting a large file may take longer!"));
+
         outputPath = DEFAULT_PATH;
         setupClearMessageTimer(labelSuccessConvert, progressBarConvert, hideSuccessMessageTimer);
         labelSelectAudioName.setText("Selected file: none");
@@ -122,7 +127,11 @@ public class ConverterMP3ViewController {
                 showSuccessMessage(labelSuccessConvert, "mp3", hideSuccessMessageTimer);
                 showProgressBar(progressBarConvert, hideSuccessMessageTimer);
             } else {
-                showErrorMessage(labelSuccessConvert, progressBarConvert,"So close, yet no success", hideSuccessMessageTimer);
+                if (progressBarConvert.getProgress() > 0 && progressBarConvert.getProgress() < 1.0) {
+                    progressBarConvert.setProgress(0);
+                } else {
+                    showErrorMessage(labelSuccessConvert, progressBarConvert,"So close, yet no success", hideSuccessMessageTimer);
+                }
             }
         }));
     }
@@ -138,7 +147,7 @@ public class ConverterMP3ViewController {
         progressBarConvert.setProgress(0);
         labelSelectAudioName.setText("Selected file: none");
         file = null;
-        outputPath = null;
+        outputPath = DEFAULT_PATH;
         dropZone.getStyleClass().remove("drop-zone-filled");
         textDragZone.setText("Drag files here");
     }
@@ -243,5 +252,7 @@ public class ConverterMP3ViewController {
     }
 
 
-
+    public void onCancelConversation() {
+        ConverterToMP3.cancelConversion();
+    }
 }

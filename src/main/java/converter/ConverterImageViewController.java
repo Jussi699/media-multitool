@@ -304,12 +304,12 @@ public class ConverterImageViewController {
     @FXML
     public void SubmitConvertAndDownload() {
         if (image == null || outputPath == null) {
-            ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Warning", "Selection", "Select image first.");
+            ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
             return;
         }
 
         if (typeImage == null) {
-            ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Warning", "Selection", "Select photo format (PNG/JPEG/ICO/WEBP).");
+            ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select photo format (PNG/JPEG/ICO/WEBP).");
             return;
         }
 

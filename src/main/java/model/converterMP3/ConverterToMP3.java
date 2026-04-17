@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class ConverterToMP3 {
+    private static final Encoder encoder = new Encoder();
 
     public static CompletableFuture<Boolean> convert(File file, File pathForSave, int bitRate, int channels, int samplingRate, Consumer<Double> progressConsumer) {
         if (file == null || !file.exists()) {
@@ -47,7 +48,6 @@ public class ConverterToMP3 {
                 attrs.setOutputFormat("mp3");
 
                 ErrorLogger.info("Starting conversation...");
-                Encoder encoder = new Encoder();
                 encoder.encode(new MultimediaObject(file), target, attrs, new EncoderProgressListener() {
                     @Override
                     public void sourceInfo(MultimediaInfo info) {}
@@ -65,12 +65,23 @@ public class ConverterToMP3 {
                 ErrorLogger.info("Conversation has been success!");
                 return true;
             } catch (Exception e) {
-                ErrorLogger.info("The conversion was not successful!");
-                Platform.runLater(() -> ErrorLogger.alertDialog(Alert.AlertType.WARNING, "ERROR", "Exception", "Exception. Check log file for more information!"));
-                ErrorLogger.log(109, ErrorLogger.Level.ERROR, "Exception", e);
-                e.printStackTrace();
+                String msg = e.getMessage();
+                boolean isCancelled = msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
+                
+                if (isCancelled) {
+                    ErrorLogger.info("Conversion was cancelled by user (or stream closed due to abort).");
+                } else {
+                    ErrorLogger.info("The conversion was not successful!");
+                    Platform.runLater(() -> ErrorLogger.alertDialog(Alert.AlertType.WARNING, "ERROR", "Exception", "Exception. Check log file for more information!"));
+                    ErrorLogger.log(109, ErrorLogger.Level.ERROR, "Exception", e);
+                    e.printStackTrace();
+                }
                 return false;
             }
         });
+    }
+
+    public static void cancelConversion() {
+        encoder.abortEncoding();
     }
 }

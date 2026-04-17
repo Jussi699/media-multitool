@@ -1,10 +1,7 @@
 package model.workWithFiles;
 
 import javafx.animation.PauseTransition;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -71,7 +68,7 @@ public class Util {
     }
 
     public static void showErrorMessage(Label label, ProgressBar bar ,String message, PauseTransition timer) {
-        bar.setStyle("-fx-background-color: RED;");
+        bar.setStyle("-fx-border-color: RED;");
         showErrorMessage(label, message, timer);
     }
 

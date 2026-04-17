@@ -12,6 +12,7 @@ module converter {
     requires ch.qos.logback.classic;
     requires com.luciad.imageio.webp;
     requires jave.core;
+    requires java.compiler;
 
     opens converter to javafx.fxml;
     exports converter;

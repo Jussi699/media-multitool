@@ -136,9 +136,35 @@
     -fx-background-color: #555555;
 }
 
-/* Стиль, который применится, когда файл принят */
 .drop-zone-filled {
-    -fx-border-color: #00FF00; /* Зеленая граница */
-    -fx-border-style: solid;   /* Сплошная линия */
-    -fx-background-color: #445544; /* Темно-зеленоватый фон */
+    -fx-border-color: #00FF00;
+    -fx-border-style: solid;
+    -fx-background-color: #445544;
+}
+
+.dialog-pane {
+    -fx-background-color: #f0f0f0;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #336699;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #336699;
+    -fx-text-fill: white;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #5588cc;
 }
