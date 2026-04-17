@@ -1,6 +1,7 @@
 package converter;
 
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
@@ -10,16 +11,16 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.converterMP3.ConverterToMP3;
 import model.logger.ErrorLogger;
-import model.workWithFiles.SelectAudioVideoFile;
+import model.select.SelectFile;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.file.Paths;
-import static model.workWithFiles.Util.*;
+import static model.utility.Util.*;
 
 public class ConverterMP3ViewController {
     private static final int SUCCESS_MESSAGE_DURATION_SECONDS = 5;
@@ -86,9 +87,14 @@ public class ConverterMP3ViewController {
 
     @FXML
     public void onSelectAudioVideoPressed() {
-        SelectAudioVideoFile selectAudioVideoFile = new SelectAudioVideoFile();
+        SelectFile selectAudioVideoFile = new SelectFile();
         Stage stage = (Stage) btnSelectAudioVideoFile.getScene().getWindow();
-        file = selectAudioVideoFile.choiceFile(stage);
+        file = selectAudioVideoFile.choiceFile(stage,
+                new FileChooser.ExtensionFilter("All Media Files",
+                        "*.mp3", "*.wav", "*.ogg", "*.flac", "*.m4a", "*.aac", "*.wma",
+                        "*.mp4", "*.avi", "*.mkv", "*.mov", "*.flv", "*.wmv"),
+                "Choice video/audio file"
+                );
 
         if(file == null) return;
 
@@ -120,8 +126,8 @@ public class ConverterMP3ViewController {
         progressBarConvert.setProgress(0);
         btnSubmitConvert.setDisable(true);
         ConverterToMP3.convert(file, outputPath, bitRate, channel, samplingRate, progress -> {
-            javafx.application.Platform.runLater(() -> progressBarConvert.setProgress(progress));
-        }).thenAccept(success -> javafx.application.Platform.runLater(() -> {
+            Platform.runLater(() -> progressBarConvert.setProgress(progress));
+        }).thenAccept(success -> Platform.runLater(() -> {
             btnSubmitConvert.setDisable(false);
             if (success) {
                 showSuccessMessage(labelSuccessConvert, "mp3", hideSuccessMessageTimer);

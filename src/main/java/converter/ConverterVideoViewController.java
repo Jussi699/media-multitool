@@ -10,8 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.logger.ErrorLogger;
-import model.workWithFiles.SelectImageFile;
-import static model.workWithFiles.Util.*;
+import static model.utility.Util.*;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -47,9 +46,9 @@ public class ConverterVideoViewController {
 
     @FXML
     public void onSelectVideoPressed() {
-        SelectImageFile selectFile = new SelectImageFile();
-        Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
-        videoFile = selectFile.choiceFile(stage);
+//        SelectFile selectFile = new SelectFile();
+//        Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
+//        videoFile = selectFile.choiceFile(stage);
 
         if (videoFile != null) {
             labelSelectVideoName.setText("Selected file: " + videoFile.getName());

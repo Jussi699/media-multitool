@@ -6,15 +6,16 @@ import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import model.converterImage.ConverterImage;
 import model.converterImage.DetermineType;
 import model.logger.ErrorLogger;
-import model.workWithFiles.SelectImageFile;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import model.select.SelectFile;
 import net.ifok.image.image4j.codec.ico.ICODecoder;
 
 import javax.imageio.ImageIO;
@@ -24,7 +25,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static model.workWithFiles.Util.*;
+import static model.utility.Util.*;
 
 public class ConverterImageViewController {
     private static final int SUCCESS_MESSAGE_DURATION_SECONDS = 5;
@@ -173,9 +174,12 @@ public class ConverterImageViewController {
 
     @FXML
     public void ActionBtnSelectFile() {
-        SelectImageFile selectImageFile = new SelectImageFile();
+        SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
-        image = selectImageFile.choiceFile(stage);
+        image = selectImageFile.choiceFile(stage,
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico", "*.webp"),
+                "Choice image"
+        );
 
         if (image == null) return;
 
