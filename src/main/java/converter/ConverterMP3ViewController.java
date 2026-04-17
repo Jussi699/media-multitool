@@ -68,10 +68,9 @@ public class ConverterMP3ViewController {
 
         comboBoxChoiceBitRate.getItems().addAll("128 kbps", "192 kbps", "256 kbps", "320 kbps");
         comboBoxChoiceChannels.getItems().addAll("1 Channels", "2 Channels");
-        comboBoxChoiceSamplingRate.getItems().addAll("8000 Hz", "11025 Hz",
-                                                        "12000 Hz", "16000 Hz",
-                                                        "22050 Hz", "24000 Hz",
-                                                        "32000 Hz", "44100 Hz", "48000 Hz");
+        comboBoxChoiceSamplingRate.getItems().addAll("8000 Hz", "11025 Hz", "12000 Hz", "16000 Hz",
+                                                        "22050 Hz", "24000 Hz", "32000 Hz",
+                                                        "44100 Hz", "48000 Hz");
 
         comboBoxChoiceBitRate.setValue("320 kbps");
         comboBoxChoiceChannels.setValue("2 Channels");
@@ -93,7 +92,7 @@ public class ConverterMP3ViewController {
                 new FileChooser.ExtensionFilter("All Media Files",
                         "*.mp3", "*.wav", "*.ogg", "*.flac", "*.m4a", "*.aac", "*.wma",
                         "*.mp4", "*.avi", "*.mkv", "*.mov", "*.flv", "*.wmv"),
-                "Choice video/audio file"
+                    "Choice video/audio file"
                 );
 
         if(file == null) return;

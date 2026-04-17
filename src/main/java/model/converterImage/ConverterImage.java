@@ -70,7 +70,7 @@ public class ConverterImage {
         }
 
         String outputFormat = normalizeOutputFormat(typeFile);
-        BufferedImage bestImage = prepareImageForFormat(getBestImage(images), outputFormat);
+        BufferedImage bestImage = prepareImageForFormat(UsefulMethods.getLargestImage(images), outputFormat);
         File outputImage = createOutputFile(image, pathForSave, typeFile);
 
         boolean written = ImageIO.write(bestImage, outputFormat, outputImage);
@@ -116,18 +116,6 @@ public class ConverterImage {
         g2d.dispose();
 
         return resized;
-    }
-
-    private static BufferedImage getBestImage(List<BufferedImage> images) {
-        BufferedImage best = images.getFirst();
-
-        for (BufferedImage img : images) {
-            if (img.getWidth() * img.getHeight() > best.getWidth() * best.getHeight()) {
-                best = img;
-            }
-        }
-
-        return best;
     }
 
     private static void validateSourceImage(File image) {

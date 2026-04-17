@@ -16,15 +16,13 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.select.SelectFile;
-import net.ifok.image.image4j.codec.ico.ICODecoder;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
 
+import static model.converterImage.UsefulMethods.*;
 import static model.utility.Util.*;
 
 public class ConverterImageViewController {
@@ -54,8 +52,8 @@ public class ConverterImageViewController {
     @FXML
     public void initialize() {
         Tooltip tooltipChoiceDir = new Tooltip("Standard directory, Desktop");
+        outputPath = Paths.get(System.getProperty("user.home"), "Desktop").toFile();
         btnChoiceDirForSaveImage.setTooltip(tooltipChoiceDir);
-
         imageContainer.setManaged(true);
         imageContainer.setAlignment(Pos.CENTER);
         scrollPanePhoto.setPannable(true);
@@ -64,6 +62,12 @@ public class ConverterImageViewController {
         imageScaleSlider.setMin(1.0);
         imageScaleSlider.setMax(5.0);
         imageScaleSlider.setValue(1.0);
+
+        labelSelectImageName.setText("Select image: none");
+
+        comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256");
+        comboBoxIcoSize.setDisable(false);
+        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
 
         imageViewPhoto.scaleXProperty().bind(imageScaleSlider.valueProperty());
         imageViewPhoto.scaleYProperty().bind(imageScaleSlider.valueProperty());
@@ -76,14 +80,7 @@ public class ConverterImageViewController {
         scrollPanePhoto.viewportBoundsProperty().addListener((_, _, _) -> updateImageSize());
         imageViewPhoto.imageProperty().addListener((_, _, _) -> updateImageSize());
 
-        outputPath = Paths.get(System.getProperty("user.home"), "Desktop").toFile();
         setupClearMessageTimer(labelSuccessConvert, hideSuccessMessageTimer);
-
-        labelSelectImageName.setText("Select image: none");
-
-        comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256");
-        comboBoxIcoSize.setDisable(false);
-        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
 
         comboBoxIcoSize.setButtonCell(new ListCell<>() {
             @Override
@@ -92,21 +89,13 @@ public class ConverterImageViewController {
 
                 if (empty || item == null || ICO_PLACEHOLDER.equals(item)) {
                     setText(ICO_PLACEHOLDER);
-                    setStyle(
-                            "-fx-background-color: LightGrey;" +
-                                    "-fx-background-radius: 10;" +
-                                    "-fx-border-radius: 10;" +
-                                    "-fx-alignment: center;" +
-                                    "-fx-text-fill: black;"
+                    setStyle("-fx-background-color: LightGrey;-fx-background-radius: 10;" +
+                                    "-fx-border-radius: 10;-fx-alignment: center;-fx-text-fill: black;"
                     );
                 } else {
                     setText(item);
-                    setStyle(
-                            "-fx-background-color: #32CD32;" +
-                                    "-fx-background-radius: 10;" +
-                                    "-fx-border-radius: 10;" +
-                                    "-fx-alignment: center;" +
-                                    "-fx-text-fill: black;"
+                    setStyle("-fx-background-color: #32CD32;-fx-background-radius: 10;" +
+                                    "-fx-border-radius: 10;-fx-alignment: center;-fx-text-fill: black;"
                     );
                 }
             }
@@ -148,6 +137,15 @@ public class ConverterImageViewController {
     }
 
     @FXML
+    public void btnChoiceDirForSaveImage() {
+        Stage stage = getStage(btnChoiceDirForSaveImage);
+        File selectedPath = setPathForSave(stage, outputPath);
+        if (selectedPath != null) {
+            outputPath = selectedPath;
+        }
+    }
+
+    @FXML
     private void ActionBtnToPNG() {
         selectRasterFormat("png");
     }
@@ -156,6 +154,11 @@ public class ConverterImageViewController {
     private void ActionBtnToJPEG() {
         selectRasterFormat("jpeg");
     }
+
+    public void ActionBtnToWEBM() {
+        selectRasterFormat("webp");
+    }
+
 
     @FXML
     private void onChoiceIcoSize() {
@@ -170,6 +173,21 @@ public class ConverterImageViewController {
         btnToPNG.setSelected(false);
         btnToJPEG.setSelected(false);
         btnToWEBM.setSelected(false);
+    }
+
+    public void isPressedReset() {
+        image = null;
+        labelSelectImageName.setText("Select image: none");
+        imageViewPhoto.setImage(null);
+
+        btnToPNG.setSelected(false);
+        btnToJPEG.setSelected(false);
+        btnToWEBM.setSelected(false);
+        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
+
+        sizeIcoImage = 0;
+        imageScaleSlider.setValue(1.0);
+        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
     }
 
     @FXML
@@ -206,32 +224,6 @@ public class ConverterImageViewController {
         }
     }
 
-    private BufferedImage readPreviewImage(File imageFile) throws IOException {
-        if ("ico".equals(getFileExtension(imageFile))) {
-            List<BufferedImage> images = ICODecoder.read(imageFile);
-            if (images.isEmpty()) {
-                return null;
-            }
-
-            return getLargestImage(images);
-        }
-
-        return ImageIO.read(imageFile);
-    }
-
-    private BufferedImage getLargestImage(List<BufferedImage> images) {
-        BufferedImage largestImage = images.getFirst();
-
-        for (BufferedImage imageCandidate : images) {
-            if (imageCandidate.getWidth() * imageCandidate.getHeight()
-                    > largestImage.getWidth() * largestImage.getHeight()) {
-                largestImage = imageCandidate;
-            }
-        }
-
-        return largestImage;
-    }
-
     private void updateImageSize() {
         if (imageViewPhoto.getImage() != null) {
             if (imageScaleSlider.getValue() == 1.0) {
@@ -260,30 +252,6 @@ public class ConverterImageViewController {
         imageContainer.setPrefHeight(newHeight);
     }
 
-    @FXML
-    public void btnChoiceDirForSaveImage() {
-        Stage stage = getStage(btnChoiceDirForSaveImage);
-        File selectedPath = setPathForSave(stage, outputPath);
-        if (selectedPath != null) {
-            outputPath = selectedPath;
-        }
-    }
-
-    private String getFileExtension(File file) {
-        if (file == null) {
-            return "";
-        }
-
-        String fileName = file.getName();
-        int dotIndex = fileName.lastIndexOf('.');
-
-        if (dotIndex == -1 || dotIndex == fileName.length() - 1) {
-            return "";
-        }
-
-        return fileName.substring(dotIndex + 1).toLowerCase();
-    }
-
     private String normalizeFormat(String format) {
         if (format == null) {
             return "";
@@ -295,14 +263,6 @@ public class ConverterImageViewController {
         }
 
         return normalizedFormat;
-    }
-
-    private String getSourceImageFormat(File file) {
-        try {
-            return normalizeFormat(DetermineType.determineType(file));
-        } catch (Exception e) {
-            return normalizeFormat(getFileExtension(file));
-        }
     }
 
     @FXML
@@ -319,7 +279,12 @@ public class ConverterImageViewController {
 
         try {
             hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
-            String inputExtension = getSourceImageFormat(image);
+            String inputExtension;
+            try {
+                inputExtension = normalizeFormat(DetermineType.determineType(image));
+            } catch (Exception e) {
+                inputExtension = normalizeFormat(getFileExtension(image));
+            }
             String targetFormat = normalizeFormat(typeImage);
 
             if (inputExtension.equals(targetFormat)) {
@@ -341,11 +306,11 @@ public class ConverterImageViewController {
                 convertedFile = ConverterImage.convert(image, outputPath, targetFormat);
             }
 
-            if (isValidConvertedFile(convertedFile)) {
+            if (convertedFile.exists() && convertedFile.isFile() && convertedFile.length() > 0) {
                 showSuccessMessage(labelSuccessConvert, targetFormat, hideSuccessMessageTimer);
                 ErrorLogger.info("Conversion completed: " + convertedFile.getName());
             } else {
-                ErrorLogger.warn("Conversion finished but file not found or empty: " + (convertedFile != null ? convertedFile.getName() : "null"));
+                ErrorLogger.warn("Conversion finished but file not found or empty: " + convertedFile.getName());
                 showErrorMessage(labelSuccessConvert, "Conversion Failed: File missing", hideSuccessMessageTimer);
                 ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Warning", "Missing File",
                         "Conversion finished, but saved file was not found.");
@@ -372,31 +337,5 @@ public class ConverterImageViewController {
         btnToJPEG.setSelected("jpeg".equals(format));
         btnToWEBM.setSelected("webp".equals(format));
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
-    }
-
-    private boolean isValidConvertedFile(File convertedFile) {
-        return convertedFile != null
-                && convertedFile.exists()
-                && convertedFile.isFile()
-                && convertedFile.length() > 0;
-    }
-
-    public void ActionBtnToWEBM() {
-        selectRasterFormat("webp");
-    }
-
-    public void isPressedReset() {
-        image = null;
-        labelSelectImageName.setText("Select image: none");
-        imageViewPhoto.setImage(null);
-
-        btnToPNG.setSelected(false);
-        btnToJPEG.setSelected(false);
-        btnToWEBM.setSelected(false);
-        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
-
-        sizeIcoImage = 0;
-        imageScaleSlider.setValue(1.0);
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
     }
 }
