@@ -1,6 +1,4 @@
 module converter {
-    exports model.converterImage;
-
     requires javafx.controls;
     requires javafx.fxml;
 
@@ -13,5 +11,5 @@ module converter {
 
     opens converter to javafx.fxml;
     exports converter;
-    exports model.converterMP3;
+    exports model.utility;
 }

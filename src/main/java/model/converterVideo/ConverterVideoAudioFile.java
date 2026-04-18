@@ -1,4 +1,4 @@
-package model.converterMP3;
+package model.converterVideo;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -15,12 +15,18 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class ConverterToMP3 {
+public class ConverterVideoAudioFile {
     private static final Encoder encoder = new Encoder();
+    public static File nameFileAfter;
 
-    public static CompletableFuture<Boolean> convert(File file, File pathForSave, int bitRate, int channels, int samplingRate, Consumer<Double> progressConsumer) {
+    public static CompletableFuture<Boolean> convert(File file,
+                                                     File pathForSave,
+                                                     int bitRate, int channels, int samplingRate,
+                                                     String videoCodec, String output_format,
+                                                     Consumer<Double> progressConsumer) {
         if (file == null || !file.exists()) {
-            ErrorLogger.alertDialog(Alert.AlertType.WARNING, "WARN", "File missing!", "The selected file was not found or is empty.");
+            ErrorLogger.alertDialog(Alert.AlertType.WARNING, "WARN",
+                    "File missing!", "The selected file was not found or is empty.");
             return CompletableFuture.completedFuture(false);
         }
 
@@ -29,7 +35,8 @@ public class ConverterToMP3 {
             String fileName = file.getName();
             int dotIndex = fileName.lastIndexOf('.');
             String nameWithoutExtension = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-            target = new File(pathForSave, nameWithoutExtension + UUID.randomUUID().toString().replace("-", "") + ".mp3");
+            target = new File(pathForSave, nameWithoutExtension + "_" + UUID.randomUUID().toString().replace("-", "") + ".mp3");
+            nameFileAfter = target;
         } else {
             target = pathForSave;
         }
@@ -38,14 +45,14 @@ public class ConverterToMP3 {
             ErrorLogger.info("Starting async...");
             try {
                 AudioAttributes audio = new AudioAttributes();
-                audio.setCodec("libmp3lame");
+                audio.setCodec(videoCodec);
                 audio.setBitRate(bitRate * 1000);
                 audio.setChannels(channels);
                 audio.setSamplingRate(samplingRate);
 
                 EncodingAttributes attrs = new EncodingAttributes();
                 attrs.setAudioAttributes(audio);
-                attrs.setOutputFormat("mp3");
+                attrs.setOutputFormat(output_format);
 
                 ErrorLogger.info("Starting conversation...");
                 encoder.encode(new MultimediaObject(file), target, attrs, new EncoderProgressListener() {
@@ -70,6 +77,15 @@ public class ConverterToMP3 {
                 
                 if (isCancelled) {
                     ErrorLogger.info("Conversion was cancelled by user (or stream closed due to abort).");
+                    ErrorLogger.info("User cancel conversion: " + nameFileAfter);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        ErrorLogger.log(112, ErrorLogger.Level.ERROR, "InterruptedException", e);
+                    }
+                    if (target.exists() && target.delete()) {
+                        ErrorLogger.info("Partial file deleted.");
+                    }
                 } else {
                     ErrorLogger.info("The conversion was not successful!");
                     Platform.runLater(() -> ErrorLogger.alertDialog(Alert.AlertType.WARNING, "ERROR", "Exception", "Exception. Check log file for more information!"));

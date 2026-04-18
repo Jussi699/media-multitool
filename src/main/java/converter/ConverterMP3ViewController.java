@@ -14,7 +14,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import model.converterMP3.ConverterToMP3;
+import model.converterVideo.ConverterVideoAudioFile;
 import model.logger.ErrorLogger;
 import model.select.SelectFile;
 
@@ -122,9 +122,20 @@ public class ConverterMP3ViewController {
             return;
         }
 
+        int originalChannels = getChannels(file);
+        if (originalChannels == 1 && channel == 2) {
+            boolean proceed = ErrorLogger.confirmationDialog(
+                    "Mono to Stereo Confirmation",
+                    "The source file is mono (1 channel).",
+                    "Do you want to convert it to stereo (2 channels) anyway?"
+            );
+            if (!proceed) return;
+        }
+
         progressBarConvert.setProgress(0);
         btnSubmitConvert.setDisable(true);
-        ConverterToMP3.convert(file, outputPath, bitRate, channel, samplingRate, progress -> {
+        ConverterVideoAudioFile.convert(file, outputPath, bitRate, channel, samplingRate,
+                "libmp3lame", "mp3", progress -> {
             Platform.runLater(() -> progressBarConvert.setProgress(progress));
         }).thenAccept(success -> Platform.runLater(() -> {
             btnSubmitConvert.setDisable(false);
@@ -258,6 +269,6 @@ public class ConverterMP3ViewController {
 
 
     public void onCancelConversation() {
-        ConverterToMP3.cancelConversion();
+        ConverterVideoAudioFile.cancelConversion();
     }
 }

@@ -8,7 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import model.converterImage.ConverterImage;
-import model.converterImage.DetermineType;
+import model.utility.DetermineType;
 import model.logger.ErrorLogger;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
@@ -155,6 +155,7 @@ public class ConverterImageViewController {
         selectRasterFormat("jpeg");
     }
 
+    @FXML
     public void ActionBtnToWEBM() {
         selectRasterFormat("webp");
     }
@@ -281,7 +282,7 @@ public class ConverterImageViewController {
             hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
             String inputExtension;
             try {
-                inputExtension = normalizeFormat(DetermineType.determineType(image));
+                inputExtension = normalizeFormat(DetermineType.determineFormat(image));
             } catch (Exception e) {
                 inputExtension = normalizeFormat(getFileExtension(image));
             }
@@ -338,4 +339,6 @@ public class ConverterImageViewController {
         btnToWEBM.setSelected("webp".equals(format));
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
     }
+
+
 }

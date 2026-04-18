@@ -4,6 +4,9 @@ import javafx.animation.PauseTransition;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import model.logger.ErrorLogger;
+import ws.schild.jave.MultimediaObject;
+import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
 
@@ -171,5 +174,21 @@ public class Util {
      */
     public static int parseComboBoxStringToInt(ComboBox<String> cb) {
         return Integer.parseInt(cb.getValue().replaceAll("[^0-9]", ""));
+    }
+
+    public static int getChannels(File file) {
+        if (file == null || !file.exists()) {
+            return -1;
+        }
+        try {
+            MultimediaObject multimediaObject = new MultimediaObject(file);
+            MultimediaInfo info = multimediaObject.getInfo();
+            if (info != null && info.getAudio() != null) {
+                return info.getAudio().getChannels();
+            }
+        } catch (Exception e) {
+            ErrorLogger.log(111, ErrorLogger.Level.ERROR, "Failed to get audio channels", e);
+        }
+        return -1;
     }
 }

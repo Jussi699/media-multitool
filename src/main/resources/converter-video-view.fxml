@@ -8,15 +8,15 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.StackPane?>
 <VBox fx:id="converterVideoPage"
       alignment="TOP_CENTER"
-      prefHeight="600.0"
       prefWidth="630.0"
-      spacing="16.0"
-      style="-fx-background-color: #4b4b4b;"
-      xmlns="http://javafx.com/javafx/25"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="converter.ConverterVideoViewController">
+      spacing="10.0"
+      style="-fx-background-color: #4b4b4b;" xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="converter.ConverterVideoViewController">
+
 
     <Label fx:id="labelConvertVideo"
            alignment="CENTER"
@@ -29,17 +29,11 @@
         </VBox.margin>
     </Label>
 
-    <HBox alignment="CENTER" spacing="16.0">
-        <Button fx:id="btnSelectVideoFile"
-                mnemonicParsing="false"
-                onAction="#onSelectVideoPressed"
-                prefWidth="170.0"
-                text="Select video"/>
-        <Button fx:id="btnChoiceDirForSaveVideo"
-                mnemonicParsing="false"
-                onAction="#onSelectOutputDirectoryPressed"
-                prefWidth="170.0"
-                text="Directory for save"/>
+
+    <HBox alignment="CENTER" spacing="20.0">
+        <Button fx:id="btnSelectVideoFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="170.0" text="Select audio/video" />
+
+        <Button fx:id="btnChoiceDirForSaveVideo" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="170.0" text="Directory for save" />
     </HBox>
 
     <Label fx:id="labelSelectVideoName"
@@ -65,6 +59,12 @@
                       onAction="#onFormatMkvPressed"
                       prefWidth="90.0"
                       text="to MKV"/>
+        <ToggleButton fx:id="btnToWEBM"
+                      mnemonicParsing="false"
+                      onAction="#onFormatWEBMPressed"
+                      prefWidth="90.0"
+                      text="to WEBM"/>
+
     </HBox>
 
     <HBox alignment="CENTER" spacing="12.0">
@@ -80,13 +80,29 @@
                 text="Reset"/>
     </HBox>
 
-    <Label fx:id="labelSuccessConvert"
-           alignment="CENTER"
-           prefWidth="520.0"
-           textFill="#32CD32"
-           visible="false"
-           managed="false"
-           wrapText="true"/>
+
+    <VBox alignment="CENTER" spacing="10.0">
+        <VBox.margin>
+            <Insets top="25.0" bottom="5.0" />
+        </VBox.margin>
+        <ProgressBar fx:id="progressBarConvert"
+                     prefWidth="200.0"
+                     minHeight="15"
+                     progress="0.0"/>
+
+        <StackPane prefHeight="8.0">
+            <Label fx:id="labelSuccessConvert"
+                   alignment="CENTER"
+                   prefWidth="400.0"
+                   textFill="#32CD32"
+                   text="Convert has been success!">
+                <style>-fx-font-weight: bold;</style>
+            </Label>
+        </StackPane>
+        <VBox.margin>
+            <Insets bottom="0" />
+        </VBox.margin>
+    </VBox>
 
     <Region VBox.vgrow="ALWAYS"/>
 

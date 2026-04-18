@@ -142,7 +142,7 @@ public class ConverterImage {
     private static File createOutputFile(File image, File pathForSave, String extension) {
         String normalizedExtension = extension.toLowerCase(Locale.ROOT);
         String fileName = getBaseName(image.getName())
-                + "_converted_"
+                + "_"
                 + UUID.randomUUID().toString().replace("-", "")
                 + "."
                 + normalizedExtension;
