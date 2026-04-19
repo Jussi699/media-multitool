@@ -131,7 +131,7 @@ public class ConverterImage {
     }
 
     private static BufferedImage readImage(File image) throws IOException {
-        BufferedImage bufferedImage = ImageIO.read(image);
+        BufferedImage bufferedImage = UsefulMethods.readPreviewImage(image);
         if (bufferedImage == null) {
             throw new IOException("Unable to read image: " + image.getName());
         }

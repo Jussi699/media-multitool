@@ -3,6 +3,7 @@ package converter;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import model.logger.ErrorLogger;
 
@@ -15,6 +16,10 @@ public class ConverterApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(ConverterApp.class.getResource("/controller-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 800, 600);
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
+
+        try {stage.getIcons().add(new Image(getClass().getResourceAsStream("/image/convert.png")));}
+        catch (NullPointerException e){ErrorLogger.warn("The icon for the application is missing or damaged.");}
+
         stage.setResizable(false);
         stage.setTitle("Converter!");
         stage.setScene(scene);

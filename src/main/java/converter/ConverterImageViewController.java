@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import model.converterImage.ConverterImage;
+import model.converterImage.UsefulMethods;
 import model.utility.DetermineType;
 import model.logger.ErrorLogger;
 import javafx.animation.PauseTransition;
@@ -255,19 +256,6 @@ public class ConverterImageViewController {
         imageContainer.setPrefHeight(newHeight);
     }
 
-    private String normalizeFormat(String format) {
-        if (format == null) {
-            return "";
-        }
-
-        String normalizedFormat = format.toLowerCase();
-        if ("jpg".equals(normalizedFormat)) {
-            return "jpeg";
-        }
-
-        return normalizedFormat;
-    }
-
     @FXML
     public void SubmitConvertAndDownload() {
         if (image == null || outputPath == null) {
@@ -283,12 +271,13 @@ public class ConverterImageViewController {
         try {
             hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
             String inputExtension;
+            UsefulMethods usefulMethods = new UsefulMethods();
             try {
-                inputExtension = normalizeFormat(DetermineType.determineFormat(image));
+                inputExtension = usefulMethods.normalizeFormat(DetermineType.determineFormat(image));
             } catch (Exception e) {
-                inputExtension = normalizeFormat(getFileExtension(image));
+                inputExtension = usefulMethods.normalizeFormat(getFileExtension(image));
             }
-            String targetFormat = normalizeFormat(typeImage);
+            String targetFormat = usefulMethods.normalizeFormat(typeImage);
 
             if (inputExtension.equals(targetFormat)) {
                 ErrorLogger.alertDialog(Alert.AlertType.WARNING, "Warning", "Format",

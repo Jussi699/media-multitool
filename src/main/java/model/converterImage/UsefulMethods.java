@@ -48,4 +48,20 @@ public class UsefulMethods {
 
         return fileName.substring(dotIndex + 1).toLowerCase();
     }
+
+    public String normalizeFormat(String format) {
+        if (format == null) {
+            return "";
+        }
+
+        String normalizedFormat = format.toLowerCase();
+        if ("jpg".equals(normalizedFormat)) {
+            return "jpeg";
+        }
+        if ("x-icon".equals(normalizedFormat) || "vnd.microsoft.icon".equals(normalizedFormat)) {
+            return "ico";
+        }
+
+        return normalizedFormat;
+    }
 }

@@ -39,7 +39,11 @@ public class DetermineType {
         try {
             String type = Files.probeContentType(file.toPath());
             if (type != null && type.contains("/")) {
-                return type.split("/")[1];
+                String format = type.split("/")[1].toLowerCase();
+                if ("x-icon".equals(format) || "vnd.microsoft.icon".equals(format)) {
+                    return "ico";
+                }
+                return format;
             }
         }
         catch (IOException e) {
