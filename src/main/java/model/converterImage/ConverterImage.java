@@ -1,35 +1,40 @@
 package model.converterImage;
 
-import com.luciad.imageio.webp.WebPWriteParam;
 import model.logger.ErrorLogger;
 import net.ifok.image.image4j.codec.ico.ICOEncoder;
 import net.ifok.image.image4j.codec.ico.ICODecoder;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.Base64;
 
 public class ConverterImage {
     public static File convert(File image, File pathForSave, String typeFile) throws IOException {
         validateSourceImage(image);
         validateOutputDirectory(pathForSave);
 
+        ImageIO.scanForPlugins();
+
         ErrorLogger.info("Starting conversion for image: " + image.getName() + " to " + typeFile);
 
         BufferedImage bufImage = readImage(image);
         String outputFormat = normalizeOutputFormat(typeFile);
-        BufferedImage preparedImage = prepareImageForFormat(bufImage, outputFormat);
         File outputImage = createOutputFile(image, pathForSave, typeFile);
 
+        if ("svg".equalsIgnoreCase(outputFormat)) {
+            saveAsSvg(bufImage, outputImage);
+            ErrorLogger.info("Conversion to SVG successful. Saved to: " + outputImage.getAbsolutePath());
+            return outputImage;
+        }
+
+        BufferedImage preparedImage = prepareImageForFormat(bufImage, outputFormat);
         boolean written = ImageIO.write(preparedImage, outputFormat, outputImage);
         if (!written) {
             throw new IOException("Unsupported output format: " + typeFile);
@@ -87,11 +92,27 @@ public class ConverterImage {
             throw new IllegalArgumentException("Output format is null");
         }
 
-        return "jpeg".equalsIgnoreCase(typeFile) ? "jpg" : typeFile.toLowerCase(Locale.ROOT);
+        switch (typeFile){
+            case "tiff", "tif" -> {
+                return "tif";
+            }
+            case "jpeg", "jpg", "jpe" -> {
+                if(typeFile.equalsIgnoreCase("jpe")){
+                    return "jpe";
+                }
+                return "jpg";
+            }
+            case "bmp" -> {
+                return "bmp";
+            }
+            default -> {
+                return typeFile.toLowerCase(Locale.ROOT);
+            }
+        }
     }
 
     public static BufferedImage prepareImageForFormat(BufferedImage source, String format) {
-        if (!"jpg".equals(format) && !"jpeg".equals(format)) {
+        if (!"jpg".equals(format) && !"jpeg".equals(format) && !"bmp".equals(format)) {
             return source;
         }
 
@@ -159,29 +180,18 @@ public class ConverterImage {
         return fileName.substring(0, dotIndex);
     }
 
-    private static void writeWebp(BufferedImage image, File outputFile) throws IOException {
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType("image/webp");
-        if (!writers.hasNext()) {
-            writers = ImageIO.getImageWritersByFormatName("webp");
-        }
+    private static void saveAsSvg(BufferedImage image, File outputFile) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        String base64 = Base64.getEncoder().encodeToString(baos.toByteArray());
 
-        if (!writers.hasNext()) {
-            throw new IOException("WebP writer is not available. Add org.sejda.imageio:webp-imageio dependency.");
-        }
-
-        ImageWriter writer = writers.next();
-
-        try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile)) {
-            writer.setOutput(ios);
-
-            WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
-            writeParam.setCompressionMode(WebPWriteParam.MODE_EXPLICIT);
-            writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSY_COMPRESSION]);
-            writeParam.setCompressionQuality(0.90f);
-
-            writer.write(null, new IIOImage(image, null, null), writeParam);
-        } finally {
-            writer.dispose();
+        try (FileWriter writer = new FileWriter(outputFile)) {
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
+            writer.write(String.format("<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",
+                    image.getWidth(), image.getHeight()));
+            writer.write(String.format("  <image width=\"%d\" height=\"%d\" xlink:href=\"data:image/png;base64,%s\"/>\n",
+                    image.getWidth(), image.getHeight(), base64));
+            writer.write("</svg>");
         }
     }
 }

@@ -44,9 +44,15 @@ public class ConverterImageViewController {
     @FXML private Button btnChoiceDirForSaveImage;
     @FXML private Label labelSuccessConvert;
     @FXML private Label labelSelectImageName;
+    @FXML private ToggleButton btnToSVG;
     @FXML private ToggleButton btnToWEBM;
     @FXML private ToggleButton btnToJPEG;
     @FXML private ToggleButton btnToPNG;
+    @FXML private ToggleButton btnToTIFF;
+    @FXML private ToggleButton btnToBMP;
+    @FXML private ToggleButton btnToPPM;
+    @FXML private ToggleButton btnToPGM;
+    @FXML private ToggleButton btnToPAM;
     @FXML private Slider imageScaleSlider;
     @FXML private ComboBox<String> comboBoxIcoSize;
     @FXML private ScrollPane scrollPanePhoto;
@@ -150,21 +156,6 @@ public class ConverterImageViewController {
         }
     }
 
-    @FXML
-    private void ActionBtnToPNG() {
-        selectRasterFormat("png");
-    }
-
-    @FXML
-    private void ActionBtnToJPEG() {
-        selectRasterFormat("jpeg");
-    }
-
-    @FXML
-    public void ActionBtnToWEBM() {
-        selectRasterFormat("webp");
-    }
-
 
     @FXML
     private void onChoiceIcoSize() {
@@ -179,6 +170,12 @@ public class ConverterImageViewController {
         btnToPNG.setSelected(false);
         btnToJPEG.setSelected(false);
         btnToWEBM.setSelected(false);
+        btnToTIFF.setSelected(false);
+        btnToBMP.setSelected(false);
+        btnToPPM.setSelected(false);
+        btnToPGM.setSelected(false);
+        btnToPAM.setSelected(false);
+        btnToSVG.setSelected(false);
     }
 
     public void isPressedReset() {
@@ -189,6 +186,13 @@ public class ConverterImageViewController {
         btnToPNG.setSelected(false);
         btnToJPEG.setSelected(false);
         btnToWEBM.setSelected(false);
+        btnToTIFF.setSelected(false);
+        btnToBMP.setSelected(false);
+        btnToPPM.setSelected(false);
+        btnToPGM.setSelected(false);
+        btnToPAM.setSelected(false);
+        btnToSVG.setSelected(false);
+
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
 
         sizeIcoImage = 0;
@@ -201,7 +205,8 @@ public class ConverterImageViewController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         image = selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico", "*.webp"),
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico", "*.webp",
+                        "*.tiff", "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe", "*.svg"),
                 "Choice image"
         );
 
@@ -296,10 +301,10 @@ public class ConverterImageViewController {
                 convertedFile = ConverterImage.convertToIco(image, outputPath, sizeIcoImage);
             } else if ("ico".equals(inputExtension)) {
                 convertedFile = ConverterImage.convertFromIco(image, outputPath, targetFormat);
-            } else {
+            }
+            else{
                 convertedFile = ConverterImage.convert(image, outputPath, targetFormat);
             }
-
             if (convertedFile.exists() && convertedFile.isFile() && convertedFile.length() > 0) {
                 showSuccessMessage(labelSuccessConvert, targetFormat, hideSuccessMessageTimer);
                 ErrorLogger.info("Conversion completed: " + convertedFile.getName());
@@ -330,8 +335,53 @@ public class ConverterImageViewController {
         btnToPNG.setSelected("png".equals(format));
         btnToJPEG.setSelected("jpeg".equals(format));
         btnToWEBM.setSelected("webp".equals(format));
+        btnToTIFF.setSelected("tif".equals(format));
+        btnToBMP.setSelected("bmp".equals(format));
+        btnToPPM.setSelected("ppm".equals(format));
+        btnToPGM.setSelected("pgm".equals(format));
+        btnToPAM.setSelected("pam".equals(format));
+
+
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
     }
 
+    @FXML
+    private void ActionBtnToPNG() {
+        selectRasterFormat("png");
+    }
 
+    @FXML
+    private void ActionBtnToJPEG() {
+        selectRasterFormat("jpeg");
+    }
+
+    @FXML
+    public void ActionBtnToWEBM() {
+        selectRasterFormat("webp");
+    }
+
+    public void ActionBtnToTIFF() {
+        selectRasterFormat("tif");
+    }
+
+    public void ActionBtnToBMP() {
+        selectRasterFormat("bmp");
+    }
+
+    public void ActionBtnToPPM() {
+        selectRasterFormat("ppm");
+    }
+
+    public void ActionBtnToPAM() {
+        selectRasterFormat("pam");
+    }
+
+    public void ActionBtnToPGM() {
+        selectRasterFormat("pgm");
+
+    }
+
+    public void ActionBtnToSVG() {
+        selectRasterFormat("svg");
+    }
 }

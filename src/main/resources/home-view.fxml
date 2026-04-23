@@ -41,7 +41,7 @@
                     fx:id="btnOpenMP3Converter"
                     onAction="#onOpenMP3ConverterPressed"
                     prefWidth="220.0"
-                    text="MP3 Converter" />
+                    text="Audio Converter" />
         </HBox>
 
     <padding>
