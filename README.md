@@ -1,6 +1,6 @@
-# Media Converter
+# Media multitool
 
-A lightweight, powerful cross-platform media conversion tool built with Java and JavaFX. This application allows users to easily convert images, audio, and video files between various formats with customizable parameters.
+A lightweight, powerful cross-platform media multitool built with Java and JavaFX. This application allows users to easily convert images, audio, and video files between various formats with customizable parameters and compression media files.
 
 ## 🚀 Features
 
@@ -25,6 +25,13 @@ A lightweight, powerful cross-platform media conversion tool built with Java and
 - **Asynchronous Processing:** Conversions run in the background, keeping the UI responsive.
 - **Cancellation Support:** Stop any ongoing conversion at any time with automatic partial file cleanup.
 
+### 🗜️ Compression Image & Video
+- **Supported Formats Image:** JPG, PNG, WEBP, ICO, BMP, TIFF, and more.
+- **Supported Formats Video:** MP4, MKV, AVI, MOV, WebM, FLV, and more.
+- **Preview of the compressed image after compression.**
+- **Outputting the size of a compressed file**
+- **Without watermark.**
+
 ### 🎨 User Interface
 - **Modern JavaFX GUI:** Intuitive and easy-to-use interface.
 - **Drag & Drop:** Simply drag files into the application to start.
@@ -38,7 +45,7 @@ A lightweight, powerful cross-platform media conversion tool built with Java and
 - **Maven** (Build Tool)
 - **JAVE2** (FFmpeg wrapper for media encoding)
 - **Image4j** (ICO format support)
-- **TwelveMonkeys & Sejda ImageIO** (Advanced image format support including WebP)
+- **TwelveMonkeys & Sejda ImageIO and etc.** (Advanced image format support including WebP)
 - **Logback & SLF4J** (Logging)
 
 ## 📋 Prerequisites
@@ -50,8 +57,8 @@ A lightweight, powerful cross-platform media conversion tool built with Java and
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Jussi699/media-converter.git
-   cd media-converter
+   git clone https://github.com/Jussi699/media-multitool.git
+   cd media-multitool
    ```
 
 2. **Build the project:**
