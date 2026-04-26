@@ -8,6 +8,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,10 +47,14 @@ public class Compressor {
                         .scale(scale)
                         .outputFormat("png")
                         .toFile(outputFile);
-                case "tif", "tiff" -> Thumbnails.of(file)
-                        .scale(scale)
-                        .outputFormat("tiff")
-                        .toFile(outputFile);
+                case "tif", "tiff" -> {
+                    BufferedImage bi = Thumbnails.of(file)
+                            .scale(scale)
+                            .asBufferedImage();
+                    if (!ImageIO.write(bi, "tiff", outputFile)) {
+                        throw new IOException("No appropriate writer found for TIFF");
+                    }
+                }
                 default -> Thumbnails.of(file)
                         .scale(scale)
                         .outputFormat(format)
@@ -110,6 +116,8 @@ public class Compressor {
             case "svg+xml", "svg" -> "svg";
             case "tif", "tiff" -> "tiff";
             case "x-icon", "vnd.microsoft.icon" -> "ico";
+            case "x-portable-pixmap" -> "ppm";
+            case "x-portable-graymap" -> "pgm";
             default -> normalized;
         };
     }

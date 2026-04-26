@@ -13,6 +13,8 @@ module media_multitool {
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;
+    exports model.converterVideo;
+    exports model.compressorImage;
     exports media_multitool;
     exports model.utility;
     exports viewHelp;
