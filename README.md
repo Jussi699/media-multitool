@@ -55,6 +55,10 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 
 ## 📥 Installation & Running
 
+**👉 [Download latest release](https://github.com/Jussi699/media-multitool/releases/latest)**
+
+---
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/Jussi699/media-multitool.git
