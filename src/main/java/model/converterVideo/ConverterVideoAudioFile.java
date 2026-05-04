@@ -3,6 +3,7 @@ package model.converterVideo;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import model.logger.ErrorLogger;
+import model.utility.EncoderUtility;
 import viewHelp.Alerts;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.MultimediaObject;
@@ -60,9 +61,10 @@ public class ConverterVideoAudioFile {
         return CompletableFuture.supplyAsync(() -> {
             ErrorLogger.info("Starting async conversion...");
             try {
-                EncodingAttributes attrs = new EncodingAttributes();
-                AudioAttributes audio = new AudioAttributes();
+                MultimediaObject multimediaObject = new MultimediaObject(file);
+                MultimediaInfo sourceInfo = multimediaObject.getInfo();
                 
+                EncodingAttributes attrs = new EncodingAttributes();
                 String normalizedFormat = output_format;
                 if ("mkv".equalsIgnoreCase(output_format)) {
                     normalizedFormat = "matroska";
@@ -70,23 +72,31 @@ public class ConverterVideoAudioFile {
                     normalizedFormat = "ipod";
                 }
                 attrs.setOutputFormat(normalizedFormat);
-                audio.setCodec(audioCodec);
 
-                if (audioBitrate > 0 && !isLossless(audioCodec)) {
-                    audio.setBitRate(audioBitrate * 1000);
+                boolean isVideo = "video".equalsIgnoreCase(typeConvert);
+
+                if (sourceInfo.getAudio() != null || !isVideo) {
+                    AudioAttributes audio = new AudioAttributes();
+                    audio.setCodec(audioCodec);
+
+                    if (audioBitrate > 0 && isLossless(audioCodec)) {
+                        audio.setBitRate(audioBitrate * 1000);
+                    }
+                    audio.setChannels(channels);
+                    audio.setSamplingRate(samplingRate);
+                    attrs.setAudioAttributes(audio);
+                } else {
+                    ErrorLogger.info("Source file has no audio track. Skipping audio attributes for video conversion.");
                 }
-                audio.setChannels(channels);
-                audio.setSamplingRate(samplingRate);
-                attrs.setAudioAttributes(audio);
 
-                if ("video".equalsIgnoreCase(typeConvert)) {
+                if (isVideo) {
                     VideoAttributes video = new VideoAttributes();
                     video.setCodec(videoCodec);
                     if (videoBitrate > 0) {
                         video.setBitRate(videoBitrate * 1000);
                     }
                     video.setPixelFormat("yuv420p");
-                    
+
                     if (fps > 0) {
                         video.setFrameRate(fps);
                     }
@@ -95,10 +105,10 @@ public class ConverterVideoAudioFile {
                             String[] res = resolution.split("x");
                             int width = Integer.parseInt(res[0]);
                             int height = Integer.parseInt(res[1]);
-                            
+
                             if (width % 2 != 0) width--;
                             if (height % 2 != 0) height--;
-                            
+
                             video.setSize(new VideoSize(width, height));
                         } catch (Exception e) {
                             ErrorLogger.warn("Invalid resolution format: " + resolution);
@@ -108,8 +118,8 @@ public class ConverterVideoAudioFile {
                 }
 
                 ErrorLogger.info("Starting encoding: " + file.getName() + " [V-BR: " + videoBitrate + ", A-BR: " + audioBitrate + "]");
-                
-                encoder.encode(new MultimediaObject(file), target, attrs, new EncoderProgressListener() {
+
+                encoder.encode(multimediaObject, target, attrs, new EncoderProgressListener() {
                     @Override
                     public void sourceInfo(MultimediaInfo info) {
                         ErrorLogger.info("Source info: " + info.toString());
@@ -129,11 +139,11 @@ public class ConverterVideoAudioFile {
                 });
 
                 ErrorLogger.info("Conversion successful!");
-                currentTarget = null;
+                clearCurrentTarget(target);
                 return true;
             } catch (Exception e) {
-                handleError(e, target);
-                currentTarget = null;
+                handleError(e);
+                clearCurrentTarget(target);
                 return false;
             }
         }, IO_EXECUTOR);
@@ -146,46 +156,16 @@ public class ConverterVideoAudioFile {
                                                      Consumer<Double> progressConsumer) {
         return convert(file, pathForSave, -1, bitRate, channels, samplingRate, -1, null, audioCodec, output_format, null, "audio", progressConsumer);
     }
-public static void cancelConversion() {
-    encoder.abortEncoding();
 
-    File fileToDelete = currentTarget;
-    if (fileToDelete == null) return;
-
-    IO_EXECUTOR.submit(() -> {
-        ErrorLogger.info("Attempting to delete partial file: " + fileToDelete.getName());
-        int attempts = 0;
-        boolean deleted = false;
-
-        while (attempts < 10 && !deleted) {
-            try {
-                Thread.sleep(500 + (attempts * 200L));
-                if (!fileToDelete.exists()) {
-                    deleted = true;
-                    break;
-                }
-                if (fileToDelete.delete()) {
-                    ErrorLogger.info("Successfully deleted partial file after cancellation.");
-                    deleted = true;
-                } else {
-                    attempts++;
-                    ErrorLogger.warn("Delete attempt " + attempts + " failed. File might be locked.");
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
-
-        if (!deleted && fileToDelete.exists()) {
-            ErrorLogger.error("Could not delete partial file after 10 attempts: " + fileToDelete.getAbsolutePath());
-        }
-
-        if (fileToDelete.equals(currentTarget)) {
+    public static void cancelConversion() {
+        File target = currentTarget;
+        if (target != null) {
+            EncoderUtility.abortEncoding(encoder, target);
             currentTarget = null;
+        } else {
+            encoder.abortEncoding();
         }
-    });
-}
+    }
 
     private static boolean checkingFileStatic(File file) {
         if (file == null || !file.exists()) {
@@ -196,25 +176,28 @@ public static void cancelConversion() {
         return true;
     }
 
-    private static boolean isLossless(String codec) {
-        if (codec == null) return false;
+    public static boolean isLossless(String codec) {
+        if (codec == null) return true;
         String c = codec.toLowerCase();
-        return c.contains("flac") || c.contains("alac") || c.contains("pcm");
+        return !c.contains("flac") && !c.contains("alac") && !c.contains("pcm");
     }
 
-    private static void handleError(Exception e, File target) {
+    private static void handleError(Exception e) {
         String msg = e.getMessage();
         boolean isCancelled = msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
 
         if (isCancelled) {
             ErrorLogger.info("Conversion was cancelled by user.");
-            if (target.exists() && target.delete()) {
-                ErrorLogger.info("Partial file deleted.");
-            }
         } else {
             ErrorLogger.info("Conversion failed: " + e.getMessage());
             Platform.runLater(() -> Alerts.alertDialog(Alert.AlertType.WARNING, "ERROR", "Conversion Error", "FFmpeg Error: " + e.getMessage()));
             ErrorLogger.log(109, ErrorLogger.Level.ERROR, "Exception during conversion", e);
+        }
+    }
+
+    private static void clearCurrentTarget(File target) {
+        if (target != null && target.equals(currentTarget)) {
+            currentTarget = null;
         }
     }
 }

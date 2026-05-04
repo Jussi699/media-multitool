@@ -23,7 +23,6 @@ import viewHelp.ComboBoxes;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import javafx.application.Platform;
@@ -33,7 +32,7 @@ import static viewHelp.Message.*;
 import static model.converterImage.UsefulMethods.readPreviewImage;
 
 public class CompressorImageController {
-    private final String DEFAULT_FILE_TEXT = "Selected file: none";
+    private final String DEFAULT_FILE_TEXT = "Selected image file: none";
 
     private float scale;
     private float quality;
@@ -63,7 +62,7 @@ public class CompressorImageController {
         comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
         comboBoxScaleImage.setValue(new Item(-1, "Scale"));
 
-        outputPath = Paths.get(System.getProperty("user.home"), "Desktop").toFile();
+        outputPath = getSavedPath();
 
         setupClearMessageTimer(labelSuccessConvert, hideSuccessMessageTimer);
 
@@ -80,7 +79,7 @@ public class CompressorImageController {
         ComboBoxes.setupComboBox(comboBoxOutputQuality, Item::title);
         ComboBoxes.setupComboBox(comboBoxScaleImage, Item::title);
 
-        isPressedReset();
+        onResetPressed();
 
         comboBoxOutputQuality.getItems().addAll(
                 new Item(-1f, "Quality"),
@@ -220,7 +219,8 @@ public class CompressorImageController {
         });
     }
 
-    public void isPressedReset() {
+    @FXML
+    public void onResetPressed() {
         comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
         comboBoxScaleImage.setValue(new Item(-1, "Scale"));
 
@@ -234,6 +234,25 @@ public class CompressorImageController {
         clearPreview(imageViewPhotoOriginal, imageContainerOriginal);
         clearCompressedPreview();
         hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+    }
+
+    @FXML
+    private void showInfo() {
+        Alerts.alertDialog(
+                Alert.AlertType.INFORMATION,
+                "Information",
+                "Image Compressor",
+                """
+                        How to use:
+                        1. Select an image file using 'Select image'.
+                        2. (Optional) Choose a directory for saving the output.
+                        3. Select Scale and Quality settings.
+                        4. Click 'Convert and Download'.
+                        
+                        For SVG files, the compressor removes unnecessary metadata to reduce file size.
+                        
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
+        );
     }
 
     public void onChoiceScaleImage() {

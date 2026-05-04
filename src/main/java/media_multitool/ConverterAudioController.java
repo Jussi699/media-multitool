@@ -3,10 +3,16 @@ package media_multitool;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ListCell;
+
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -19,7 +25,6 @@ import model.utility.DragDropped;
 import viewHelp.Alerts;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -44,6 +49,7 @@ public class ConverterAudioController {
     @FXML private Button btnSubmitConvert;
     @FXML private Label textDragZone;
     @FXML private Label labelSuccessConvert;
+    @FXML private Label labelSelectAudioFile;
     @FXML private ComboBox<String> comboBoxChoiceBitRate;
     @FXML private ComboBox<String> comboBoxChoiceChannels;
     @FXML private ComboBox<String> comboBoxChoiceSamplingRate;
@@ -71,6 +77,8 @@ public class ConverterAudioController {
 
         labelSuccessConvert.setVisible(false);
         labelSuccessConvert.setManaged(true);
+        labelSelectAudioFile.setVisible(true);
+        labelSelectAudioFile.setText("Selected audio file: none");
 
         setupComboBox(comboBoxChoiceBitRate);
         setupComboBox(comboBoxChoiceChannels);
@@ -107,6 +115,8 @@ public class ConverterAudioController {
         btnToOPUS.setSelected(false);
         btnToWAV.setSelected(false);
 
+        labelSelectAudioFile.setText("Selected audio file: none");
+
         file = null;
         if (dropZone != null) dropZone.getStyleClass().remove("drop-zone-filled");
         if (textDragZone != null) textDragZone.setText("Drag files here");
@@ -138,6 +148,7 @@ public class ConverterAudioController {
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
+        labelSelectAudioFile.setText("Selected audio file: " + file.getName());
         hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
     }
 
@@ -172,6 +183,19 @@ public class ConverterAudioController {
 
         CompletableFuture.supplyAsync(() -> getMetadata(file), IO_EXECUTOR)
             .thenCompose(sourceInfo -> {
+                if (sourceInfo != null && sourceInfo.getAudio() == null) {
+                    Platform.runLater(() -> {
+                        Alerts.alertDialog(
+                                Alert.AlertType.WARNING,
+                                "No Audio Track Detected",
+                                "The selected file does not have an audio track.",
+                                "Audio conversion is not possible for this file. Please select a file with audio."
+                        );
+                        btnSubmitConvert.setDisable(false);
+                    });
+                    return CompletableFuture.completedFuture(null);
+                }
+
                 int originalChannels = parseChannels(sourceInfo);
                 if (originalChannels == 1 && channel == 2) {
                     CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
@@ -354,5 +378,24 @@ public class ConverterAudioController {
     @FXML
     public void onCancelConversation() {
         ConverterVideoAudioFile.cancelConversion();
+    }
+
+    @FXML
+    private void showInfo() {
+        Alerts.alertDialog(
+                Alert.AlertType.INFORMATION,
+                "Information",
+                "Audio Converter",
+                """
+                        How to use:
+                        1. Select an audio or video file using 'Select audio/video' or drag and drop it into the dash-bordered zone.
+                        2. (Optional) Choose a directory for saving the output.
+                        3. Select the target audio format and configure quality settings (Bitrate, Channels, Sampling Rate).
+                        4. Click 'Convert and Download'.
+                        
+                        You can cancel the conversion at any time using the 'Cancel' button.
+                        
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
+        );
     }
 }

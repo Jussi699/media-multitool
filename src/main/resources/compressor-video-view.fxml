@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.CompressorVideoController">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="14.0"
+          style="-fx-background-color: #4b4b4b;">
+
+        <Label alignment="CENTER"
+               prefWidth="320.0"
+               text="Compressor Video"
+               textFill="RED"
+               style="-fx-font-size: 22px; -fx-font-weight: bold;">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectVideoFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionBtnSelectVideoFile"
+                    prefWidth="180.0"
+                    text="Select video"/>
+
+            <Button fx:id="btnChoiceDirForSaveVideo"
+                    mnemonicParsing="false"
+                    onAction="#onActionSelectOutputDir"
+                    prefWidth="180.0"
+                    text="Directory for save"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="20.0" minHeight="32.0" prefHeight="32.0">
+            <ToggleButton prefWidth="80" onAction="#onActionSelectPreset" fx:id="btnBasicCompress">Basic</ToggleButton>
+            <ToggleButton prefWidth="80" onAction="#onActionSelectPreset" fx:id="btnStrongCompress">Strong</ToggleButton>
+            <ToggleButton prefWidth="80" onAction="#onActionSelectPreset" fx:id="btnSuperCompress">Super</ToggleButton>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="20.0" minHeight="12.0" prefHeight="12.0">
+            <Button mnemonicParsing="false"
+                    onAction="#onActionCompressAndDownload"
+                    prefWidth="240.0"
+                    text="Convert and Download" />
+
+            <Button mnemonicParsing="false"
+                    onAction="#onActionCancelCompress"
+                    prefWidth="220.0" text="Cancel Compress" />
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccessCompress" styleClass="labelSuccess"
+                   alignment="CENTER"
+                   prefWidth="560.0"
+                   minHeight="20.0"
+                   prefHeight="20.0"
+                   visible="false"
+                   managed="true"
+                   text="Compression was successful!"
+                   textFill="#32CD32"
+                   wrapText="true" />
+
+            <ProgressBar fx:id="progressBarCompress"
+                         prefWidth="460.0"
+                         minHeight="20.0"
+                         progress="0.0"/>
+        </VBox>
+
+        <StackPane fx:id="dropZone" styleClass="drop-zone"
+                   onDragOver="#handleDragOver"
+                   onDragDropped="#handleDragDropped"
+                   minHeight="200.0"
+                   prefHeight="300.0"
+                   prefWidth="580.0"
+                   VBox.vgrow="ALWAYS"
+                   style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+            <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" style="-fx-font-size: 18px;" />
+        </StackPane>
+
+        <VBox alignment="CENTER" spacing="6.0">
+            <Label fx:id="labelSelectVideoName"
+                   styleClass="labelSelect"
+                   alignment="CENTER"
+                   prefWidth="600.0"
+                   minHeight="18.0"
+                   text="Selected video file: none"
+                   textFill="RED"
+                   wrapText="true"/>
+
+            <Button mnemonicParsing="false"
+                    onAction="#onActionPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
+        </VBox>
+
+        <padding>
+            <Insets top="8.0" left="16.0" right="16.0" bottom="16.0"/>
+        </padding>
+    </VBox>
+
+    <Button text="?"
+            onAction="#showInfo"
+            styleClass="info-button"
+            StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets top="10.0" left="10.0"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

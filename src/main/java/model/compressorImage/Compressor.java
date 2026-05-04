@@ -8,6 +8,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,8 +25,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 public class Compressor {
-    public static CompressionResult compressorStandardImage(File file, File pathToSave, float scale, float outputQuality)
-            throws IOException {
+    public static CompressionResult compressorStandardImage(File file, File pathToSave, float scale, float outputQuality) {
         String format = normalizeFormat(DetermineType.determineFormat(file));
         File outputFile = Util.createOutputFile(file, pathToSave, format);
         long originalSize = file.length();
@@ -45,10 +46,14 @@ public class Compressor {
                         .scale(scale)
                         .outputFormat("png")
                         .toFile(outputFile);
-                case "tif", "tiff" -> Thumbnails.of(file)
-                        .scale(scale)
-                        .outputFormat("tiff")
-                        .toFile(outputFile);
+                case "tif", "tiff" -> {
+                    BufferedImage bi = Thumbnails.of(file)
+                            .scale(scale)
+                            .asBufferedImage();
+                    if (!ImageIO.write(bi, "tiff", outputFile)) {
+                        throw new IOException("No appropriate writer found for TIFF");
+                    }
+                }
                 default -> Thumbnails.of(file)
                         .scale(scale)
                         .outputFormat(format)
@@ -65,8 +70,7 @@ public class Compressor {
                         + outputFile.getAbsolutePath());
             }
 
-            boolean sizeReduced = compressedSize < originalSize;
-            return new CompressionResult(outputFile, format, originalSize, compressedSize, sizeReduced);
+            return new CompressionResult(outputFile, format, originalSize, compressedSize, compressedSize < originalSize);
         } catch (IOException e) {
             ErrorLogger.log(115, ErrorLogger.Level.ERROR, "Failed to compress image", e);
             return null;
@@ -110,6 +114,8 @@ public class Compressor {
             case "svg+xml", "svg" -> "svg";
             case "tif", "tiff" -> "tiff";
             case "x-icon", "vnd.microsoft.icon" -> "ico";
+            case "x-portable-pixmap" -> "ppm";
+            case "x-portable-graymap" -> "pgm";
             default -> normalized;
         };
     }
@@ -120,9 +126,9 @@ public class Compressor {
             factory.setNamespaceAware(true);
             factory.setIgnoringComments(true);
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("https://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("https://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("https://xml.org/sax/features/external-parameter-entities", false);
 
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(file);
@@ -146,12 +152,43 @@ public class Compressor {
     }
 
     private static void removeMetadataNodes(Document document) {
-        NodeList metadataNodes = document.getElementsByTagNameNS("*", "metadata");
-        for (int i = metadataNodes.getLength() - 1; i >= 0; i--) {
-            Node metadataNode = metadataNodes.item(i);
-            Node parent = metadataNode.getParentNode();
-            if (parent != null) {
-                parent.removeChild(metadataNode);
+        cleanNode(document.getDocumentElement());
+    }
+
+    private static void cleanNode(Node node) {
+        NodeList children = node.getChildNodes();
+        for (int i = children.getLength() - 1; i >= 0; i--) {
+            Node child = children.item(i);
+
+            if (child.getNodeType() == Node.COMMENT_NODE ||
+                    (child.getNodeType() == Node.TEXT_NODE && child.getNodeValue().trim().isEmpty())) {
+                node.removeChild(child);
+                continue;
+            }
+
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                String name = child.getNodeName().toLowerCase(Locale.ROOT);
+                if (name.contains("metadata") || name.contains("sodipodi") ||
+                        name.contains("inkscape") || name.contains("foreignobject") ||
+                        name.equals("desc") || name.equals("title")) {
+                    node.removeChild(child);
+                    continue;
+                }
+
+                org.w3c.dom.NamedNodeMap attributes = child.getAttributes();
+                for (int j = attributes.getLength() - 1; j >= 0; j--) {
+                    Node attr = attributes.item(j);
+                    String attrName = attr.getNodeName().toLowerCase(Locale.ROOT);
+                    if (attrName.contains(":") && !attrName.startsWith("xmlns") && !attrName.startsWith("xlink")) {
+                        attributes.removeNamedItem(attr.getNodeName());
+                    }
+                }
+
+                cleanNode(child);
+
+                if (name.equals("g") && !child.hasChildNodes()) {
+                    node.removeChild(child);
+                }
             }
         }
     }

@@ -12,145 +12,157 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.control.ComboBox?>
 
-<VBox alignment="TOP_CENTER"
-      prefWidth="630.0"
-      spacing="15.0"
-      style="-fx-background-color: #4b4b4b;" xmlns="http://javafx.com/javafx/17.0.12"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="media_multitool.ConverterVideoController">
+<StackPane xmlns="http://javafx.com/javafx/17.0.12"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.ConverterVideoController">
+    <VBox alignment="TOP_CENTER"
+          prefWidth="630.0"
+          spacing="14.0"
+          style="-fx-background-color: #4b4b4b;">
 
 
-    <Label alignment="CENTER"
-           prefWidth="300.0"
-           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: RED"
-           text="Video Converter"
-           textFill="WHITE">
-        <VBox.margin>
-            <Insets top="15.0"/>
-        </VBox.margin>
-    </Label>
+        <Label alignment="CENTER"
+               prefWidth="300.0"
+               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: RED"
+               text="Video Converter"
+               textFill="WHITE">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
 
 
-    <HBox alignment="CENTER" spacing="25.0">
-        <Button fx:id="btnSelectVideoFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="180.0" text="Select audio/video" />
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectVideoFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="180.0" text="Select audio/video" />
 
-        <Button fx:id="btnChoiceDirForSaveVideo" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save" />
-    </HBox>
-
-    <HBox alignment="CENTER" spacing="15.0">
-        <ToggleButton fx:id="btnToMP4"
-                      mnemonicParsing="false"
-                      onAction="#onFormatMp4Pressed"
-                      prefWidth="100.0"
-                      text="to MP4"/>
-        <ToggleButton fx:id="btnToAVI"
-                      mnemonicParsing="false"
-                      onAction="#onFormatAviPressed"
-                      prefWidth="100.0"
-                      text="to AVI"/>
-        <ToggleButton fx:id="btnToMKV"
-                      mnemonicParsing="false"
-                      onAction="#onFormatMkvPressed"
-                      prefWidth="100.0"
-                      text="to MKV"/>
-        <ToggleButton fx:id="btnToWEBM"
-                      mnemonicParsing="false"
-                      onAction="#onFormatWEBMPressed"
-                      prefWidth="100.0"
-                      text="to WEBM"/>
-        <ToggleButton fx:id="btnToMOV"
-                      mnemonicParsing="false"
-                      onAction="#onFormatMOVPressed"
-                      prefWidth="100.0"
-                      text="to MOV"/>
-    </HBox>
-
-    <VBox alignment="CENTER" spacing="10.0">
-        <HBox alignment="CENTER" spacing="15.0">
-            <ComboBox fx:id="comboBoxChoiceBitRate"
-                      onAction="#onChoiceBitRate"
-                      prefWidth="150.0" />
-
-            <ComboBox fx:id="comboBoxChoiceChannels"
-                      onAction="#onChoiceChannels"
-                      prefWidth="140.0" />
-
-            <ComboBox fx:id="comboBoxChoiceSamplingRate"
-                      onAction="#onChoiceSamplingRate"
-                      prefWidth="140.0" />
+            <Button fx:id="btnChoiceDirForSaveVideo" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save" />
         </HBox>
 
-        <HBox alignment="CENTER" spacing="15.0">
-            <ComboBox fx:id="comboBoxChoiceFPS"
-                      onAction="#onChoiceFPS"
-                      prefWidth="140.0" />
-
-            <ComboBox fx:id="comboBoxChoiceResolution"
-                      onAction="#onChoiceResolution"
-                      prefWidth="140.0" />
-            
-            <CheckBox fx:id="checkBoxGPU"
-                      prefWidth="150.0"
-                      text="GPU Acceleration"
-                      textFill="WHITE"
-                      style="-fx-font-size: 14px;" />
+        <HBox alignment="CENTER" spacing="16.0">
+            <ToggleButton fx:id="btnToMP4"
+                          mnemonicParsing="false"
+                          onAction="#onFormatMp4Pressed"
+                          prefWidth="100.0"
+                          text="to MP4"/>
+            <ToggleButton fx:id="btnToAVI"
+                          mnemonicParsing="false"
+                          onAction="#onFormatAviPressed"
+                          prefWidth="100.0"
+                          text="to AVI"/>
+            <ToggleButton fx:id="btnToMKV"
+                          mnemonicParsing="false"
+                          onAction="#onFormatMkvPressed"
+                          prefWidth="100.0"
+                          text="to MKV"/>
+            <ToggleButton fx:id="btnToWEBM"
+                          mnemonicParsing="false"
+                          onAction="#onFormatWEBMPressed"
+                          prefWidth="100.0"
+                          text="to WEBM"/>
+            <ToggleButton fx:id="btnToMOV"
+                          mnemonicParsing="false"
+                          onAction="#onFormatMOVPressed"
+                          prefWidth="100.0"
+                          text="to MOV"/>
         </HBox>
-    </VBox>
 
-    <HBox alignment="CENTER" spacing="20.0">
-        <VBox.margin>
-            <Insets top="10.0" />
-        </VBox.margin>
-        <Button fx:id="btnSubmitConvert"
-                mnemonicParsing="false"
-                onAction="#onStartConversionPressed"
-                prefWidth="220.0" text="Convert and Download" />
+        <VBox alignment="CENTER" spacing="12.0">
+            <HBox alignment="CENTER" spacing="16.0">
+                <ComboBox fx:id="comboBoxChoiceBitRate"
+                          onAction="#onChoiceBitRate"
+                          prefWidth="150.0" />
 
-        <Button mnemonicParsing="false"
-                onAction="#onCancelConversation"
-                prefWidth="220.0" text="Cancel Conversion" />
-    </HBox>
+                <ComboBox fx:id="comboBoxChoiceChannels"
+                          onAction="#onChoiceChannels"
+                          prefWidth="140.0" />
 
-    <VBox alignment="CENTER" spacing="10.0">
-        <ProgressBar fx:id="progressBarConvert"
-                     prefWidth="460.0"
-                     minHeight="20.0"
-                     progress="0.0"/>
+                <ComboBox fx:id="comboBoxChoiceSamplingRate"
+                          onAction="#onChoiceSamplingRate"
+                          prefWidth="140.0" />
+            </HBox>
 
-        <Label fx:id="labelSuccessConvert"
-               alignment="CENTER"
-               prefWidth="400.0"
-               textFill="#32CD32"
-               text="Convert has been success!"
-               style="-fx-font-weight: bold; -fx-font-size: 14px;" />
-    </VBox>
+            <HBox alignment="CENTER" spacing="16.0">
+                <ComboBox fx:id="comboBoxChoiceFPS"
+                          onAction="#onChoiceFPS"
+                          prefWidth="140.0" />
 
-    <StackPane fx:id="dropZone" styleClass="drop-zone"
-               onDragOver="#handleDragOver"
-               onDragDropped="#handleDragDropped"
-               minHeight="200.0"
-               prefHeight="300.0"
-               prefWidth="580.0"
-               VBox.vgrow="ALWAYS"
-               style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
-        <VBox.margin>
-            <Insets left="20.0" right="20.0" />
-        </VBox.margin>
+                <ComboBox fx:id="comboBoxChoiceResolution"
+                          onAction="#onChoiceResolution"
+                          prefWidth="140.0" />
+
+                <CheckBox fx:id="checkBoxGPU"
+                          prefWidth="150.0"
+                          text="GPU Acceleration"
+                          textFill="WHITE"
+                          style="-fx-font-size: 14px;" />
+            </HBox>
+        </VBox>
+
+        <HBox alignment="CENTER" spacing="16.0">
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+            <Button fx:id="btnSubmitConvert"
+                    mnemonicParsing="false"
+                    onAction="#onStartConversionPressed"
+                    prefWidth="220.0" text="Convert and Download" />
+
+            <Button mnemonicParsing="false"
+                    onAction="#onCancelConversation"
+                    prefWidth="220.0" text="Cancel Conversion" />
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="10.0">
+            <ProgressBar fx:id="progressBarConvert"
+                         prefWidth="460.0"
+                         minHeight="20.0"
+                         progress="0.0"/>
+
+            <Label fx:id="labelSuccessConvert"
+                   styleClass="labelSuccess"
+                   alignment="CENTER"
+                   prefWidth="400.0"
+                   textFill="#32CD32"
+                   text="Convert has been success!" />
+        </VBox>
+
+        <StackPane fx:id="dropZone" styleClass="drop-zone"
+                   onDragOver="#handleDragOver"
+                   onDragDropped="#handleDragDropped"
+                   minHeight="200.0"
+                   prefHeight="300.0"
+                   prefWidth="580.0"
+                   VBox.vgrow="ALWAYS"
+                   style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
             <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" style="-fx-font-size: 18px;" />
-    </StackPane>
+        </StackPane>
 
-    <VBox alignment="CENTER" spacing="10.0">
-        <Label fx:id="labelSelectVideoName"
-               alignment="CENTER" prefWidth="600.0"
-               textFill="RED"
-               wrapText="true"
-               style="-fx-font-size: 8px;" />
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSelectVideoName"
+                   styleClass="labelSelect"
+                   alignment="CENTER" prefWidth="600.0"
+                   textFill="RED"
+                   wrapText="true" />
 
-        <Button mnemonicParsing="false"
-                onAction="#onResetPressed"
-                prefWidth="220.0" text="Reset" />
+            <Button mnemonicParsing="false"
+                    onAction="#onResetPressed"
+                    prefWidth="240.0" text="Reset" />
+        </VBox>
+
+        <padding>
+            <Insets top="8.0" left="16.0" right="16.0" bottom="16.0"/>
+        </padding>
     </VBox>
 
-    <padding>
-        <Insets left="20.0" right="20.0" bottom="20.0"/>
-    </padding>
-</VBox>
+    <Button text="?"
+            onAction="#showInfo"
+            styleClass="info-button"
+            StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets top="10.0" left="10.0"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

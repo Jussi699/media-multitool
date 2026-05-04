@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.InfoController">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="25.0"
+          style="-fx-background-color: #4b4b4b;">
+
+        <padding>
+            <Insets top="30.0" left="40.0" right="40.0" bottom="30.0"/>
+        </padding>
+
+    <Label text="Application Info"
+           textFill="#32CD32"
+           style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-font-family: 'Cascadia Code';"/>
+
+    <VBox spacing="15.0" styleClass="info-card">
+        <Label text="Log Files Location" styleClass="section-header"/>
+        
+        <HBox alignment="CENTER_LEFT" spacing="20.0">
+            <Button onAction="#toLogsWindows" styleClass="info-button-infoPage" text="Open Logs Folder"/>
+            <Label text="Quick access to app logs" textFill="#aaaaaa" style="-fx-font-size: 13px;"/>
+        </HBox>
+
+        <Separator opacity="0.1"/>
+
+        <GridPane hgap="20.0" vgap="12.0">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <Label text="Windows:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label text="\%APPDATA%\media-multitool\logs" styleClass="path-label" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+            <Label text="Linux:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <VBox GridPane.columnIndex="1" GridPane.rowIndex="1" spacing="2">
+                <Label text="~/.local/share/media-multitool" styleClass="path-label"/>
+                <Label text="ㅤ$XDG_DATA_HOME/media-multitool" styleClass="path-label"/>
+            </VBox>
+
+            <Label text="macOS:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Label text="~/Library/Application Support/media-multitool" styleClass="path-label" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+            <Label text="Other OS:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <Label text="~/.media-multitool" styleClass="path-label" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        </GridPane>
+    </VBox>
+
+    <VBox spacing="10.0" alignment="CENTER">
+        <Label text="Need help or have suggestions?" textFill="#cccccc" style="-fx-font-size: 14px;"/>
+        
+        <VBox onMouseClicked="#handleContactClick" styleClass="contact-box" alignment="CENTER" spacing="5">
+            <Label text="Copy Discord Contact" textFill="#32CD32" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+            <Label text="jussi6" textFill="WHITE" style="-fx-font-family: 'Cascadia Code'; -fx-font-size: 15px;"/>
+        </VBox>
+    </VBox>
+
+    </VBox>
+</StackPane>

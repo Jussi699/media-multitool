@@ -2,21 +2,25 @@ package media_multitool;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 
 public class ControllerView {
 
-    @FXML private VBox converterMP3Page;
-    @FXML private VBox homeView;
-    @FXML private VBox converterImagePage;
-    @FXML private VBox converterVideoPage;
-    @FXML private VBox compressorImagePage;
+    @FXML private StackPane infoPage;
+    @FXML private StackPane compressorVideoPage;
+    @FXML private StackPane converterMP3Page;
+    @FXML private StackPane homeView;
+    @FXML private StackPane converterImagePage;
+    @FXML private StackPane converterVideoPage;
+    @FXML private StackPane compressorImagePage;
     @FXML private HomeViewController homeViewController;
     @FXML private Button navHomeButton;
     @FXML private Button navConverterImageButton;
     @FXML private Button navConverterVideoButton;
     @FXML private Button navConverterAudioButton;
     @FXML private Button navCompressorImage;
+    @FXML private Button navCompressorVideo;
+    @FXML private Button navInfo;
 
     @FXML
     public void initialize() {
@@ -47,11 +51,22 @@ public class ControllerView {
         setActivePage(converterMP3Page, navConverterAudioButton);
     }
 
+    @FXML
     public void showCompressorImagePage() {
         setActivePage(compressorImagePage, navCompressorImage);
     }
 
-    private void setActivePage(VBox pageToShow, Button activeButton) {
+    @FXML
+    public void showCompressorVideoPage() {
+        setActivePage(compressorVideoPage, navCompressorVideo);
+    }
+
+    @FXML
+    public void showInfoPage() {
+        setActivePage(infoPage, navInfo);
+    }
+
+    private void setActivePage(StackPane pageToShow, Button activeButton) {
         homeView.setVisible(pageToShow == homeView);
         homeView.setManaged(pageToShow == homeView);
 
@@ -67,11 +82,19 @@ public class ControllerView {
         compressorImagePage.setVisible(pageToShow == compressorImagePage);
         compressorImagePage.setManaged(pageToShow == compressorImagePage);
 
+        compressorVideoPage.setVisible(pageToShow == compressorVideoPage);
+        compressorVideoPage.setManaged(pageToShow == compressorVideoPage);
+
+        infoPage.setVisible(pageToShow == infoPage);
+        infoPage.setManaged(pageToShow == infoPage);
+
         navHomeButton.setStyle(getNavButtonStyle(activeButton == navHomeButton));
         navConverterImageButton.setStyle(getNavButtonStyle(activeButton == navConverterImageButton));
         navConverterVideoButton.setStyle(getNavButtonStyle(activeButton == navConverterVideoButton));
         navConverterAudioButton.setStyle(getNavButtonStyle(activeButton == navConverterAudioButton));
         navCompressorImage.setStyle(getNavButtonStyle(activeButton == navCompressorImage));
+        navCompressorVideo.setStyle(getNavButtonStyle(activeButton == navCompressorVideo));
+        navInfo.setStyle(getNavButtonStyle(activeButton == navInfo));
     }
 
     private String getNavButtonStyle(boolean active) {
@@ -80,6 +103,4 @@ public class ControllerView {
         }
         return "-fx-background-color: #323232; -fx-text-fill: white; -fx-background-radius: 8;";
     }
-
-
 }

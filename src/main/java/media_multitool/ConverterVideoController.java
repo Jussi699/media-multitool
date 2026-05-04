@@ -16,6 +16,7 @@ import model.utility.DragDropped;
 import model.utility.Item;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
+import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
 import java.util.List;
@@ -26,8 +27,6 @@ import static model.utility.Parsers.*;
 import static model.utility.Util.*;
 
 public class ConverterVideoController {
-    private final String DEFAULT_FILE_TEXT = "Selected file: none";
-
     private Item selectedItem;
     private String resolution;
     private int fps;
@@ -60,15 +59,11 @@ public class ConverterVideoController {
     @FXML private ProgressBar progressBarConvert;
     @FXML private StackPane dropZone;
 
-    private final List<String> SUPPORTED_VIDEO_FORMATS = List.of(
-            ".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".3gp"
-    );
-
     @FXML
     public void initialize() {
         outputPath = getSavedPath();
         setupClearMessageTimer(labelSuccessConvert, hideSuccessMessageTimer);
-        labelSelectVideoName.setText(DEFAULT_FILE_TEXT);
+        labelSelectVideoName.setText("Selected video file: none");
         labelSuccessConvert.setVisible(false);
 
         ComboBoxes.setupComboBox(comboBoxChoiceBitRate, Item::title);
@@ -272,43 +267,28 @@ public class ConverterVideoController {
 
         CompletableFuture.supplyAsync(() -> getMetadata(file), IO_EXECUTOR)
             .thenCompose(sourceInfo -> {
-                int finalVideoBitrate = (bitRate == -1) ? parseVideoBitrate(sourceInfo) : bitRate;
-                if (finalVideoBitrate <= 0) finalVideoBitrate = parseBitrate(sourceInfo);
-                if (finalVideoBitrate <= 0) finalVideoBitrate = 5000;
-
-                int finalAudioBitrate = parseAudioBitrate(sourceInfo);
-                if (finalAudioBitrate <= 0) finalAudioBitrate = 192;
-
-                int finalChannels = (channel == -1) ? parseChannels(sourceInfo) : channel;
-                int finalSamplingRate = (samplingRate == -1) ? parseSamplingRate(sourceInfo) : samplingRate;
-                int finalFps = (fps == -1) ? parseFps(sourceInfo) : fps;
-                String finalResolution = ("Match source".equalsIgnoreCase(resolution)) ? parseResolution(sourceInfo) : resolution;
-
-                if (finalChannels <= 0) finalChannels = 2;
-                if (finalSamplingRate <= 0) finalSamplingRate = 48000;
-                if (finalFps <= 0) finalFps = 30;
-
-                String videoCodec;
-                String audioCodec;
-                String ffmpegFormat = targetFormat;
-
-                boolean useGPU = checkBoxGPU != null && checkBoxGPU.isSelected();
-
-                switch (targetFormat) {
-                    case "mp4", "m4v" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mp4"; }
-                    case "mkv", "matroska" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mkv"; }
-                    case "avi" -> { videoCodec = useGPU ? "h264_nvenc" : "mpeg4"; audioCodec = "libmp3lame"; ffmpegFormat = "avi"; }
-                    case "webm" -> { videoCodec = "libvpx"; audioCodec = "libvorbis"; ffmpegFormat = "webm"; }
-                    case "mov" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mov"; }
-                    default -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; }
+                if (sourceInfo != null && sourceInfo.getAudio() == null) {
+                    CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
+                    Platform.runLater(() -> {
+                        boolean proceed = Alerts.confirmationDialog(
+                                "No Audio Track Detected",
+                                "The selected file does not appear to have an audio track.",
+                                "Do you want to proceed anyway? (The output will be silent)"
+                        );
+                        proceedFuture.complete(proceed);
+                    });
+                    return proceedFuture.thenCompose(proceed -> {
+                        if (Boolean.FALSE.equals(proceed)) {
+                            return CompletableFuture.completedFuture(null);
+                        }
+                        return continueConversion(sourceInfo);
+                    });
                 }
-
-                return ConverterVideoAudioFile.convert(file, outputPath, finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
-                        videoCodec, audioCodec, ffmpegFormat, finalResolution, "video", progress ->
-                                Platform.runLater(() -> progressBarConvert.setProgress(progress)));
+                return continueConversion(sourceInfo);
             })
             .thenAccept(success -> Platform.runLater(() -> {
                 btnSubmitConvert.setDisable(false);
+                if (success == null) return;
                 if (success) {
                     showSuccessMessage(labelSuccessConvert, targetFormat, hideSuccessMessageTimer);
                     showProgressBar(progressBarConvert, hideSuccessMessageTimer);
@@ -326,11 +306,48 @@ public class ConverterVideoController {
             });
     }
 
+    private CompletableFuture<Boolean> continueConversion(MultimediaInfo sourceInfo) {
+        int finalVideoBitrate = (bitRate == -1) ? parseVideoBitrate(sourceInfo) : bitRate;
+        if (finalVideoBitrate <= 0) finalVideoBitrate = parseBitrate(sourceInfo);
+        if (finalVideoBitrate <= 0) finalVideoBitrate = 5000;
+
+        int finalAudioBitrate = parseAudioBitrate(sourceInfo);
+        if (finalAudioBitrate <= 0) finalAudioBitrate = 192;
+
+        int finalChannels = (channel == -1) ? parseChannels(sourceInfo) : channel;
+        int finalSamplingRate = (samplingRate == -1) ? parseSamplingRate(sourceInfo) : samplingRate;
+        int finalFps = (fps == -1) ? parseFps(sourceInfo) : fps;
+        String finalResolution = ("Match source".equalsIgnoreCase(resolution)) ? parseResolution(sourceInfo) : resolution;
+
+        if (finalChannels <= 0) finalChannels = 2;
+        if (finalSamplingRate <= 0) finalSamplingRate = 48000;
+        if (finalFps <= 0) finalFps = 30;
+
+        String videoCodec;
+        String audioCodec;
+        String ffmpegFormat = targetFormat;
+
+        boolean useGPU = checkBoxGPU != null && checkBoxGPU.isSelected();
+
+        switch (targetFormat) {
+            case "mp4", "m4v" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mp4"; }
+            case "mkv", "matroska" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mkv"; }
+            case "avi" -> { videoCodec = useGPU ? "h264_nvenc" : "mpeg4"; audioCodec = "libmp3lame"; ffmpegFormat = "avi"; }
+            case "webm" -> { videoCodec = "libvpx"; audioCodec = "libvorbis"; ffmpegFormat = "webm"; }
+            case "mov" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mov"; }
+            default -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; }
+        }
+
+        return ConverterVideoAudioFile.convert(file, outputPath, finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
+                videoCodec, audioCodec, ffmpegFormat, finalResolution, "video", progress ->
+                        Platform.runLater(() -> progressBarConvert.setProgress(progress)));
+    }
+
     @FXML
     public void onResetPressed() {
         file = null;
         targetFormat = null;
-        labelSelectVideoName.setText(DEFAULT_FILE_TEXT);
+        labelSelectVideoName.setText("Selected video file: none");
         btnToMP4.setSelected(false);
         btnToAVI.setSelected(false);
         btnToMKV.setSelected(false);
@@ -339,6 +356,7 @@ public class ConverterVideoController {
         if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
         resetToDefaults();
         hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        progressBarConvert.setProgress(0);
     }
 
     @FXML
@@ -348,7 +366,8 @@ public class ConverterVideoController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, SUPPORTED_VIDEO_FORMATS, dropZone);
+        DragDropped.handleDragOver(e, List.of(
+                ".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".3gp"), dropZone);
     }
 
     @FXML
@@ -356,7 +375,28 @@ public class ConverterVideoController {
         File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
         if (droppedFile != null) {
             loadFile(droppedFile);
-         }
         }
     }
+
+    @FXML
+    private void showInfo() {
+        Alerts.alertDialog(
+                Alert.AlertType.INFORMATION,
+                "Information",
+                "Video Converter",
+                """
+                        How to use:
+                        1. Select a video or audio file using 'Select audio/video' or drag and drop it into the dash-bordered zone.
+                        2. (Optional) Choose a directory for saving the output.
+                        3. Select the target video format (MP4, AVI, MKV, etc.).
+                        4. Configure video and audio settings (Bitrate, FPS, Resolution, etc.).
+                        5. (Optional) Enable GPU Acceleration if your hardware supports it.
+                        6. Click 'Convert and Download'.
+                        
+                        You can cancel the conversion at any time using the 'Cancel' button.
+                        
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
+        );
+    }
+}
 

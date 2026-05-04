@@ -6,171 +6,182 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="TOP_CENTER"
-      prefHeight="600.0"
-      prefWidth="630.0"
-      spacing="14.0"
-      style="-fx-background-color: #4b4b4b;"
-      xmlns="http://javafx.com/javafx/25"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="media_multitool.ConverterImageController">
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.ConverterImageController">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="600.0"
+          prefWidth="630.0"
+          spacing="14.0"
+          style="-fx-background-color: #4b4b4b;">
 
-    <Label alignment="CENTER"
-           prefWidth="200.0"
-           text="Convert Photo"
-           textFill="RED"
-           style="-fx-font-size: 22px; -fx-font-weight: bold;">
-        <VBox.margin>
-            <Insets top="8.0"/>
-        </VBox.margin>
-    </Label>
+        <Label alignment="CENTER"
+               prefWidth="320.0"
+               text="Convert Photo"
+               textFill="RED"
+               style="-fx-font-size: 22px; -fx-font-weight: bold;">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
 
-    <HBox alignment="CENTER" spacing="20.0">
-        <Button fx:id="btnSelectPhotoFile"
-                mnemonicParsing="false"
-                onAction="#ActionBtnSelectFile"
-                prefWidth="150.0"
-                text="Select image"/>
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectPhotoFile"
+                    mnemonicParsing="false"
+                    onAction="#ActionBtnSelectFile"
+                    prefWidth="180.0"
+                    text="Select image"/>
 
-        <Button fx:id="btnChoiceDirForSaveImage"
-                mnemonicParsing="false"
-                onAction="#btnChoiceDirForSaveImage"
-                prefWidth="150.0"
-                text="Directory for save"/>
-    </HBox>
-
-    <HBox alignment="CENTER" spacing="20.0">
-        <ToggleButton fx:id="btnToPNG"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToPNG"
-                      prefWidth="85.0"
-                      text="to PNG"/>
-
-        <ToggleButton fx:id="btnToJPEG"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToJPEG"
-                      prefWidth="85.0"
-                      text="to JPEG"/>
-
-        <ToggleButton fx:id="btnToWEBM"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToWEBM"
-                      prefWidth="85.0"
-                      text="to WEBP"/>
-
-
-        <ComboBox fx:id="comboBoxIcoSize"
-                  onAction="#onChoiceIcoSize"
-                  prefWidth="85.0"/>
-    </HBox>
-
-    <HBox alignment="CENTER" spacing="20.0">
-        <ToggleButton fx:id="btnToTIFF"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToTIFF"
-                      prefWidth="85.0"
-                      text="to TIFF"/>
-
-        <ToggleButton fx:id="btnToBMP"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToBMP"
-                      prefWidth="85.0"
-                      text="to BMP"/>
-
-        <ToggleButton fx:id="btnToPPM"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToPPM"
-                      prefWidth="85.0"
-                      text="to PPM"/>
-
-        <ToggleButton fx:id="btnToPGM"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToPGM"
-                      prefWidth="85.0"
-                      text="to PGM"/>
-
-        <ToggleButton fx:id="btnToPAM"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToPAM"
-                      prefWidth="85.0"
-                      text="to PAM"/>
-
-        <ToggleButton fx:id="btnToSVG"
-                      mnemonicParsing="false"
-                      onAction="#ActionBtnToSVG"
-                      prefWidth="85.0"
-                      text="to SVG"/>
-    </HBox>
-
-    <VBox alignment="CENTER" spacing="8.0">
-        <Label fx:id="labelSuccessConvert"
-               alignment="CENTER"
-               prefWidth="560.0"
-               minHeight="20.0"
-               prefHeight="20.0"
-               visible="false"
-               managed="true"
-               text="Conversion status"
-               textFill="#32CD32"
-               wrapText="true"/>
-
-        <VBox alignment="CENTER" spacing="10.0">
-            <Button mnemonicParsing="false"
-                    onAction="#SubmitConvertAndDownload"
-                    prefWidth="210.0"
-                    text="Convert and Download"/>
-        </VBox>
-    </VBox>
-
-    <ScrollPane fx:id="scrollPanePhoto"
-                fitToHeight="true"
-                fitToWidth="true"
-                pannable="true"
-                prefWidth="590.0"
-                prefHeight="290.0"
-                VBox.vgrow="ALWAYS">
-        <VBox.margin>
-            <Insets top="6.0"/>
-        </VBox.margin>
-        <StackPane fx:id="imageContainer"
-                   minHeight="200.0"
-                   minWidth="560.0">
-            <Group>
-                <ImageView fx:id="imageViewPhoto"
-                           fitHeight="260.0"
-                           fitWidth="560.0"
-                           pickOnBounds="true"
-                           preserveRatio="true"/>
-            </Group>
-        </StackPane>
-    </ScrollPane>
-
-    <VBox alignment="CENTER" spacing="6.0">
-        <HBox alignment="CENTER" spacing="10.0">
-            <Label text="-" textFill="RED"/>
-            <Slider fx:id="imageScaleSlider"
-                    min="1.0"
-                    max="3.0"
-                    value="1.0"
-                    prefWidth="260.0"/>
-            <Label text="+" textFill="RED"/>
+            <Button fx:id="btnChoiceDirForSaveImage"
+                    mnemonicParsing="false"
+                    onAction="#btnChoiceDirForSaveImage"
+                    prefWidth="180.0"
+                    text="Directory for save"/>
         </HBox>
 
-        <Label fx:id="labelSelectImageName"
-               alignment="CENTER"
-               prefWidth="600.0"
-               minHeight="18.0"
-               text="none"
-               textFill="RED"
-               wrapText="true"/>
+        <HBox alignment="CENTER" spacing="20.0">
+            <ToggleButton fx:id="btnToPNG"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToPNG"
+                          prefWidth="85.0"
+                          text="to PNG"/>
 
-        <Button mnemonicParsing="false"
-                onAction="#isPressedReset"
-                prefWidth="220.0"
-                text="Reset"/>
+            <ToggleButton fx:id="btnToJPEG"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToJPEG"
+                          prefWidth="85.0"
+                          text="to JPEG"/>
+
+            <ToggleButton fx:id="btnToWEBM"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToWEBM"
+                          prefWidth="85.0"
+                          text="to WEBP"/>
+
+
+            <ComboBox fx:id="comboBoxIcoSize"
+                      onAction="#onChoiceIcoSize"
+                      prefWidth="100.0"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="16.0">
+            <ToggleButton fx:id="btnToTIFF"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToTIFF"
+                          prefWidth="85.0"
+                          text="to TIFF"/>
+
+            <ToggleButton fx:id="btnToBMP"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToBMP"
+                          prefWidth="85.0"
+                          text="to BMP"/>
+
+            <ToggleButton fx:id="btnToPPM"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToPPM"
+                          prefWidth="85.0"
+                          text="to PPM"/>
+
+            <ToggleButton fx:id="btnToPGM"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToPGM"
+                          prefWidth="85.0"
+                          text="to PGM"/>
+
+            <ToggleButton fx:id="btnToPAM"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToPAM"
+                          prefWidth="85.0"
+                          text="to PAM"/>
+
+            <ToggleButton fx:id="btnToSVG"
+                          mnemonicParsing="false"
+                          onAction="#ActionBtnToSVG"
+                          prefWidth="85.0"
+                          text="to SVG"/>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccessConvert"
+                   styleClass="labelSuccess"
+                   alignment="CENTER"
+                   prefWidth="560.0"
+                   minHeight="20.0"
+                   prefHeight="20.0"
+                   visible="false"
+                   managed="true"
+                   text="Conversion status"
+                   textFill="#32CD32"
+                   wrapText="true"/>
+
+            <VBox alignment="CENTER" spacing="10.0">
+                <Button mnemonicParsing="false"
+                        onAction="#SubmitConvertAndDownload"
+                        prefWidth="240.0"
+                        text="Convert and Download"/>
+            </VBox>
+        </VBox>
+
+        <ScrollPane fx:id="scrollPanePhoto"
+                    fitToHeight="true"
+                    fitToWidth="true"
+                    pannable="true"
+                    prefWidth="590.0"
+                    prefHeight="290.0"
+                    VBox.vgrow="ALWAYS">
+            <VBox.margin>
+                <Insets top="2.0"/>
+            </VBox.margin>
+            <StackPane fx:id="imageContainer"
+                       minHeight="200.0"
+                       minWidth="560.0">
+                <Group>
+                    <ImageView fx:id="imageViewPhoto"
+                               fitHeight="260.0"
+                               fitWidth="560.0"
+                               pickOnBounds="true"
+                               preserveRatio="true"/>
+                </Group>
+            </StackPane>
+        </ScrollPane>
+
+        <VBox alignment="CENTER" spacing="6.0">
+            <HBox alignment="CENTER" spacing="10.0">
+                <Label text="-" textFill="RED"/>
+                <Slider fx:id="imageScaleSlider"
+                        min="1.0"
+                        max="3.0"
+                        value="1.0"
+                        prefWidth="300.0"/>
+                <Label text="+" textFill="RED"/>
+            </HBox>
+
+            <Label fx:id="labelSelectImage" styleClass="labelSelect"
+                   alignment="CENTER"
+                   prefWidth="600.0"
+                   minHeight="18.0"
+                   text="none"
+                   textFill="RED"
+                   wrapText="true"/>
+
+            <Button mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
+        </VBox>
+
+        <padding>
+            <Insets top="8.0" left="16.0" right="16.0" bottom="16.0"/>
+        </padding>
     </VBox>
 
-    <padding>
-        <Insets top="8.0" left="16.0" right="16.0" bottom="16.0"/>
-    </padding>
-</VBox>
+    <Button text="?"
+            onAction="#showInfo"
+            styleClass="info-button"
+            StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets top="10.0" left="10.0"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

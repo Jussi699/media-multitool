@@ -41,7 +41,7 @@ public class ConverterImageController {
     @FXML private Button btnSelectPhotoFile;
     @FXML private Button btnChoiceDirForSaveImage;
     @FXML private Label labelSuccessConvert;
-    @FXML private Label labelSelectImageName;
+    @FXML private Label labelSelectImage;
     @FXML private ToggleButton btnToSVG;
     @FXML private ToggleButton btnToWEBM;
     @FXML private ToggleButton btnToJPEG;
@@ -72,7 +72,7 @@ public class ConverterImageController {
         imageScaleSlider.setMax(5.0);
         imageScaleSlider.setValue(1.0);
 
-        labelSelectImageName.setText("Select image: none");
+        labelSelectImage.setText("Selected image file: none");
 
         comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256");
         comboBoxIcoSize.setDisable(false);
@@ -181,7 +181,7 @@ public class ConverterImageController {
 
     public void isPressedReset() {
         image = null;
-        labelSelectImageName.setText("Select image: none");
+        labelSelectImage.setText("Selected image file: none");
         imageViewPhoto.setImage(null);
 
         btnToPNG.setSelected(false);
@@ -214,7 +214,7 @@ public class ConverterImageController {
         if (image == null) return;
 
         ErrorLogger.info("User selected file (image): " + image.getAbsolutePath());
-        labelSelectImageName.setText("Select image: " + image.getName());
+        labelSelectImage.setText("Select image: " + image.getName());
 
         try {
             BufferedImage bi = readPreviewImage(image);
@@ -382,8 +382,27 @@ public class ConverterImageController {
         selectRasterFormat("pgm");
 
     }
+@FXML
+private void ActionBtnToSVG() {
+    selectRasterFormat("svg");
+}
 
-    public void ActionBtnToSVG() {
-        selectRasterFormat("svg");
-    }
+@FXML
+private void showInfo() {
+    Alerts.alertDialog(
+            Alert.AlertType.INFORMATION,
+            "Information",
+            "Image Converter",
+            """
+                    How to use:
+                    1. Select an image file using 'Select image'.
+                    2. (Optional) Choose a directory for saving the output.
+                    3. Select the target format (PNG, JPEG, etc.).
+                    4. Click 'Convert and Download'.
+                    
+                    You can also zoom the preview using the slider or mouse wheel.
+                    
+                    If you have any questions or problems, please go to Info and write to me on Discord."""
+    );
+}
 }
