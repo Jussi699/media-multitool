@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import javafx.application.Platform;
+import viewHelp.Tooltips;
 
 import static model.utility.Util.*;
 import static viewHelp.Message.*;
@@ -44,6 +46,7 @@ public class CompressorImageController {
     private final PauseTransition hideSuccessMessageTimer =
             new PauseTransition(Duration.seconds(5));
 
+    @FXML private Button btnInfoCompressor;
     @FXML private ComboBox<Item> comboBoxOutputQuality;
     @FXML private ComboBox<Item> comboBoxScaleImage;
     @FXML private Button btnSelectPhotoFile;
@@ -351,5 +354,14 @@ public class CompressorImageController {
         container.setPrefHeight(180.0);
         container.setMinWidth(250.0);
         container.setMinHeight(180.0);
+    }
+
+    public void infoCompressorAction(MouseEvent mouseEvent) {
+        Tooltips.setupTooltipInfo(mouseEvent, """
+                For SVG files, compression settings
+                can be left untouched!
+                -----------------------
+                If you have any problems, go to "Info" page and write to me on Discord
+                """, 10);
     }
 }

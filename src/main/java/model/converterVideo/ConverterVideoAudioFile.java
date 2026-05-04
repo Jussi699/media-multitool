@@ -23,6 +23,16 @@ import static model.utility.Util.IO_EXECUTOR;
 
 public class ConverterVideoAudioFile {
     private static final Encoder encoder = new Encoder();
+    
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                encoder.abortEncoding();
+            } catch (Exception ignored) {
+            }
+        }));
+    }
+    
     public static File nameFileAfter;
 
     private static volatile File currentTarget;
@@ -169,8 +179,10 @@ public class ConverterVideoAudioFile {
 
     private static boolean checkingFileStatic(File file) {
         if (file == null || !file.exists()) {
-            Platform.runLater(() -> Alerts.alertDialog(Alert.AlertType.WARNING, "WARN",
-                    "File missing!", "The selected file was not found or is empty."));
+            try {
+                Platform.runLater(() -> Alerts.alertDialog(Alert.AlertType.WARNING, "WARN",
+                        "File missing!", "The selected file was not found or is empty."));
+            } catch (IllegalStateException ignored) {}
             return false;
         }
         return true;
@@ -190,7 +202,9 @@ public class ConverterVideoAudioFile {
             ErrorLogger.info("Conversion was cancelled by user.");
         } else {
             ErrorLogger.info("Conversion failed: " + e.getMessage());
-            Platform.runLater(() -> Alerts.alertDialog(Alert.AlertType.WARNING, "ERROR", "Conversion Error", "FFmpeg Error: " + e.getMessage()));
+            try {
+                Platform.runLater(() -> Alerts.alertDialog(Alert.AlertType.WARNING, "ERROR", "Conversion Error", "FFmpeg Error: " + e.getMessage()));
+            } catch (IllegalStateException ignored) {}
             ErrorLogger.log(109, ErrorLogger.Level.ERROR, "Exception during conversion", e);
         }
     }

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Iterator;
+import java.util.Locale;
 
 public class DetermineType {
     public static String determineFormatImage(File file) throws IOException {
@@ -25,7 +26,7 @@ public class DetermineType {
                 ImageReader reader = readers.next();
                 try {
                     reader.setInput(iis, true, true);
-                    return reader.getFormatName();
+                    return reader.getFormatName().toLowerCase(Locale.ROOT);
                 } finally {
                     reader.dispose();
                 }
@@ -70,6 +71,6 @@ public class DetermineType {
         if (filename == null || !filename.contains(".")) {
             return "";
         }
-        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
     }
 }
