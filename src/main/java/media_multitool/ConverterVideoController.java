@@ -18,6 +18,7 @@ import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,6 +62,7 @@ public class ConverterVideoController {
 
     @FXML
     public void initialize() {
+        btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
         outputPath = getSavedPath();
         setupClearMessageTimer(labelSuccessConvert, hideSuccessMessageTimer);
         labelSelectVideoName.setText("Selected video file: none");

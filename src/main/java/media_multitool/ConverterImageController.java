@@ -60,9 +60,8 @@ public class ConverterImageController {
 
     @FXML
     public void initialize() {
-        Tooltip tooltipChoiceDir = new Tooltip("Standard directory, Desktop");
         outputPath = getSavedPath();
-        btnChoiceDirForSaveImage.setTooltip(tooltipChoiceDir);
+        btnChoiceDirForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
         imageContainer.setManaged(true);
         imageContainer.setAlignment(Pos.CENTER);
         scrollPanePhoto.setPannable(true);

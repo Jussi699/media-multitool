@@ -51,6 +51,7 @@ public class CompressorVideoController {
 
     @FXML
     public void initialize() {
+        btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
         Tooltip tooltipBasicCompress = new Tooltip("Medium size, high quality");
         Tooltip tooltipStrongCompress = new Tooltip("Smallest size, lowest quality");
         Tooltip tooltipSuperCompress = new Tooltip("Small size, high quality");

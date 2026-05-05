@@ -62,14 +62,9 @@ public class ConverterAudioController {
     @FXML private ToggleButton btnToWAV;
     @FXML private ToggleButton btnToAIFF;
 
-    private final List<String> SUPPORTED_AUDIO_VIDEO_FORMATS = List.of(
-            ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma",
-            ".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".webm", ".3gp"
-    );
-
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveMP3.setTooltip(new Tooltip("Default path \"Desktop\""));
+        btnChoiceDirForSaveMP3.setTooltip(new Tooltip("Default directory: Desktop"));
         btnSubmitConvert.setTooltip(new Tooltip("Converting a large file may take longer!"));
 
         outputPath = getSavedPath();
@@ -372,7 +367,10 @@ public class ConverterAudioController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, SUPPORTED_AUDIO_VIDEO_FORMATS, dropZone);
+        DragDropped.handleDragOver(e, List.of(
+                ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma",
+                ".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".webm", ".3gp"
+        ), dropZone);
     }
 
     @FXML

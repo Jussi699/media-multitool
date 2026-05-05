@@ -20,10 +20,6 @@
           spacing="14.0"
           style="-fx-background-color: #4b4b4b;">
 
-    <VBox managed="false">
-        <Button fx:id="btnInfoCompressor" onMouseClicked="#infoCompressorAction" translateY="10" translateX="5">i</Button>
-    </VBox>
-
         <Label alignment="CENTER"
                prefWidth="300.0"
                style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: RED"
