@@ -125,7 +125,8 @@ public class Util {
         String fileName = file.getName().toLowerCase();
 
         for (String ext : list) {
-            if (fileName.endsWith(ext)) {
+            String suffix = ext.startsWith(".") ? ext.toLowerCase() : "." + ext.toLowerCase();
+            if (fileName.endsWith(suffix)) {
                 return true;
             }
         }

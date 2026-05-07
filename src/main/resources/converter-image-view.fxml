@@ -32,11 +32,11 @@
                     prefWidth="180.0"
                     text="Select image file"/>
 
-            <Button fx:id="btnSelectBathFileProcessing"
+            <Button fx:id="btnSelectBatchFileProcessing"
                     mnemonicParsing="false"
-                    onAction="#ActionBtnBathFileProcessing"
+                    onAction="#onActionBtnBatchFileProcessing"
                     prefWidth="180.0"
-                    text="Bath file processing"/>
+                    text="Batch file processing"/>
 
             <Button fx:id="btnChoiceFolderForSaveImage"
                     mnemonicParsing="false"

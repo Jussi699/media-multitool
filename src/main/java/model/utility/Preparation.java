@@ -9,8 +9,9 @@ public class Preparation {
     public static List<File> getFilesFromFolder(File path, String... filter) {
 
         File[] matches = path.listFiles((_, name) -> {
-           for(String ext : List.of(filter)) {
-               if(name.toLowerCase().endsWith(ext)) return true;
+           String lowerName = name.toLowerCase();
+           for(String ext : filter) {
+               if(lowerName.endsWith("." + ext.toLowerCase())) return true;
            }
            return false;
         });
