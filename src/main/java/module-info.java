@@ -17,5 +17,6 @@ module media_multitool {
     exports model.compressorImage;
     exports media_multitool;
     exports model.utility;
+    exports model.properties;
     exports viewHelp;
 }

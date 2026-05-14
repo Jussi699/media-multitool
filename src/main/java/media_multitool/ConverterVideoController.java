@@ -1,6 +1,5 @@
 package media_multitool;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -8,9 +7,9 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.logger.ErrorLogger;
+import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
 import model.utility.Item;
@@ -29,16 +28,7 @@ import static model.utility.Util.*;
 
 public class ConverterVideoController {
     private Item selectedItem;
-    private String resolution;
-    private int fps;
-    private int bitRate;
-    private int channel;
-    private int samplingRate;
-    private File outputPath;
-    private File file;
-    private String targetFormat;
-    private final PauseTransition hideSuccessMessageTimer =
-            new PauseTransition(Duration.seconds(5));
+    private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
 
     @FXML private Label labelSelectVideoName;
     @FXML private Label labelSuccessConvert;
@@ -63,8 +53,8 @@ public class ConverterVideoController {
     @FXML
     public void initialize() {
         btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
-        outputPath = getSavedPath();
-        setupClearMessageTimer(labelSuccessConvert, hideSuccessMessageTimer);
+        videoProperties.setOutput(getSavedPath());
+        setupClearMessageTimer(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
         labelSelectVideoName.setText("Selected video file: none");
         labelSuccessConvert.setVisible(false);
 
@@ -118,11 +108,11 @@ public class ConverterVideoController {
     }
 
     private void resetToDefaults() {
-        bitRate = 5000;
-        channel = 2;
-        samplingRate = 48000;
-        fps = 30;
-        resolution = "1920x1080";
+        videoProperties.setBitRate(5000);
+        videoProperties.setChannel(2);
+        videoProperties.setSamplingRate(48000);
+        videoProperties.setFps(30);
+        videoProperties.setResolution("1920x1080");
 
         comboBoxChoiceBitRate.setValue(new Item(5000, "5000 kbps (1080p)"));
         comboBoxChoiceChannels.setValue(new Item(2, "2 Channels"));
@@ -147,16 +137,16 @@ public class ConverterVideoController {
     }
 
     private void loadFile(File selectedFile) {
-        this.file = selectedFile;
-        labelSelectVideoName.setText("Selected file: " + file.getName() + " (Loading info...)");
+        videoProperties.setSrcFile(selectedFile);
+        labelSelectVideoName.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
         
-        CompletableFuture.supplyAsync(() -> getMetadata(file))
+        CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
             .thenAccept(info -> Platform.runLater(() -> updateLabelFromMetadata(info)));
         
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
         
         if (textDragZone != null) {
-            textDragZone.setText("Selected: " + file.getName());
+            textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
         }
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
@@ -164,15 +154,15 @@ public class ConverterVideoController {
     }
 
     private void updateLabelFromMetadata(ws.schild.jave.info.MultimediaInfo info) {
-        if (info == null || file == null) return;
+        if (info == null || videoProperties.getSrcFile() == null) return;
 
         String res = parseResolution(info);
         int f = parseFps(info);
         int vbr = parseVideoBitrate(info);
         int abr = parseAudioBitrate(info);
 
-        String infoText = String.format("Selected file: %s [%s, %d fps, V:%d kbps, A:%d kbps]", 
-                file.getName(), 
+        String infoText = String.format("Selected file: %s [%s, %d fps, V:%d kbps, A:%d kbps]",
+                videoProperties.getSrcFile().getName(),
                 (res != null ? res : "N/A"), 
                 f, vbr, abr);
         
@@ -182,35 +172,35 @@ public class ConverterVideoController {
     @FXML
     public void onSelectOutputDirectoryPressed() {
         Stage stage = (Stage) btnChoiceDirForSaveVideo.getScene().getWindow();
-        File selectedPath = directoryChooser(stage, outputPath, "Select directory for save image");
+        File selectedPath = directoryChooser(stage, videoProperties.getOutput(), "Select directory for save image");
         if (selectedPath != null) {
-            outputPath = selectedPath;
-            hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+            videoProperties.setOutput(selectedPath);
+            hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
         }
     }
 
     public void onChoiceBitRate() {
         selectedItem = comboBoxChoiceBitRate.getValue();
-        bitRate = (selectedItem != null) ? (int) selectedItem.id() : -1;
+        videoProperties.setBitRate((selectedItem != null) ? (int) selectedItem.id() : -1);
     }
 
     public void onChoiceChannels() {
         selectedItem = comboBoxChoiceChannels.getValue();
-        channel = (selectedItem != null) ? (int) selectedItem.id() : -1;
+        videoProperties.setChannel((selectedItem != null) ? (int) selectedItem.id() : -1);
     }
 
     public void onChoiceSamplingRate() {
         selectedItem = comboBoxChoiceSamplingRate.getValue();
-        samplingRate = (selectedItem != null) ? (int) selectedItem.id() : -1;
+        videoProperties.setSamplingRate((selectedItem != null) ? (int) selectedItem.id() : -1);
     }
 
     public void onChoiceFPS() {
         selectedItem = comboBoxChoiceFPS.getValue();
-        fps = (selectedItem != null) ? (int) selectedItem.id() : -1;
+        videoProperties.setFps((selectedItem != null) ? (int) selectedItem.id() : -1);
     }
 
     public void onChoiceResolution() {
-        resolution = comboBoxChoiceResolution.getValue();
+        videoProperties.setResolution(comboBoxChoiceResolution.getValue());
     }
 
     @FXML
@@ -239,26 +229,26 @@ public class ConverterVideoController {
     }
 
     private void selectFormat(String format, ToggleButton selectedBtn) {
-        targetFormat = format;
+        videoProperties.setTargetFormat(format);
         btnToMP4.setSelected(selectedBtn == btnToMP4);
         btnToAVI.setSelected(selectedBtn == btnToAVI);
         btnToMKV.setSelected(selectedBtn == btnToMKV);
         btnToWEBM.setSelected(selectedBtn == btnToWEBM);
         btnToMOV.setSelected(selectedBtn == btnToMOV);
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
     }
 
     @FXML
     public void onStartConversionPressed() {
-        if(outputPath == null || file == null || targetFormat == null) {
+        if(videoProperties.getOutput() == null || videoProperties.getSrcFile() == null || videoProperties.getTargetFormat() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Missing selection", "Select file, output directory and target format.");
             return;
         }
 
-        if(targetFormat.equals("webm")) {
-            if(samplingRate == 11025 || samplingRate == 22050 || samplingRate == 32000 || samplingRate == 44100){
+        if(videoProperties.getTargetFormat().equals("webm")) {
+            if(videoProperties.getSamplingRate() == 11025 || videoProperties.getSamplingRate() == 22050 || videoProperties.getSamplingRate() == 32000 || videoProperties.getSamplingRate() == 44100){
                 Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Sampling rate not support!",
-                        "This sampling rate: (" + samplingRate + ") not supported for WEBM video format!");
+                        "This sampling rate: (" + videoProperties.getSamplingRate() + ") not supported for WEBM video format!");
                 return;
             }
         }
@@ -267,7 +257,7 @@ public class ConverterVideoController {
         progressBarConvert.setProgress(0);
 
 
-        CompletableFuture.supplyAsync(() -> getMetadata(file), IO_EXECUTOR)
+        CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()), IO_EXECUTOR)
             .thenCompose(sourceInfo -> {
                 if (sourceInfo != null && sourceInfo.getAudio() == null) {
                     CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
@@ -292,8 +282,8 @@ public class ConverterVideoController {
                 btnSubmitConvert.setDisable(false);
                 if (success == null) return;
                 if (success) {
-                    showSuccessMessage(labelSuccessConvert, targetFormat, hideSuccessMessageTimer);
-                    showProgressBar(progressBarConvert, hideSuccessMessageTimer);
+                    showSuccessMessage(labelSuccessConvert, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
+                    showProgressBar(progressBarConvert, videoProperties.getHideSuccessMessageTimer());
                 } else {
                     progressBarConvert.setProgress(0);
                 }
@@ -309,17 +299,17 @@ public class ConverterVideoController {
     }
 
     private CompletableFuture<Boolean> continueConversion(MultimediaInfo sourceInfo) {
-        int finalVideoBitrate = (bitRate == -1) ? parseVideoBitrate(sourceInfo) : bitRate;
+        int finalVideoBitrate = (videoProperties.getBitRate() == -1) ? parseVideoBitrate(sourceInfo) : videoProperties.getBitRate();
         if (finalVideoBitrate <= 0) finalVideoBitrate = parseBitrate(sourceInfo);
         if (finalVideoBitrate <= 0) finalVideoBitrate = 5000;
 
         int finalAudioBitrate = parseAudioBitrate(sourceInfo);
         if (finalAudioBitrate <= 0) finalAudioBitrate = 192;
 
-        int finalChannels = (channel == -1) ? parseChannels(sourceInfo) : channel;
-        int finalSamplingRate = (samplingRate == -1) ? parseSamplingRate(sourceInfo) : samplingRate;
-        int finalFps = (fps == -1) ? parseFps(sourceInfo) : fps;
-        String finalResolution = ("Match source".equalsIgnoreCase(resolution)) ? parseResolution(sourceInfo) : resolution;
+        int finalChannels = (videoProperties.getChannel() == -1) ? parseChannels(sourceInfo) : videoProperties.getChannel();
+        int finalSamplingRate = (videoProperties.getSamplingRate() == -1) ? parseSamplingRate(sourceInfo) : videoProperties.getSamplingRate();
+        int finalFps = (videoProperties.getFps() == -1) ? parseFps(sourceInfo) : videoProperties.getFps();
+        String finalResolution = ("Match source".equalsIgnoreCase(videoProperties.getResolution())) ? parseResolution(sourceInfo) : videoProperties.getResolution();
 
         if (finalChannels <= 0) finalChannels = 2;
         if (finalSamplingRate <= 0) finalSamplingRate = 48000;
@@ -327,11 +317,11 @@ public class ConverterVideoController {
 
         String videoCodec;
         String audioCodec;
-        String ffmpegFormat = targetFormat;
+        String ffmpegFormat = videoProperties.getTargetFormat();
 
         boolean useGPU = checkBoxGPU != null && checkBoxGPU.isSelected();
 
-        switch (targetFormat) {
+        switch (videoProperties.getTargetFormat()) {
             case "mp4", "m4v" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mp4"; }
             case "mkv", "matroska" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mkv"; }
             case "avi" -> { videoCodec = useGPU ? "h264_nvenc" : "mpeg4"; audioCodec = "libmp3lame"; ffmpegFormat = "avi"; }
@@ -340,15 +330,15 @@ public class ConverterVideoController {
             default -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; }
         }
 
-        return ConverterVideoAudioFile.convert(file, outputPath, finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
+        return ConverterVideoAudioFile.convert(videoProperties.getSrcFile(), videoProperties.getOutput(), finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
                 videoCodec, audioCodec, ffmpegFormat, finalResolution, "video", progress ->
                         Platform.runLater(() -> progressBarConvert.setProgress(progress)));
     }
 
     @FXML
     public void onResetPressed() {
-        file = null;
-        targetFormat = null;
+        videoProperties.setSrcFile(null);
+        videoProperties.setTargetFormat(null);
         labelSelectVideoName.setText("Selected video file: none");
         btnToMP4.setSelected(false);
         btnToAVI.setSelected(false);
@@ -357,7 +347,7 @@ public class ConverterVideoController {
         btnToMOV.setSelected(false);
         if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
         resetToDefaults();
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
         progressBarConvert.setProgress(0);
     }
 

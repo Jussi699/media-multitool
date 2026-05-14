@@ -1,6 +1,7 @@
 package model.compressorImage;
 
 import model.logger.ErrorLogger;
+import model.properties.ImageProperties;
 import model.utility.DetermineType;
 import model.utility.Util;
 import net.coobird.thumbnailator.Thumbnails;
@@ -25,37 +26,37 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 public class Compressor {
-    public static CompressionResult compressorStandardImage(File file, File pathToSave, float scale, float outputQuality) {
-        String format = normalizeFormat(DetermineType.determineFormat(file));
-        File outputFile = Util.createOutputFile(file, pathToSave, format);
-        long originalSize = file.length();
+    public static CompressionResult compressorStandardImage(ImageProperties imageProperties) {
+        String format = normalizeFormat(DetermineType.determineFormat(imageProperties.getImage()));
+        File outputFile = Util.createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), format);
+        long originalSize = imageProperties.getImage().length();
 
         try {
             switch (format) {
-                case "jpg", "jpeg" -> Thumbnails.of(file)
-                        .scale(scale)
+                case "jpg", "jpeg" -> Thumbnails.of(imageProperties.getImage())
+                        .scale(imageProperties.getScale())
                         .outputFormat("jpg")
-                        .outputQuality(outputQuality)
+                        .outputQuality(imageProperties.getQuality())
                         .toFile(outputFile);
-                case "webp" -> Thumbnails.of(file)
-                        .scale(scale)
+                case "webp" -> Thumbnails.of(imageProperties.getImage())
+                        .scale(imageProperties.getScale())
                         .outputFormat("webp")
-                        .outputQuality(outputQuality)
+                        .outputQuality(imageProperties.getQuality())
                         .toFile(outputFile);
-                case "png" -> Thumbnails.of(file)
-                        .scale(scale)
+                case "png" -> Thumbnails.of(imageProperties.getImage())
+                        .scale(imageProperties.getScale())
                         .outputFormat("png")
                         .toFile(outputFile);
                 case "tif", "tiff" -> {
-                    BufferedImage bi = Thumbnails.of(file)
-                            .scale(scale)
+                    BufferedImage bi = Thumbnails.of(imageProperties.getImage())
+                            .scale(imageProperties.getScale())
                             .asBufferedImage();
                     if (!ImageIO.write(bi, "tiff", outputFile)) {
                         throw new IOException("No appropriate writer found for TIFF");
                     }
                 }
-                default -> Thumbnails.of(file)
-                        .scale(scale)
+                default -> Thumbnails.of(imageProperties.getImage())
+                        .scale(imageProperties.getScale())
                         .outputFormat(format)
                         .toFile(outputFile);
             }
@@ -77,12 +78,12 @@ public class Compressor {
         }
     }
 
-    public static CompressionResult removeSvgMetadata(File file, File pathToSave) throws IOException {
-        File outputFile = Util.createOutputFile(file, pathToSave, "svg");
-        long originalSize = file.length();
+    public static CompressionResult removeSvgMetadata(ImageProperties imageProperties) throws IOException {
+        File outputFile = Util.createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), "svg");
+        long originalSize = imageProperties.getImage().length();
 
         try {
-            String normalizedSvg = normalizeSvg(file);
+            String normalizedSvg = normalizeSvg(imageProperties.getImage());
             Files.writeString(outputFile.toPath(), normalizedSvg);
 
             long compressedSize = outputFile.length();
@@ -126,9 +127,24 @@ public class Compressor {
             factory.setNamespaceAware(true);
             factory.setIgnoringComments(true);
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("https://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("https://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("https://xml.org/sax/features/external-parameter-entities", false);
+            
+            try {
+                factory.setFeature("https://apache.org/xml/features/disallow-doctype-decl", true);
+            } catch (Exception e) {
+                ErrorLogger.info("XML feature 'disallow-doctype-decl' not supported in this JDK version");
+            }
+            
+            try {
+                factory.setFeature("https://xml.org/sax/features/external-general-entities", false);
+            } catch (Exception e) {
+                ErrorLogger.info("XML feature 'external-general-entities' not supported in this JDK version");
+            }
+            
+            try {
+                factory.setFeature("https://xml.org/sax/features/external-parameter-entities", false);
+            } catch (Exception e) {
+                ErrorLogger.info("XML feature 'external-parameter-entities' not supported in this JDK version");
+            }
 
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(file);

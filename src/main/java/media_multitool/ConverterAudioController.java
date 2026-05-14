@@ -1,6 +1,5 @@
 package media_multitool;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 
@@ -17,9 +16,9 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.logger.ErrorLogger;
+import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
 import viewHelp.Alerts;
@@ -33,14 +32,7 @@ import static model.utility.Parsers.*;
 import static model.utility.Util.*;
 
 public class ConverterAudioController {
-    private String targetFormat;
-    private int bitRate;
-    private int channel;
-    private int samplingRate;
-    private File outputPath;
-    private File file;
-    private final PauseTransition hideSuccessMessageTimer =
-            new PauseTransition(Duration.seconds(5));
+    private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
 
     @FXML private StackPane dropZone;
     @FXML private ProgressBar progressBarConvert;
@@ -67,8 +59,8 @@ public class ConverterAudioController {
         btnChoiceDirForSaveMP3.setTooltip(new Tooltip("Default directory: Desktop"));
         btnSubmitConvert.setTooltip(new Tooltip("Converting a large file may take longer!"));
 
-        outputPath = getSavedPath();
-        setupClearMessageTimer(labelSuccessConvert, progressBarConvert, hideSuccessMessageTimer);
+        audioProperties.setOutput(getSavedPath());
+        setupClearMessageTimer(labelSuccessConvert, progressBarConvert, audioProperties.getHideSuccessMessageTimer());
 
         labelSuccessConvert.setVisible(false);
         labelSuccessConvert.setManaged(true);
@@ -96,9 +88,9 @@ public class ConverterAudioController {
         comboBoxChoiceBitRate.setValue("320 kbps");
         comboBoxChoiceChannels.setValue("2 Channels");
         comboBoxChoiceSamplingRate.setValue("48000 Hz");
-        bitRate = 320;
-        channel = 2;
-        samplingRate = 48000;
+        audioProperties.setBitRate(320);
+        audioProperties.setChannel(2);
+        audioProperties.setSamplingRate(48000);
         progressBarConvert.setProgress(0);
 
         btnToAAC.setSelected(false);
@@ -112,7 +104,7 @@ public class ConverterAudioController {
 
         labelSelectAudioFile.setText("Selected audio file: none");
 
-        file = null;
+        audioProperties.setSrcFile(null);
         if (dropZone != null) dropZone.getStyleClass().remove("drop-zone-filled");
         if (textDragZone != null) textDragZone.setText("Drag files here");
     }
@@ -134,41 +126,41 @@ public class ConverterAudioController {
     }
 
     private void loadFile(File selectedFile) {
-        this.file = selectedFile;
-        ErrorLogger.info("User select file (video/audio): " + file.getAbsolutePath());
+        audioProperties.setSrcFile(selectedFile);
+        ErrorLogger.info("User select file (video/audio): " + audioProperties.getSrcFile().getAbsolutePath());
 
         if (textDragZone != null) {
-            textDragZone.setText("Selected: " + file.getName());
+            textDragZone.setText("Selected: " + audioProperties.getSrcFile().getName());
         }
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
-        labelSelectAudioFile.setText("Selected audio file: " + file.getName());
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        labelSelectAudioFile.setText("Selected audio file: " + audioProperties.getSrcFile().getName());
+        hideSuccessMessage(labelSuccessConvert, audioProperties.getHideSuccessMessageTimer());
     }
 
     @FXML
     public void onSelectOutputDirectoryPressed() {
         Stage stage = getStage(btnChoiceDirForSaveMP3);
-        File selectedPath = directoryChooser(stage, outputPath, "Select directory for save image");
+        File selectedPath = directoryChooser(stage, audioProperties.getOutput(), "Select directory for save image");
         if(selectedPath != null) {
-            outputPath = selectedPath;
+            audioProperties.setOutput(selectedPath);
         }
     }
 
     @FXML
     public void onStartConversionPressed() {
-        if(outputPath == null){
+        if(audioProperties.getOutput() == null){
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
             return;
         }
 
-        if (file == null) {
+        if (audioProperties.getSrcFile() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "File missing!", "Select audio or video file!");
             return;
         }
 
-        if(targetFormat == null){
+        if(audioProperties.getTargetFormat() == null){
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Format missing!", "Select audio format!");
             return;
         }
@@ -176,7 +168,7 @@ public class ConverterAudioController {
         btnSubmitConvert.setDisable(true);
         progressBarConvert.setProgress(0);
 
-        CompletableFuture.supplyAsync(() -> getMetadata(file), IO_EXECUTOR)
+        CompletableFuture.supplyAsync(() -> getMetadata(audioProperties.getSrcFile()), IO_EXECUTOR)
             .thenCompose(sourceInfo -> {
                 if (sourceInfo != null && sourceInfo.getAudio() == null) {
                     Platform.runLater(() -> {
@@ -192,7 +184,7 @@ public class ConverterAudioController {
                 }
 
                 int originalChannels = parseChannels(sourceInfo);
-                if (originalChannels == 1 && channel == 2) {
+                if (originalChannels == 1 && audioProperties.getChannel() == 2) {
                     CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
                     Platform.runLater(() -> {
                         boolean proceed = Alerts.confirmationDialog(
@@ -217,13 +209,13 @@ public class ConverterAudioController {
                 Platform.runLater(() -> {
                     btnSubmitConvert.setDisable(false);
                     if (success) {
-                        showSuccessMessage(labelSuccessConvert, targetFormat, hideSuccessMessageTimer);
-                        showProgressBar(progressBarConvert, hideSuccessMessageTimer);
+                        showSuccessMessage(labelSuccessConvert, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
+                        showProgressBar(progressBarConvert, audioProperties.getHideSuccessMessageTimer());
                     } else {
                         if (progressBarConvert.getProgress() > 0 && progressBarConvert.getProgress() < 1.0) {
                             progressBarConvert.setProgress(0);
                         } else {
-                            showErrorMessage(labelSuccessConvert, progressBarConvert, "So close, yet no success", hideSuccessMessageTimer);
+                            showErrorMessage(labelSuccessConvert, progressBarConvert, "So close, yet no success", audioProperties.getHideSuccessMessageTimer());
                         }
                     }
                 });
@@ -242,7 +234,7 @@ public class ConverterAudioController {
         String audioCodec;
         String ffmpegFormat;
 
-        switch (targetFormat.toLowerCase()) {
+        switch (audioProperties.getTargetFormat().toLowerCase()) {
             case "aac" -> {audioCodec = "aac";ffmpegFormat = "adts";}
             case "ogg" -> {audioCodec = "libvorbis";ffmpegFormat = "ogg";}
             case "opus" -> {audioCodec = "libopus";ffmpegFormat = "opus";}
@@ -253,7 +245,8 @@ public class ConverterAudioController {
             default -> {audioCodec = "libmp3lame";ffmpegFormat = "mp3";}
         }
 
-        return ConverterVideoAudioFile.convert(file, outputPath, bitRate, channel, samplingRate,
+        return ConverterVideoAudioFile.convert(audioProperties.getSrcFile(), audioProperties.getOutput(), audioProperties.getBitRate(),
+                audioProperties.getChannel(), audioProperties.getSamplingRate(),
                 audioCodec, ffmpegFormat, progress ->
                         Platform.runLater(() -> progressBarConvert.setProgress(progress)));
     }
@@ -261,8 +254,8 @@ public class ConverterAudioController {
     @FXML
     public void onResetPressed() {
         resetToDefaults();
-        outputPath = getSavedPath();
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        audioProperties.setOutput(getSavedPath());
+        hideSuccessMessage(labelSuccessConvert, audioProperties.getHideSuccessMessageTimer());
     }
 
     public void onFormatMp3Pressed() {
@@ -299,7 +292,7 @@ public class ConverterAudioController {
     }
 
     private void selectFormat(String format, ToggleButton selectedBtn) {
-        targetFormat = format;
+        audioProperties.setTargetFormat(format);
         btnToMP3.setSelected(selectedBtn == btnToMP3);
         btnToAAC.setSelected(selectedBtn == btnToAAC);
         btnToOggVorbis.setSelected(selectedBtn == btnToOggVorbis);
@@ -308,24 +301,24 @@ public class ConverterAudioController {
         btnToALAC.setSelected(selectedBtn == btnToALAC);
         btnToWAV.setSelected(selectedBtn == btnToWAV);
         btnToAIFF.setSelected(selectedBtn == btnToAIFF);
-        hideSuccessMessage(labelSuccessConvert, hideSuccessMessageTimer);
+        hideSuccessMessage(labelSuccessConvert, audioProperties.getHideSuccessMessageTimer());
     }
 
     public void onChoiceBitRate() {
-        bitRate = parseComboBoxStringToInt(comboBoxChoiceBitRate);
-        ErrorLogger.info("User select bitRate: " + bitRate);
+        audioProperties.setBitRate(parseComboBoxStringToInt(comboBoxChoiceBitRate));
+        ErrorLogger.info("User select bitRate: " + audioProperties.getBitRate());
 
     }
 
     public void onChoiceChannels() {
-        channel = parseComboBoxStringToInt(comboBoxChoiceChannels);
-        ErrorLogger.info("User select channels: " + channel);
+        audioProperties.setChannel(parseComboBoxStringToInt(comboBoxChoiceChannels));
+        ErrorLogger.info("User select channels: " + audioProperties.getChannel());
 
     }
 
     public void onChoiceSamplingRate() {
-        samplingRate = parseComboBoxStringToInt(comboBoxChoiceSamplingRate);
-        ErrorLogger.info("User select sampling rate: " + samplingRate);
+        audioProperties.setSamplingRate(parseComboBoxStringToInt(comboBoxChoiceSamplingRate));
+        ErrorLogger.info("User select sampling rate: " + audioProperties.getSamplingRate());
     }
 
     private void setupComboBox(ComboBox<String> cb) {
