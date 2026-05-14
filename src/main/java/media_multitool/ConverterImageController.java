@@ -237,6 +237,7 @@ public class ConverterImageController {
 
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
 
+        imageProperties.setTypeImage(null);
         imageProperties.setSizeIcoImage(0);
         imageScaleSlider.setValue(1.0);
         hideSuccessMessage(labelSuccessConvert, progressBarConvert, imageProperties.getHideSuccessMessageTimer());

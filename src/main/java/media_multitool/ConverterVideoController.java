@@ -17,7 +17,6 @@ import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
 
-import javax.swing.*;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -168,7 +167,7 @@ public class ConverterVideoController {
     @FXML
     public void onSelectOutputDirectoryPressed() {
         Stage stage = (Stage) btnChoiceDirForSaveVideo.getScene().getWindow();
-        directoryChooser(stage, videoProperties.getOutput(), "Select directory for save image")
+        directoryChooser(stage, videoProperties.getOutput(), "Select directory for save video")
                 .ifPresent(selectedPath -> {
                     videoProperties.setOutput(selectedPath);
                     hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());

@@ -139,7 +139,7 @@ public class ConverterAudioController {
     @FXML
     public void onSelectOutputDirectoryPressed() {
         Stage stage = getStage(btnChoiceDirForSaveMP3);
-        directoryChooser(stage, audioProperties.getOutput(), "Select directory for save image")
+        directoryChooser(stage, audioProperties.getOutput(), "Select directory for save audio")
                 .ifPresent(audioProperties::setOutput);
     }
 
