@@ -46,13 +46,18 @@ public class DetermineType {
             String type = Files.probeContentType(file.toPath());
             if (type != null && type.contains("/")) {
                 String format = type.split("/")[1].toLowerCase();
-                if ("svg+xml".equals(format)) {
-                    return Optional.of("svg");
-                }
-                if ("x-icon".equals(format) || "vnd.microsoft.icon".equals(format)) {
-                    return Optional.of("ico");
-                }
-                return Optional.of(format);
+                return switch (format) {
+                    case "svg+xml" -> Optional.of("svg");
+                    case "x-icon", "vnd.microsoft.icon" -> Optional.of("ico");
+                    case "quicktime" -> Optional.of("mov");
+                    case "x-msvideo", "avi" -> Optional.of("avi");
+                    case "webm" -> Optional.of("webm");
+                    case "x-matroska", "matroska" -> Optional.of("mkv");
+                    case "x-flv", "flv" -> Optional.of("flv");
+                    case "x-ms-wmv", "wmv" -> Optional.of("wmv");
+                    case "3gpp", "3gpp2" -> Optional.of("3gp");
+                    default -> Optional.of(format);
+                };
             }
         } catch (IOException e) {
             ErrorLogger.warn("Unable to determine file type!");

@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static model.utility.Parsers.*;
 import static model.utility.Util.*;
-import static viewHelp.Message.hideSuccessMessage;
+import static viewHelp.Message.*;
 
 public class CompressorVideoController {
     private VideoPresets.Preset[] adaptivePresets;
@@ -44,6 +44,7 @@ public class CompressorVideoController {
     @FXML private ToggleButton btnSuperCompress;
     @FXML private StackPane dropZone;
     @FXML private ProgressBar progressBarCompress;
+    @FXML private CheckBox chkUseGPU;
 
     @FXML
     public void initialize() {
@@ -61,6 +62,13 @@ public class CompressorVideoController {
         btnBasicCompress.setToggleGroup(group);
         btnStrongCompress.setToggleGroup(group);
         btnSuperCompress.setToggleGroup(group);
+
+        if (chkUseGPU != null) {
+            chkUseGPU.setTooltip(new Tooltip("Use NVENC (NVIDIA GPU) if available (may significantly speed up encoding)."));
+            chkUseGPU.setSelected(false);
+        }
+        // ensure success label and progress bar are cleared after configured seconds
+        setupClearMessageTimer(labelSuccessCompress, progressBarCompress, videoProperties.getHideSuccessMessageTimer());
     }
 
     @FXML
@@ -112,11 +120,21 @@ public class CompressorVideoController {
             return;
         }
 
+        Compressor.setUseGPU(chkUseGPU != null && chkUseGPU.isSelected());
+
         btnSelectVideoFile.setDisable(true);
         btnChoiceDirForSaveVideo.setDisable(true);
+        if (chkUseGPU != null) chkUseGPU.setDisable(true);
         progressBarCompress.setProgress(0);
 
-        CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()), IO_EXECUTOR)
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                Compressor.getCodec(videoProperties.getSrcFile());
+                return getMetadata(videoProperties.getSrcFile());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }, IO_EXECUTOR)
                 .thenCompose(infoOpt -> {
                     if (infoOpt.isPresent() && infoOpt.get().getAudio() == null) {
                         CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
@@ -130,6 +148,9 @@ public class CompressorVideoController {
                         });
                         return proceedFuture.thenCompose(proceed -> {
                             if (Boolean.FALSE.equals(proceed)) {
+                                btnSelectVideoFile.setDisable(false);
+                                btnChoiceDirForSaveVideo.setDisable(false);
+                                if (chkUseGPU != null) chkUseGPU.setDisable(false);
                                 return CompletableFuture.completedFuture(null);
                             }
                             return startCompression();
@@ -137,19 +158,29 @@ public class CompressorVideoController {
                     }
                     return startCompression();
                 })
-                .thenAccept(success -> Platform.runLater(() -> {
-                    if(success == null) return;
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (result == null) return;
 
                     btnSelectVideoFile.setDisable(false);
                     btnChoiceDirForSaveVideo.setDisable(false);
+                    if (chkUseGPU != null) chkUseGPU.setDisable(false);
 
-                    if (success) {
-                        labelSuccessCompress.setVisible(true);
+                    if (result.success) {
+                        long original = result.originalSize;
+                        long compressed = result.compressedSize;
+                        double savedPercent = 0.0;
+                        double savedMB = 0.0;
+                        if (original > 0 && compressed >= 0) {
+                            savedPercent = (original - compressed) * 100.0 / original;
+                            savedMB = (original - compressed) / (1024.0 * 1024.0);
+                        }
+
+                        String message = String.format("Saved %.1f%% | %.2f MB", savedPercent, savedMB);
+                        showSuccessText(labelSuccessCompress, message, videoProperties.getHideSuccessMessageTimer());
                         showProgressBar(progressBarCompress, videoProperties.getHideSuccessMessageTimer());
-                        videoProperties.getHideSuccessMessageTimer().play();
-                    }
-                    else {
+                    } else {
                         progressBarCompress.setProgress(0);
+                        hideSuccessMessage(labelSuccessCompress, progressBarCompress, videoProperties.getHideSuccessMessageTimer());
                     }
 
                 }))
@@ -157,32 +188,56 @@ public class CompressorVideoController {
                     Platform.runLater(() -> {
                         btnSelectVideoFile.setDisable(false);
                         btnChoiceDirForSaveVideo.setDisable(false);
+                        if (chkUseGPU != null) chkUseGPU.setDisable(false);
+                        // stop any running hide-success timer to avoid it later hiding the bar
+                        try { if (videoProperties.getHideSuccessMessageTimer() != null) videoProperties.getHideSuccessMessageTimer().stop(); } catch (Exception ignored) {}
                         progressBarCompress.setProgress(0);
-                        ErrorLogger.error("Compression error: " + e.getMessage());
+                        
+                        String errorMsg = e.getMessage();
+                        ErrorLogger.error("Compression error: " + errorMsg);
                     });
                     return null;
                 });
     }
 
-    private CompletableFuture<Boolean> startCompression() {
+    private static class VideoCompressionResult {
+        final boolean success;
+        final long originalSize;
+        final long compressedSize;
+
+        VideoCompressionResult(boolean success, long originalSize, long compressedSize) {
+            this.success = success;
+            this.originalSize = originalSize;
+            this.compressedSize = compressedSize;
+        }
+    }
+
+    private CompletableFuture<VideoCompressionResult> startCompression() {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Compressor.getCodec(videoProperties.getSrcFile());
                 File finalFileOutput = new File(videoProperties.getOutput(), videoProperties.getSrcFile().getName() + UUID.randomUUID().toString().replace("-", "") +
                         "." + DetermineType.determineFormat(videoProperties.getSrcFile()).orElse("mp4"));
 
+                long originalSize = videoProperties.getSrcFile().exists() ? videoProperties.getSrcFile().length() : 0L;
+
                 Compressor.compress(videoProperties.getSrcFile(), finalFileOutput,
-                        selectedPreset.video(), selectedPreset.audio(), progress -> Platform.runLater(() -> progressBarCompress.setProgress(progress))) ;
-                return true;
+                        selectedPreset.video(), selectedPreset.audio(), progress -> Platform.runLater(() -> progressBarCompress.setProgress(progress)));
+
+                long compressedSize = finalFileOutput.exists() ? finalFileOutput.length() : -1L;
+                boolean success = compressedSize > 0;
+                return new VideoCompressionResult(success, originalSize, compressedSize);
             } catch (Exception e) {
                 ErrorLogger.error("Internal compression error: " + e.getMessage());
-                return false;
+                return new VideoCompressionResult(false, videoProperties.getSrcFile() != null && videoProperties.getSrcFile().exists() ? videoProperties.getSrcFile().length() : 0L, -1L);
             }
         }, IO_EXECUTOR);
     }
 
     @FXML
     public void onActionPressedReset() {
+        Compressor.cancelCompress();
+        
         btnBasicCompress.setSelected(false);
         btnStrongCompress.setSelected(false);
         btnSuperCompress.setSelected(false);
@@ -196,7 +251,23 @@ public class CompressorVideoController {
         labelSelectVideoName.setText("Select video: none");
         labelSuccessCompress.setVisible(false);
 
-        progressBarCompress.setProgress(0);
+        if (progressBarCompress != null) {
+            progressBarCompress.setVisible(true);
+            progressBarCompress.setManaged(true);
+            progressBarCompress.setProgress(0);
+        }
+
+        if (textDragZone != null) {
+            textDragZone.setText("Drag files here");
+        }
+        if (dropZone != null && dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().remove("drop-zone-filled");
+        }
+        if (chkUseGPU != null) chkUseGPU.setSelected(false);
+        
+        btnSelectVideoFile.setDisable(false);
+        btnChoiceDirForSaveVideo.setDisable(false);
+        if (chkUseGPU != null) chkUseGPU.setDisable(false);
     }
 
     private void resetToDefault() {
@@ -277,7 +348,13 @@ public class CompressorVideoController {
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
                 .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
 
+        // hide only success label here (keep progress bar visible and reset to 0)
         hideSuccessMessage(labelSuccessCompress, videoProperties.getHideSuccessMessageTimer());
+        if (progressBarCompress != null) {
+            progressBarCompress.setVisible(true);
+            progressBarCompress.setManaged(true);
+            progressBarCompress.setProgress(0);
+        }
 
         if (textDragZone != null) {
             textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
@@ -306,5 +383,21 @@ public class CompressorVideoController {
     @FXML
     private void onActionCancelCompress() {
         Compressor.cancelCompress();
+        try {
+            if (videoProperties.getHideSuccessMessageTimer() != null) {
+                videoProperties.getHideSuccessMessageTimer().stop();
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (progressBarCompress != null) {
+            progressBarCompress.setVisible(true);
+            progressBarCompress.setManaged(true);
+            progressBarCompress.setProgress(0);
+        }
+        if (labelSuccessCompress != null) {
+            labelSuccessCompress.setVisible(false);
+            labelSuccessCompress.setText("");
+        }
     }
 }

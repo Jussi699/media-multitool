@@ -100,8 +100,12 @@ public class Util {
     }
 
     public static void showProgressBar(ProgressBar bar, PauseTransition timer) {
-        bar.setProgress(1.0);
-        timer.playFromStart();
+        if (bar != null) {
+            bar.setVisible(true);
+            bar.setManaged(true);
+            bar.setProgress(1.0);
+        }
+        if (timer != null) timer.playFromStart();
     }
 
     public static Stage getStage(Control control) {

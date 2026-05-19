@@ -111,6 +111,11 @@ public class Compressor {
                 audioCodec = "aac";
                 ffmpegFormat = "mp4";
             }
+            case "mov" -> {
+                videoCodec = useGPU ? "h264_nvenc" : "libx264";
+                audioCodec = "aac";
+                ffmpegFormat = "mov";
+            }
             case "mkv", "matroska" -> {
                 videoCodec = useGPU ? "h264_nvenc" : "libx264";
                 audioCodec = "aac";
@@ -126,10 +131,20 @@ public class Compressor {
                 audioCodec = "libvorbis";
                 ffmpegFormat = "webm";
             }
-            case "mov" -> {
+            case "flv" -> {
                 videoCodec = useGPU ? "h264_nvenc" : "libx264";
                 audioCodec = "aac";
-                ffmpegFormat = "mov";
+                ffmpegFormat = "flv";
+            }
+            case "wmv", "x-ms-wmv" -> {
+                videoCodec = useGPU ? "h264_nvenc" : "libx264";
+                audioCodec = "aac";
+                ffmpegFormat = "mp4";
+            }
+            case "3gp", "3gpp" -> {
+                videoCodec = useGPU ? "h264_nvenc" : "libx264";
+                audioCodec = "aac";
+                ffmpegFormat = "3gp";
             }
             default -> {
                 videoCodec = useGPU ? "h264_nvenc" : "libx264";
@@ -137,4 +152,15 @@ public class Compressor {
             }
         }
     }
+
+    /**
+     * Enable or disable GPU accelerated encoding (e.g. h264_nvenc).
+     * This flag affects which codec name is selected in {@link #getCodec(File)}.
+     * Note: actual GPU availability is not checked here; ffmpeg/encoder will fail
+     * if the requested encoder is not present on the host.
+     */
+    public static void setUseGPU(boolean enable) {
+        useGPU = enable;
+    }
+
 }
