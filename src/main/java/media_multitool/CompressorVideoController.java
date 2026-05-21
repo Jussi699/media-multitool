@@ -46,6 +46,9 @@ public class CompressorVideoController {
     @FXML private ProgressBar progressBarCompress;
     @FXML private CheckBox chkUseGPU;
 
+    private long durationMillis = 0;
+    private boolean hasAudio = false;
+
     @FXML
     public void initialize() {
         btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
@@ -77,20 +80,7 @@ public class CompressorVideoController {
         Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Video", "*.mp4", "*.avi", "*.mkv", "*.mov", "*.webm"), "Select video")
-                .ifPresent(videoProperties::setSrcFile);
-
-        if (videoProperties.getSrcFile() == null) return;
-
-        ErrorLogger.info("User selected file (video): " + videoProperties.getSrcFile().getAbsolutePath());
-        labelSelectVideoName.setText("Select video: " + videoProperties.getSrcFile().getName());
-        
-        adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile()).orElse(null);
-        if (adaptivePresets != null) {
-            ErrorLogger.info("Adaptive presets created successfully for: " + videoProperties.getSrcFile().getName());
-        } else {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Preset Creation Error",
-                    "Could not create presets from video. Check log for details.");
-        }
+                .ifPresent(this::loadFile);
     }
 
     @FXML
@@ -118,6 +108,19 @@ public class CompressorVideoController {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Output directory not selected!", "Output directory not selected!",
                     "Please select an output directory for the compressed video.");
             return;
+        }
+
+        double estimatedMB = calculateEstimatedSizeMB();
+        long originalSizeBytes = videoProperties.getSrcFile().length();
+        double originalMB = originalSizeBytes / (1024.0 * 1024.0);
+
+        if (estimatedMB > originalMB && estimatedMB > 0) {
+            boolean proceed = Alerts.confirmationDialog(
+                    "Compression Warning",
+                    "Estimated size (~" + String.format("%.2f", estimatedMB) + " MB) is larger than original (" + String.format("%.2f", originalMB) + " MB).",
+                    "Do you want to proceed anyway?"
+            );
+            if (!proceed) return;
         }
 
         Compressor.setUseGPU(chkUseGPU != null && chkUseGPU.isSelected());
@@ -245,6 +248,7 @@ public class CompressorVideoController {
         videoProperties.setSrcFile(null);
         adaptivePresets = null;
         selectedPreset = null;
+        durationMillis = 0;
 
         resetToDefault();
 
@@ -284,7 +288,7 @@ public class CompressorVideoController {
         if (adaptivePresets == null || adaptivePresets.length < 3) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "No presets available!", "No presets available!",
                     "Please load a video file first to create presets.");
-            group.getSelectedToggle().setSelected(false);
+            if (group.getSelectedToggle() != null) group.getSelectedToggle().setSelected(false);
             return;
         }
 
@@ -298,6 +302,39 @@ public class CompressorVideoController {
             selectedPreset = adaptivePresets[2];
             ErrorLogger.info("Selected preset: " + selectedPreset.name());
         }
+        updateEstimatedSize();
+    }
+
+    private void updateEstimatedSize() {
+        if (selectedPreset == null || durationMillis <= 0 || videoProperties.getSrcFile() == null) {
+            return;
+        }
+
+        try {
+            if (videoProperties.getHideSuccessMessageTimer() != null) {
+                videoProperties.getHideSuccessMessageTimer().stop();
+            }
+        } catch (Exception ignored) {}
+
+        double estimatedMB = calculateEstimatedSizeMB();
+        if (estimatedMB <= 0) return;
+
+        labelSuccessCompress.setStyle("-fx-text-fill: #32CD32;");
+        labelSuccessCompress.setText(String.format("Estimated size: ~%.2f MB", estimatedMB));
+        labelSuccessCompress.setVisible(true);
+    }
+
+    private double calculateEstimatedSizeMB() {
+        if (selectedPreset == null || durationMillis <= 0) return 0;
+
+        int vBitrate = selectedPreset.video().getBitRate().orElse(0);
+        int aBitrate = (hasAudio && selectedPreset.audio() != null) ? selectedPreset.audio().getBitRate().orElse(0) : 0;
+
+        double totalBitrateBps = vBitrate + aBitrate;
+        double durationSeconds = durationMillis / 1000.0;
+
+        double sizeBytes = (totalBitrateBps * durationSeconds) / 8.0;
+        return sizeBytes / (1024.0 * 1024.0);
     }
 
     @FXML
@@ -336,6 +373,12 @@ public class CompressorVideoController {
 
     private void loadFile(File selectedFile) {
         videoProperties.setSrcFile(selectedFile);
+        selectedPreset = null;
+        if (group.getSelectedToggle() != null) {
+            group.getSelectedToggle().setSelected(false);
+        }
+        durationMillis = 0;
+
         adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile()).orElse(null);
         if (adaptivePresets != null) {
             ErrorLogger.info("Adaptive presets created successfully for: " + videoProperties.getSrcFile().getName());
@@ -348,7 +391,6 @@ public class CompressorVideoController {
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
                 .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
 
-        // hide only success label here (keep progress bar visible and reset to 0)
         hideSuccessMessage(labelSuccessCompress, videoProperties.getHideSuccessMessageTimer());
         if (progressBarCompress != null) {
             progressBarCompress.setVisible(true);
@@ -365,8 +407,14 @@ public class CompressorVideoController {
     }
 
     private void updateLabelFromMetadata(ws.schild.jave.info.MultimediaInfo info) {
-        if (info == null || videoProperties.getSrcFile() == null) return;
+        if (info == null || videoProperties.getSrcFile() == null) {
+            durationMillis = 0;
+            hasAudio = false;
+            return;
+        }
 
+        durationMillis = info.getDuration();
+        hasAudio = info.getAudio() != null;
         String res = parseResolution(info).orElse("N/A");
         int f = parseFps(info);
         int vbr = parseVideoBitrate(info);
@@ -378,6 +426,7 @@ public class CompressorVideoController {
                 f, vbr, abr);
 
         labelSelectVideoName.setText(infoText);
+        updateEstimatedSize();
     }
 
     @FXML

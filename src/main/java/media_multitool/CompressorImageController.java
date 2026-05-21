@@ -1,10 +1,10 @@
 package media_multitool;
 
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -15,38 +15,36 @@ import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.DetermineType;
+import model.utility.DragDropped;
 import model.utility.Item;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import javafx.application.Platform;
 
 import static model.utility.Util.*;
 import static viewHelp.Message.*;
-import static model.converterImage.UsefulMethods.readPreviewImage;
 
 public class CompressorImageController {
     private final String DEFAULT_FILE_TEXT = "Selected image file: none";
     private final ImageProperties imageProperties = new ImageProperties();
 
+    @FXML private StackPane dropZone;
     @FXML private ComboBox<Item> comboBoxOutputQuality;
     @FXML private ComboBox<Item> comboBoxScaleImage;
     @FXML private Button btnSelectPhotoFile;
     @FXML private Button btnChoiceDirForSaveImage;
     @FXML private Label labelSuccessConvert;
     @FXML private Label labelSelectImageName;
-    @FXML private ScrollPane scrollPanePhotoOriginal;
-    @FXML private ScrollPane scrollPanePhotoCompressed;
-    @FXML private StackPane imageContainerOriginal;
-    @FXML private StackPane imageContainerCompressed;
-    @FXML private ImageView imageViewPhotoOriginal;
-    @FXML private ImageView imageViewPhotoCompressed;
+    @FXML private Label textDragZone;
+    @FXML private ImageView imageViewPreview;
+    @FXML private Label labelPreviewPlaceholder;
+    @FXML private StackPane previewContainer;
 
     @FXML
     public void initialize() {
@@ -62,14 +60,13 @@ public class CompressorImageController {
         labelSuccessConvert.setText("Compression status");
         labelSelectImageName.setText(DEFAULT_FILE_TEXT);
 
-        scrollPanePhotoOriginal.getStyleClass().add("scroll-pane-image");
-        scrollPanePhotoCompressed.getStyleClass().add("scroll-pane-image");
-
-        configurePreview(scrollPanePhotoOriginal, imageContainerOriginal, imageViewPhotoOriginal);
-        configurePreview(scrollPanePhotoCompressed, imageContainerCompressed, imageViewPhotoCompressed);
-
         ComboBoxes.setupComboBox(comboBoxOutputQuality, Item::title);
         ComboBoxes.setupComboBox(comboBoxScaleImage, Item::title);
+
+        if (imageViewPreview != null && previewContainer != null) {
+            imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+            imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+        }
 
         onResetPressed();
 
@@ -100,15 +97,7 @@ public class CompressorImageController {
                 new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp",
                         "*.tiff", "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe", "*.svg"),
                 "Choice image"
-        ).ifPresent(imageProperties::setImage);
-
-        if (imageProperties.getImage() == null) return;
-
-        ErrorLogger.info("User selected file (image): " + imageProperties.getImage().getAbsolutePath());
-        imageProperties.setTypeImage(DetermineType.determineFormat(imageProperties.getImage()).orElse(null));
-        labelSelectImageName.setText("Select image: " + imageProperties.getImage().getName());
-        loadPreview(imageProperties.getImage(), imageViewPhotoOriginal, scrollPanePhotoOriginal, imageContainerOriginal);
-        clearCompressedPreview();
+        ).ifPresent(this::loadFile);
     }
 
     @FXML
@@ -174,13 +163,11 @@ public class CompressorImageController {
                 showErrorMessage(labelSuccessConvert, warningMessage, imageProperties.getHideSuccessMessageTimer());
                 Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
                         "The compressed file would be larger than the original, so it was not kept.");
-                clearCompressedPreview();
                 ErrorLogger.info("Compression skipped because output is larger or equal to source: " + imageProperties.getImage().getName());
                 return;
             }
 
             if (imageProperties.getCompressedImage().exists() && imageProperties.getCompressedImage().isFile() && imageProperties.getCompressedImage().length() > 0) {
-                loadPreview(imageProperties.getCompressedImage(), imageViewPhotoCompressed, scrollPanePhotoCompressed, imageContainerCompressed);
                 showSuccessText(labelSuccessConvert, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
                 ErrorLogger.info("Compression completed: " + imageProperties.getCompressedImage().getName());
             } else {
@@ -224,9 +211,23 @@ public class CompressorImageController {
         imageProperties.setScale(-1);
 
         labelSelectImageName.setText(DEFAULT_FILE_TEXT);
-        clearPreview(imageViewPhotoOriginal, imageContainerOriginal);
-        clearCompressedPreview();
+        labelSuccessConvert.setVisible(false);
+        labelSuccessConvert.setText("");
         hideSuccessMessage(labelSuccessConvert, imageProperties.getHideSuccessMessageTimer());
+
+        if (textDragZone != null) {
+            textDragZone.setText("Drag files here");
+        }
+        if (dropZone != null && dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().remove("drop-zone-filled");
+        }
+
+        if (imageViewPreview != null) {
+            imageViewPreview.setImage(null);
+        }
+        if (labelPreviewPlaceholder != null) {
+            labelPreviewPlaceholder.setVisible(true);
+        }
     }
 
     @FXML
@@ -253,6 +254,7 @@ public class CompressorImageController {
         Item selectedItem = comboBoxScaleImage.getValue();
         imageProperties.setScale((selectedItem != null) ? selectedItem.id() : -1);
         ErrorLogger.info("User select scale: " + imageProperties.getScale());
+        updateEstimatedSize();
     }
 
     @FXML
@@ -260,6 +262,7 @@ public class CompressorImageController {
         Item selectedItem = comboBoxOutputQuality.getValue();
         imageProperties.setQuality((selectedItem != null) ? selectedItem.id() : -1);
         ErrorLogger.info("User select quality: " + imageProperties.getQuality());
+        updateEstimatedSize();
     }
 
     private String buildSuccessMessage(CompressionResult result) {
@@ -281,70 +284,81 @@ public class CompressorImageController {
         return String.format(Locale.US, "%.2f MB", bytes / (1024.0 * 1024.0));
     }
 
-    private void configurePreview(ScrollPane scrollPane, StackPane container, ImageView imageView) {
-        scrollPane.setPannable(true);
-        scrollPane.setFitToHeight(true);
-        scrollPane.setFitToWidth(true);
-        container.setManaged(true);
 
-        scrollPane.viewportBoundsProperty().addListener((_, _, _) ->
-                updatePreviewSize(scrollPane, container, imageView));
-        imageView.imageProperty().addListener((_, _, _) ->
-                updatePreviewSize(scrollPane, container, imageView));
+    @FXML
+    public void handleDragOver(DragEvent e) {
+        DragDropped.handleDragOver(e, List.of(
+                ".png", ".jpg", ".jpeg", ".webp", ".tiff", ".tif", ".bmp"), dropZone);
     }
 
-    private void loadPreview(File file, ImageView imageView, ScrollPane scrollPane, StackPane container) {
-        try {
-            Optional<BufferedImage> bufferedImageOpt = readPreviewImage(file);
-            if (bufferedImageOpt.isEmpty()) {
-                clearPreview(imageView, container);
-                return;
+    @FXML
+    public void handleDragDropped(DragEvent e) {
+        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
+        if (droppedFile != null) {
+            loadFile(droppedFile);
+        }
+    }
+
+    private void loadFile(File selectedFile) {
+        imageProperties.setImage(selectedFile);
+        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
+        labelSelectImageName.setText("Select image: " + selectedFile.getName());
+
+        if (imageViewPreview != null) {
+            try {
+                Image image = new Image(selectedFile.toURI().toString());
+                imageViewPreview.setImage(image);
+                if (labelPreviewPlaceholder != null) {
+                    labelPreviewPlaceholder.setVisible(false);
+                }
+            } catch (Exception e) {
+                ErrorLogger.error("Failed to load preview: " + e.getMessage());
             }
-
-            Image fxImage = SwingFXUtils.toFXImage(bufferedImageOpt.get(), null);
-            imageView.setImage(fxImage);
-            updatePreviewSize(scrollPane, container, imageView);
-        } catch (IOException e) {
-            ErrorLogger.log(107, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
-            clearPreview(imageView, container);
         }
+
+        if (textDragZone != null) {
+            textDragZone.setText("Selected: " + selectedFile.getName());
+        }
+        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().add("drop-zone-filled");
+        }
+        updateEstimatedSize();
     }
 
-    private void updatePreviewSize(ScrollPane scrollPane, StackPane container, ImageView imageView) {
-        if (imageView.getImage() == null) {
+    private void updateEstimatedSize() {
+        if (imageProperties.getImage() == null) {
             return;
         }
 
-        double viewportWidth = scrollPane.getViewportBounds().getWidth();
-        double viewportHeight = scrollPane.getViewportBounds().getHeight();
+        try {
+            if (imageProperties.getHideSuccessMessageTimer() != null) {
+                imageProperties.getHideSuccessMessageTimer().stop();
+            }
+        } catch (Exception ignored) {}
 
-        if (viewportWidth <= 0 || viewportHeight <= 0) {
-            return;
-        }
+        double estimatedMB = calculateEstimatedSizeMB();
+        if (estimatedMB <= 0) return;
 
-        double PREVIEW_PADDING = 5.0;
-        double fitWidth = Math.max(100, viewportWidth - PREVIEW_PADDING);
-        double fitHeight = Math.max(100, viewportHeight - PREVIEW_PADDING);
-
-        imageView.setFitWidth(fitWidth);
-        imageView.setFitHeight(fitHeight);
-        imageView.setPreserveRatio(true);
-
-        container.setMinWidth(fitWidth);
-        container.setMinHeight(fitHeight);
-        container.setPrefWidth(fitWidth);
-        container.setPrefHeight(fitHeight);
+        labelSuccessConvert.setStyle("-fx-text-fill: #32CD32;");
+        labelSuccessConvert.setText(String.format(Locale.US, "Estimated size: ~%.2f MB", estimatedMB));
+        labelSuccessConvert.setVisible(true);
     }
 
-    private void clearCompressedPreview() {
-        clearPreview(imageViewPhotoCompressed, imageContainerCompressed);
-    }
+    private double calculateEstimatedSizeMB() {
+        if (imageProperties.getImage() == null) return 0;
 
-    private void clearPreview(ImageView imageView, StackPane container) {
-        imageView.setImage(null);
-        container.setPrefWidth(250.0);
-        container.setPrefHeight(180.0);
-        container.setMinWidth(250.0);
-        container.setMinHeight(180.0);
+        float scale = imageProperties.getScale();
+        float quality = imageProperties.getQuality();
+
+        // If not selected, assume 1.0 for estimation purposes
+        float effectiveScale = (scale > 0) ? scale : 1.0f;
+        float effectiveQuality = (quality > 0) ? quality : 1.0f;
+
+        long originalSizeBytes = imageProperties.getImage().length();
+
+        // Rough heuristic for image compression
+        double estimatedBytes = originalSizeBytes * Math.pow(effectiveScale, 2) * effectiveQuality;
+
+        return estimatedBytes / (1024.0 * 1024.0);
     }
 }

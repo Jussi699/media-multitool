@@ -52,6 +52,8 @@
             <Button mnemonicParsing="false"
                     onAction="#onActionCancelCompress"
                     prefWidth="220.0" text="Cancel Compress" />
+
+            <CheckBox fx:id="chkUseGPU" mnemonicParsing="false" text="Use GPU" textFill="red"/>
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
