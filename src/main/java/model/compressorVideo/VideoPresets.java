@@ -43,7 +43,6 @@ public class VideoPresets {
             String[] parts = resolution.split("x");
             int w = Integer.parseInt(parts[0]) / 2;
             int h = Integer.parseInt(parts[1]) / 2;
-            // Ensure even dimensions
             if (w % 2 != 0) w--;
             if (h % 2 != 0) h--;
             strongRes = w + "x" + h;

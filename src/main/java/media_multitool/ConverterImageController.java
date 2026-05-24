@@ -7,31 +7,24 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
-import model.converterImage.ConverterImage;
-import model.converterImage.UsefulMethods;
+import model.converterImage.ConvertImageTask;
 import model.properties.ImageProperties;
-import model.utility.DetermineType;
 import model.logger.ErrorLogger;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import model.select.SelectFile;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
-import static model.converterImage.UsefulMethods.*;
-
 import model.utility.Preparation;
 import viewHelp.Alerts;
 import static viewHelp.Message.*;
 import static model.utility.Util.*;
+import static model.converterImage.UsefulMethods.*;
 
-public class ConverterImageController {
+public class ConverterImageController extends AbstractMediaController {
     private final String ICO_PLACEHOLDER = "to ICO";
     private final ImageProperties imageProperties = new ImageProperties();
     private File path_folderBatchProcessing;
@@ -40,8 +33,6 @@ public class ConverterImageController {
     @FXML private Button btnSelectPhotoFile;
     @FXML private Button btnChoiceFolderForSaveImage;
     @FXML private Button btnSelectBatchFileProcessing;
-    @FXML private Label labelSuccessConvert;
-    @FXML private ProgressBar progressBarConvert;
     @FXML private Label labelSelectImage;
     @FXML private ToggleButton btnToSVG;
     @FXML private ToggleButton btnToWEBM;
@@ -144,6 +135,31 @@ public class ConverterImageController {
                     }
                 }
             }
+        });
+    }
+
+    @Override
+    protected void lockUI() {
+        lockButtonFormat();
+        btnSelectPhotoFile.setDisable(true);
+        btnChoiceFolderForSaveImage.setDisable(true);
+        btnSelectBatchFileProcessing.setDisable(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        unlockButtonFormat();
+        btnSelectPhotoFile.setDisable(false);
+        btnChoiceFolderForSaveImage.setDisable(false);
+        btnSelectBatchFileProcessing.setDisable(false);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        Platform.runLater(() -> {
+            showSuccessText(labelSuccessConvert, "Conversion successful!", imageProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBarConvert, imageProperties.getHideSuccessMessageTimer());
         });
     }
 
@@ -323,125 +339,18 @@ public class ConverterImageController {
             return;
         }
 
-        lockButtonFormat();
-        hideSuccessMessage(labelSuccessConvert, progressBarConvert, imageProperties.getHideSuccessMessageTimer());
+        List<File> snapshot = filesToProcess.isEmpty() ? List.of(imageProperties.getImage()) : new ArrayList<>(filesToProcess);
+        
+        ConvertImageTask task = new ConvertImageTask(
+                snapshot, 
+                imageProperties.getOutput(), 
+                imageProperties.getTypeImage(), 
+                imageProperties.getSizeIcoImage()
+        );
 
-        List<File> snapshot = new ArrayList<>();
-        if (filesToProcess.isEmpty()) {
-            snapshot.add(imageProperties.getImage());
-        } else {
-            snapshot.addAll(filesToProcess);
-        }
-
-        UsefulMethods usefulMethods = new UsefulMethods();
-        progressBarConvert.setVisible(true);
-        progressBarConvert.setManaged(true);
-        progressBarConvert.setProgress(0);
-
-        CompletableFuture.runAsync(() -> {
-            int total = snapshot.size();
-            int failedCount = 0;
-            boolean isBatch = total > 1;
-
-            for (int i = 0; i < total; i++) {
-                File img = snapshot.get(i);
-                final int currentFileIndex = i + 1;
-                
-                if (isBatch) {
-                    Platform.runLater(() -> labelSuccessConvert.setText("Processing: " + currentFileIndex + " / " + total));
-                }
-
-                boolean success = executeConversion(img, usefulMethods, isBatch);
-                if (!success) failedCount++;
-
-                final double progress = (double) currentFileIndex / total;
-                Platform.runLater(() -> progressBarConvert.setProgress(progress));
-            }
-
-            if (isBatch) {
-                if (failedCount > 0) {
-                    final int finalFailedCount = failedCount;
-                    Platform.runLater(() -> {
-                        showErrorMessage(labelSuccessConvert, "Completed with " + finalFailedCount + " errors", imageProperties.getHideSuccessMessageTimer());
-                        Alerts.alertDialog(Alert.AlertType.WARNING,
-                            "Batch Processing Complete", "Some files failed",
-                            "Processed " + total + " files. " + finalFailedCount + " files failed to convert. Check logs for details.");
-                    });
-                } else {
-                    Platform.runLater(() -> showSuccessText(labelSuccessConvert, "Batch conversion successful! (" + total + " files)", imageProperties.getHideSuccessMessageTimer()));
-                }
-            }
-        }, IO_EXECUTOR).thenRun(() -> Platform.runLater(() -> {
-            unlockButtonFormat();
-            showProgressBar(progressBarConvert, imageProperties.getHideSuccessMessageTimer());
-        })).exceptionally(e -> {
-            Platform.runLater(() -> {
-                unlockButtonFormat();
-                ErrorLogger.error("Async image conversion error: " + e.getMessage());
-            });
-            return null;
-        });
-    }
-
-    private boolean executeConversion(File image, UsefulMethods usefulMethods, boolean isBatch) {
-        try {
-            String inputExtension;
-            try {
-                inputExtension = usefulMethods.normalizeFormat(DetermineType.determineFormat(image).orElse(null));
-            } catch (Exception e) {
-                inputExtension = usefulMethods.normalizeFormat(getFileExtension(image));
-            }
-            String targetFormat = usefulMethods.normalizeFormat(imageProperties.getTypeImage());
-
-            File convertedFile;
-            if ("ico".equals(targetFormat)) {
-                if (imageProperties.getSizeIcoImage() <= 0) {
-                    if (!isBatch) Platform.runLater(() -> Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "ICO Size", "Select ICO size."));
-                    return false;
-                }
-                convertedFile = ConverterImage.convertToIco(image, imageProperties.getOutput(), imageProperties.getSizeIcoImage());
-            } else if ("ico".equals(inputExtension)) {
-                convertedFile = ConverterImage.convertFromIco(image, imageProperties.getOutput(), targetFormat);
-            }
-            else{
-                convertedFile = ConverterImage.convert(image, imageProperties.getOutput(), targetFormat);
-            }
-            if (convertedFile.exists() && convertedFile.isFile() && convertedFile.length() > 0) {
-                if (!isBatch) Platform.runLater(() -> showSuccessMessage(labelSuccessConvert, targetFormat, imageProperties.getHideSuccessMessageTimer()));
-                ErrorLogger.info("Conversion completed: " + convertedFile.getName());
-                return true;
-            } else {
-                ErrorLogger.warn("Conversion finished but file not found or empty: " + convertedFile.getName());
-                Platform.runLater(() -> {
-                    showErrorMessage(labelSuccessConvert, progressBarConvert, "Conversion Failed: File missing", imageProperties.getHideSuccessMessageTimer());
-                    if (!isBatch) Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Missing File",
-                            "Conversion finished, but saved file was not found.");
-                });
-                return false;
-            }
-
-        } catch (IllegalArgumentException e) {
-            ErrorLogger.log(119, ErrorLogger.Level.WARN, "Invalid parameters for conversion", e);
-            Platform.runLater(() -> {
-                showErrorMessage(labelSuccessConvert, progressBarConvert, "Error: Invalid parameters", imageProperties.getHideSuccessMessageTimer());
-                if (!isBatch) Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Invalid Parameters", e.getMessage());
-            });
-            return false;
-        } catch (IOException e) {
-            ErrorLogger.log(105, ErrorLogger.Level.ERROR, "IO Error during conversion", e);
-            Platform.runLater(() -> {
-                showErrorMessage(labelSuccessConvert, progressBarConvert, "Error: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
-                if (!isBatch) Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Conversion Failed", e.getMessage());
-            });
-            return false;
-        } catch (Exception e) {
-            ErrorLogger.log(1001, ErrorLogger.Level.ERROR, "Unexpected error during conversion", e);
-            Platform.runLater(() -> {
-                showErrorMessage(labelSuccessConvert, progressBarConvert, "System Error: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
-                if (!isBatch) Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "System Error", "Something went wrong: " + e.getMessage());
-            });
-            return false;
-        }
+        task.messageProperty().addListener((_, _, newVal) -> Platform.runLater(() -> labelSuccessConvert.setText(newVal)));
+        
+        executeMediaTask(task);
     }
 
     private void selectRasterFormat(String format) {

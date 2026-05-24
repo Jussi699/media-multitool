@@ -2,46 +2,42 @@ package media_multitool;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ListCell;
-
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.converterVideo.ConverterVideoAudioFile;
+import model.converterVideo.ConvertVideoAudioTask;
 import model.logger.ErrorLogger;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
 import ws.schild.jave.info.MultimediaInfo;
 import viewHelp.Alerts;
-
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import static viewHelp.Message.*;
 import static model.utility.Parsers.*;
 import static model.utility.Util.*;
 
-public class ConverterAudioController {
+public class ConverterAudioController extends AbstractMediaController {
     private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
+    private final ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
+    private ConvertVideoAudioTask currentTask;
 
     @FXML private StackPane dropZone;
-    @FXML private ProgressBar progressBarConvert;
     @FXML private Button btnSelectAudioVideoFile;
     @FXML private Button btnChoiceDirForSaveMP3;
     @FXML private Button btnSubmitConvert;
     @FXML private Label textDragZone;
-    @FXML private Label labelSuccessConvert;
     @FXML private Label labelSelectAudioFile;
     @FXML private ComboBox<String> comboBoxChoiceBitRate;
     @FXML private ComboBox<String> comboBoxChoiceChannels;
@@ -92,7 +88,7 @@ public class ConverterAudioController {
         audioProperties.setBitRate(320);
         audioProperties.setChannel(2);
         audioProperties.setSamplingRate(48000);
-        progressBarConvert.setProgress(0);
+        if (progressBarConvert != null) progressBarConvert.setProgress(0);
 
         btnToAAC.setSelected(false);
         btnToAIFF.setSelected(false);
@@ -108,6 +104,25 @@ public class ConverterAudioController {
         audioProperties.setSrcFile(null);
         if (dropZone != null) dropZone.getStyleClass().remove("drop-zone-filled");
         if (textDragZone != null) textDragZone.setText("Drag files here");
+    }
+
+    @Override
+    protected void lockUI() {
+        btnSubmitConvert.setDisable(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        btnSubmitConvert.setDisable(false);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.TRUE.equals(result)) {
+            showSuccessMessage(labelSuccessConvert, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBarConvert, audioProperties.getHideSuccessMessageTimer());
+        }
     }
 
     @FXML
@@ -138,7 +153,7 @@ public class ConverterAudioController {
 
     @FXML
     public void onSelectOutputDirectoryPressed() {
-        Stage stage = getStage(btnChoiceDirForSaveMP3);
+        Stage stage = (Stage) btnChoiceDirForSaveMP3.getScene().getWindow();
         directoryChooser(stage, audioProperties.getOutput(), "Select directory for save audio")
                 .ifPresent(audioProperties::setOutput);
     }
@@ -160,73 +175,36 @@ public class ConverterAudioController {
             return;
         }
 
-        btnSubmitConvert.setDisable(true);
-        progressBarConvert.setProgress(0);
-
         CompletableFuture.supplyAsync(() -> getMetadata(audioProperties.getSrcFile()), IO_EXECUTOR)
-            .thenCompose(sourceInfoOpt -> {
+            .thenAccept(sourceInfoOpt -> {
                 MultimediaInfo sourceInfo = sourceInfoOpt.orElse(null);
                 if (sourceInfo != null && sourceInfo.getAudio() == null) {
-                    Platform.runLater(() -> {
-                        Alerts.alertDialog(
-                                Alert.AlertType.WARNING,
-                                "No Audio Track Detected",
-                                "The selected file does not have an audio track.",
-                                "Audio conversion is not possible for this file. Please select a file with audio."
-                        );
-                        btnSubmitConvert.setDisable(false);
-                    });
-                    return CompletableFuture.completedFuture(null);
+                    Platform.runLater(() -> Alerts.alertDialog(
+                            Alert.AlertType.WARNING,
+                            "No Audio Track Detected",
+                            "The selected file does not have an audio track.",
+                            "Audio conversion is not possible for this file. Please select a file with audio."
+                    ));
+                    return;
                 }
 
                 int originalChannels = parseChannels(sourceInfo);
                 if (originalChannels == 1 && audioProperties.getChannel() == 2) {
-                    CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
                     Platform.runLater(() -> {
                         boolean proceed = Alerts.confirmationDialog(
                                 "Mono to Stereo Confirmation",
                                 "The source file is mono (1 channel).",
                                 "Do you want to convert it to stereo (2 channels) anyway?"
                         );
-                        proceedFuture.complete(proceed);
+                        if (proceed) startAudioConversion();
                     });
-                    return proceedFuture.thenCompose(proceed -> {
-                        if (!proceed) return CompletableFuture.completedFuture(null);
-                        return startAudioConversion();
-                    });
+                } else {
+                    Platform.runLater(this::startAudioConversion);
                 }
-                return startAudioConversion();
-            })
-            .thenAccept(success -> {
-                if (success == null) {
-                     Platform.runLater(() -> btnSubmitConvert.setDisable(false));
-                     return;
-                }
-                Platform.runLater(() -> {
-                    btnSubmitConvert.setDisable(false);
-                    if (success) {
-                        showSuccessMessage(labelSuccessConvert, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
-                        showProgressBar(progressBarConvert, audioProperties.getHideSuccessMessageTimer());
-                    } else {
-                        if (progressBarConvert.getProgress() > 0 && progressBarConvert.getProgress() < 1.0) {
-                            progressBarConvert.setProgress(0);
-                        } else {
-                            showErrorMessage(labelSuccessConvert, progressBarConvert, "So close, yet no success", audioProperties.getHideSuccessMessageTimer());
-                        }
-                    }
-                });
-            })
-            .exceptionally(e -> {
-                Platform.runLater(() -> {
-                    btnSubmitConvert.setDisable(false);
-                    progressBarConvert.setProgress(0);
-                    ErrorLogger.error("Async audio conversion error: " + e.getMessage());
-                });
-                return null;
             });
     }
 
-    private CompletableFuture<Boolean> startAudioConversion() {
+    private void startAudioConversion() {
         String audioCodec;
         String ffmpegFormat;
 
@@ -241,10 +219,11 @@ public class ConverterAudioController {
             default -> {audioCodec = "libmp3lame";ffmpegFormat = "mp3";}
         }
 
-        return ConverterVideoAudioFile.convert(audioProperties.getSrcFile(), audioProperties.getOutput(), audioProperties.getBitRate(),
-                audioProperties.getChannel(), audioProperties.getSamplingRate(),
-                audioCodec, ffmpegFormat, progress ->
-                        Platform.runLater(() -> progressBarConvert.setProgress(progress)));
+        currentTask = new ConvertVideoAudioTask(converter, audioProperties.getSrcFile(), audioProperties.getOutput(), -1, audioProperties.getBitRate(),
+                audioProperties.getChannel(), audioProperties.getSamplingRate(), -1,
+                null, audioCodec, ffmpegFormat, null, "audio");
+        
+        executeMediaTask(currentTask);
     }
 
     @FXML
@@ -262,7 +241,6 @@ public class ConverterAudioController {
     @FXML
     public void onFormatAACPressed() {
         selectFormat("aac", btnToAAC);
-        System.out.println("Тут может быть два формата");
     }
 
     @FXML
@@ -369,13 +347,13 @@ public class ConverterAudioController {
     public void handleDragOver(DragEvent e) {
         DragDropped.handleDragOver(e, List.of(
                 ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma",
-                ".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".webm", ".3gp"
+                ".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".3gp"
         ), dropZone);
     }
 
     @FXML
     public void onCancelConversation() {
-        ConverterVideoAudioFile.cancelConversion();
+        if (currentTask != null) currentTask.cancelConversion();
     }
 
     @FXML

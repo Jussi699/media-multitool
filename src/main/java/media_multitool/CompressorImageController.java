@@ -10,6 +10,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.compressorImage.Compressor;
 import model.compressorImage.CompressionResult;
+import model.compressorImage.CompressImageTask;
 import model.converterImage.UsefulMethods;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -21,25 +22,23 @@ import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-import javafx.application.Platform;
+import java.util.Optional;
 
 import static model.utility.Util.*;
 import static viewHelp.Message.*;
 
-public class CompressorImageController {
+public class CompressorImageController extends AbstractMediaController {
     private final String DEFAULT_FILE_TEXT = "Selected image file: none";
     private final ImageProperties imageProperties = new ImageProperties();
+    private final Compressor compressor = new Compressor();
 
     @FXML private StackPane dropZone;
     @FXML private ComboBox<Item> comboBoxOutputQuality;
     @FXML private ComboBox<Item> comboBoxScaleImage;
     @FXML private Button btnSelectPhotoFile;
     @FXML private Button btnChoiceDirForSaveImage;
-    @FXML private Label labelSuccessConvert;
     @FXML private Label labelSelectImageName;
     @FXML private Label textDragZone;
     @FXML private ImageView imageViewPreview;
@@ -88,6 +87,45 @@ public class CompressorImageController {
                 new Item(0.10f, "10%"), new Item(0.05f, "5%")
         );
     }
+
+    @Override
+    protected void lockUI() {
+        btnSelectPhotoFile.setDisable(true);
+        btnChoiceDirForSaveImage.setDisable(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        btnSelectPhotoFile.setDisable(false);
+        btnChoiceDirForSaveImage.setDisable(false);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        Optional<CompressionResult> compressionResultOpt = (Optional<CompressionResult>) result;
+        if (compressionResultOpt.isEmpty()) {
+            showErrorMessage(labelSuccessConvert, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
+            ErrorLogger.warn("Compressed image has null! " + getClass().getName());
+            return;
+        }
+
+        CompressionResult compressionResult = compressionResultOpt.get();
+        imageProperties.setCompressedImage(compressionResult.outputFile());
+        if (!compressionResult.sizeReduced()) {
+            imageProperties.setCompressedImage(null);
+            String warningMessage = String.format(Locale.US,
+                    "Compression skipped: file would not shrink (%s -> %s)",
+                    formatBytes(compressionResult.originalSizeBytes()),
+                    formatBytes(compressionResult.compressedSizeBytes()));
+            showErrorMessage(labelSuccessConvert, warningMessage, imageProperties.getHideSuccessMessageTimer());
+            Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
+                    "The compressed file would be larger than the original, so it was not kept.");
+            return;
+        }
+
+        showSuccessText(labelSuccessConvert, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
+        showProgressBar(progressBarConvert, imageProperties.getHideSuccessMessageTimer());
+    }
     
     @FXML
     public void ActionBtnSelectFile() {
@@ -102,11 +140,12 @@ public class CompressorImageController {
 
     @FXML
     public void btnChoiceDirForSaveImage() {
-        Stage stage = getStage(btnChoiceDirForSaveImage);
+        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
         directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
                 .ifPresent(imageProperties::setOutput);
     }
 
+    @FXML
     public void submitCompressAndDownload() {
         if (imageProperties.getImage() == null || imageProperties.getOutput() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
@@ -128,75 +167,8 @@ public class CompressorImageController {
             return;
         }
 
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
-        hideSuccessMessage(labelSuccessConvert, imageProperties.getHideSuccessMessageTimer());
-
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                if ("svg".equals(targetFormat)) {
-                    return Compressor.removeSvgMetadata(imageProperties);
-                } else {
-                    return Compressor.compressorStandardImage(imageProperties);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, IO_EXECUTOR).thenAccept(compressionResultOpt -> Platform.runLater(() -> {
-            btnSelectPhotoFile.setDisable(false);
-            btnChoiceDirForSaveImage.setDisable(false);
-
-            if (compressionResultOpt.isEmpty()) {
-                showErrorMessage(labelSuccessConvert, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
-                ErrorLogger.warn("Compressed image has null! " + getClass().getName());
-                return;
-            }
-
-            CompressionResult compressionResult = compressionResultOpt.get();
-            imageProperties.setCompressedImage(compressionResult.outputFile());
-            if (!compressionResult.sizeReduced()) {
-                imageProperties.setCompressedImage(null);
-                String warningMessage = String.format(Locale.US,
-                        "Compression skipped: file would not shrink (%s -> %s)",
-                        formatBytes(compressionResult.originalSizeBytes()),
-                        formatBytes(compressionResult.compressedSizeBytes()));
-                showErrorMessage(labelSuccessConvert, warningMessage, imageProperties.getHideSuccessMessageTimer());
-                Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
-                        "The compressed file would be larger than the original, so it was not kept.");
-                ErrorLogger.info("Compression skipped because output is larger or equal to source: " + imageProperties.getImage().getName());
-                return;
-            }
-
-            if (imageProperties.getCompressedImage().exists() && imageProperties.getCompressedImage().isFile() && imageProperties.getCompressedImage().length() > 0) {
-                showSuccessText(labelSuccessConvert, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
-                ErrorLogger.info("Compression completed: " + imageProperties.getCompressedImage().getName());
-            } else {
-                ErrorLogger.warn("Compression finished but file not found or empty: " + imageProperties.getCompressedImage().getName());
-                showErrorMessage(labelSuccessConvert, "Compression Failed: File missing", imageProperties.getHideSuccessMessageTimer());
-                Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Missing File",
-                        "Compression finished, but saved file was not found.");
-            }
-        })).exceptionally(e -> {
-            Platform.runLater(() -> {
-                btnSelectPhotoFile.setDisable(false);
-                btnChoiceDirForSaveImage.setDisable(false);
-                Throwable cause = e.getCause();
-                if (cause instanceof IllegalArgumentException) {
-                    ErrorLogger.log(118, ErrorLogger.Level.WARN, "Invalid parameters for compression", cause);
-                    showErrorMessage(labelSuccessConvert, "Error: Invalid parameters", imageProperties.getHideSuccessMessageTimer());
-                    Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Invalid Parameters", cause.getMessage());
-                } else if (cause instanceof IOException || (cause != null && cause.getCause() instanceof IOException)) {
-                    ErrorLogger.log(105, ErrorLogger.Level.ERROR, "IO Error during compression", cause);
-                    showErrorMessage(labelSuccessConvert, "Error: " + cause.getMessage(), imageProperties.getHideSuccessMessageTimer());
-                    Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Compression Failed", cause.getMessage());
-                } else {
-                    ErrorLogger.log(1001, ErrorLogger.Level.ERROR, "Unexpected error during conversion", cause);
-                    showErrorMessage(labelSuccessConvert, "System Error: " + (cause != null ? cause.getMessage() : e.getMessage()), imageProperties.getHideSuccessMessageTimer());
-                    Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "System Error", "Something went wrong: " + (cause != null ? cause.getMessage() : e.getMessage()));
-                }
-            });
-            return null;
-        });
+        CompressImageTask task = new CompressImageTask(compressor, imageProperties, isSvg);
+        executeMediaTask(task);
     }
 
     @FXML

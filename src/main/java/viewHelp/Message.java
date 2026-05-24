@@ -21,11 +21,14 @@ public class Message {
         label.setStyle("-fx-text-fill: #32CD32;");
         label.setText(message);
         label.setVisible(true);
+        label.setManaged(true);
         timer.playFromStart();
     }
 
     public static void showErrorMessage(Label label, ProgressBar bar, String message, PauseTransition timer) {
-        bar.setStyle("-fx-border-color: RED; -fx-border-radius: 10px");
+        if (bar != null) {
+            bar.setStyle("-fx-border-color: RED; -fx-border-radius: 10px");
+        }
         showErrorMessage(label, message, timer);
     }
 
@@ -36,12 +39,13 @@ public class Message {
     public static void hideSuccessMessage(Label label, ProgressBar bar, PauseTransition timer) {
         if (timer != null) timer.stop();
         label.setVisible(false);
+        label.setManaged(false);
         label.setText("");
         if (bar != null) {
             bar.setProgress(0.0);
             bar.setStyle("");
-            bar.setVisible(true);
-            bar.setManaged(true);
+            bar.setVisible(false);
+            bar.setManaged(false);
         }
     }
 
@@ -49,6 +53,7 @@ public class Message {
         label.setStyle("-fx-text-fill: RED; -fx-border-radius: 10px");
         label.setText(message);
         label.setVisible(true);
+        label.setManaged(true);
         timer.playFromStart();
     }
 }

@@ -27,7 +27,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 public class Compressor {
-    public static Optional<CompressionResult> compressorStandardImage(ImageProperties imageProperties) {
+    public Optional<CompressionResult> compressorStandardImage(ImageProperties imageProperties) {
         String format = normalizeFormat(DetermineType.determineFormat(imageProperties.getImage()).orElse(""));
         File outputFile = Util.createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), format);
         long originalSize = imageProperties.getImage().length();
@@ -79,7 +79,7 @@ public class Compressor {
         }
     }
 
-    public static Optional<CompressionResult> removeSvgMetadata(ImageProperties imageProperties) throws IOException {
+    public Optional<CompressionResult> removeSvgMetadata(ImageProperties imageProperties) throws IOException {
         File outputFile = Util.createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), "svg");
         long originalSize = imageProperties.getImage().length();
 
@@ -105,7 +105,7 @@ public class Compressor {
         }
     }
 
-    private static String normalizeFormat(String format) {
+    private String normalizeFormat(String format) {
         if (format == null || format.isBlank()) {
             throw new IllegalArgumentException("Unable to determine image format");
         }
@@ -122,7 +122,7 @@ public class Compressor {
         };
     }
 
-    private static String normalizeSvg(File file) throws IOException {
+    private String normalizeSvg(File file) throws IOException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -168,11 +168,11 @@ public class Compressor {
         }
     }
 
-    private static void removeMetadataNodes(Document document) {
+    private void removeMetadataNodes(Document document) {
         cleanNode(document.getDocumentElement());
     }
 
-    private static void cleanNode(Node node) {
+    private void cleanNode(Node node) {
         NodeList children = node.getChildNodes();
         for (int i = children.getLength() - 1; i >= 0; i--) {
             Node child = children.item(i);

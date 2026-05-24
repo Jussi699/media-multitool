@@ -1,10 +1,8 @@
 package model.compressorVideo;
 
-import javafx.scene.control.Alert;
 import model.logger.ErrorLogger;
 import model.utility.DetermineType;
 import model.utility.EncoderUtility;
-import viewHelp.Alerts;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
@@ -18,26 +16,22 @@ import java.io.File;
 import java.util.function.Consumer;
 
 public class Compressor {
-    private static String videoCodec;
-    private static String audioCodec;
-    private static String ffmpegFormat;
-    private static boolean useGPU;
-    private static volatile File currentTarget;
-    private static final Encoder encoder = new Encoder();
+    private String videoCodec;
+    private String audioCodec;
+    private String ffmpegFormat;
+    private boolean useGPU;
+    private volatile File currentTarget;
+    private final Encoder encoder = new Encoder();
 
-    /**
-     * Method for video compression.
-     * <p>
-     * Codecs are not required and are not recommended to be passed in attributes.
-     * </p>
-     */
-    public static void compress(File videoFile, File output,
+    public void compress(File videoFile, File output,
                                 VideoAttributes video, AudioAttributes audio, Consumer<Double> progressConsumer) {
         currentTarget = output;
 
         try {
             MultimediaObject multimediaObject = new MultimediaObject(videoFile);
             MultimediaInfo sourceInfo = multimediaObject.getInfo();
+
+            getCodec(videoFile); // Configure codecs based on input
 
             video.setCodec(videoCodec);
             
@@ -75,8 +69,6 @@ public class Compressor {
             ErrorLogger.info("Video compression completed successfully: " + output.getAbsolutePath());
         }
         catch (EncoderException e) {
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Encoder error!", "Encoder error!",
-                    "Video file compression error, check log files for more information!");
             ErrorLogger.log(120, ErrorLogger.Level.ERROR, "Encoder error! ", e);
         }
         catch (Exception e) {
@@ -87,7 +79,7 @@ public class Compressor {
         }
     }
 
-    public static void cancelCompress() {
+    public void cancelCompress() {
         File target = currentTarget;
         if (target != null) {
             EncoderUtility.abortEncoding(encoder, target);
@@ -97,13 +89,13 @@ public class Compressor {
         }
     }
 
-    private static void clearCurrentTarget(File target) {
+    private void clearCurrentTarget(File target) {
         if (target != null && target.equals(currentTarget)) {
             currentTarget = null;
         }
     }
 
-    public static void getCodec(File videoFile) {
+    public void getCodec(File videoFile) {
         String formatVideo = DetermineType.determineFormat(videoFile).orElse("");
         switch (formatVideo) {
             case "mp4", "m4v" -> {
@@ -153,13 +145,7 @@ public class Compressor {
         }
     }
 
-    /**
-     * Enable or disable GPU accelerated encoding (e.g. h264_nvenc).
-     * This flag affects which codec name is selected in {@link #getCodec(File)}.
-     * Note: actual GPU availability is not checked here; ffmpeg/encoder will fail
-     * if the requested encoder is not present on the host.
-     */
-    public static void setUseGPU(boolean enable) {
+    public void setUseGPU(boolean enable) {
         useGPU = enable;
     }
 

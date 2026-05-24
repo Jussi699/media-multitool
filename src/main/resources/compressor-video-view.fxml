@@ -57,7 +57,7 @@
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccessCompress" styleClass="labelSuccess"
+            <Label fx:id="labelSuccessConvert" styleClass="labelSuccess"
                    alignment="CENTER"
                    prefWidth="560.0"
                    minHeight="20.0"
@@ -68,7 +68,7 @@
                    textFill="#32CD32"
                    wrapText="true" />
 
-            <ProgressBar fx:id="progressBarCompress"
+            <ProgressBar fx:id="progressBarConvert"
                          prefWidth="460.0"
                          minHeight="20.0"
                          progress="0.0"/>

@@ -8,7 +8,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.converterVideo.ConverterVideoAudioFile;
-import model.logger.ErrorLogger;
+import model.converterVideo.ConvertVideoAudioTask;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
@@ -25,12 +25,13 @@ import static viewHelp.Message.*;
 import static model.utility.Parsers.*;
 import static model.utility.Util.*;
 
-public class ConverterVideoController {
+public class ConverterVideoController extends AbstractMediaController {
     private Item selectedItem;
     private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
+    private final ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
+    private ConvertVideoAudioTask currentTask;
 
     @FXML private Label labelSelectVideoName;
-    @FXML private Label labelSuccessConvert;
     @FXML private Label textDragZone;
     @FXML private Button btnSubmitConvert;
     @FXML private Button btnSelectVideoFile;
@@ -46,7 +47,6 @@ public class ConverterVideoController {
     @FXML private ComboBox<Item> comboBoxChoiceFPS;
     @FXML private ComboBox<String> comboBoxChoiceResolution;
     @FXML private CheckBox checkBoxGPU;
-    @FXML private ProgressBar progressBarConvert;
     @FXML private StackPane dropZone;
 
     @FXML
@@ -121,6 +121,25 @@ public class ConverterVideoController {
 
         if (dropZone != null) dropZone.getStyleClass().remove("drop-zone-filled");
         if (textDragZone != null) textDragZone.setText("Drag files here");
+    }
+
+    @Override
+    protected void lockUI() {
+        btnSubmitConvert.setDisable(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        btnSubmitConvert.setDisable(false);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.TRUE.equals(result)) {
+            showSuccessMessage(labelSuccessConvert, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBarConvert, videoProperties.getHideSuccessMessageTimer());
+        }
     }
 
     @FXML
@@ -253,53 +272,25 @@ public class ConverterVideoController {
             }
         }
 
-        btnSubmitConvert.setDisable(true);
-        progressBarConvert.setProgress(0);
-
-
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()), IO_EXECUTOR)
-            .thenCompose(sourceInfoOpt -> {
+            .thenAccept(sourceInfoOpt -> {
                 MultimediaInfo sourceInfo = sourceInfoOpt.orElse(null);
                 if (sourceInfo != null && sourceInfo.getAudio() == null) {
-                    CompletableFuture<Boolean> proceedFuture = new CompletableFuture<>();
                     Platform.runLater(() -> {
                         boolean proceed = Alerts.confirmationDialog(
                                 "No Audio Track Detected",
                                 "The selected file does not appear to have an audio track.",
                                 "Do you want to proceed anyway? (The output will be silent)"
                         );
-                        proceedFuture.complete(proceed);
+                        if (proceed) continueWithConversion(sourceInfo);
                     });
-                    return proceedFuture.thenCompose(proceed -> {
-                        if (Boolean.FALSE.equals(proceed)) {
-                            return CompletableFuture.completedFuture(null);
-                        }
-                        return continueConversion(sourceInfo);
-                    });
-                }
-                return continueConversion(sourceInfo);
-            })
-            .thenAccept(success -> Platform.runLater(() -> {
-                btnSubmitConvert.setDisable(false);
-                if (success == null) return;
-                if (success) {
-                    showSuccessMessage(labelSuccessConvert, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
-                    showProgressBar(progressBarConvert, videoProperties.getHideSuccessMessageTimer());
                 } else {
-                    progressBarConvert.setProgress(0);
+                    Platform.runLater(() -> continueWithConversion(sourceInfo));
                 }
-            }))
-            .exceptionally(e -> {
-                Platform.runLater(() -> {
-                    btnSubmitConvert.setDisable(false);
-                    progressBarConvert.setProgress(0);
-                    ErrorLogger.error("Async conversion error: " + e.getMessage());
-                });
-                return null;
             });
     }
 
-    private CompletableFuture<Boolean> continueConversion(MultimediaInfo sourceInfo) {
+    private void continueWithConversion(MultimediaInfo sourceInfo) {
         int finalVideoBitrate = (videoProperties.getBitRate() == -1) ? parseVideoBitrate(sourceInfo) : videoProperties.getBitRate();
         if (finalVideoBitrate <= 0) finalVideoBitrate = parseBitrate(sourceInfo);
         if (finalVideoBitrate <= 0) finalVideoBitrate = 5000;
@@ -331,9 +322,10 @@ public class ConverterVideoController {
             default -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; }
         }
 
-        return ConverterVideoAudioFile.convert(videoProperties.getSrcFile(), videoProperties.getOutput(), finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
-                videoCodec, audioCodec, ffmpegFormat, finalResolution, "video", progress ->
-                        Platform.runLater(() -> progressBarConvert.setProgress(progress)));
+        currentTask = new ConvertVideoAudioTask(converter, videoProperties.getSrcFile(), videoProperties.getOutput(), finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
+                videoCodec, audioCodec, ffmpegFormat, finalResolution, "video");
+        
+        executeMediaTask(currentTask);
     }
 
     @FXML
@@ -349,12 +341,12 @@ public class ConverterVideoController {
         if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
         resetToDefaults();
         hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
-        progressBarConvert.setProgress(0);
+        if (progressBarConvert != null) progressBarConvert.setProgress(0);
     }
 
     @FXML
     public void onCancelConversation() {
-        ConverterVideoAudioFile.cancelConversion();
+        if (currentTask != null) currentTask.cancelConversion();
     }
 
     @FXML
@@ -392,4 +384,3 @@ public class ConverterVideoController {
         );
     }
 }
-
