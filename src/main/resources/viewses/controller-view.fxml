@@ -8,6 +8,7 @@
 <?import javafx.geometry.Insets?>
 
 <?import javafx.scene.shape.Line?>
+<?import javafx.scene.control.ComboBox?>
 <HBox prefHeight="820.0" prefWidth="800.0"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -76,6 +77,14 @@
               endX="85.0" endY="5.0"
               stroke="red" strokeWidth="2.0" />
 
+
+        <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="100.0" onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"/>
+
+
+        <Line startX="85.0"
+              endX="85.0" endY="5.0"
+              stroke="red" strokeWidth="2.0" />
+
         <Button fx:id="navInfo"
                 mnemonicParsing="false"
                 onAction="#showInfoPage"
@@ -97,6 +106,8 @@
         <fx:include fx:id="converterMP3Page" source="converter-audio-view.fxml"/>
         <fx:include fx:id="compressorImagePage" source="compressor-image-view.fxml"/>
         <fx:include fx:id="compressorVideoPage" source="compressor-video-view.fxml"/>
+        <fx:include fx:id="negativeImagePage" source="negative-image-view.fxml"/>
+        <fx:include fx:id="turnImagePage" source="turn-image-view.fxml"/>
         <fx:include fx:id="infoPage" source="info-view.fxml"/>
     </StackPane>
 </HBox>

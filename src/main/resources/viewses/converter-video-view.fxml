@@ -112,12 +112,12 @@
         </HBox>
 
         <VBox alignment="CENTER" spacing="10.0">
-            <ProgressBar fx:id="progressBarConvert"
+            <ProgressBar fx:id="progressBar"
                          prefWidth="460.0"
                          minHeight="20.0"
                          progress="0.0"/>
 
-            <Label fx:id="labelSuccessConvert"
+            <Label fx:id="labelSuccess"
                    styleClass="labelSuccess"
                    alignment="CENTER"
                    prefWidth="400.0"

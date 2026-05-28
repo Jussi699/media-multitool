@@ -101,13 +101,13 @@
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <ProgressBar fx:id="progressBarConvert"
+            <ProgressBar fx:id="progressBar"
                          prefWidth="460.0"
                          minHeight="16.0"
                          progress="0.0"/>
 
             <StackPane minHeight="24.0" prefHeight="24.0">
-                <Label fx:id="labelSuccessConvert"
+                <Label fx:id="labelSuccess"
                        styleClass="labelSuccess"
                        alignment="CENTER"
                        prefWidth="560.0"

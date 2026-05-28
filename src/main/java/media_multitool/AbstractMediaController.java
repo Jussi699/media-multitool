@@ -12,8 +12,8 @@ import static model.utility.Util.IO_EXECUTOR;
 
 public abstract class AbstractMediaController {
     
-    @FXML protected ProgressBar progressBarConvert;
-    @FXML protected Label labelSuccessConvert;
+    @FXML protected ProgressBar progressBar;
+    @FXML protected Label labelSuccess;
 
     protected abstract void lockUI();
     protected abstract void unlockUI();
@@ -21,10 +21,10 @@ public abstract class AbstractMediaController {
     protected <T> void executeMediaTask(Task<T> task) {
         lockUI();
         
-        if (progressBarConvert != null) {
-            progressBarConvert.setVisible(true);
-            progressBarConvert.setManaged(true);
-            progressBarConvert.progressProperty().bind(task.progressProperty());
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setManaged(true);
+            progressBar.progressProperty().bind(task.progressProperty());
         }
 
         task.setOnSucceeded(_ -> {
@@ -45,17 +45,17 @@ public abstract class AbstractMediaController {
     }
 
     private void unbindProgress() {
-        if (progressBarConvert != null) {
-            progressBarConvert.progressProperty().unbind();
+        if (progressBar != null) {
+            progressBar.progressProperty().unbind();
         }
     }
 
     protected void handleTaskSuccess(Object result) {
         Platform.runLater(() -> {
-            if (labelSuccessConvert != null) {
-                labelSuccessConvert.setText("Operation successful!");
-                labelSuccessConvert.setVisible(true);
-                labelSuccessConvert.setManaged(true);
+            if (labelSuccess != null) {
+                labelSuccess.setText("Operation successful!");
+                labelSuccess.setVisible(true);
+                labelSuccess.setManaged(true);
             }
         });
     }
@@ -63,10 +63,10 @@ public abstract class AbstractMediaController {
     protected void handleTaskFailure(Throwable exception) {
         Platform.runLater(() -> {
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", exception.getMessage());
-            if (labelSuccessConvert != null) {
-                labelSuccessConvert.setText("Operation failed.");
-                labelSuccessConvert.setVisible(true);
-                labelSuccessConvert.setManaged(true);
+            if (labelSuccess != null) {
+                labelSuccess.setText("Operation failed.");
+                labelSuccess.setVisible(true);
+                labelSuccess.setManaged(true);
             }
         });
     }

@@ -5,7 +5,7 @@ import javafx.util.Duration;
 
 import java.io.File;
 
-public class VideoAndAudioProperties {
+public class VideoAndAudioProperties implements MediaProperties {
     private String resolution;
     private int fps;
     private int bitRate;
@@ -16,6 +16,17 @@ public class VideoAndAudioProperties {
     private File srcFile;
     private String targetFormat;
     private final PauseTransition hideSuccessMessageTimer = new PauseTransition(Duration.seconds(seconds));
+
+    @Override
+    public void reset() {
+        this.srcFile = null;
+        this.targetFormat = null;
+        this.resolution = null;
+        this.fps = 0;
+        this.bitRate = 0;
+        this.channel = 0;
+        this.samplingRate = 0;
+    }
 
     public String getResolution() {
         return resolution;

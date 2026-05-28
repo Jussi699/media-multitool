@@ -5,12 +5,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
 public class Message {
-    public static void setupClearMessageTimer(Label label, PauseTransition timer) {
-        setupClearMessageTimer(label, null, timer);
+    public static void setupClearMessageTimer(Label label, PauseTransition timer, boolean manage) {
+        setupClearMessageTimer(label, null, timer, manage);
     }
 
-    public static void setupClearMessageTimer(Label label, ProgressBar bar, PauseTransition timer) {
-        timer.setOnFinished(_ -> hideSuccessMessage(label, bar, timer));
+    public static void setupClearMessageTimer(Label label, ProgressBar bar, PauseTransition timer, boolean manage) {
+        timer.setOnFinished(_ -> hideSuccessMessage(label, bar, timer, manage));
     }
 
     public static void showSuccessMessage(Label label, String format, PauseTransition timer) {
@@ -32,14 +32,14 @@ public class Message {
         showErrorMessage(label, message, timer);
     }
 
-    public static void hideSuccessMessage(Label label, PauseTransition timer) {
-        hideSuccessMessage(label, null, timer);
+    public static void hideSuccessMessage(Label label, PauseTransition timer, boolean managed) {
+        hideSuccessMessage(label, null, timer, managed);
     }
 
-    public static void hideSuccessMessage(Label label, ProgressBar bar, PauseTransition timer) {
+    public static void hideSuccessMessage(Label label, ProgressBar bar, PauseTransition timer, boolean managed) {
         if (timer != null) timer.stop();
         label.setVisible(false);
-        label.setManaged(false);
+        label.setManaged(managed);
         label.setText("");
         if (bar != null) {
             bar.setProgress(0.0);

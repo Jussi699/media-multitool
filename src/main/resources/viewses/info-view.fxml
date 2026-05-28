@@ -42,7 +42,7 @@
 
             <Label text="Linux:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
             <VBox GridPane.columnIndex="1" GridPane.rowIndex="1" spacing="2">
-                <Label text="~/.local/share/media-multitool" styleClass="path-label"/>
+                <Label text="~/.local/share/media-multitool (or)" styleClass="path-label"/>
                 <Label text="ㅤ$XDG_DATA_HOME/media-multitool" styleClass="path-label"/>
             </VBox>
 

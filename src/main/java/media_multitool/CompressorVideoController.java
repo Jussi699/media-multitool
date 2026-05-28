@@ -15,6 +15,8 @@ import model.logger.ErrorLogger;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
+import model.utility.ResetContext;
+import model.utility.Util;
 import viewHelp.Alerts;
 
 import java.io.File;
@@ -67,7 +69,7 @@ public class CompressorVideoController extends AbstractMediaController {
             chkUseGPU.setTooltip(new Tooltip("Use NVENC (NVIDIA GPU) if available (may significantly speed up encoding)."));
             chkUseGPU.setSelected(false);
         }
-        setupClearMessageTimer(labelSuccessConvert, progressBarConvert, videoProperties.getHideSuccessMessageTimer());
+        setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
     @Override
@@ -88,8 +90,8 @@ public class CompressorVideoController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.TRUE.equals(result)) {
-            showSuccessText(labelSuccessConvert, "Compression successful!", videoProperties.getHideSuccessMessageTimer());
-            showProgressBar(progressBarConvert, videoProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Compression successful!", videoProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
         }
     }
 
@@ -151,32 +153,28 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     public void onActionPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectVideoName, labelSuccess, textDragZone, null,
+                dropZone, null, true
+        );
+        Util.reset(videoProperties, ctx, "Select video: none");
+
         if (currentTask != null) currentTask.cancelCompress();
         
         btnBasicCompress.setSelected(false);
         btnStrongCompress.setSelected(false);
         btnSuperCompress.setSelected(false);
 
-        videoProperties.setSrcFile(null);
         adaptivePresets = null;
         selectedPreset = null;
         durationMillis = 0;
 
-        labelSelectVideoName.setText("Select video: none");
-        labelSuccessConvert.setVisible(false);
-
-        if (progressBarConvert != null) {
-            progressBarConvert.setVisible(true);
-            progressBarConvert.setManaged(true);
-            progressBarConvert.setProgress(0);
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setManaged(true);
+            progressBar.setProgress(0);
         }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Drag files here");
-        }
-        if (dropZone != null && dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().remove("drop-zone-filled");
-        }
         if (chkUseGPU != null) chkUseGPU.setSelected(false);
         
         btnSelectVideoFile.setDisable(false);
@@ -226,9 +224,9 @@ public class CompressorVideoController extends AbstractMediaController {
         double estimatedMB = calculateEstimatedSizeMB();
         if (estimatedMB <= 0) return;
 
-        labelSuccessConvert.setStyle("-fx-text-fill: #32CD32;");
-        labelSuccessConvert.setText(String.format("Estimated size: ~%.2f MB", estimatedMB));
-        labelSuccessConvert.setVisible(true);
+        labelSuccess.setStyle("-fx-text-fill: #32CD32;");
+        labelSuccess.setText(String.format("Estimated size: ~%.2f MB", estimatedMB));
+        labelSuccess.setVisible(true);
     }
 
     private double calculateEstimatedSizeMB() {
@@ -298,11 +296,11 @@ public class CompressorVideoController extends AbstractMediaController {
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
                 .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
 
-        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
-        if (progressBarConvert != null) {
-            progressBarConvert.setVisible(true);
-            progressBarConvert.setManaged(true);
-            progressBarConvert.setProgress(0);
+        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setManaged(true);
+            progressBar.setProgress(0);
         }
 
         if (textDragZone != null) {

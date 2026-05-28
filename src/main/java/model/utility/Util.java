@@ -1,13 +1,20 @@
 package model.utility;
 
 import javafx.animation.PauseTransition;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Control;
+import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
+import model.properties.ImageProperties;
+import viewHelp.Alerts;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
+
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
 import static org.apache.commons.io.FilenameUtils.getBaseName;
+import static viewHelp.Message.hideSuccessMessage;
 
 public class Util {
     private static final String KEY_INPUT_PATH = "last_input_path";
@@ -145,4 +153,47 @@ public class Util {
 
         return new File(pathForSave, fileName);
     }
+
+    public static boolean checkImageAndOutputOnNull(ImageProperties imageProperties) {
+        if (imageProperties.getImage() == null || imageProperties.getOutput() == null) {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
+            return false;
+        }
+        return true;
+    }
+
+    public static void reset(MediaProperties properties, ResetContext ctx, String defaultText) {
+        properties.reset();
+
+        if (ctx.labelSelectFileName() != null) {
+            ctx.labelSelectFileName().setText(defaultText != null ? defaultText : "Selected file: none");
+        }
+
+        if (ctx.labelSuccess() != null) {
+            ctx.labelSuccess().setVisible(false);
+            ctx.labelSuccess().setText("");
+            hideSuccessMessage(ctx.labelSuccess(), properties.getHideSuccessMessageTimer(), ctx.managed());
+            ctx.labelSuccess().setManaged(ctx.managed());
+        }
+
+        resetDropZone(ctx.textDragZone(), ctx.dropZone());
+
+        if (ctx.imageViewPreview() != null) {
+            ctx.imageViewPreview().setImage(null);
+        }
+        if (ctx.labelPreviewPlaceholder() != null) {
+            ctx.labelPreviewPlaceholder().setVisible(true);
+        }
+    }
+
+
+    public static void resetDropZone(Label textDragZone, StackPane dropZone) {
+        if (textDragZone != null) {
+            textDragZone.setText("Drag files here");
+        }
+        if (dropZone != null && dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().remove("drop-zone-filled");
+        }
+    }
+
 }

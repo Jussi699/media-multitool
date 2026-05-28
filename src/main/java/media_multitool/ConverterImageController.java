@@ -5,7 +5,6 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import model.converterImage.ConvertImageTask;
 import model.properties.ImageProperties;
@@ -14,6 +13,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import model.select.SelectFile;
+import javafx.scene.input.DragEvent;
+import javafx.scene.layout.StackPane;
+import model.utility.DragDropped;
+import model.utility.ResetContext;
+import model.utility.Util;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +52,10 @@ public class ConverterImageController extends AbstractMediaController {
     @FXML private ScrollPane scrollPanePhoto;
     @FXML private StackPane imageContainer;
     @FXML private ImageView imageViewPhoto;
+    @FXML private StackPane dropZone;
+    @FXML private Label textDragZone;
+    @FXML private StackPane previewContainer;
+    @FXML private Label labelPreviewPlaceholder;
 
 
     @FXML
@@ -82,8 +90,8 @@ public class ConverterImageController extends AbstractMediaController {
         scrollPanePhoto.viewportBoundsProperty().addListener((_, _, _) -> updateImageSize());
         imageViewPhoto.imageProperty().addListener((_, _, _) -> updateImageSize());
 
-        setupClearMessageTimer(labelSuccessConvert, progressBarConvert, imageProperties.getHideSuccessMessageTimer());
-        labelSuccessConvert.setText("Conversion status");
+        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
+        labelSuccess.setText("Conversion status");
 
         comboBoxIcoSize.setButtonCell(new ListCell<>() {
             @Override
@@ -157,10 +165,7 @@ public class ConverterImageController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        Platform.runLater(() -> {
-            showSuccessText(labelSuccessConvert, "Conversion successful!", imageProperties.getHideSuccessMessageTimer());
-            showProgressBar(progressBarConvert, imageProperties.getHideSuccessMessageTimer());
-        });
+        Platform.runLater(() -> showSuccessText(labelSuccess, "Conversion successful!", imageProperties.getHideSuccessMessageTimer()));
     }
 
     @FXML
@@ -206,6 +211,17 @@ public class ConverterImageController extends AbstractMediaController {
                         imageViewPhoto.setImage(fxImage);
                         updateImageSize();
 
+                        if (labelPreviewPlaceholder != null) {
+                            labelPreviewPlaceholder.setVisible(false);
+                        }
+                        
+                        if (textDragZone != null) {
+                            textDragZone.setText("Batch: " + filesToProcess.size() + " files");
+                        }
+                        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+                            dropZone.getStyleClass().add("drop-zone-filled");
+                        }
+
                         ErrorLogger.info("Preview loaded successfully for: " + imageProperties.getImage().getName());
                     } catch (IOException e) {
                         ErrorLogger.log(122, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
@@ -235,11 +251,14 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     public void isPressedReset() {
-        imageProperties.setImage(null);
-        labelSelectImage.setText("Selected image file: none");
+        ResetContext ctx = new ResetContext(
+                labelSelectImage, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPhoto, true
+        );
+        Util.reset(imageProperties, ctx, "Selected image file: none");
+
         path_folderBatchProcessing = null;
         filesToProcess.clear();
-        imageViewPhoto.setImage(null);
 
         btnToPNG.setSelected(false);
         btnToJPEG.setSelected(false);
@@ -252,12 +271,7 @@ public class ConverterImageController extends AbstractMediaController {
         btnToSVG.setSelected(false);
 
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
-
-        imageProperties.setTypeImage(null);
-        imageProperties.setSizeIcoImage(0);
         imageScaleSlider.setValue(1.0);
-        hideSuccessMessage(labelSuccessConvert, progressBarConvert, imageProperties.getHideSuccessMessageTimer());
-        unlockButtonFormat();
     }
 
     @FXML
@@ -268,11 +282,12 @@ public class ConverterImageController extends AbstractMediaController {
                 new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico", "*.webp",
                         "*.tiff", "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe", "*.svg"),
                 "Choice image"
-        ).ifPresent(imageProperties::setImage);
+        ).ifPresent(this::loadImage);
+    }
 
+    private void loadImage(File file) {
+        imageProperties.setImage(file);
         filesToProcess.clear();
-
-        if (imageProperties.getImage() == null) return;
 
         ErrorLogger.info("User selected file (image): " + imageProperties.getImage().getAbsolutePath());
         labelSelectImage.setText("Select image: " + imageProperties.getImage().getName());
@@ -290,10 +305,36 @@ public class ConverterImageController extends AbstractMediaController {
             imageViewPhoto.setImage(fxImage);
 
             updateImageSize();
+
+            if (labelPreviewPlaceholder != null) {
+                labelPreviewPlaceholder.setVisible(false);
+            }
+            
+            if (textDragZone != null) {
+                textDragZone.setText("Selected: " + file.getName());
+            }
+            if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+                dropZone.getStyleClass().add("drop-zone-filled");
+            }
+            
             ErrorLogger.info("Preview loaded successfully for: " + imageProperties.getImage().getName());
         } catch (IOException e) {
             ErrorLogger.log(107, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "IO", "File error!");
+        }
+    }
+
+    @FXML
+    public void handleDragOver(DragEvent e) {
+        DragDropped.handleDragOver(e, List.of(
+                ".png", ".jpg", ".jpeg", ".ico", ".webp", ".tiff", ".tif", ".bmp", ".ppm", ".pgm", ".pam", ".jpe", ".svg"), dropZone);
+    }
+
+    @FXML
+    public void handleDragDropped(DragEvent e) {
+        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
+        if (droppedFile != null) {
+            loadImage(droppedFile);
         }
     }
 
@@ -348,7 +389,7 @@ public class ConverterImageController extends AbstractMediaController {
                 imageProperties.getSizeIcoImage()
         );
 
-        task.messageProperty().addListener((_, _, newVal) -> Platform.runLater(() -> labelSuccessConvert.setText(newVal)));
+        task.messageProperty().addListener((_, _, newVal) -> Platform.runLater(() -> labelSuccess.setText(newVal)));
         
         executeMediaTask(task);
     }

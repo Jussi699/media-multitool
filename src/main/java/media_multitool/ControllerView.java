@@ -2,10 +2,17 @@ package media_multitool;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.StackPane;
+import model.utility.Item;
+import viewHelp.ComboBoxes;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ControllerView {
 
+    @FXML private ComboBox<Item> comboBoxChoiceActionImage;
     @FXML private StackPane infoPage;
     @FXML private StackPane compressorVideoPage;
     @FXML private StackPane converterMP3Page;
@@ -13,6 +20,11 @@ public class ControllerView {
     @FXML private StackPane converterImagePage;
     @FXML private StackPane converterVideoPage;
     @FXML private StackPane compressorImagePage;
+
+    @FXML private StackPane negativeImagePage;
+    @FXML private StackPane turnImagePage;
+    @FXML private StackPane currentPageFromComboBoxAction;
+
     @FXML private HomeViewController homeViewController;
     @FXML private Button navHomeButton;
     @FXML private Button navConverterImageButton;
@@ -22,6 +34,8 @@ public class ControllerView {
     @FXML private Button navCompressorVideo;
     @FXML private Button navInfo;
 
+    private final Map<Integer, StackPane> stackPaneMap = new HashMap<>();
+
     @FXML
     public void initialize() {
         if (homeViewController != null) {
@@ -29,6 +43,32 @@ public class ControllerView {
         }
 
         showHomePage();
+
+        comboBoxChoiceActionImage.setPromptText("Image tools");
+        ComboBoxes.setupComboBox(comboBoxChoiceActionImage, Item::title);
+        comboBoxChoiceActionImage.getSelectionModel().clearSelection();
+        comboBoxChoiceActionImage.buttonCellProperty().bind(javafx.beans.binding.Bindings.createObjectBinding(() -> {
+            if (comboBoxChoiceActionImage.getSelectionModel().isEmpty()) {
+                return new javafx.scene.control.ListCell<Item>() {
+                    @Override
+                    protected void updateItem(Item item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText("Image tools");
+                    }
+                };
+            }
+            return null;
+        }, comboBoxChoiceActionImage.getSelectionModel().selectedItemProperty()));
+
+        stackPaneMap.putAll(Map.of(
+                1, negativeImagePage,
+                2, turnImagePage
+        ));
+
+        comboBoxChoiceActionImage.getItems().addAll(
+                new Item(1, "Negative photo"),
+                new Item(2, "Turn photo")
+        );
     }
 
     @FXML
@@ -62,31 +102,35 @@ public class ControllerView {
     }
 
     @FXML
+    public void onActionChoiceActionImage() {
+        Item selectedItem = comboBoxChoiceActionImage.getValue();
+        if (selectedItem != null) {
+            currentPageFromComboBoxAction = stackPaneMap.get((int) selectedItem.id());
+            setActivePage(currentPageFromComboBoxAction, null);
+        }
+    }
+
+    @FXML
     public void showInfoPage() {
         setActivePage(infoPage, navInfo);
     }
 
     private void setActivePage(StackPane pageToShow, Button activeButton) {
-        homeView.setVisible(pageToShow == homeView);
-        homeView.setManaged(pageToShow == homeView);
+        StackPane[] allPages = {
+                homeView, converterImagePage, converterVideoPage, converterMP3Page,
+                compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage, infoPage
+        };
 
-        converterImagePage.setVisible(pageToShow == converterImagePage);
-        converterImagePage.setManaged(pageToShow == converterImagePage);
+        for (StackPane page : allPages) {
+            if (page != null) {
+                page.setVisible(page == pageToShow);
+                page.setManaged(page == pageToShow);
+            }
+        }
 
-        converterVideoPage.setVisible(pageToShow == converterVideoPage);
-        converterVideoPage.setManaged(pageToShow == converterVideoPage);
-
-        converterMP3Page.setVisible(pageToShow == converterMP3Page);
-        converterMP3Page.setManaged(pageToShow == converterMP3Page);
-
-        compressorImagePage.setVisible(pageToShow == compressorImagePage);
-        compressorImagePage.setManaged(pageToShow == compressorImagePage);
-
-        compressorVideoPage.setVisible(pageToShow == compressorVideoPage);
-        compressorVideoPage.setManaged(pageToShow == compressorVideoPage);
-
-        infoPage.setVisible(pageToShow == infoPage);
-        infoPage.setManaged(pageToShow == infoPage);
+        if (activeButton != null) {
+            comboBoxChoiceActionImage.getSelectionModel().clearSelection();
+        }
 
         navHomeButton.setStyle(getNavButtonStyle(activeButton == navHomeButton));
         navConverterImageButton.setStyle(getNavButtonStyle(activeButton == navConverterImageButton));

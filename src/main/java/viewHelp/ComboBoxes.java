@@ -9,7 +9,7 @@ public class ComboBoxes {
     public static <T> void setupComboBox(ComboBox<T> comboBox, Function<T, String> textProvider) {
         comboBox.setConverter(new StringConverter<>() {
             @Override
-            public String toString(T item) { return item == null ? "" : textProvider.apply(item); }
+            public String toString(T item) { return item == null ? null : textProvider.apply(item); }
             @Override
             public T fromString(String string) { return null; }
         });

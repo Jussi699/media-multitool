@@ -53,9 +53,9 @@ public class ConverterVideoController extends AbstractMediaController {
     public void initialize() {
         btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
         videoProperties.setOutput(getSavedPath());
-        setupClearMessageTimer(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
+        setupClearMessageTimer(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
         labelSelectVideoName.setText("Selected video file: none");
-        labelSuccessConvert.setVisible(false);
+        labelSuccess.setVisible(false);
 
         ComboBoxes.setupComboBox(comboBoxChoiceBitRate, Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceChannels, Item::title);
@@ -137,8 +137,8 @@ public class ConverterVideoController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.TRUE.equals(result)) {
-            showSuccessMessage(labelSuccessConvert, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
-            showProgressBar(progressBarConvert, videoProperties.getHideSuccessMessageTimer());
+            showSuccessMessage(labelSuccess, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
         }
     }
 
@@ -158,7 +158,7 @@ public class ConverterVideoController extends AbstractMediaController {
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
             .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
         
-        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
+        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
         
         if (textDragZone != null) {
             textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
@@ -189,7 +189,7 @@ public class ConverterVideoController extends AbstractMediaController {
         directoryChooser(stage, videoProperties.getOutput(), "Select directory for save video")
                 .ifPresent(selectedPath -> {
                     videoProperties.setOutput(selectedPath);
-                    hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
+                    hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
                 });
     }
 
@@ -254,7 +254,7 @@ public class ConverterVideoController extends AbstractMediaController {
         btnToMKV.setSelected(selectedBtn == btnToMKV);
         btnToWEBM.setSelected(selectedBtn == btnToWEBM);
         btnToMOV.setSelected(selectedBtn == btnToMOV);
-        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
+        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
     @FXML
@@ -340,8 +340,8 @@ public class ConverterVideoController extends AbstractMediaController {
         btnToMOV.setSelected(false);
         if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
         resetToDefaults();
-        hideSuccessMessage(labelSuccessConvert, videoProperties.getHideSuccessMessageTimer());
-        if (progressBarConvert != null) progressBarConvert.setProgress(0);
+        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
+        if (progressBar != null) progressBar.setProgress(0);
     }
 
     @FXML

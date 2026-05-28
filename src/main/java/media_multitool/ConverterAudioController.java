@@ -19,6 +19,8 @@ import model.logger.ErrorLogger;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
+import model.utility.ResetContext;
+import model.utility.Util;
 import ws.schild.jave.info.MultimediaInfo;
 import viewHelp.Alerts;
 import java.io.File;
@@ -57,10 +59,10 @@ public class ConverterAudioController extends AbstractMediaController {
         btnSubmitConvert.setTooltip(new Tooltip("Converting a large file may take longer!"));
 
         audioProperties.setOutput(getSavedPath());
-        setupClearMessageTimer(labelSuccessConvert, progressBarConvert, audioProperties.getHideSuccessMessageTimer());
+        setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
-        labelSuccessConvert.setVisible(false);
-        labelSuccessConvert.setManaged(true);
+        labelSuccess.setVisible(false);
+        labelSuccess.setManaged(true);
         labelSelectAudioFile.setVisible(true);
         labelSelectAudioFile.setText("Selected audio file: none");
 
@@ -82,13 +84,19 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private void resetToDefaults() {
+        ResetContext ctx = new ResetContext(
+                labelSelectAudioFile, labelSuccess, textDragZone, null,
+                dropZone, null, true
+        );
+        Util.reset(audioProperties, ctx, "Selected audio file: none");
+
         comboBoxChoiceBitRate.setValue("320 kbps");
         comboBoxChoiceChannels.setValue("2 Channels");
         comboBoxChoiceSamplingRate.setValue("48000 Hz");
         audioProperties.setBitRate(320);
         audioProperties.setChannel(2);
         audioProperties.setSamplingRate(48000);
-        if (progressBarConvert != null) progressBarConvert.setProgress(0);
+        if (progressBar != null) progressBar.setProgress(0);
 
         btnToAAC.setSelected(false);
         btnToAIFF.setSelected(false);
@@ -98,12 +106,6 @@ public class ConverterAudioController extends AbstractMediaController {
         btnToOggVorbis.setSelected(false);
         btnToOPUS.setSelected(false);
         btnToWAV.setSelected(false);
-
-        labelSelectAudioFile.setText("Selected audio file: none");
-
-        audioProperties.setSrcFile(null);
-        if (dropZone != null) dropZone.getStyleClass().remove("drop-zone-filled");
-        if (textDragZone != null) textDragZone.setText("Drag files here");
     }
 
     @Override
@@ -120,8 +122,8 @@ public class ConverterAudioController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.TRUE.equals(result)) {
-            showSuccessMessage(labelSuccessConvert, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
-            showProgressBar(progressBarConvert, audioProperties.getHideSuccessMessageTimer());
+            showSuccessMessage(labelSuccess, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBar, audioProperties.getHideSuccessMessageTimer());
         }
     }
 
@@ -148,7 +150,7 @@ public class ConverterAudioController extends AbstractMediaController {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
         labelSelectAudioFile.setText("Selected audio file: " + audioProperties.getSrcFile().getName());
-        hideSuccessMessage(labelSuccessConvert, audioProperties.getHideSuccessMessageTimer());
+        hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(), true);
     }
 
     @FXML
@@ -230,7 +232,7 @@ public class ConverterAudioController extends AbstractMediaController {
     public void onResetPressed() {
         resetToDefaults();
         audioProperties.setOutput(getSavedPath());
-        hideSuccessMessage(labelSuccessConvert, audioProperties.getHideSuccessMessageTimer());
+        hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(),true);
     }
 
     @FXML
@@ -283,7 +285,7 @@ public class ConverterAudioController extends AbstractMediaController {
         btnToALAC.setSelected(selectedBtn == btnToALAC);
         btnToWAV.setSelected(selectedBtn == btnToWAV);
         btnToAIFF.setSelected(selectedBtn == btnToAIFF);
-        hideSuccessMessage(labelSuccessConvert, audioProperties.getHideSuccessMessageTimer());
+        hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(), true);
     }
 
     @FXML

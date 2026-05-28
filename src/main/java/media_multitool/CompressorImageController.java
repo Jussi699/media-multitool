@@ -18,6 +18,8 @@ import model.select.SelectFile;
 import model.utility.DetermineType;
 import model.utility.DragDropped;
 import model.utility.Item;
+import model.utility.ResetContext;
+import model.utility.Util;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 
@@ -30,7 +32,6 @@ import static model.utility.Util.*;
 import static viewHelp.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
-    private final String DEFAULT_FILE_TEXT = "Selected image file: none";
     private final ImageProperties imageProperties = new ImageProperties();
     private final Compressor compressor = new Compressor();
 
@@ -53,11 +54,11 @@ public class CompressorImageController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccessConvert, imageProperties.getHideSuccessMessageTimer());
+        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
 
-        labelSuccessConvert.setVisible(false);
-        labelSuccessConvert.setText("Compression status");
-        labelSelectImageName.setText(DEFAULT_FILE_TEXT);
+        labelSuccess.setVisible(false);
+        labelSuccess.setText("Compression status");
+        labelSelectImageName.setText("Selected file: none");
 
         ComboBoxes.setupComboBox(comboBoxOutputQuality, Item::title);
         ComboBoxes.setupComboBox(comboBoxScaleImage, Item::title);
@@ -104,7 +105,7 @@ public class CompressorImageController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         Optional<CompressionResult> compressionResultOpt = (Optional<CompressionResult>) result;
         if (compressionResultOpt.isEmpty()) {
-            showErrorMessage(labelSuccessConvert, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
+            showErrorMessage(labelSuccess, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
             ErrorLogger.warn("Compressed image has null! " + getClass().getName());
             return;
         }
@@ -117,14 +118,14 @@ public class CompressorImageController extends AbstractMediaController {
                     "Compression skipped: file would not shrink (%s -> %s)",
                     formatBytes(compressionResult.originalSizeBytes()),
                     formatBytes(compressionResult.compressedSizeBytes()));
-            showErrorMessage(labelSuccessConvert, warningMessage, imageProperties.getHideSuccessMessageTimer());
+            showErrorMessage(labelSuccess, warningMessage, imageProperties.getHideSuccessMessageTimer());
             Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
                     "The compressed file would be larger than the original, so it was not kept.");
             return;
         }
 
-        showSuccessText(labelSuccessConvert, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
-        showProgressBar(progressBarConvert, imageProperties.getHideSuccessMessageTimer());
+        showSuccessText(labelSuccess, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
+        showProgressBar(progressBar, imageProperties.getHideSuccessMessageTimer());
     }
     
     @FXML
@@ -173,33 +174,14 @@ public class CompressorImageController extends AbstractMediaController {
 
     @FXML
     public void onResetPressed() {
+        ResetContext ctx = new ResetContext(
+                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, true
+        );
+        Util.reset(imageProperties, ctx, "Selected file: none");
+
         comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
         comboBoxScaleImage.setValue(new Item(-1, "Scale"));
-
-        imageProperties.setImage(null);
-        imageProperties.setCompressedImage(null);
-        imageProperties.setTypeImage(null);
-        imageProperties.setQuality(-1);
-        imageProperties.setScale(-1);
-
-        labelSelectImageName.setText(DEFAULT_FILE_TEXT);
-        labelSuccessConvert.setVisible(false);
-        labelSuccessConvert.setText("");
-        hideSuccessMessage(labelSuccessConvert, imageProperties.getHideSuccessMessageTimer());
-
-        if (textDragZone != null) {
-            textDragZone.setText("Drag files here");
-        }
-        if (dropZone != null && dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().remove("drop-zone-filled");
-        }
-
-        if (imageViewPreview != null) {
-            imageViewPreview.setImage(null);
-        }
-        if (labelPreviewPlaceholder != null) {
-            labelPreviewPlaceholder.setVisible(true);
-        }
     }
 
     @FXML
@@ -311,9 +293,9 @@ public class CompressorImageController extends AbstractMediaController {
         double estimatedMB = calculateEstimatedSizeMB();
         if (estimatedMB <= 0) return;
 
-        labelSuccessConvert.setStyle("-fx-text-fill: #32CD32;");
-        labelSuccessConvert.setText(String.format(Locale.US, "Estimated size: ~%.2f MB", estimatedMB));
-        labelSuccessConvert.setVisible(true);
+        labelSuccess.setStyle("-fx-text-fill: #32CD32;");
+        labelSuccess.setText(String.format(Locale.US, "Estimated size: ~%.2f MB", estimatedMB));
+        labelSuccess.setVisible(true);
     }
 
     private double calculateEstimatedSizeMB() {
@@ -322,13 +304,11 @@ public class CompressorImageController extends AbstractMediaController {
         float scale = imageProperties.getScale();
         float quality = imageProperties.getQuality();
 
-        // If not selected, assume 1.0 for estimation purposes
         float effectiveScale = (scale > 0) ? scale : 1.0f;
         float effectiveQuality = (quality > 0) ? quality : 1.0f;
 
         long originalSizeBytes = imageProperties.getImage().length();
 
-        // Rough heuristic for image compression
         double estimatedBytes = originalSizeBytes * Math.pow(effectiveScale, 2) * effectiveQuality;
 
         return estimatedBytes / (1024.0 * 1024.0);

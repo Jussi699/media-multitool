@@ -5,7 +5,7 @@ import javafx.util.Duration;
 
 import java.io.File;
 
-public class ImageProperties {
+public class ImageProperties implements MediaProperties {
     private File image;
     private File output;
     private File compressedImage;
@@ -15,6 +15,15 @@ public class ImageProperties {
     private float scale;
     private float quality;
     private final PauseTransition hideSuccessMessageTimer = new PauseTransition(Duration.seconds(secondsForHideSuccessMessage));
+
+    @Override
+    public void reset() {
+        this.image = null;
+        this.typeImage = null;
+        this.compressedImage = null;
+        this.scale = -1;
+        this.quality = -1;
+    }
 
     public File getImage() {
         return image;
