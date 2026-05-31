@@ -6,6 +6,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
+import model.logger.ErrorLogger;
 import model.utility.Util;
 import viewHelp.Alerts;
 import viewHelp.Tooltips;
@@ -18,17 +19,15 @@ public class InfoController {
     @FXML private Tooltip activeTooltip;
 
     @FXML
-    public void initialize() {
-    }
-
-    @FXML
     public void toLogsWindows() {
         String logPath = Util.getAppConfigDir() + File.separator + "logs";
         File dirLog = new File(logPath);
 
         try {
             if (!dirLog.exists()) {
-                dirLog.mkdirs();
+                if(!dirLog.mkdirs()) {
+                    ErrorLogger.error("Error create directory!");
+                }
             }
 
             if (Desktop.isDesktopSupported()) {

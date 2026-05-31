@@ -2,19 +2,15 @@ package media_multitool;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.embed.swing.SwingFXUtils;
 import model.imagePreprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -31,11 +27,11 @@ import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
-public class TurnImageController extends AbstractMediaController {
+public class DarkenImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+    public Slider sliderDarken;
+    private BufferedImage originalBufferedImage;
     private BufferedImage currentBufferedImage;
-    public Button btnTurnImageLeft;
-    public Button btnTurnImageRight;
 
     @FXML private StackPane dropZone;
     @FXML private Button btnSelectPhotoFile;
@@ -59,7 +55,23 @@ public class TurnImageController extends AbstractMediaController {
             imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
         }
 
+        sliderDarken.setMin(0);
+        sliderDarken.setMax(255);
+        sliderDarken.setValue(0);
+        sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
+
         onResetPressed();
+    }
+
+    private void updatePreview(int offset) {
+        if (originalBufferedImage == null) {
+            return;
+        }
+
+        ImagePreprocessing.brightnessImage(originalBufferedImage, offset).ifPresent(darkened -> {
+            currentBufferedImage = darkened;
+            setPreview(currentBufferedImage);
+        });
     }
 
     @FXML
@@ -67,15 +79,15 @@ public class TurnImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Turn Image",
+                "Darken Image",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
-                        3. Select which direction you want to rotate the image by pressing the corresponding key.
-                        4. Click 'Turn and Download' to apply the effect.
+                        3. Use the slider to select several photos you want to darken.
+                        4. Click 'Darken and Download' to apply the effect.
                         
-                        This tool turn your image.
+                        This tool darkens your image.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -111,7 +123,7 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void ActionBtnSelectFile() {
+    public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
@@ -129,22 +141,12 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    private void onActionTurnImage(ActionEvent event) {
-        if (currentBufferedImage == null) {
-            return;
-        }
-
-        Object source = event.getSource();
-        boolean side = (source != btnTurnImageLeft);
-
-        ImagePreprocessing.turnImage(currentBufferedImage, side).ifPresent(rotated -> {
-            currentBufferedImage = rotated;
-            setPreview(currentBufferedImage);
-        });
+    private void handleSliderRelease() {
+        updatePreview(- (int) sliderDarken.getValue());
     }
 
     @FXML
-    public void submitTurnAndDownload() {
+    public void submitDarkenAndDownload() {
         if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
             return;
         }
@@ -181,10 +183,10 @@ public class TurnImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Image rotation successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Image darkening successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Rotated image saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Darkened image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
     }
@@ -213,6 +215,10 @@ public class TurnImageController extends AbstractMediaController {
         Util.reset(imageProperties, ctx, "Selected image file: none");
 
         currentBufferedImage = null;
+        originalBufferedImage = null;
+        if (sliderDarken != null) {
+            sliderDarken.setValue(0);
+        }
     }
 
     private void loadFile(File selectedFile) {
@@ -222,7 +228,8 @@ public class TurnImageController extends AbstractMediaController {
 
         if (imageViewPreview != null) {
             try {
-                currentBufferedImage = ImageIO.read(selectedFile);
+                originalBufferedImage = ImageIO.read(selectedFile);
+                currentBufferedImage = originalBufferedImage;
                 if (currentBufferedImage != null) {
                     setPreview(currentBufferedImage);
                     if (labelPreviewPlaceholder != null) {

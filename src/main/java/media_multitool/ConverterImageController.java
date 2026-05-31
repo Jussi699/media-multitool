@@ -62,22 +62,15 @@ public class ConverterImageController extends AbstractMediaController {
     public void initialize() {
         imageProperties.setOutput(getSavedPath());
         btnChoiceFolderForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
-        imageContainer.setManaged(true);
         imageContainer.setAlignment(Pos.CENTER);
+
         scrollPanePhoto.setPannable(true);
-        scrollPanePhoto.setFitToHeight(true);
-        scrollPanePhoto.setFitToWidth(true);
         imageScaleSlider.setMin(1.0);
         imageScaleSlider.setMax(5.0);
         imageScaleSlider.setValue(1.0);
 
-        labelSelectImage.setText("Selected image file: none");
-
         comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256", "512", "768");
-        comboBoxIcoSize.setDisable(false);
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
-
-        scrollPanePhoto.getStyleClass().add("scroll-pane-image");
 
         imageViewPhoto.scaleXProperty().bind(imageScaleSlider.valueProperty());
         imageViewPhoto.scaleYProperty().bind(imageScaleSlider.valueProperty());
@@ -90,8 +83,7 @@ public class ConverterImageController extends AbstractMediaController {
         scrollPanePhoto.viewportBoundsProperty().addListener((_, _, _) -> updateImageSize());
         imageViewPhoto.imageProperty().addListener((_, _, _) -> updateImageSize());
 
-        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
-        labelSuccess.setText("Conversion status");
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         comboBoxIcoSize.setButtonCell(new ListCell<>() {
             @Override
@@ -152,6 +144,7 @@ public class ConverterImageController extends AbstractMediaController {
         btnSelectPhotoFile.setDisable(true);
         btnChoiceFolderForSaveImage.setDisable(true);
         btnSelectBatchFileProcessing.setDisable(true);
+        if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
@@ -160,12 +153,29 @@ public class ConverterImageController extends AbstractMediaController {
         btnSelectPhotoFile.setDisable(false);
         btnChoiceFolderForSaveImage.setDisable(false);
         btnSelectBatchFileProcessing.setDisable(false);
+        if (btnReset != null) btnReset.setDisable(false);
     }
 
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        Platform.runLater(() -> showSuccessText(labelSuccess, "Conversion successful!", imageProperties.getHideSuccessMessageTimer()));
+        if (Boolean.TRUE.equals(result)) {
+            Platform.runLater(() -> showSuccessText(labelSuccess, "Conversion successful!", imageProperties.getHideSuccessMessageTimer()));
+        } else {
+            imageProperties.getHideSuccessMessageTimer().playFromStart();
+        }
+    }
+
+    @Override
+    protected void handleTaskCancelled() {
+        super.handleTaskCancelled();
+        imageProperties.getHideSuccessMessageTimer().playFromStart();
+    }
+
+    @Override
+    protected void handleTaskFailure(Throwable exception) {
+        super.handleTaskFailure(exception);
+        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
@@ -253,8 +263,9 @@ public class ConverterImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImage, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPhoto, true
+                dropZone, imageViewPhoto, progressBar, true
         );
+
         Util.reset(imageProperties, ctx, "Selected image file: none");
 
         path_folderBatchProcessing = null;

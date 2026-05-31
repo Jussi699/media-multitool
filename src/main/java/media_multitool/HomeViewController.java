@@ -1,19 +1,10 @@
 package media_multitool;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
 import javafx.scene.control.Alert;
 import viewHelp.Alerts;
 
 public class HomeViewController {
-    @FXML private Button btnOpenInfo;
-    @FXML private Button btnOpenImageCompressor;
-    @FXML private Button btnOpenImageConverter;
-    @FXML private Button btnOpenVideoConverter;
-    @FXML private Button btnOpenMP3Converter;
-    @FXML private Button btnOpenVideoCompressor;
-    @FXML private VBox homePage;
     private ControllerView mainController;
 
     public void setMainController(ControllerView mainController) {
@@ -71,5 +62,35 @@ public class HomeViewController {
                 "Home Page",
                 "Welcome to Media Multitool! Select a tool from the buttons below or use the navigation sidebar to start converting or compressing your media files."
         );
+    }
+
+    public void onOpenNegativeImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(1);
+        }
+    }
+
+    public void onOpenTurnImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(2);
+        }
+    }
+
+    public void onOpenLightenImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(3);
+        }
+    }
+
+    public void onOpenDarkenImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(4);
+        }
+    }
+
+    public void onOpenColorizeImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(5);
+        }
     }
 }

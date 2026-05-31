@@ -12,7 +12,9 @@ import java.util.Map;
 
 public class ControllerView {
 
-    @FXML private ComboBox<Item> comboBoxChoiceActionImage;
+    @FXML private StackPane colorizePage;
+    @FXML private StackPane darkenPage;
+    @FXML private StackPane lightenPage;
     @FXML private StackPane infoPage;
     @FXML private StackPane compressorVideoPage;
     @FXML private StackPane converterMP3Page;
@@ -33,6 +35,16 @@ public class ControllerView {
     @FXML private Button navCompressorImage;
     @FXML private Button navCompressorVideo;
     @FXML private Button navInfo;
+
+    @FXML private ComboBox<Item> comboBoxChoiceActionImage;
+
+    /** index page
+     * 1, negativeImagePage,
+     * 2, turnImagePage,
+     * 3, lightenPage,
+     * 4, darkenPage,
+     * 5, colorizePage
+     * **/
 
     private final Map<Integer, StackPane> stackPaneMap = new HashMap<>();
 
@@ -62,12 +74,18 @@ public class ControllerView {
 
         stackPaneMap.putAll(Map.of(
                 1, negativeImagePage,
-                2, turnImagePage
+                2, turnImagePage,
+                3, lightenPage,
+                4, darkenPage,
+                5, colorizePage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
                 new Item(1, "Negative photo"),
-                new Item(2, "Turn photo")
+                new Item(2, "Turn photo"),
+                new Item(3, "Lighten photo"),
+                new Item(4, "Darken photo"),
+                new Item(5, "Colorize photo")
         );
     }
 
@@ -107,7 +125,16 @@ public class ControllerView {
         if (selectedItem != null) {
             currentPageFromComboBoxAction = stackPaneMap.get((int) selectedItem.id());
             setActivePage(currentPageFromComboBoxAction, null);
+            comboBoxChoiceActionImage.setStyle(getComboBoxStyle(true));
         }
+    }
+
+    @FXML
+    public void onActionChoiceActionImage(int index) {
+            currentPageFromComboBoxAction = stackPaneMap.get(index);
+            setActivePage(currentPageFromComboBoxAction, null);
+            comboBoxChoiceActionImage.setStyle(getComboBoxStyle(true));
+
     }
 
     @FXML
@@ -118,7 +145,8 @@ public class ControllerView {
     private void setActivePage(StackPane pageToShow, Button activeButton) {
         StackPane[] allPages = {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
-                compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage, infoPage
+                compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
+                infoPage, lightenPage, darkenPage, colorizePage
         };
 
         for (StackPane page : allPages) {
@@ -130,6 +158,7 @@ public class ControllerView {
 
         if (activeButton != null) {
             comboBoxChoiceActionImage.getSelectionModel().clearSelection();
+            comboBoxChoiceActionImage.setStyle(getComboBoxStyle(false));
         }
 
         navHomeButton.setStyle(getNavButtonStyle(activeButton == navHomeButton));
@@ -146,5 +175,12 @@ public class ControllerView {
             return "-fx-background-color: #32CD32; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 8;";
         }
         return "-fx-background-color: #323232; -fx-text-fill: white; -fx-background-radius: 8;";
+    }
+
+    private String getComboBoxStyle(boolean active) {
+        if (active) {
+            return "-fx-background-color: #32CD32; -fx-background-radius: 8; -fx-font-weight: bold;";
+        }
+        return "-fx-background-color: #323232; -fx-background-radius: 8;";
     }
 }

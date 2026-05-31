@@ -2,27 +2,27 @@ package media_multitool;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.embed.swing.SwingFXUtils;
 import model.imagePreprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
+import com.bric.colorpicker.ColorPicker;
+import viewHelp.WorkColors;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -31,12 +31,8 @@ import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
-public class TurnImageController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
-    private BufferedImage currentBufferedImage;
-    public Button btnTurnImageLeft;
-    public Button btnTurnImageRight;
-
+public class ColorizeImageController extends AbstractMediaController {
+    @FXML private Button btnColorPicker;
     @FXML private StackPane dropZone;
     @FXML private Button btnSelectPhotoFile;
     @FXML private Button btnChoiceDirForSaveImage;
@@ -46,13 +42,20 @@ public class TurnImageController extends AbstractMediaController {
     @FXML private Label labelPreviewPlaceholder;
     @FXML private StackPane previewContainer;
 
+    private final ImageProperties imageProperties = new ImageProperties();
+    private BufferedImage originalBufferedImage;
+    private BufferedImage currentBufferedImage;
+    private Color selectedColorFX = Color.WHITE;
+
+    private JDialog swingDialog;
+
     @FXML
     public void initialize() {
         btnChoiceDirForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
 
         imageProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
 
         if (imageViewPreview != null && previewContainer != null) {
             imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
@@ -67,15 +70,15 @@ public class TurnImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Turn Image",
+                "Colorize Image",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
-                        3. Select which direction you want to rotate the image by pressing the corresponding key.
-                        4. Click 'Turn and Download' to apply the effect.
+                        3. Use the color picker to choose a tint.
+                        4. Click 'Colorize and Download' to apply the effect.
                         
-                        This tool turn your image.
+                        This tool colorizes your image using a lighting effect.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -85,6 +88,7 @@ public class TurnImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
         btnChoiceDirForSaveImage.setDisable(true);
+        btnColorPicker.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
@@ -92,6 +96,7 @@ public class TurnImageController extends AbstractMediaController {
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
         btnChoiceDirForSaveImage.setDisable(false);
+        btnColorPicker.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
 
@@ -111,7 +116,7 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void ActionBtnSelectFile() {
+    public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
@@ -129,23 +134,8 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    private void onActionTurnImage(ActionEvent event) {
-        if (currentBufferedImage == null) {
-            return;
-        }
-
-        Object source = event.getSource();
-        boolean side = (source != btnTurnImageLeft);
-
-        ImagePreprocessing.turnImage(currentBufferedImage, side).ifPresent(rotated -> {
-            currentBufferedImage = rotated;
-            setPreview(currentBufferedImage);
-        });
-    }
-
-    @FXML
-    public void submitTurnAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+    public void submitColorizeAndDownload() {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
             return;
         }
 
@@ -154,15 +144,19 @@ public class TurnImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
+                BufferedImage processedImage = ImagePreprocessing.applyColorizeEffect(currentBufferedImage, selectedColorFX);
+
+                updateProgress(30, 100);
+
                 File outputFile = Util.createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
                 );
 
-                updateProgress(50, 100);
+                updateProgress(60, 100);
 
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
+                ImagePreprocessing.downloadImage(processedImage, imageProperties.getTypeImage(), outputFile);
                 updateProgress(100, 100);
 
                 return outputFile;
@@ -181,18 +175,12 @@ public class TurnImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Image rotation successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Image colorization successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Rotated image saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Colorized image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override
@@ -213,6 +201,11 @@ public class TurnImageController extends AbstractMediaController {
         Util.reset(imageProperties, ctx, "Selected image file: none");
 
         currentBufferedImage = null;
+        originalBufferedImage = null;
+        selectedColorFX = Color.WHITE;
+        WorkColors.updateColorView(java.awt.Color.WHITE, btnColorPicker);
+        previewContainer.setEffect(null);
+
     }
 
     private void loadFile(File selectedFile) {
@@ -222,7 +215,8 @@ public class TurnImageController extends AbstractMediaController {
 
         if (imageViewPreview != null) {
             try {
-                currentBufferedImage = ImageIO.read(selectedFile);
+                originalBufferedImage = ImageIO.read(selectedFile);
+                currentBufferedImage = originalBufferedImage;
                 if (currentBufferedImage != null) {
                     setPreview(currentBufferedImage);
                     if (labelPreviewPlaceholder != null) {
@@ -246,6 +240,61 @@ public class TurnImageController extends AbstractMediaController {
         if (bi != null && imageViewPreview != null) {
             Image image = SwingFXUtils.toFXImage(bi, null);
             imageViewPreview.setImage(image);
+        }
+    }
+
+    @FXML
+    public void handleColorChange() {
+        if (swingDialog == null) {
+            initSwingColorPicker();
+            bindSwingDialogToStage();
+        }
+        if (!swingDialog.isVisible()) {
+            swingDialog.setVisible(true);
+        } else {
+            swingDialog.toFront();
+        }
+    }
+
+    private void initSwingColorPicker() {
+        swingDialog = new JDialog();
+        swingDialog.setTitle("Select Color");
+        swingDialog.setModal(false);
+        swingDialog.setAlwaysOnTop(true);
+        swingDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        ColorPicker swingColorPicker = new ColorPicker(true, true);
+        swingColorPicker.setColor(WorkColors.toAwtColor(selectedColorFX));
+
+        swingColorPicker.addColorListener(colorModel -> {
+            java.awt.Color newColor = colorModel.getColor();
+            Platform.runLater(() -> {
+                updateColorModel(newColor);
+                WorkColors.updateColorView(newColor, btnColorPicker);
+            });
+        });
+
+        swingDialog.add(swingColorPicker);
+        swingDialog.pack();
+    }
+
+    private void bindSwingDialogToStage() {
+        Platform.runLater(() -> {
+            if (btnColorPicker.getScene() != null && btnColorPicker.getScene().getWindow() != null) {
+                btnColorPicker.getScene().getWindow().addEventHandler(
+                        javafx.stage.WindowEvent.WINDOW_HIDING,
+                        _ -> {
+                            if (swingDialog != null) swingDialog.dispose();
+                        }
+                );
+            }
+        });
+    }
+
+    private void updateColorModel(java.awt.Color awtColor) {
+        this.selectedColorFX = WorkColors.toFxColor(awtColor);
+        if (currentBufferedImage != null) {
+            previewContainer.setEffect(ImagePreprocessing.colorizeImage(currentBufferedImage, selectedColorFX));
         }
     }
 }

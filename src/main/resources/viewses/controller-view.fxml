@@ -78,7 +78,8 @@
               stroke="red" strokeWidth="2.0" />
 
 
-        <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="100.0" onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"/>
+        <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="140.0"
+                  onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"/>
 
 
         <Line startX="85.0"
@@ -109,5 +110,8 @@
         <fx:include fx:id="negativeImagePage" source="negative-image-view.fxml"/>
         <fx:include fx:id="turnImagePage" source="turn-image-view.fxml"/>
         <fx:include fx:id="infoPage" source="info-view.fxml"/>
+        <fx:include fx:id="lightenPage" source="lighten-image-view.fxml"/>
+        <fx:include fx:id="darkenPage" source="darken-image-view.fxml"/>
+        <fx:include fx:id="colorizePage" source="colorize-image-view.fxml"/>
     </StackPane>
 </HBox>

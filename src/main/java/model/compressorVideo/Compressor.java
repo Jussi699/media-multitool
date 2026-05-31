@@ -24,14 +24,14 @@ public class Compressor {
     private final Encoder encoder = new Encoder();
 
     public void compress(File videoFile, File output,
-                                VideoAttributes video, AudioAttributes audio, Consumer<Double> progressConsumer) {
+                                VideoAttributes video, AudioAttributes audio, Consumer<Double> progressConsumer) throws EncoderException {
         currentTarget = output;
 
         try {
             MultimediaObject multimediaObject = new MultimediaObject(videoFile);
             MultimediaInfo sourceInfo = multimediaObject.getInfo();
 
-            getCodec(videoFile); // Configure codecs based on input
+            getCodec(videoFile);
 
             video.setCodec(videoCodec);
             
@@ -67,14 +67,15 @@ public class Compressor {
             });
             
             ErrorLogger.info("Video compression completed successfully: " + output.getAbsolutePath());
-        }
-        catch (EncoderException e) {
-            ErrorLogger.log(120, ErrorLogger.Level.ERROR, "Encoder error! ", e);
-        }
-        catch (Exception e) {
-            ErrorLogger.error(e.getMessage());
-        }
-        finally {
+        } catch (EncoderException e) {
+            String msg = e.getMessage();
+            boolean isCancelled = msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
+            if (isCancelled) {
+                ErrorLogger.info("Compression was cancelled by user.");
+            } else {
+                throw e;
+            }
+        } finally {
             clearCurrentTarget(output);
         }
     }
@@ -111,7 +112,7 @@ public class Compressor {
             case "mkv", "matroska" -> {
                 videoCodec = useGPU ? "h264_nvenc" : "libx264";
                 audioCodec = "aac";
-                ffmpegFormat = "mkv";
+                ffmpegFormat = "matroska";
             }
             case "avi" -> {
                 videoCodec = useGPU ? "h264_nvenc" : "mpeg4";

@@ -61,11 +61,6 @@ public class ConverterAudioController extends AbstractMediaController {
         audioProperties.setOutput(getSavedPath());
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
-        labelSuccess.setVisible(false);
-        labelSuccess.setManaged(true);
-        labelSelectAudioFile.setVisible(true);
-        labelSelectAudioFile.setText("Selected audio file: none");
-
         setupComboBox(comboBoxChoiceBitRate);
         setupComboBox(comboBoxChoiceChannels);
         setupComboBox(comboBoxChoiceSamplingRate);
@@ -86,7 +81,7 @@ public class ConverterAudioController extends AbstractMediaController {
     private void resetToDefaults() {
         ResetContext ctx = new ResetContext(
                 labelSelectAudioFile, labelSuccess, textDragZone, null,
-                dropZone, null, true
+                dropZone, null, progressBar, true
         );
         Util.reset(audioProperties, ctx, "Selected audio file: none");
 
@@ -111,11 +106,13 @@ public class ConverterAudioController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         btnSubmitConvert.setDisable(true);
+        if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSubmitConvert.setDisable(false);
+        if (btnReset != null) btnReset.setDisable(false);
     }
 
     @Override
@@ -124,7 +121,21 @@ public class ConverterAudioController extends AbstractMediaController {
         if (Boolean.TRUE.equals(result)) {
             showSuccessMessage(labelSuccess, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, audioProperties.getHideSuccessMessageTimer());
+        } else {
+            audioProperties.getHideSuccessMessageTimer().playFromStart();
         }
+    }
+
+    @Override
+    protected void handleTaskCancelled() {
+        super.handleTaskCancelled();
+        audioProperties.getHideSuccessMessageTimer().playFromStart();
+    }
+
+    @Override
+    protected void handleTaskFailure(Throwable exception) {
+        super.handleTaskFailure(exception);
+        audioProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML

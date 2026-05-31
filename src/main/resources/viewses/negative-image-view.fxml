@@ -45,7 +45,6 @@
                    minHeight="20.0"
                    prefHeight="20.0"
                    visible="false"
-                   managed="true"
                    text="Negative status: success"
                    textFill="#32CD32"
                    wrapText="true"/>
@@ -96,7 +95,8 @@
                    textFill="RED"
                    wrapText="true"/>
 
-            <Button mnemonicParsing="false"
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
                     onAction="#onResetPressed"
                     prefWidth="240.0"
                     text="Reset"/>

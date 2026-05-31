@@ -20,7 +20,6 @@ public class VideoOperationsTest {
 
     @Test
     public void testVideoConversion() throws Exception {
-        if (PATH_TO_VIDEO.isEmpty()) return;
         File source = new File(PATH_TO_VIDEO);
         ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
         
@@ -29,7 +28,7 @@ public class VideoOperationsTest {
                 tempDir.toFile(),
                 2000, 128, 2, 44100, 30,
                 "libx264", "aac", "mp4", "1280x720", "video",
-                progress -> {}
+                _ -> {}
         );
         
         assertTrue(success);
@@ -40,7 +39,6 @@ public class VideoOperationsTest {
 
     @Test
     public void testVideoCompression() throws Exception {
-        if (PATH_TO_VIDEO.isEmpty()) return;
         File source = new File(PATH_TO_VIDEO);
         Compressor compressor = new Compressor();
         
@@ -49,7 +47,7 @@ public class VideoOperationsTest {
         VideoPresets.Preset[] presets = VideoPresets.createAdaptivePresets(source).orElseThrow();
         VideoPresets.Preset selected = presets[0];
         
-        compressor.compress(source, output, selected.video(), selected.audio(), p -> {});
+        compressor.compress(source, output, selected.video(), selected.audio(), _ -> {});
         
         assertTrue(output.exists());
         assertTrue(output.length() > 0);

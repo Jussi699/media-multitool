@@ -14,10 +14,7 @@ import model.imagePreprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
-import model.utility.DetermineType;
-import model.utility.DragDropped;
-import model.utility.ResetContext;
-import model.utility.Util;
+import model.utility.*;
 import viewHelp.Alerts;
 
 import java.awt.image.BufferedImage;
@@ -47,11 +44,7 @@ public class NegativeImageController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
-
-        labelSuccess.setVisible(false);
-        labelSuccess.setText("Negative status");
-        labelSelectImageName.setText("Selected image file: none");
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         if (imageViewPreview != null && previewContainer != null) {
             imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
@@ -65,12 +58,14 @@ public class NegativeImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
         btnChoiceDirForSaveImage.setDisable(true);
+        if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
         btnChoiceDirForSaveImage.setDisable(false);
+        if (btnReset != null) btnReset.setDisable(false);
     }
     
     @FXML
@@ -93,7 +88,7 @@ public class NegativeImageController extends AbstractMediaController {
 
     @FXML
     public void submitNegativeAndDownload() {
-        if (!Util.checkImageAndOutputOnNull(imageProperties)) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties)) {
             return;
         }
 
@@ -129,13 +124,24 @@ public class NegativeImageController extends AbstractMediaController {
 
     @Override
     protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.FALSE.equals(result)) {
+            imageProperties.getHideSuccessMessageTimer().playFromStart();
+            return;
+        }
         File outputFile = (File) result;
-        ErrorLogger.info("Negative image has been success! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Image negative successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Negative saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Negative image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
+    }
+
+    @Override
+    protected void handleTaskCancelled() {
+        super.handleTaskCancelled();
+        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override
@@ -151,7 +157,7 @@ public class NegativeImageController extends AbstractMediaController {
     public void onResetPressed() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, true
+                dropZone, imageViewPreview, progressBar, true
         );
         Util.reset(imageProperties, ctx, "Selected image file: none");
     }

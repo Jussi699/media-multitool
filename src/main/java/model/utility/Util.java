@@ -1,7 +1,6 @@
 package model.utility;
 
 import javafx.animation.PauseTransition;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Control;
@@ -10,13 +9,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
-import model.properties.ImageProperties;
-import viewHelp.Alerts;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -130,18 +126,6 @@ public class Util {
         }
     }
 
-    public static boolean isSupportedMediaFile(File file, List<String> list) {
-        String fileName = file.getName().toLowerCase();
-
-        for (String ext : list) {
-            String suffix = ext.startsWith(".") ? ext.toLowerCase() : "." + ext.toLowerCase();
-            if (fileName.endsWith(suffix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static File createOutputFile(File image, File pathForSave, String extension) {
         String normalizedExtension = extension.toLowerCase(Locale.ROOT);
         String shortId = UUID.randomUUID().toString().split("-")[0];
@@ -154,14 +138,6 @@ public class Util {
         return new File(pathForSave, fileName);
     }
 
-    public static boolean checkImageAndOutputOnNull(ImageProperties imageProperties) {
-        if (imageProperties.getImage() == null || imageProperties.getOutput() == null) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
-            return false;
-        }
-        return true;
-    }
-
     public static void reset(MediaProperties properties, ResetContext ctx, String defaultText) {
         properties.reset();
 
@@ -172,7 +148,7 @@ public class Util {
         if (ctx.labelSuccess() != null) {
             ctx.labelSuccess().setVisible(false);
             ctx.labelSuccess().setText("");
-            hideSuccessMessage(ctx.labelSuccess(), properties.getHideSuccessMessageTimer(), ctx.managed());
+            hideSuccessMessage(ctx.labelSuccess(), ctx.progressBar(), properties.getHideSuccessMessageTimer(), ctx.managed());
             ctx.labelSuccess().setManaged(ctx.managed());
         }
 

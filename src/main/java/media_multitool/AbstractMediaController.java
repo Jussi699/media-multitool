@@ -1,9 +1,9 @@
 package media_multitool;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import model.logger.ErrorLogger;
@@ -14,6 +14,7 @@ public abstract class AbstractMediaController {
     
     @FXML protected ProgressBar progressBar;
     @FXML protected Label labelSuccess;
+    @FXML protected Button btnReset;
 
     protected abstract void lockUI();
     protected abstract void unlockUI();
@@ -31,6 +32,12 @@ public abstract class AbstractMediaController {
             unbindProgress();
             unlockUI();
             handleTaskSuccess(task.getValue());
+        });
+
+        task.setOnCancelled(_ -> {
+            unbindProgress();
+            unlockUI();
+            handleTaskCancelled();
         });
 
         task.setOnFailed(_ -> {
@@ -51,23 +58,43 @@ public abstract class AbstractMediaController {
     }
 
     protected void handleTaskSuccess(Object result) {
-        Platform.runLater(() -> {
-            if (labelSuccess != null) {
-                labelSuccess.setText("Operation successful!");
-                labelSuccess.setVisible(true);
-                labelSuccess.setManaged(true);
+        if (Boolean.FALSE.equals(result)) {
+            if (progressBar != null) {
+                progressBar.setProgress(0);
             }
-        });
+            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", "The operation completed but did not produce the expected result. Please check the logs.");
+            return;
+        }
+        if (labelSuccess != null) {
+            labelSuccess.setStyle("-fx-text-fill: #32CD32;");
+            labelSuccess.setText("Operation successful!");
+            labelSuccess.setVisible(true);
+            labelSuccess.setManaged(true);
+        }
+    }
+
+    protected void handleTaskCancelled() {
+        if (labelSuccess != null) {
+            labelSuccess.setStyle("-fx-text-fill: orange;");
+            labelSuccess.setText("Operation cancelled.");
+            labelSuccess.setVisible(true);
+            labelSuccess.setManaged(true);
+        }
+        if (progressBar != null) {
+            progressBar.setProgress(0);
+        }
     }
 
     protected void handleTaskFailure(Throwable exception) {
-        Platform.runLater(() -> {
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", exception.getMessage());
-            if (labelSuccess != null) {
-                labelSuccess.setText("Operation failed.");
-                labelSuccess.setVisible(true);
-                labelSuccess.setManaged(true);
-            }
-        });
+        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", exception.getMessage());
+        if (labelSuccess != null) {
+            labelSuccess.setStyle("-fx-text-fill: RED;");
+            labelSuccess.setText("Operation failed.");
+            labelSuccess.setVisible(true);
+            labelSuccess.setManaged(true);
+        }
+        if (progressBar != null) {
+            progressBar.setProgress(0);
+        }
     }
 }

@@ -10,6 +10,7 @@ module media_multitool {
     requires net.coobird.thumbnailator;
     requires org.apache.commons.io;
     requires java.prefs;
+    requires colorpicker;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;

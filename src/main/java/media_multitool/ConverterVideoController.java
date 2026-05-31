@@ -53,9 +53,7 @@ public class ConverterVideoController extends AbstractMediaController {
     public void initialize() {
         btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
         videoProperties.setOutput(getSavedPath());
-        setupClearMessageTimer(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
-        labelSelectVideoName.setText("Selected video file: none");
-        labelSuccess.setVisible(false);
+        setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
 
         ComboBoxes.setupComboBox(comboBoxChoiceBitRate, Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceChannels, Item::title);
@@ -126,11 +124,13 @@ public class ConverterVideoController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         btnSubmitConvert.setDisable(true);
+        if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSubmitConvert.setDisable(false);
+        if (btnReset != null) btnReset.setDisable(false);
     }
 
     @Override
@@ -139,7 +139,21 @@ public class ConverterVideoController extends AbstractMediaController {
         if (Boolean.TRUE.equals(result)) {
             showSuccessMessage(labelSuccess, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
+        } else {
+            videoProperties.getHideSuccessMessageTimer().playFromStart();
         }
+    }
+
+    @Override
+    protected void handleTaskCancelled() {
+        super.handleTaskCancelled();
+        videoProperties.getHideSuccessMessageTimer().playFromStart();
+    }
+
+    @Override
+    protected void handleTaskFailure(Throwable exception) {
+        super.handleTaskFailure(exception);
+        videoProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
@@ -315,7 +329,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
         switch (videoProperties.getTargetFormat()) {
             case "mp4", "m4v" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mp4"; }
-            case "mkv", "matroska" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mkv"; }
+            case "mkv", "matroska" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "matroska"; }
             case "avi" -> { videoCodec = useGPU ? "h264_nvenc" : "mpeg4"; audioCodec = "libmp3lame"; ffmpegFormat = "avi"; }
             case "webm" -> { videoCodec = "libvpx"; audioCodec = "libvorbis"; ffmpegFormat = "webm"; }
             case "mov" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mov"; }
@@ -339,9 +353,9 @@ public class ConverterVideoController extends AbstractMediaController {
         btnToWEBM.setSelected(false);
         btnToMOV.setSelected(false);
         if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
+        onCancelConversation();
         resetToDefaults();
-        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
-        if (progressBar != null) progressBar.setProgress(0);
+        hideSuccessMessage(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
     @FXML

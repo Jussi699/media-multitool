@@ -122,6 +122,7 @@
                    alignment="CENTER"
                    prefWidth="400.0"
                    textFill="#32CD32"
+                   visible="false"
                    text="Convert has been success!" />
         </VBox>
 
@@ -146,7 +147,8 @@
                    textFill="RED"
                    wrapText="true" />
 
-            <Button mnemonicParsing="false"
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
                     onAction="#onResetPressed"
                     prefWidth="240.0" text="Reset" />
         </VBox>

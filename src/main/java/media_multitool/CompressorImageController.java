@@ -54,11 +54,7 @@ public class CompressorImageController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
-
-        labelSuccess.setVisible(false);
-        labelSuccess.setText("Compression status");
-        labelSelectImageName.setText("Selected file: none");
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         ComboBoxes.setupComboBox(comboBoxOutputQuality, Item::title);
         ComboBoxes.setupComboBox(comboBoxScaleImage, Item::title);
@@ -93,16 +89,23 @@ public class CompressorImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
         btnChoiceDirForSaveImage.setDisable(true);
+        if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
         btnChoiceDirForSaveImage.setDisable(false);
+        if (btnReset != null) btnReset.setDisable(false);
     }
 
     @Override
     protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.FALSE.equals(result)) {
+            imageProperties.getHideSuccessMessageTimer().playFromStart();
+            return;
+        }
         Optional<CompressionResult> compressionResultOpt = (Optional<CompressionResult>) result;
         if (compressionResultOpt.isEmpty()) {
             showErrorMessage(labelSuccess, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
@@ -176,7 +179,7 @@ public class CompressorImageController extends AbstractMediaController {
     public void onResetPressed() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, true
+                dropZone, imageViewPreview, progressBar, true
         );
         Util.reset(imageProperties, ctx, "Selected file: none");
 

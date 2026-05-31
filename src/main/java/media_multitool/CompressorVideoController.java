@@ -44,6 +44,8 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML private ToggleButton btnSuperCompress;
     @FXML private StackPane dropZone;
     @FXML private CheckBox chkUseGPU;
+    @FXML private Button btnCompress;
+    @FXML private Button btnCancel;
 
     private long durationMillis = 0;
     private boolean hasAudio = false;
@@ -51,6 +53,8 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML
     public void initialize() {
         btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
+        btnCompress.setTooltip(new Tooltip("Compression may take a long time, especially for large files."));
+
         Tooltip tooltipBasicCompress = new Tooltip("Medium size, high quality");
         Tooltip tooltipStrongCompress = new Tooltip("Smallest size, lowest quality");
         Tooltip tooltipSuperCompress = new Tooltip("Small size, high quality");
@@ -76,14 +80,18 @@ public class CompressorVideoController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectVideoFile.setDisable(true);
         btnChoiceDirForSaveVideo.setDisable(true);
+        btnCompress.setDisable(true);
         if (chkUseGPU != null) chkUseGPU.setDisable(true);
+        if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectVideoFile.setDisable(false);
         btnChoiceDirForSaveVideo.setDisable(false);
+        btnCompress.setDisable(false);
         if (chkUseGPU != null) chkUseGPU.setDisable(false);
+        if (btnReset != null) btnReset.setDisable(false);
     }
 
     @Override
@@ -92,7 +100,21 @@ public class CompressorVideoController extends AbstractMediaController {
         if (Boolean.TRUE.equals(result)) {
             showSuccessText(labelSuccess, "Compression successful!", videoProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
+        } else {
+            videoProperties.getHideSuccessMessageTimer().playFromStart();
         }
+    }
+
+    @Override
+    protected void handleTaskCancelled() {
+        super.handleTaskCancelled();
+        videoProperties.getHideSuccessMessageTimer().playFromStart();
+    }
+
+    @Override
+    protected void handleTaskFailure(Throwable exception) {
+        super.handleTaskFailure(exception);
+        videoProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
@@ -155,7 +177,7 @@ public class CompressorVideoController extends AbstractMediaController {
     public void onActionPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectVideoName, labelSuccess, textDragZone, null,
-                dropZone, null, true
+                dropZone, null, progressBar, true
         );
         Util.reset(videoProperties, ctx, "Select video: none");
 

@@ -21,12 +21,10 @@ public class ConverterVideoAudioFile {
 
     public File nameFileAfter;
 
-    public boolean convert(File file,
-                                                     File pathForSave,
-                                                     int videoBitrate, int audioBitrate,
-                                                     int channels, int samplingRate, int fps,
-                                                     String videoCodec, String audioCodec, String output_format, String resolution, String typeConvert,
-                                                     Consumer<Double> progressConsumer) {
+    public boolean convert(File file, File pathForSave, int videoBitrate, int audioBitrate,
+                           int channels, int samplingRate, int fps, String videoCodec,
+                           String audioCodec, String output_format, String resolution, String typeConvert,
+                           Consumer<Double> progressConsumer) {
         if (!checkingFile(file)) {
             return false;
         }

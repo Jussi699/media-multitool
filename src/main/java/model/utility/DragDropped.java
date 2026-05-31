@@ -9,7 +9,7 @@ import javafx.scene.layout.StackPane;
 import java.io.File;
 import java.util.List;
 
-import static model.utility.Util.isSupportedMediaFile;
+import static model.utility.Checking.isSupportedMediaFile;
 
 public class DragDropped {
     

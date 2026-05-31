@@ -31,6 +31,8 @@ public class Alerts {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
+        
+        alert.getButtonTypes().setAll(javafx.scene.control.ButtonType.YES, javafx.scene.control.ButtonType.NO);
 
         var pane = alert.getDialogPane();
         var res = ErrorLogger.class.getResource("/style.css");
@@ -38,6 +40,6 @@ public class Alerts {
         pane.getStyleClass().add("dialog-pane");
 
         var result = alert.showAndWait();
-        return result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK;
+        return result.isPresent() && result.get() == javafx.scene.control.ButtonType.YES;
     }
 }

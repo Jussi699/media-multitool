@@ -1,11 +1,16 @@
 package model.imagePreprocessing;
 
 import javafx.scene.control.Alert;
+import javafx.scene.effect.Light;
+import javafx.scene.effect.Lighting;
+import javafx.scene.paint.Color;
 import model.logger.ErrorLogger;
 import viewHelp.Alerts;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -110,5 +115,105 @@ public class ImagePreprocessing {
             ErrorLogger.error("ImageIO.write returned false! This usually means no appropriate writer was found for format: " + formatFile);
             throw new IOException("Failed to save image: no writer found for format " + formatFile);
         }
+    }
+
+    public static Optional<BufferedImage> brightnessImage(BufferedImage image, int offset) {
+        if (image == null) {
+            return Optional.empty();
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = result.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+
+        int[] pixels = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+
+        for (int i = 0; i < pixels.length; i++) {
+            int argb = pixels[i];
+
+            int a = (argb >> 24) & 0xFF;
+            int r = (argb >> 16) & 0xFF;
+            int g = (argb >> 8) & 0xFF;
+            int b = argb & 0xFF;
+
+            r = Math.clamp(r + offset, 0, 255);
+            g = Math.clamp(g + offset, 0, 255);
+            b = Math.clamp(b + offset, 0, 255);
+
+            pixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
+        }
+
+        return Optional.of(result);
+    }
+
+    public static Lighting colorizeImage(BufferedImage image, Color color) {
+        if (image == null) {
+            return null;
+        }
+
+        Light.Distant light = new Light.Distant();
+        light.setAzimuth(45.0);
+        light.setElevation(90.0);
+        light.setColor(color);
+
+        Lighting lighting = new Lighting();
+        lighting.setLight(light);
+        lighting.setSurfaceScale(0.0);
+
+
+        return lighting;
+    }
+
+    public static BufferedImage applyColorizeEffect(BufferedImage image, Color fxColor) {
+        if (image == null) return null;
+
+        if (fxColor.equals(Color.WHITE)) {
+            return image;
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        double targetR = fxColor.getRed();
+        double targetG = fxColor.getGreen();
+        double targetB = fxColor.getBlue();
+
+        // JavaFX Lighting effect default values when surfaceScale is 0:
+        // Diffuse = 1.0, Specular = 0.3
+        // Result = LightColor * (Diffuse * PixelColor + Specular)
+        double diffuseConstant = 1.0;
+        double specularConstant = 0.3;
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int argb = image.getRGB(x, y);
+                int a = (argb >> 24) & 0xFF;
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = argb & 0xFF;
+
+                // Normalize pixel components to 0.0-1.0
+                double normR = r / 255.0;
+                double normG = g / 255.0;
+                double normB = b / 255.0;
+
+                double resR = targetR * (diffuseConstant * normR + specularConstant);
+                double resG = targetG * (diffuseConstant * normG + specularConstant);
+                double resB = targetB * (diffuseConstant * normB + specularConstant);
+
+                int finalR = (int) Math.min(255, resR * 255);
+                int finalG = (int) Math.min(255, resG * 255);
+                int finalB = (int) Math.min(255, resB * 255);
+
+                result.setRGB(x, y, (a << 24) | (finalR << 16) | (finalG << 8) | finalB);
+            }
+        }
+        return result;
     }
 }

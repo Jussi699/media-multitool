@@ -17,17 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageOperationsTest {
 
-    private final String PATH_TO_PNG = "E:\\test\\srcImage\\PNG.png";
-    private final String PATH_TO_JPG = "E:\\test\\srcImage\\JPEG.jpeg";
-    private final String PATH_TO_ICO = "E:\\test\\srcImage\\ICO.ico";
-    private final String PATH_TO_SVG = "E:\\test\\srcImage\\SVG.svg";
-
     @TempDir
     Path tempDir;
 
     @Test
     public void testConvertPngToAllFormats() throws IOException {
-        if (PATH_TO_PNG.isEmpty()) return;
+        String PATH_TO_PNG = "E:\\test\\srcImage\\PNG.png";
         File source = new File(PATH_TO_PNG);
         String[] formats = {"jpg", "bmp", "webp", "ico", "svg"};
         
@@ -42,7 +37,7 @@ public class ImageOperationsTest {
 
     @Test
     public void testConvertIcoToPng() throws IOException {
-        if (PATH_TO_ICO.isEmpty()) return;
+        String PATH_TO_ICO = "E:\\test\\srcImage\\ICO.ico";
         File source = new File(PATH_TO_ICO);
         ImageConversionStrategy strategy = ImageStrategyFactory.getStrategy(source, "png");
         File result = strategy.convert(source, tempDir.toFile(), "png");
@@ -52,7 +47,7 @@ public class ImageOperationsTest {
 
     @Test
     public void testConvertSvgToPng() throws IOException {
-        if (PATH_TO_SVG.isEmpty()) return;
+        String PATH_TO_SVG = "E:\\test\\srcImage\\SVG.svg";
         File source = new File(PATH_TO_SVG);
         ImageConversionStrategy strategy = ImageStrategyFactory.getStrategy(source, "png");
         File result = strategy.convert(source, tempDir.toFile(), "png");
@@ -61,8 +56,8 @@ public class ImageOperationsTest {
     }
 
     @Test
-    public void testImageCompression() throws IOException {
-        if (PATH_TO_JPG.isEmpty()) return;
+    public void testImageCompression() {
+        String PATH_TO_JPG = "E:\\test\\srcImage\\JPEG.jpeg";
         File source = new File(PATH_TO_JPG);
         ImageProperties props = new ImageProperties();
         props.setImage(source);
