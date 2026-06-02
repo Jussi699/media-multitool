@@ -2,7 +2,6 @@ package media_multitool;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
@@ -15,15 +14,16 @@ import javafx.stage.Stage;
 import model.select.SelectFile;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
-import model.utility.DragDropped;
-import model.utility.ResetContext;
-import model.utility.Util;
+import model.utility.*;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import model.utility.Preparation;
+
 import viewHelp.Alerts;
+import viewHelp.Cells;
+
 import static viewHelp.Message.*;
 import static model.utility.Util.*;
 import static model.converterImage.UsefulMethods.*;
@@ -34,37 +34,25 @@ public class ConverterImageController extends AbstractMediaController {
     private File path_folderBatchProcessing;
     private List<File> filesToProcess = new ArrayList<>();
 
-    @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceFolderForSaveImage;
-    @FXML private Button btnSelectBatchFileProcessing;
-    @FXML private Label labelSelectImage;
-    @FXML private ToggleButton btnToSVG;
-    @FXML private ToggleButton btnToWEBM;
-    @FXML private ToggleButton btnToJPEG;
-    @FXML private ToggleButton btnToPNG;
-    @FXML private ToggleButton btnToTIFF;
-    @FXML private ToggleButton btnToBMP;
-    @FXML private ToggleButton btnToPPM;
-    @FXML private ToggleButton btnToPGM;
-    @FXML private ToggleButton btnToPAM;
+    @FXML private Button btnSelectPhoto, btnChoiceFolderForSave, btnSelectBatchFileProcessing;
+    @FXML private Label labelSelectImage, textDragZone, labelPreviewPlaceholder;
+    @FXML private ToggleButton btnToSVG, btnToWEBM, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM;
     @FXML private Slider imageScaleSlider;
     @FXML private ComboBox<String> comboBoxIcoSize;
     @FXML private ScrollPane scrollPanePhoto;
-    @FXML private StackPane imageContainer;
     @FXML private ImageView imageViewPhoto;
-    @FXML private StackPane dropZone;
-    @FXML private Label textDragZone;
-    @FXML private StackPane previewContainer;
-    @FXML private Label labelPreviewPlaceholder;
+    @FXML private StackPane dropZone, imageContainer;
 
+    private List<ToggleButton> listBtn;
 
     @FXML
     public void initialize() {
-        imageProperties.setOutput(getSavedPath());
-        btnChoiceFolderForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
-        imageContainer.setAlignment(Pos.CENTER);
+        listBtn = List.of(
+                btnToSVG, btnToWEBM, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM
+        );
 
-        scrollPanePhoto.setPannable(true);
+        imageProperties.setOutput(getSavedPath());
+
         imageScaleSlider.setMin(1.0);
         imageScaleSlider.setMax(5.0);
         imageScaleSlider.setValue(1.0);
@@ -85,41 +73,8 @@ public class ConverterImageController extends AbstractMediaController {
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        comboBoxIcoSize.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (empty || item == null || ICO_PLACEHOLDER.equals(item)) {
-                    setText(ICO_PLACEHOLDER);
-                    setStyle("-fx-background-color: LightGrey;-fx-background-radius: 10;" +
-                                    "-fx-border-radius: 10;-fx-alignment: center;-fx-text-fill: black;"
-                    );
-                } else {
-                    setText(item);
-                    setStyle("-fx-background-color: #32CD32;-fx-background-radius: 10;" +
-                                    "-fx-border-radius: 10;-fx-alignment: center;-fx-text-fill: black;"
-                    );
-                }
-            }
-        });
-
-        comboBoxIcoSize.setCellFactory(_ -> new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (empty || item == null || ICO_PLACEHOLDER.equals(item)) {
-                    setText(null);
-                    setGraphic(null);
-                    setStyle("-fx-background-color: transparent;");
-                } else {
-                    setText(item);
-                    setGraphic(null);
-                    setStyle("-fx-alignment: center; -fx-text-fill: black;");
-                }
-            }
-        });
+        Cells.comboBoxIcoSizeButtonCell(comboBoxIcoSize, ICO_PLACEHOLDER);
+        Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, ICO_PLACEHOLDER);
 
         comboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
             if (newVal != null && !newVal.equals(ICO_PLACEHOLDER) && imageViewPhoto.getImage() != null) {
@@ -141,8 +96,8 @@ public class ConverterImageController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         lockButtonFormat();
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceFolderForSaveImage.setDisable(true);
+        btnSelectPhoto.setDisable(true);
+        btnChoiceFolderForSave.setDisable(true);
         btnSelectBatchFileProcessing.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
@@ -150,8 +105,8 @@ public class ConverterImageController extends AbstractMediaController {
     @Override
     protected void unlockUI() {
         unlockButtonFormat();
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceFolderForSaveImage.setDisable(false);
+        btnSelectPhoto.setDisable(false);
+        btnChoiceFolderForSave.setDisable(false);
         btnSelectBatchFileProcessing.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
@@ -179,8 +134,8 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceFolderForSaveImage() {
-        Stage stage = getStage(btnChoiceFolderForSaveImage);
+    public void btnChoiceFolderForSave() {
+        Stage stage = getStage(btnChoiceFolderForSave);
         directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
                 .ifPresent(imageProperties::setOutput);
     }
@@ -192,8 +147,7 @@ public class ConverterImageController extends AbstractMediaController {
                 .ifPresent(selectedPath -> {
                     path_folderBatchProcessing = selectedPath;
 
-                    List<File> result = Preparation.getFilesFromFolder(path_folderBatchProcessing, "png", "jpg", "jpeg", "ico", "webp",
-                            "tiff", "tif", "bmp", "ppm", "pgm", "pam", "jpe", "svg");
+                    List<File> result = Preparation.getFilesFromFolder(path_folderBatchProcessing, Global.getAllSupportedImageFormats());
 
                     filesToProcess = new ArrayList<>(result);
 
@@ -241,21 +195,15 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     @FXML
-    private void onChoiceIcoSize() {
+    private void onActionChoiceIcoSize() {
         String selected = comboBoxIcoSize.getValue();
 
         if (selected == null || selected.equals(ICO_PLACEHOLDER)) return;
 
         imageProperties.setSizeIcoImage(Integer.parseInt(selected));
-        btnToPNG.setSelected(false);
-        btnToJPEG.setSelected(false);
-        btnToWEBM.setSelected(false);
-        btnToTIFF.setSelected(false);
-        btnToBMP.setSelected(false);
-        btnToPPM.setSelected(false);
-        btnToPGM.setSelected(false);
-        btnToPAM.setSelected(false);
-        btnToSVG.setSelected(false);
+        for(ToggleButton tb : listBtn) {
+            tb.setSelected(false);
+        }
 
         imageProperties.setTypeImage("ico");
     }
@@ -271,15 +219,9 @@ public class ConverterImageController extends AbstractMediaController {
         path_folderBatchProcessing = null;
         filesToProcess.clear();
 
-        btnToPNG.setSelected(false);
-        btnToJPEG.setSelected(false);
-        btnToWEBM.setSelected(false);
-        btnToTIFF.setSelected(false);
-        btnToBMP.setSelected(false);
-        btnToPPM.setSelected(false);
-        btnToPGM.setSelected(false);
-        btnToPAM.setSelected(false);
-        btnToSVG.setSelected(false);
+        for(ToggleButton tb : listBtn) {
+            tb.setSelected(false);
+        }
 
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
         imageScaleSlider.setValue(1.0);
@@ -288,10 +230,9 @@ public class ConverterImageController extends AbstractMediaController {
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.ico", "*.webp",
-                        "*.tiff", "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe", "*.svg"),
+                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadImage);
     }
@@ -317,13 +258,10 @@ public class ConverterImageController extends AbstractMediaController {
 
             updateImageSize();
 
-            if (labelPreviewPlaceholder != null) {
-                labelPreviewPlaceholder.setVisible(false);
-            }
-            
-            if (textDragZone != null) {
-                textDragZone.setText("Selected: " + file.getName());
-            }
+            labelPreviewPlaceholder.setVisible(false);
+
+            textDragZone.setText("Selected: " + file.getName());
+
             if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");
             }
@@ -337,8 +275,7 @@ public class ConverterImageController extends AbstractMediaController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".png", ".jpg", ".jpeg", ".ico", ".webp", ".tiff", ".tif", ".bmp", ".ppm", ".pgm", ".pam", ".jpe", ".svg"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
     }
 
     @FXML
@@ -378,7 +315,7 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onActionSubmitConvertAndDownload() {
+    public void submitAndDownload() {
         if (imageProperties.getImage() == null || imageProperties.getOutput() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
                     "Select image first.");
@@ -387,7 +324,7 @@ public class ConverterImageController extends AbstractMediaController {
 
         if (imageProperties.getTypeImage() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
-                    "Select photo format (PNG/JPEG/ICO/WEBP).");
+                    "Select photo format!");
             return;
         }
 
@@ -421,47 +358,47 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     @FXML
-    private void ActionBtnToPNG() {
+    private void onActionBtnToPNG() {
         selectRasterFormat("png");
     }
 
     @FXML
-    private void ActionBtnToJPEG() {
+    private void onActionBtnToJPEG() {
         selectRasterFormat("jpeg");
     }
 
     @FXML
-    public void ActionBtnToWEBM() {
+    public void onActionBtnToWEBM() {
         selectRasterFormat("webp");
     }
 
     @FXML
-    public void ActionBtnToTIFF() {
+    public void onActionBtnToTIFF() {
         selectRasterFormat("tif");
     }
 
     @FXML
-    public void ActionBtnToBMP() {
+    public void onActionBtnToBMP() {
         selectRasterFormat("bmp");
     }
 
     @FXML
-    public void ActionBtnToPPM() {
+    public void onActionBtnToPPM() {
         selectRasterFormat("ppm");
     }
 
     @FXML
-    public void ActionBtnToPAM() {
+    public void onActionBtnToPAM() {
         selectRasterFormat("pam");
     }
 
     @FXML
-    public void ActionBtnToPGM() {
+    public void onActionBtnToPGM() {
         selectRasterFormat("pgm");
     }
 
     @FXML
-    private void ActionBtnToSVG() {
+    private void onActionBtnToSVG() {
         selectRasterFormat("svg");
     }
 
@@ -486,28 +423,16 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     private void lockButtonFormat() {
-        btnToPNG.setDisable(true);
-        btnToJPEG.setDisable(true);
-        btnToWEBM.setDisable(true);
-        btnToTIFF.setDisable(true);
-        btnToBMP.setDisable(true);
-        btnToPPM.setDisable(true);
-        btnToPGM.setDisable(true);
-        btnToPAM.setDisable(true);
-        btnToSVG.setDisable(true);
+        for(ToggleButton tb : listBtn) {
+            tb.setDisable(true);
+        }
         comboBoxIcoSize.setDisable(true);
     }
 
     private void unlockButtonFormat() {
-        btnToPNG.setDisable(false);
-        btnToJPEG.setDisable(false);
-        btnToWEBM.setDisable(false);
-        btnToTIFF.setDisable(false);
-        btnToBMP.setDisable(false);
-        btnToPPM.setDisable(false);
-        btnToPGM.setDisable(false);
-        btnToPAM.setDisable(false);
-        btnToSVG.setDisable(false);
+        for(ToggleButton tb : listBtn) {
+            tb.setDisable(false);
+        }
         comboBoxIcoSize.setDisable(false);
     }
 }

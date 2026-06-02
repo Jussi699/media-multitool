@@ -26,7 +26,7 @@
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectPhotoFile"
+            <Button fx:id="btnSelectPhoto"
                     mnemonicParsing="false"
                     onAction="#onActionBtnSelectFile"
                     prefWidth="180.0"
@@ -38,72 +38,76 @@
                     prefWidth="180.0"
                     text="Batch file processing"/>
 
-            <Button fx:id="btnChoiceFolderForSaveImage"
+            <Button fx:id="btnChoiceFolderForSave"
                     mnemonicParsing="false"
-                    onAction="#btnChoiceFolderForSaveImage"
+                    onAction="#btnChoiceFolderForSave"
                     prefWidth="180.0"
-                    text="Directory for save"/>
+                    text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
         </HBox>
 
         <HBox alignment="CENTER" spacing="20.0">
             <ToggleButton fx:id="btnToPNG"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToPNG"
+                          onAction="#onActionBtnToPNG"
                           prefWidth="85.0"
                           text="to PNG"/>
 
             <ToggleButton fx:id="btnToJPEG"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToJPEG"
+                          onAction="#onActionBtnToJPEG"
                           prefWidth="85.0"
                           text="to JPEG"/>
 
             <ToggleButton fx:id="btnToWEBM"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToWEBM"
+                          onAction="#onActionBtnToWEBM"
                           prefWidth="85.0"
                           text="to WEBP"/>
 
 
             <ComboBox fx:id="comboBoxIcoSize"
-                      onAction="#onChoiceIcoSize"
+                      onAction="#onActionChoiceIcoSize"
                       prefWidth="100.0"/>
         </HBox>
 
         <HBox alignment="CENTER" spacing="16.0">
             <ToggleButton fx:id="btnToTIFF"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToTIFF"
+                          onAction="#onActionBtnToTIFF"
                           prefWidth="85.0"
                           text="to TIFF"/>
 
             <ToggleButton fx:id="btnToBMP"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToBMP"
+                          onAction="#onActionBtnToBMP"
                           prefWidth="85.0"
                           text="to BMP"/>
 
             <ToggleButton fx:id="btnToPPM"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToPPM"
+                          onAction="#onActionBtnToPPM"
                           prefWidth="85.0"
                           text="to PPM"/>
 
             <ToggleButton fx:id="btnToPGM"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToPGM"
+                          onAction="#onActionBtnToPGM"
                           prefWidth="85.0"
                           text="to PGM"/>
 
             <ToggleButton fx:id="btnToPAM"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToPAM"
+                          onAction="#onActionBtnToPAM"
                           prefWidth="85.0"
                           text="to PAM"/>
 
             <ToggleButton fx:id="btnToSVG"
                           mnemonicParsing="false"
-                          onAction="#ActionBtnToSVG"
+                          onAction="#onActionBtnToSVG"
                           prefWidth="85.0"
                           text="to SVG"/>
         </HBox>
@@ -122,7 +126,7 @@
 
             <VBox alignment="CENTER" spacing="10.0">
                 <Button mnemonicParsing="false"
-                        onAction="#onActionSubmitConvertAndDownload"
+                        onAction="#submitAndDownload"
                         prefWidth="240.0"
                         text="Convert and Download"/>
             </VBox>
@@ -136,8 +140,7 @@
                 <Insets top="2.0" />
             </VBox.margin>
 
-            <StackPane fx:id="previewContainer"
-                       minHeight="200.0"
+            <StackPane minHeight="200.0"
                        prefHeight="290.0"
                        prefWidth="300.0"
                        HBox.hgrow="ALWAYS"
@@ -147,7 +150,7 @@
                             fitToWidth="true"
                             pannable="true"
                             styleClass="scroll-pane-image"
-                            style="-fx-background-color: transparent; -fx-background: transparent;">
+                            style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-radius: 10;">
                     <StackPane fx:id="imageContainer"
                                minHeight="200.0"
                                minWidth="280.0">
@@ -190,7 +193,7 @@
                    alignment="CENTER"
                    prefWidth="600.0"
                    minHeight="18.0"
-                   text="none"
+                   text="Selected file: none"
                    textFill="RED"
                    wrapText="true"/>
 

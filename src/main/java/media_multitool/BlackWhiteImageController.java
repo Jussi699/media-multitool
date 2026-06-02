@@ -26,16 +26,19 @@ import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
-public class DarkenImageController extends AbstractMediaController {
+public class BlackWhiteImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
-    public Slider sliderDarken;
     private BufferedImage originalBufferedImage;
     private BufferedImage currentBufferedImage;
 
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectPhoto, btnChoiceDirForSave;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
+    @FXML private StackPane dropZone;
+    @FXML private Button btnSelectPhotoFile;
+    @FXML private Button btnChoiceDirForSaveImage;
+    @FXML private Label labelSelectImageName;
+    @FXML private Label textDragZone;
     @FXML private ImageView imageViewPreview;
+    @FXML private Label labelPreviewPlaceholder;
+    @FXML private StackPane previewContainer;
 
     @FXML
     public void initialize() {
@@ -48,21 +51,16 @@ public class DarkenImageController extends AbstractMediaController {
             imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
         }
 
-        sliderDarken.setMin(0);
-        sliderDarken.setMax(255);
-        sliderDarken.setValue(0);
-        sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
-
         onResetPressed();
     }
 
-    private void updatePreview(int offset) {
+    private void updatePreview() {
         if (originalBufferedImage == null) {
             return;
         }
 
-        ImagePreprocessing.brightnessImage(originalBufferedImage, offset).ifPresent(darkened -> {
-            currentBufferedImage = darkened;
+        ImagePreprocessing.blackAndWhiteImage(originalBufferedImage).ifPresent(bw -> {
+            currentBufferedImage = bw;
             setPreview(currentBufferedImage);
         });
     }
@@ -72,15 +70,14 @@ public class DarkenImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Darken Image",
+                "Black-White Image",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
-                        3. Use the slider to select several photos you want to darken.
-                        4. Click 'Darken and Download' to apply the effect.
+                        3. Click 'Download' to apply the effect.
                         
-                        This tool darkens your image.
+                        This tool will take a black and white your image.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -88,15 +85,15 @@ public class DarkenImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhoto.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
+        btnSelectPhotoFile.setDisable(true);
+        btnChoiceDirForSaveImage.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhoto.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectPhotoFile.setDisable(false);
+        btnChoiceDirForSaveImage.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
 
@@ -116,7 +113,7 @@ public class DarkenImageController extends AbstractMediaController {
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
+        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -124,15 +121,10 @@ public class DarkenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSave() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
+    public void btnChoiceDirForSaveImage() {
+        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
         directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
                 .ifPresent(imageProperties::setOutput);
-    }
-
-    @FXML
-    private void handleSliderRelease() {
-        updatePreview(- (int) sliderDarken.getValue());
     }
 
     @FXML
@@ -173,10 +165,10 @@ public class DarkenImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Image darkening successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Image black-white successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Darkened image saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Black-White image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
     }
@@ -206,9 +198,6 @@ public class DarkenImageController extends AbstractMediaController {
 
         currentBufferedImage = null;
         originalBufferedImage = null;
-        if (sliderDarken != null) {
-            sliderDarken.setValue(0);
-        }
     }
 
     private void loadFile(File selectedFile) {
@@ -219,8 +208,8 @@ public class DarkenImageController extends AbstractMediaController {
         if (imageViewPreview != null) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage != null) {
-                    updatePreview(- (int) sliderDarken.getValue());
+                updatePreview();
+                if (currentBufferedImage != null) {
                     if (labelPreviewPlaceholder != null) {
                         labelPreviewPlaceholder.setVisible(false);
                     }

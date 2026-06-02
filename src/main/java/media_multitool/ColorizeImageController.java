@@ -25,7 +25,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 
 import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
@@ -102,9 +101,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".png", ".jpg", ".jpeg", ".webp", ".tiff",
-                ".tif", ".bmp", ".pgm", ".jpe", ".pgm", ".pam"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
     }
 
     @FXML
@@ -120,8 +117,7 @@ public class ColorizeImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.tiff",
-                        "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe"),
+                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
     }

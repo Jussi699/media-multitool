@@ -102,12 +102,6 @@
     -fx-pref-width: 155px;
 }
 
-#comboBoxIcoSize .list-view {
-    -fx-pref-width: 85px;
-    -fx-min-width: 85px;
-    -fx-max-width: 85px;
-}
-
 .progress-bar > .track {
     -fx-background-radius: 10px;
 }
@@ -275,3 +269,12 @@
 }
 
 
+#comboBoxIcoSize .list-view {
+    -fx-pref-width: 100px;
+    -fx-min-width: 100px;
+    -fx-max-width: 100px;
+}
+
+#comboBoxIcoSize .list-view .list-cell {
+    -fx-alignment: center;
+}

@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Preparation {
-    public static List<File> getFilesFromFolder(File path, String... filter) {
+    public static List<File> getFilesFromFolder(File path, List<String> filter) {
 
         File[] matches = path.listFiles((_, name) -> {
            String lowerName = name.toLowerCase();
            for(String ext : filter) {
-               if(lowerName.endsWith("." + ext.toLowerCase())) return true;
+               String suffix = ext.startsWith(".") ? ext.toLowerCase() : "." + ext.toLowerCase();
+               if(lowerName.endsWith(suffix)) return true;
            }
            return false;
         });

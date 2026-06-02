@@ -6,9 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ListCell;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -19,11 +17,14 @@ import model.logger.ErrorLogger;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
+import model.utility.Global;
 import model.utility.ResetContext;
 import model.utility.Util;
+import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
 import viewHelp.Alerts;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import static viewHelp.Message.*;
@@ -32,42 +33,26 @@ import static model.utility.Util.*;
 
 public class ConverterAudioController extends AbstractMediaController {
     private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
-    private final ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
     private ConvertVideoAudioTask currentTask;
 
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectAudioVideoFile;
-    @FXML private Button btnChoiceDirForSaveMP3;
-    @FXML private Button btnSubmitConvert;
-    @FXML private Label textDragZone;
-    @FXML private Label labelSelectAudioFile;
-    @FXML private ComboBox<String> comboBoxChoiceBitRate;
-    @FXML private ComboBox<String> comboBoxChoiceChannels;
-    @FXML private ComboBox<String> comboBoxChoiceSamplingRate;
-    @FXML private ToggleButton btnToMP3;
-    @FXML private ToggleButton btnToAAC;
-    @FXML private ToggleButton btnToOggVorbis;
-    @FXML private ToggleButton btnToOPUS;
-    @FXML private ToggleButton btnToFLAC;
-    @FXML private ToggleButton btnToALAC;
-    @FXML private ToggleButton btnToWAV;
-    @FXML private ToggleButton btnToAIFF;
+    @FXML private Button btnSelectAudioVideoFile, btnChoiceDirForSave, btnSubmitAndDownload;
+    @FXML private Label textDragZone, labelSelectAudioFile;
+    @FXML private ComboBox<String> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate;
+    @FXML private ToggleButton btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF;
+
+    private List<ToggleButton> listBtn;
 
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveMP3.setTooltip(new Tooltip("Default directory: Desktop"));
-        btnSubmitConvert.setTooltip(new Tooltip("Converting a large file may take longer!"));
+        listBtn = List.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF);
 
         audioProperties.setOutput(getSavedPath());
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
-        setupComboBox(comboBoxChoiceBitRate);
-        setupComboBox(comboBoxChoiceChannels);
-        setupComboBox(comboBoxChoiceSamplingRate);
-
-        comboBoxChoiceBitRate.getStyleClass().add("comboBoxMP3");
-        comboBoxChoiceChannels.getStyleClass().add("comboBoxMP3");
-        comboBoxChoiceSamplingRate.getStyleClass().add("comboBoxMP3");
+        ComboBoxes.setupStringComboBox(comboBoxChoiceBitRate);
+        ComboBoxes.setupStringComboBox(comboBoxChoiceChannels);
+        ComboBoxes.setupStringComboBox(comboBoxChoiceSamplingRate);
 
         comboBoxChoiceBitRate.getItems().addAll("128 kbps", "192 kbps", "256 kbps", "320 kbps");
         comboBoxChoiceChannels.getItems().addAll("1 Channels", "2 Channels");
@@ -83,7 +68,7 @@ public class ConverterAudioController extends AbstractMediaController {
                 labelSelectAudioFile, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(audioProperties, ctx, "Selected audio file: none");
+        Util.reset(audioProperties, ctx, "Selected file: none");
 
         comboBoxChoiceBitRate.setValue("320 kbps");
         comboBoxChoiceChannels.setValue("2 Channels");
@@ -93,25 +78,20 @@ public class ConverterAudioController extends AbstractMediaController {
         audioProperties.setSamplingRate(48000);
         if (progressBar != null) progressBar.setProgress(0);
 
-        btnToAAC.setSelected(false);
-        btnToAIFF.setSelected(false);
-        btnToALAC.setSelected(false);
-        btnToFLAC.setSelected(false);
-        btnToMP3.setSelected(false);
-        btnToOggVorbis.setSelected(false);
-        btnToOPUS.setSelected(false);
-        btnToWAV.setSelected(false);
+        for (ToggleButton tb : listBtn) {
+            tb.setSelected(false);
+        }
     }
 
     @Override
     protected void lockUI() {
-        btnSubmitConvert.setDisable(true);
+        btnSubmitAndDownload.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSubmitConvert.setDisable(false);
+        btnSubmitAndDownload.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
 
@@ -142,10 +122,12 @@ public class ConverterAudioController extends AbstractMediaController {
     public void onSelectAudioVideoPressed() {
         SelectFile selectAudioVideoFile = new SelectFile();
         Stage stage = (Stage) btnSelectAudioVideoFile.getScene().getWindow();
+
+        List<String> allFilters = new ArrayList<>(Global.getAllSupportedAudioFormatsForFileChooser());
+        allFilters.addAll(Global.getAllSupportedVideoFormatsForFileChooser());
+
         selectAudioVideoFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("All Media Files",
-                        "*.mp3", "*.wav", "*.ogg", "*.flac", "*.m4a", "*.aac", "*.wma",
-                        "*.mp4", "*.avi", "*.mkv", "*.mov", "*.flv", "*.wmv"),
+                new FileChooser.ExtensionFilter("All Media Files", allFilters),
                     "Choice video/audio file"
                 ).ifPresent(this::loadFile);
     }
@@ -166,7 +148,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML
     public void onSelectOutputDirectoryPressed() {
-        Stage stage = (Stage) btnChoiceDirForSaveMP3.getScene().getWindow();
+        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
         directoryChooser(stage, audioProperties.getOutput(), "Select directory for save audio")
                 .ifPresent(audioProperties::setOutput);
     }
@@ -232,6 +214,7 @@ public class ConverterAudioController extends AbstractMediaController {
             default -> {audioCodec = "libmp3lame";ffmpegFormat = "mp3";}
         }
 
+        ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
         currentTask = new ConvertVideoAudioTask(converter, audioProperties.getSrcFile(), audioProperties.getOutput(), -1, audioProperties.getBitRate(),
                 audioProperties.getChannel(), audioProperties.getSamplingRate(), -1,
                 null, audioCodec, ffmpegFormat, null, "audio");
@@ -319,35 +302,6 @@ public class ConverterAudioController extends AbstractMediaController {
         ErrorLogger.info("User select sampling rate: " + audioProperties.getSamplingRate());
     }
 
-    private void setupComboBox(ComboBox<String> cb) {
-        cb.getStyleClass().add("combo-box-mp3");
-
-        cb.setCellFactory(_ -> new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    setText(item);
-                }
-            }
-        });
-
-        cb.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(cb.getValue());
-                } else {
-                    setText(item);
-                }
-            }
-        });
-    }
-
     @FXML
     private void handleDragDropped(DragEvent e) {
         File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
@@ -358,10 +312,10 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma",
-                ".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".3gp"
-        ), dropZone);
+        List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
+        allFormats.addAll(Global.getAllSupportedVideoFormats());
+
+        DragDropped.handleDragOver(e, allFormats, dropZone);
     }
 
     @FXML

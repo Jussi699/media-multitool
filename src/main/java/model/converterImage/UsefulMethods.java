@@ -50,7 +50,7 @@ public class UsefulMethods {
         return fileName.substring(dotIndex + 1).toLowerCase();
     }
 
-    public String normalizeFormat(String format) {
+    public static String normalizeFormat(String format) {
         if (format == null) {
             return "";
         }

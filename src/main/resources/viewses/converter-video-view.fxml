@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.control.ComboBox?>
 
+<?import javafx.scene.control.Tooltip?>
 <StackPane xmlns="http://javafx.com/javafx/17.0.12"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.ConverterVideoController">
@@ -34,36 +35,59 @@
         <HBox alignment="CENTER" spacing="20.0">
             <Button fx:id="btnSelectVideoFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="180.0" text="Select video file" />
 
-            <Button fx:id="btnChoiceDirForSaveVideo" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save" />
+            <Button fx:id="btnChoiceDirForSaveVideo" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
         </HBox>
 
-        <HBox alignment="CENTER" spacing="16.0">
-            <ToggleButton fx:id="btnToMP4"
-                          mnemonicParsing="false"
-                          onAction="#onFormatMp4Pressed"
-                          prefWidth="100.0"
-                          text="to MP4"/>
-            <ToggleButton fx:id="btnToAVI"
-                          mnemonicParsing="false"
-                          onAction="#onFormatAviPressed"
-                          prefWidth="100.0"
-                          text="to AVI"/>
-            <ToggleButton fx:id="btnToMKV"
-                          mnemonicParsing="false"
-                          onAction="#onFormatMkvPressed"
-                          prefWidth="100.0"
-                          text="to MKV"/>
-            <ToggleButton fx:id="btnToWEBM"
-                          mnemonicParsing="false"
-                          onAction="#onFormatWEBMPressed"
-                          prefWidth="100.0"
-                          text="to WEBM"/>
-            <ToggleButton fx:id="btnToMOV"
-                          mnemonicParsing="false"
-                          onAction="#onFormatMOVPressed"
-                          prefWidth="100.0"
-                          text="to MOV"/>
-        </HBox>
+        <VBox alignment="CENTER" spacing="10.0">
+            <HBox alignment="CENTER" spacing="16.0">
+                <ToggleButton fx:id="btnToMP4"
+                              mnemonicParsing="false"
+                              onAction="#onFormatMp4Pressed"
+                              prefWidth="100.0"
+                              text="to MP4"/>
+                <ToggleButton fx:id="btnToAVI"
+                              mnemonicParsing="false"
+                              onAction="#onFormatAviPressed"
+                              prefWidth="100.0"
+                              text="to AVI"/>
+                <ToggleButton fx:id="btnToMKV"
+                              mnemonicParsing="false"
+                              onAction="#onFormatMkvPressed"
+                              prefWidth="100.0"
+                              text="to MKV"/>
+                <ToggleButton fx:id="btnToWEBM"
+                              mnemonicParsing="false"
+                              onAction="#onFormatWEBMPressed"
+                              prefWidth="100.0"
+                              text="to WEBM"/>
+            </HBox>
+            <HBox alignment="CENTER" spacing="16.0">
+                <ToggleButton fx:id="btnToMOV"
+                              mnemonicParsing="false"
+                              onAction="#onFormatMOVPressed"
+                              prefWidth="100.0"
+                              text="to MOV"/>
+                <ToggleButton fx:id="btnToFLV"
+                              mnemonicParsing="false"
+                              onAction="#onFormatFlvPressed"
+                              prefWidth="100.0"
+                              text="to FLV"/>
+                <ToggleButton fx:id="btnToWMV"
+                              mnemonicParsing="false"
+                              onAction="#onFormatWmvPressed"
+                              prefWidth="100.0"
+                              text="to WMV"/>
+                <ToggleButton fx:id="btnTo3GP"
+                              mnemonicParsing="false"
+                              onAction="#onFormat3gpPressed"
+                              prefWidth="100.0"
+                              text="to 3GP"/>
+            </HBox>
+        </VBox>
 
         <VBox alignment="CENTER" spacing="12.0">
             <HBox alignment="CENTER" spacing="16.0">
@@ -145,7 +169,8 @@
                    styleClass="labelSelect"
                    alignment="CENTER" prefWidth="600.0"
                    textFill="RED"
-                   wrapText="true" />
+                   wrapText="true"
+                   text="Selected file: none"/>
 
             <Button fx:id="btnReset"
                     mnemonicParsing="false"

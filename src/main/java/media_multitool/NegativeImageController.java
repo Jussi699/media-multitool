@@ -19,9 +19,6 @@ import viewHelp.Alerts;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 
 import static model.utility.Util.*;
 import static viewHelp.Message.*;
@@ -31,17 +28,18 @@ public class NegativeImageController extends AbstractMediaController {
 
     @FXML private StackPane dropZone;
     @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceDirForSaveImage;
+    @FXML private Button btnChoiceDirForSave;
     @FXML private Label labelSelectImageName;
     @FXML private Label textDragZone;
     @FXML private ImageView imageViewPreview;
     @FXML private Label labelPreviewPlaceholder;
     @FXML private StackPane previewContainer;
 
+    private BufferedImage originalBufferedImage;
+    private BufferedImage currentBufferedImage;
+
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
-
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -57,14 +55,14 @@ public class NegativeImageController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnChoiceDirForSave.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnChoiceDirForSave.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
     
@@ -73,22 +71,21 @@ public class NegativeImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp",
-                        "*.tiff", "*.tif", "*.bmp", "*.ppm", "*.pam", "*.jpe"),
+                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
+    public void onActionChoiceDirForSave() {
+        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
         directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
                 .ifPresent(imageProperties::setOutput);
     }
 
     @FXML
     public void submitNegativeAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties)) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
             return;
         }
 
@@ -96,22 +93,16 @@ public class NegativeImageController extends AbstractMediaController {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
-                Optional<BufferedImage> negativeOpt = ImagePreprocessing.toNegative(imageProperties.getImage());
 
-                if (negativeOpt.isEmpty()) {
-                    throw new IOException("Failed to create negative image");
-                }
-
-                updateProgress(50, 100);
-
-                BufferedImage negativeImage = negativeOpt.get();
                 File outputFile = Util.createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
                 );
 
-                ImagePreprocessing.downloadImage(negativeImage, imageProperties.getTypeImage(), outputFile);
+                updateProgress(50, 100);
+
+                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
                 updateProgress(100, 100);
 
                 return outputFile;
@@ -160,6 +151,8 @@ public class NegativeImageController extends AbstractMediaController {
                 dropZone, imageViewPreview, progressBar, true
         );
         Util.reset(imageProperties, ctx, "Selected image file: none");
+        originalBufferedImage = null;
+        currentBufferedImage = null;
     }
 
     @FXML
@@ -182,8 +175,7 @@ public class NegativeImageController extends AbstractMediaController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".png", ".jpg", ".jpeg", ".webp", ".tiff", ".tif", ".bmp", ".pgm", ".jpe"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
     }
 
     @FXML
@@ -194,6 +186,17 @@ public class NegativeImageController extends AbstractMediaController {
         }
     }
 
+    private void updatePreview() {
+        if (originalBufferedImage == null) {
+            return;
+        }
+
+        ImagePreprocessing.toNegative(imageProperties.getImage()).ifPresent(negative -> {
+            currentBufferedImage = negative;
+            setPreview(currentBufferedImage);
+        });
+    }
+
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
@@ -201,10 +204,12 @@ public class NegativeImageController extends AbstractMediaController {
 
         if (imageViewPreview != null) {
             try {
-                Image image = new Image(selectedFile.toURI().toString());
-                imageViewPreview.setImage(image);
-                if (labelPreviewPlaceholder != null) {
-                    labelPreviewPlaceholder.setVisible(false);
+                originalBufferedImage = javax.imageio.ImageIO.read(selectedFile);
+                updatePreview();
+                if (currentBufferedImage != null) {
+                    if (labelPreviewPlaceholder != null) {
+                        labelPreviewPlaceholder.setVisible(false);
+                    }
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
@@ -216,6 +221,13 @@ public class NegativeImageController extends AbstractMediaController {
         }
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
+        }
+    }
+
+    private void setPreview(BufferedImage bi) {
+        if (bi != null && imageViewPreview != null) {
+            Image image = javafx.embed.swing.SwingFXUtils.toFXImage(bi, null);
+            imageViewPreview.setImage(image);
         }
     }
 }

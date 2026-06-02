@@ -113,5 +113,7 @@
         <fx:include fx:id="lightenPage" source="lighten-image-view.fxml"/>
         <fx:include fx:id="darkenPage" source="darken-image-view.fxml"/>
         <fx:include fx:id="colorizePage" source="colorize-image-view.fxml"/>
+        <fx:include fx:id="blackAndWhitePage" source="black-white-image-view.fxml"/>
+        <fx:include fx:id="blurPage" source="blur-image-view.fxml"/>
     </StackPane>
 </HBox>

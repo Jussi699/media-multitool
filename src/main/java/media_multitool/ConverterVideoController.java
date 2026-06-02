@@ -12,6 +12,7 @@ import model.converterVideo.ConvertVideoAudioTask;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
+import model.utility.Global;
 import model.utility.Item;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
@@ -28,30 +29,24 @@ import static model.utility.Util.*;
 public class ConverterVideoController extends AbstractMediaController {
     private Item selectedItem;
     private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
-    private final ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
     private ConvertVideoAudioTask currentTask;
 
-    @FXML private Label labelSelectVideoName;
-    @FXML private Label textDragZone;
-    @FXML private Button btnSubmitConvert;
-    @FXML private Button btnSelectVideoFile;
-    @FXML private Button btnChoiceDirForSaveVideo;
-    @FXML private ToggleButton btnToMP4;
-    @FXML private ToggleButton btnToAVI;
-    @FXML private ToggleButton btnToMKV;
-    @FXML private ToggleButton btnToWEBM;
-    @FXML private ToggleButton btnToMOV;
-    @FXML private ComboBox<Item> comboBoxChoiceBitRate;
-    @FXML private ComboBox<Item> comboBoxChoiceChannels;
-    @FXML private ComboBox<Item> comboBoxChoiceSamplingRate;
-    @FXML private ComboBox<Item> comboBoxChoiceFPS;
+    @FXML private Label labelSelectVideoName, textDragZone;
+    @FXML private Button btnSubmitConvert, btnSelectVideoFile, btnChoiceDirForSaveVideo;
+    @FXML private ToggleButton btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP;
+    @FXML private ComboBox<Item> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, comboBoxChoiceFPS;
     @FXML private ComboBox<String> comboBoxChoiceResolution;
     @FXML private CheckBox checkBoxGPU;
     @FXML private StackPane dropZone;
 
+    private List<ToggleButton> listBtn;
+
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
+        listBtn = List.of(
+                btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP
+        );
+
         videoProperties.setOutput(getSavedPath());
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
 
@@ -64,43 +59,32 @@ public class ConverterVideoController extends AbstractMediaController {
 
         comboBoxChoiceBitRate.getItems().addAll(
                 new Item(-1, "Match source"),
-                new Item(1000, "1000 kbps (SD)"),
-                new Item(2500, "2500 kbps (720p)"),
-                new Item(5000, "5000 kbps (1080p)"),
-                new Item(8000, "8000 kbps (High)")
+                new Item(1000, "1000 kbps (SD)"), new Item(2500, "2500 kbps (720p)"),
+                new Item(5000, "5000 kbps (1080p)"), new Item(8000, "8000 kbps (High)")
         );
 
         comboBoxChoiceChannels.getItems().addAll(
                 new Item(-1, "Match source"),
-                new Item(1, "1 Channels"),
-                new Item(2, "2 Channels")
+                new Item(1, "1 Channels"), new Item(2, "2 Channels")
         );
 
         comboBoxChoiceSamplingRate.getItems().addAll(
                 new Item(-1, "Match source"),
                 new Item(8000, "8000 Hz"),
-                new Item(11025, "11025 Hz"),
-                new Item(12000, "12000 Hz"),
-                new Item(16000, "16000 Hz"),
-                new Item(22050, "22050 Hz"),
-                new Item(24000, "24000 Hz"),
-                new Item(32000, "32000 Hz"),
-                new Item(44100, "44100 Hz"),
-                new Item(48000, "48000 Hz")
+                new Item(11025, "11025 Hz"), new Item(12000, "12000 Hz"),
+                new Item(16000, "16000 Hz"), new Item(22050, "22050 Hz"),
+                new Item(24000, "24000 Hz"), new Item(32000, "32000 Hz"),
+                new Item(44100, "44100 Hz"), new Item(48000, "48000 Hz")
         );
 
         comboBoxChoiceFPS.getItems().addAll(
                 new Item(-1, "Match source"),
-                new Item(24, "24 fps"),
-                new Item(30, "30 fps"),
-                new Item(60, "60 fps")
+                new Item(24, "24 fps"), new Item(30, "30 fps"), new Item(60, "60 fps")
         );
 
         comboBoxChoiceResolution.getItems().addAll(
                 "Match source",
-                "1280x720",
-                "1920x1080",
-                "3840x2160"
+                "1280x720", "1920x1080", "3840x2160"
         );
     }
 
@@ -135,7 +119,15 @@ public class ConverterVideoController extends AbstractMediaController {
 
     @Override
     protected void handleTaskSuccess(Object result) {
+        if (Boolean.FALSE.equals(result)) {
+            if (currentTask != null && currentTask.isCancelled()) {
+                handleTaskCancelled();
+                return;
+            }
+        }
+
         super.handleTaskSuccess(result);
+
         if (Boolean.TRUE.equals(result)) {
             showSuccessMessage(labelSuccess, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
@@ -152,6 +144,18 @@ public class ConverterVideoController extends AbstractMediaController {
 
     @Override
     protected void handleTaskFailure(Throwable exception) {
+        String msg = exception.getMessage();
+        Throwable cause = exception.getCause();
+        String causeMsg = (cause != null) ? cause.getMessage() : "";
+
+        boolean isCancelled = (msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
+                || (causeMsg != null && causeMsg.contains("Stream Closed"))
+                || (currentTask != null && currentTask.isCancelled());
+
+        if (isCancelled) {
+            handleTaskCancelled();
+            return;
+        }
         super.handleTaskFailure(exception);
         videoProperties.getHideSuccessMessageTimer().playFromStart();
     }
@@ -161,7 +165,7 @@ public class ConverterVideoController extends AbstractMediaController {
         SelectFile selectFile = new SelectFile();
         Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
         selectFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", "*.mp4", "*.avi", "*.mkv", "*.mov", "*.webm"), "Select video")
+                new FileChooser.ExtensionFilter("Video", Global.getAllSupportedVideoFormatsForFileChooser()), "Select video")
                 .ifPresent(this::loadFile);
     }
 
@@ -261,6 +265,21 @@ public class ConverterVideoController extends AbstractMediaController {
         selectFormat("mov", btnToMOV);
     }
 
+    @FXML
+    public void onFormatFlvPressed() {
+        selectFormat("flv", btnToFLV);
+    }
+
+    @FXML
+    public void onFormatWmvPressed() {
+        selectFormat("wmv", btnToWMV);
+    }
+
+    @FXML
+    public void onFormat3gpPressed() {
+        selectFormat("3gp", btnTo3GP);
+    }
+
     private void selectFormat(String format, ToggleButton selectedBtn) {
         videoProperties.setTargetFormat(format);
         btnToMP4.setSelected(selectedBtn == btnToMP4);
@@ -268,6 +287,9 @@ public class ConverterVideoController extends AbstractMediaController {
         btnToMKV.setSelected(selectedBtn == btnToMKV);
         btnToWEBM.setSelected(selectedBtn == btnToWEBM);
         btnToMOV.setSelected(selectedBtn == btnToMOV);
+        btnToFLV.setSelected(selectedBtn == btnToFLV);
+        btnToWMV.setSelected(selectedBtn == btnToWMV);
+        btnTo3GP.setSelected(selectedBtn == btnTo3GP);
         hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
@@ -336,6 +358,7 @@ public class ConverterVideoController extends AbstractMediaController {
             default -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; }
         }
 
+        ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
         currentTask = new ConvertVideoAudioTask(converter, videoProperties.getSrcFile(), videoProperties.getOutput(), finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps,
                 videoCodec, audioCodec, ffmpegFormat, finalResolution, "video");
         
@@ -346,16 +369,16 @@ public class ConverterVideoController extends AbstractMediaController {
     public void onResetPressed() {
         videoProperties.setSrcFile(null);
         videoProperties.setTargetFormat(null);
-        labelSelectVideoName.setText("Selected video file: none");
-        btnToMP4.setSelected(false);
-        btnToAVI.setSelected(false);
-        btnToMKV.setSelected(false);
-        btnToWEBM.setSelected(false);
-        btnToMOV.setSelected(false);
+        labelSelectVideoName.setText("Selected file: none");
+
+        for (ToggleButton tb : listBtn) {
+            tb.setSelected(false);
+        }
+
         if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
         onCancelConversation();
         resetToDefaults();
-        hideSuccessMessage(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
+        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
     @FXML
@@ -365,8 +388,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".3gp"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedVideoFormats(), dropZone);
     }
 
     @FXML

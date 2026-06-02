@@ -169,8 +169,12 @@ public class ConverterVideoAudioFile {
 
     private void handleError(Exception e) {
         String msg = e.getMessage();
-        boolean isCancelled = msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
+        Throwable cause = e.getCause();
+        String causeMsg = (cause != null) ? cause.getMessage() : "";
 
+        boolean isCancelled = (msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
+                || (causeMsg != null && causeMsg.contains("Stream Closed"));
+        
         if (isCancelled) {
             ErrorLogger.info("Conversion was cancelled by user.");
         } else {

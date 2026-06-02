@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class ControllerView {
 
+    @FXML private StackPane blurPage;
+    @FXML private StackPane blackAndWhitePage;
     @FXML private StackPane colorizePage;
     @FXML private StackPane darkenPage;
     @FXML private StackPane lightenPage;
@@ -43,7 +45,9 @@ public class ControllerView {
      * 2, turnImagePage,
      * 3, lightenPage,
      * 4, darkenPage,
-     * 5, colorizePage
+     * 5, colorizePage,
+     * 6, blackAndWhitePage,
+     * 7, blurPage
      * **/
 
     private final Map<Integer, StackPane> stackPaneMap = new HashMap<>();
@@ -77,7 +81,9 @@ public class ControllerView {
                 2, turnImagePage,
                 3, lightenPage,
                 4, darkenPage,
-                5, colorizePage
+                5, colorizePage,
+                6, blackAndWhitePage,
+                7, blurPage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -85,7 +91,9 @@ public class ControllerView {
                 new Item(2, "Turn photo"),
                 new Item(3, "Lighten photo"),
                 new Item(4, "Darken photo"),
-                new Item(5, "Colorize photo")
+                new Item(5, "Colorize photo"),
+                new Item(6, "Black-White photo"),
+                new Item(7, "Blurry photo")
         );
     }
 
@@ -146,7 +154,7 @@ public class ControllerView {
         StackPane[] allPages = {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
-                infoPage, lightenPage, darkenPage, colorizePage
+                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage
         };
 
         for (StackPane page : allPages) {

@@ -44,7 +44,7 @@ public class ConvertVideoAudioTask extends Task<Boolean> {
     }
     
     public void cancelConversion() {
-        converter.cancelConversion();
         cancel();
+        converter.cancelConversion();
     }
 }

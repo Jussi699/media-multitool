@@ -31,11 +31,15 @@
                     prefWidth="180.0"
                     text="Select image file"/>
 
-            <Button fx:id="btnChoiceDirForSaveImage"
+            <Button fx:id="btnChoiceDirForSave"
                     mnemonicParsing="false"
-                    onAction="#btnChoiceDirForSaveImage"
+                    onAction="#onActionChoiceDirForSave"
                     prefWidth="180.0"
-                    text="Directory for save"/>
+                    text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
         </HBox>
 
         <HBox alignment="CENTER" spacing="20.0">

@@ -21,7 +21,6 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 
 import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
@@ -34,8 +33,8 @@ public class LightenImageController extends AbstractMediaController {
     private BufferedImage currentBufferedImage;
 
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceDirForSaveImage;
+    @FXML private Button btnSelectPhoto;
+    @FXML private Button btnChoiceDirForSave;
     @FXML private Label labelSelectImageName;
     @FXML private Label textDragZone;
     @FXML private ImageView imageViewPreview;
@@ -44,8 +43,6 @@ public class LightenImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
-
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -95,23 +92,21 @@ public class LightenImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnSelectPhoto.setDisable(true);
+        btnChoiceDirForSave.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnSelectPhoto.setDisable(false);
+        btnChoiceDirForSave.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".png", ".jpg", ".jpeg", ".webp", ".tiff",
-                ".tif", ".bmp", ".pgm", ".jpe", ".pgm", ".pam"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
     }
 
     @FXML
@@ -125,17 +120,16 @@ public class LightenImageController extends AbstractMediaController {
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.tiff",
-                        "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe"),
+                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
     }
 
     @FXML
     public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
+        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
         directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
                 .ifPresent(imageProperties::setOutput);
     }
@@ -146,7 +140,7 @@ public class LightenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void submitLightenAndDownload() {
+    public void submitAndDownload() {
         if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
             return;
         }
@@ -229,9 +223,8 @@ public class LightenImageController extends AbstractMediaController {
         if (imageViewPreview != null) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                currentBufferedImage = originalBufferedImage;
-                if (currentBufferedImage != null) {
-                    setPreview(currentBufferedImage);
+                if (originalBufferedImage != null) {
+                    updatePreview((int) sliderLighten.getValue());
                     if (labelPreviewPlaceholder != null) {
                         labelPreviewPlaceholder.setVisible(false);
                     }
@@ -241,9 +234,8 @@ public class LightenImageController extends AbstractMediaController {
             }
         }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
+        textDragZone.setText("Selected: " + selectedFile.getName());
+
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }

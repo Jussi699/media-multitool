@@ -93,4 +93,16 @@ public class HomeViewController {
             mainController.onActionChoiceActionImage(5);
         }
     }
+
+    public void onOpenBlackAndWhiteImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(6);
+        }
+    }
+
+    public void onOpenBlurImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(7);
+        }
+    }
 }

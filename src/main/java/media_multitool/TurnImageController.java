@@ -7,7 +7,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -25,7 +24,6 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 
 import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
@@ -39,7 +37,7 @@ public class TurnImageController extends AbstractMediaController {
 
     @FXML private StackPane dropZone;
     @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceDirForSaveImage;
+    @FXML private Button btnChoiceDirForSave;
     @FXML private Label labelSelectImageName;
     @FXML private Label textDragZone;
     @FXML private ImageView imageViewPreview;
@@ -48,8 +46,6 @@ public class TurnImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
-
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -84,22 +80,20 @@ public class TurnImageController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnChoiceDirForSave.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnChoiceDirForSave.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".png", ".jpg", ".jpeg", ".webp", ".tiff",
-                ".tif", ".bmp", ".pgm", ".jpe", ".pgm", ".pam"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
     }
 
     @FXML
@@ -115,15 +109,14 @@ public class TurnImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.tiff",
-                        "*.tif", "*.bmp", "*.ppm", "*.pgm", "*.pam", "*.jpe"),
+                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
+    public void onActionChoiceDirForSave() {
+        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
         directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
                 .ifPresent(imageProperties::setOutput);
     }
@@ -134,8 +127,7 @@ public class TurnImageController extends AbstractMediaController {
             return;
         }
 
-        Object source = event.getSource();
-        boolean side = (source != btnTurnImageLeft);
+        boolean side = (event.getSource() != btnTurnImageLeft);
 
         ImagePreprocessing.turnImage(currentBufferedImage, side).ifPresent(rotated -> {
             currentBufferedImage = rotated;

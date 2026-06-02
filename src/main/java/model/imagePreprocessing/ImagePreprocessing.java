@@ -216,4 +216,85 @@ public class ImagePreprocessing {
         }
         return result;
     }
+
+    public static Optional<BufferedImage> blackAndWhiteImage(BufferedImage image) {
+        if (image == null) {
+            return Optional.empty();
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage gray = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgba = image.getRGB(x, y);
+
+                int a = (rgba >> 24) & 0xFF;
+                int r = (rgba >> 16) & 0xFF;
+                int g = (rgba >> 8) & 0xFF;
+                int b = rgba & 0xFF;
+
+                int grayValue = (int) (0.299 * r + 0.587 * g + 0.114 * b);
+
+                int grayRgba = (a << 24) | (grayValue << 16) | (grayValue << 8) | grayValue;
+                gray.setRGB(x, y, grayRgba);
+            }
+        }
+
+        return Optional.of(gray);
+    }
+
+    public static Optional<BufferedImage> blurryImage(BufferedImage image, int radius) {
+        if (image == null) {
+            return Optional.empty();
+        }
+
+        if (radius <= 0) {
+            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
+            Graphics2D g2d = copy.createGraphics();
+            g2d.drawImage(image, 0, 0, null);
+            g2d.dispose();
+            return Optional.of(copy);
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage dest = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+
+                long sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+                int count = 0;
+
+                for (int ky = -radius; ky <= radius; ky++) {
+                    for (int kx = -radius; kx <= radius; kx++) {
+                        int pixelX = Math.clamp(x + kx, 0, width - 1);
+                        int pixelY = Math.clamp(y + ky, 0, height - 1);
+                        
+                        int rgb = image.getRGB(pixelX, pixelY);
+
+                        sumA += (rgb >> 24) & 0xFF;
+                        sumR += (rgb >> 16) & 0xFF;
+                        sumG += (rgb >> 8) & 0xFF;
+                        sumB += rgb & 0xFF;
+                        count++;
+                    }
+                }
+
+                int avgA = (int) (sumA / count);
+                int avgR = (int) (sumR / count);
+                int avgG = (int) (sumG / count);
+                int avgB = (int) (sumB / count);
+
+                int blurredRGB = (avgA << 24) | (avgR << 16) | (avgG << 8) | avgB;
+                dest.setRGB(x, y, blurredRGB);
+            }
+        }
+
+        return Optional.of(dest);
+    }
 }

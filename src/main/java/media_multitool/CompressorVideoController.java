@@ -15,12 +15,12 @@ import model.logger.ErrorLogger;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.DragDropped;
+import model.utility.Global;
 import model.utility.ResetContext;
 import model.utility.Util;
 import viewHelp.Alerts;
 
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static model.utility.Parsers.*;
@@ -32,12 +32,11 @@ public class CompressorVideoController extends AbstractMediaController {
     private VideoPresets.Preset selectedPreset;
     private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
     private static final ToggleGroup group = new ToggleGroup();
-    private final Compressor compressor = new Compressor();
     private CompressVideoTask currentTask;
 
     @FXML private Label labelSelectVideoName;
     @FXML private Label textDragZone;
-    @FXML private Button btnChoiceDirForSaveVideo;
+    @FXML private Button btnChoiceDirForSave;
     @FXML private Button btnSelectVideoFile;
     @FXML private ToggleButton btnBasicCompress;
     @FXML private ToggleButton btnStrongCompress;
@@ -45,41 +44,25 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML private StackPane dropZone;
     @FXML private CheckBox chkUseGPU;
     @FXML private Button btnCompress;
-    @FXML private Button btnCancel;
 
     private long durationMillis = 0;
     private boolean hasAudio = false;
 
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveVideo.setTooltip(new Tooltip("Default directory: Desktop"));
-        btnCompress.setTooltip(new Tooltip("Compression may take a long time, especially for large files."));
-
-        Tooltip tooltipBasicCompress = new Tooltip("Medium size, high quality");
-        Tooltip tooltipStrongCompress = new Tooltip("Smallest size, lowest quality");
-        Tooltip tooltipSuperCompress = new Tooltip("Small size, high quality");
-
-        btnBasicCompress.setTooltip(tooltipBasicCompress);
-        btnStrongCompress.setTooltip(tooltipStrongCompress);
-        btnSuperCompress.setTooltip(tooltipSuperCompress);
-
         videoProperties.setOutput(getSavedPath());
 
         btnBasicCompress.setToggleGroup(group);
         btnStrongCompress.setToggleGroup(group);
         btnSuperCompress.setToggleGroup(group);
 
-        if (chkUseGPU != null) {
-            chkUseGPU.setTooltip(new Tooltip("Use NVENC (NVIDIA GPU) if available (may significantly speed up encoding)."));
-            chkUseGPU.setSelected(false);
-        }
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
     @Override
     protected void lockUI() {
         btnSelectVideoFile.setDisable(true);
-        btnChoiceDirForSaveVideo.setDisable(true);
+        btnChoiceDirForSave.setDisable(true);
         btnCompress.setDisable(true);
         if (chkUseGPU != null) chkUseGPU.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
@@ -88,7 +71,7 @@ public class CompressorVideoController extends AbstractMediaController {
     @Override
     protected void unlockUI() {
         btnSelectVideoFile.setDisable(false);
-        btnChoiceDirForSaveVideo.setDisable(false);
+        btnChoiceDirForSave.setDisable(false);
         btnCompress.setDisable(false);
         if (chkUseGPU != null) chkUseGPU.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
@@ -122,13 +105,13 @@ public class CompressorVideoController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", "*.mp4", "*.avi", "*.mkv", "*.mov", "*.webm"), "Select video")
+                new FileChooser.ExtensionFilter("Video", Global.getAllSupportedVideoFormatsForFileChooser()), "Select video")
                 .ifPresent(this::loadFile);
     }
 
     @FXML
-    public void onActionSelectOutputDir() {
-        Stage stage = (Stage) btnChoiceDirForSaveVideo.getScene().getWindow();
+    public void onActionChoiceDirForSave() {
+        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
         directoryChooser(stage, videoProperties.getOutput(), "Select directory for save image")
                 .ifPresent(videoProperties::setOutput);
     }
@@ -166,6 +149,7 @@ public class CompressorVideoController extends AbstractMediaController {
             if (!proceed) return;
         }
 
+        Compressor compressor = new Compressor();
         compressor.setUseGPU(chkUseGPU != null && chkUseGPU.isSelected());
         
         currentTask = new CompressVideoTask(compressor, videoProperties.getSrcFile(), videoProperties.getOutput(), selectedPreset);
@@ -200,7 +184,7 @@ public class CompressorVideoController extends AbstractMediaController {
         if (chkUseGPU != null) chkUseGPU.setSelected(false);
         
         btnSelectVideoFile.setDisable(false);
-        btnChoiceDirForSaveVideo.setDisable(false);
+        btnChoiceDirForSave.setDisable(false);
         if (chkUseGPU != null) chkUseGPU.setDisable(false);
     }
 
@@ -286,8 +270,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, List.of(
-                ".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".3gp"), dropZone);
+        DragDropped.handleDragOver(e, Global.getAllSupportedVideoFormats(), dropZone);
     }
 
     @FXML
