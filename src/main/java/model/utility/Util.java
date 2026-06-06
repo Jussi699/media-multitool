@@ -172,4 +172,7 @@ public class Util {
         }
     }
 
+    private static String nullToEmpty(String value) {
+        return value != null ? value : "";
+    }
 }

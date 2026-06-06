@@ -11,6 +11,8 @@ module media_multitool {
     requires org.apache.commons.io;
     requires java.prefs;
     requires colorpicker;
+    requires jaudiotagger;
+    requires java.logging;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;
@@ -20,4 +22,5 @@ module media_multitool {
     exports model.utility;
     exports model.properties;
     exports viewHelp;
+    exports viewHelp.audioEditor;
 }

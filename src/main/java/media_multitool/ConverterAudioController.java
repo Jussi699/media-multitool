@@ -123,8 +123,8 @@ public class ConverterAudioController extends AbstractMediaController {
         SelectFile selectAudioVideoFile = new SelectFile();
         Stage stage = (Stage) btnSelectAudioVideoFile.getScene().getWindow();
 
-        List<String> allFilters = new ArrayList<>(Global.getAllSupportedAudioFormatsForFileChooser());
-        allFilters.addAll(Global.getAllSupportedVideoFormatsForFileChooser());
+        List<String> allFilters = new ArrayList<>(Global.getSupportedAudioFormatsForFileChooser());
+        allFilters.addAll(Global.getSupportedVideoFormatsForFileChooser());
 
         selectAudioVideoFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("All Media Files", allFilters),
@@ -208,7 +208,7 @@ public class ConverterAudioController extends AbstractMediaController {
             case "ogg" -> {audioCodec = "libvorbis";ffmpegFormat = "ogg";}
             case "opus" -> {audioCodec = "libopus";ffmpegFormat = "opus";}
             case "flac" -> {audioCodec = "flac";ffmpegFormat = "flac";}
-            case "alac", "m4a" -> {audioCodec = "alac";ffmpegFormat = "ipod";}
+            case "alac", "m4a", "m4b", "m4v", "mp4" -> {audioCodec = "alac";ffmpegFormat = "ipod";}
             case "wav" -> {audioCodec = "pcm_s16le";ffmpegFormat = "wav";}
             case "aiff" -> {audioCodec = "pcm_s16be";ffmpegFormat = "aiff";}
             default -> {audioCodec = "libmp3lame";ffmpegFormat = "mp3";}

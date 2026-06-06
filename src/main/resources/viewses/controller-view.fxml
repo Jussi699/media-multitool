@@ -86,6 +86,16 @@
               endX="85.0" endY="5.0"
               stroke="red" strokeWidth="2.0" />
 
+        <Button fx:id="navEditorAudio"
+                mnemonicParsing="false"
+                onAction="#showEditorAudioPage"
+                prefWidth="140.0"
+                text="Editor Audio"/>
+
+        <Line startX="85.0"
+              endX="85.0" endY="5.0"
+              stroke="red" strokeWidth="2.0" />
+
         <Button fx:id="navInfo"
                 mnemonicParsing="false"
                 onAction="#showInfoPage"
@@ -115,5 +125,6 @@
         <fx:include fx:id="colorizePage" source="colorize-image-view.fxml"/>
         <fx:include fx:id="blackAndWhitePage" source="black-white-image-view.fxml"/>
         <fx:include fx:id="blurPage" source="blur-image-view.fxml"/>
+        <fx:include fx:id="audioEditorPage" source="editor-audio-tag-view.fxml"/>
     </StackPane>
 </HBox>

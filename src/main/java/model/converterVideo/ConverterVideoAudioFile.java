@@ -41,6 +41,8 @@ public class ConverterVideoAudioFile {
                 extension = "m4a";
             } else if ("adts".equalsIgnoreCase(output_format)) {
                 extension = "aac";
+            } else if ("asf".equalsIgnoreCase(output_format)) {
+                extension = "wmv";
             }
             target = new File(pathForSave, nameWithoutExtension + "_" + UUID.randomUUID().toString().replace("-", "") + "." + extension);
             nameFileAfter = target;

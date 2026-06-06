@@ -14,13 +14,16 @@ public class ConverterApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(ConverterApp.class.getResource("/viewses/controller-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+        Scene scene = new Scene(fxmlLoader.load(), 1000, 900);
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
 
         try {stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));}
         catch (NullPointerException e){ErrorLogger.warn("The icon for the application is missing or damaged.");}
 
-        stage.setResizable(false);
+        stage.setResizable(true);
+        stage.setMinHeight(600);
+        stage.setMinWidth(700);
+
         stage.setTitle("Media multitool!");
         stage.setScene(scene);
         stage.show();

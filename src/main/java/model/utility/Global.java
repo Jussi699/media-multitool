@@ -14,7 +14,9 @@ public class Global {
     );
 
     private final static List<String> allSupportedAudioFormat = List.of(
-            ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"
+            ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".m4b", ".aac", ".wma",
+            ".alac", ".aif", ".aifc", ".aiff", ".dsf", ".mka", ".mpc", ".ofr", ".ofs",
+            ".ape", ".wv", ".tak"
     );
 
     public static List<String> getAllSupportedVideoFormats() {
@@ -25,34 +27,34 @@ public class Global {
         return allSupportedImageFormat;
     }
 
-    public static List<String> getAllSupportedVideoFormatsForFileChooser() {
-        List<String> allSupportedVideoFormatWithStar = new ArrayList<>();
-        for(String format : allSupportedVideoFormat) {
-               allSupportedVideoFormatWithStar.add("*".concat(format));
-        }
-
-        return allSupportedVideoFormatWithStar;
-    }
-
-    public static List<String> getAllSupportedImageFormatsForFileChooser() {
-        List<String> allSupportedImageFormatWithStar = new ArrayList<>();
-        for(String format : allSupportedImageFormat) {
-            allSupportedImageFormatWithStar.add("*".concat(format));
-        }
-
-        return allSupportedImageFormatWithStar;
-    }
-
     public static List<String> getAllSupportedAudioFormats() {
         return allSupportedAudioFormat;
     }
 
-    public static List<String> getAllSupportedAudioFormatsForFileChooser() {
-        List<String> allSupportedAudioFormatWithStar = new ArrayList<>();
-        for(String format : allSupportedAudioFormat) {
-            allSupportedAudioFormatWithStar.add("*".concat(format));
+    public static List<String> getSupportedVideoFormatsForFileChooser() {
+        List<String> supported = new ArrayList<>();
+        for(String format : allSupportedVideoFormat) {
+            supported.add("*".concat(format));
         }
 
-        return allSupportedAudioFormatWithStar;
+        return supported;
+    }
+
+    public static List<String> getSupportedImageFormatsForFileChooser() {
+        List<String> supported = new ArrayList<>();
+        for(String format : allSupportedImageFormat) {
+            supported.add("*".concat(format));
+        }
+
+        return supported;
+    }
+
+    public static List<String> getSupportedAudioFormatsForFileChooser() {
+        List<String> supported = new ArrayList<>();
+        for(String format : allSupportedAudioFormat) {
+            supported.add("*".concat(format));
+        }
+
+        return supported;
     }
 }

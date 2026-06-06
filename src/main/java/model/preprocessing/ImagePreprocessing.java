@@ -1,4 +1,4 @@
-package model.imagePreprocessing;
+package model.preprocessing;
 
 import javafx.scene.control.Alert;
 import javafx.scene.effect.Light;

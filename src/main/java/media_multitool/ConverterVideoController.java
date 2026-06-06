@@ -165,7 +165,7 @@ public class ConverterVideoController extends AbstractMediaController {
         SelectFile selectFile = new SelectFile();
         Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
         selectFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", Global.getAllSupportedVideoFormatsForFileChooser()), "Select video")
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), "Select video")
                 .ifPresent(this::loadFile);
     }
 
@@ -355,6 +355,9 @@ public class ConverterVideoController extends AbstractMediaController {
             case "avi" -> { videoCodec = useGPU ? "h264_nvenc" : "mpeg4"; audioCodec = "libmp3lame"; ffmpegFormat = "avi"; }
             case "webm" -> { videoCodec = "libvpx"; audioCodec = "libvorbis"; ffmpegFormat = "webm"; }
             case "mov" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "mov"; }
+            case "wmv" -> { videoCodec = "wmv2"; audioCodec = "wmav2"; ffmpegFormat = "asf"; }
+            case "flv" -> { videoCodec = "flv1"; audioCodec = "mp3"; ffmpegFormat = "flv"; }
+            case "3gp" -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; ffmpegFormat = "3gp"; }
             default -> { videoCodec = useGPU ? "h264_nvenc" : "libx264"; audioCodec = "aac"; }
         }
 

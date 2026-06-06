@@ -12,31 +12,14 @@ import java.util.Map;
 
 public class ControllerView {
 
-    @FXML private StackPane blurPage;
-    @FXML private StackPane blackAndWhitePage;
-    @FXML private StackPane colorizePage;
-    @FXML private StackPane darkenPage;
-    @FXML private StackPane lightenPage;
-    @FXML private StackPane infoPage;
-    @FXML private StackPane compressorVideoPage;
-    @FXML private StackPane converterMP3Page;
-    @FXML private StackPane homeView;
-    @FXML private StackPane converterImagePage;
-    @FXML private StackPane converterVideoPage;
-    @FXML private StackPane compressorImagePage;
-
-    @FXML private StackPane negativeImagePage;
-    @FXML private StackPane turnImagePage;
-    @FXML private StackPane currentPageFromComboBoxAction;
+    @FXML private StackPane audioEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
+            compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
+            negativeImagePage, turnImagePage, currentPageFromComboBoxAction;
 
     @FXML private HomeViewController homeViewController;
-    @FXML private Button navHomeButton;
-    @FXML private Button navConverterImageButton;
-    @FXML private Button navConverterVideoButton;
-    @FXML private Button navConverterAudioButton;
-    @FXML private Button navCompressorImage;
-    @FXML private Button navCompressorVideo;
-    @FXML private Button navInfo;
+
+    @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
+            navCompressorImage, navCompressorVideo, navInfo, navEditorAudio;
 
     @FXML private ComboBox<Item> comboBoxChoiceActionImage;
 
@@ -48,6 +31,7 @@ public class ControllerView {
      * 5, colorizePage,
      * 6, blackAndWhitePage,
      * 7, blurPage
+     * 8  audioEditorPage
      * **/
 
     private final Map<Integer, StackPane> stackPaneMap = new HashMap<>();
@@ -128,6 +112,11 @@ public class ControllerView {
     }
 
     @FXML
+    public void showEditorAudioPage() {
+        setActivePage(audioEditorPage, navEditorAudio);
+    }
+
+    @FXML
     public void onActionChoiceActionImage() {
         Item selectedItem = comboBoxChoiceActionImage.getValue();
         if (selectedItem != null) {
@@ -142,7 +131,6 @@ public class ControllerView {
             currentPageFromComboBoxAction = stackPaneMap.get(index);
             setActivePage(currentPageFromComboBoxAction, null);
             comboBoxChoiceActionImage.setStyle(getComboBoxStyle(true));
-
     }
 
     @FXML
@@ -154,7 +142,7 @@ public class ControllerView {
         StackPane[] allPages = {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
-                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage
+                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage, audioEditorPage
         };
 
         for (StackPane page : allPages) {
@@ -175,6 +163,7 @@ public class ControllerView {
         navConverterAudioButton.setStyle(getNavButtonStyle(activeButton == navConverterAudioButton));
         navCompressorImage.setStyle(getNavButtonStyle(activeButton == navCompressorImage));
         navCompressorVideo.setStyle(getNavButtonStyle(activeButton == navCompressorVideo));
+        navEditorAudio.setStyle(getNavButtonStyle(activeButton == navEditorAudio));
         navInfo.setStyle(getNavButtonStyle(activeButton == navInfo));
     }
 

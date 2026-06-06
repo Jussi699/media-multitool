@@ -15,6 +15,7 @@ public class ImageProperties implements MediaProperties {
     private float scale;
     private float quality;
     private final PauseTransition hideSuccessMessageTimer = new PauseTransition(Duration.seconds(secondsForHideSuccessMessage));
+    private String pathToImage;
 
     @Override
     public void reset() {
@@ -23,6 +24,14 @@ public class ImageProperties implements MediaProperties {
         this.compressedImage = null;
         this.scale = -1;
         this.quality = -1;
+    }
+
+    public String getPathToImage() {
+        return pathToImage;
+    }
+
+    public void setPathToImage(String pathToImage) {
+        this.pathToImage = pathToImage;
     }
 
     public File getImage() {

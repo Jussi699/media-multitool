@@ -7,6 +7,7 @@ import java.io.File;
 
 public class VideoAndAudioProperties implements MediaProperties {
     private String resolution;
+    private String targetFormat;
     private int fps;
     private int bitRate;
     private int channel;
@@ -14,8 +15,9 @@ public class VideoAndAudioProperties implements MediaProperties {
     private int seconds = 5;
     private File output;
     private File srcFile;
-    private String targetFormat;
+    private File pathToImage;
     private final PauseTransition hideSuccessMessageTimer = new PauseTransition(Duration.seconds(seconds));
+
 
     @Override
     public void reset() {
@@ -26,6 +28,14 @@ public class VideoAndAudioProperties implements MediaProperties {
         this.bitRate = 0;
         this.channel = 0;
         this.samplingRate = 0;
+    }
+
+    public File getPathToImage() {
+        return pathToImage;
+    }
+
+    public void setPathToImage(File pathToImage) {
+        this.pathToImage = pathToImage;
     }
 
     public String getResolution() {
