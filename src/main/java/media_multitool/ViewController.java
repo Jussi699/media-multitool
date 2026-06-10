@@ -10,11 +10,11 @@ import viewHelp.ComboBoxes;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ControllerView {
+public class ViewController {
 
     @FXML private StackPane audioEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
-            negativeImagePage, turnImagePage, currentPageFromComboBoxAction;
+            negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -32,6 +32,7 @@ public class ControllerView {
      * 6, blackAndWhitePage,
      * 7, blurPage
      * 8  audioEditorPage
+     * 9 findPixelPage
      * **/
 
     private final Map<Integer, StackPane> stackPaneMap = new HashMap<>();
@@ -67,7 +68,8 @@ public class ControllerView {
                 4, darkenPage,
                 5, colorizePage,
                 6, blackAndWhitePage,
-                7, blurPage
+                7, blurPage,
+                8, findPixelPage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -77,7 +79,8 @@ public class ControllerView {
                 new Item(4, "Darken photo"),
                 new Item(5, "Colorize photo"),
                 new Item(6, "Black-White photo"),
-                new Item(7, "Blurry photo")
+                new Item(7, "Blurry photo"),
+                new Item(8, "Find Pixel")
         );
     }
 
@@ -142,7 +145,7 @@ public class ControllerView {
         StackPane[] allPages = {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
-                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage, audioEditorPage
+                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage, audioEditorPage, findPixelPage
         };
 
         for (StackPane page : allPages) {

@@ -146,7 +146,7 @@ public class Util {
         }
 
         if (ctx.labelSuccess() != null) {
-            ctx.labelSuccess().setVisible(false);
+            ctx.labelSuccess().setVisible(true);
             ctx.labelSuccess().setText("");
             hideSuccessMessage(ctx.labelSuccess(), ctx.progressBar(), properties.getHideSuccessMessageTimer(), ctx.managed());
             ctx.labelSuccess().setManaged(ctx.managed());

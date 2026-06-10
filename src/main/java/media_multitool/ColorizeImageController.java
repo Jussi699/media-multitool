@@ -7,7 +7,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -15,6 +14,7 @@ import javafx.stage.Stage;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
+import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
@@ -26,27 +26,25 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
 public class ColorizeImageController extends AbstractMediaController {
-    @FXML private Button btnColorPicker;
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceDirForSaveImage;
-    @FXML private Label labelSelectImageName;
-    @FXML private Label textDragZone;
+    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSaveImage, btnColorPicker;
+    @FXML private Label textDragZone, labelPreviewPlaceholder, labelSelectImageName;
     @FXML private ImageView imageViewPreview;
-    @FXML private Label labelPreviewPlaceholder;
-    @FXML private StackPane previewContainer;
+    @FXML private StackPane previewContainer, dropZone;
 
     private final ImageProperties imageProperties = new ImageProperties();
-    private BufferedImage originalBufferedImage;
-    private BufferedImage currentBufferedImage;
+    private BufferedImage originalBufferedImage, currentBufferedImage;
     private Color selectedColorFX = Color.WHITE;
 
     private JDialog swingDialog;
+
+    @Override
+    protected MediaProperties getProperties() {
+        return imageProperties;
+    }
 
     @FXML
     public void initialize() {
@@ -54,7 +52,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         if (imageViewPreview != null && previewContainer != null) {
             imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
@@ -62,6 +60,7 @@ public class ColorizeImageController extends AbstractMediaController {
         }
 
         onResetPressed();
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     @FXML
@@ -100,19 +99,6 @@ public class ColorizeImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
-    }
-
-    @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
@@ -124,9 +110,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
-        directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
-                .ifPresent(imageProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -167,7 +151,6 @@ public class ColorizeImageController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.FALSE.equals(result)) {
-            imageProperties.getHideSuccessMessageTimer().playFromStart();
             return;
         }
         File outputFile = (File) result;
@@ -215,19 +198,16 @@ public class ColorizeImageController extends AbstractMediaController {
                 currentBufferedImage = originalBufferedImage;
                 if (currentBufferedImage != null) {
                     setPreview(currentBufferedImage);
-                    if (labelPreviewPlaceholder != null) {
                         labelPreviewPlaceholder.setVisible(false);
-                    }
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
             }
         }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        textDragZone.setText("Selected: " + selectedFile.getName());
+
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

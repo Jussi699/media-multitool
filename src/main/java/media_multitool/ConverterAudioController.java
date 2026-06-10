@@ -7,16 +7,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Alert;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.converterVideo.ConvertVideoAudioTask;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
-import model.utility.DragDropped;
 import model.utility.Global;
 import model.utility.ResetContext;
 import model.utility.Util;
@@ -43,6 +42,11 @@ public class ConverterAudioController extends AbstractMediaController {
 
     private List<ToggleButton> listBtn;
 
+    @Override
+    protected MediaProperties getProperties() {
+        return audioProperties;
+    }
+
     @FXML
     public void initialize() {
         listBtn = List.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF);
@@ -61,6 +65,10 @@ public class ConverterAudioController extends AbstractMediaController {
                                                         "44100 Hz", "48000 Hz");
 
         resetToDefaults();
+
+        List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
+        allFormats.addAll(Global.getAllSupportedVideoFormats());
+        setupDragAndDrop(dropZone, textDragZone, allFormats, this::loadFile);
     }
 
     private void resetToDefaults() {
@@ -76,7 +84,7 @@ public class ConverterAudioController extends AbstractMediaController {
         audioProperties.setBitRate(320);
         audioProperties.setChannel(2);
         audioProperties.setSamplingRate(48000);
-        if (progressBar != null) progressBar.setProgress(0);
+        progressBar.setProgress(0);
 
         for (ToggleButton tb : listBtn) {
             tb.setSelected(false);
@@ -86,13 +94,13 @@ public class ConverterAudioController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         btnSubmitAndDownload.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSubmitAndDownload.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
@@ -101,21 +109,7 @@ public class ConverterAudioController extends AbstractMediaController {
         if (Boolean.TRUE.equals(result)) {
             showSuccessMessage(labelSuccess, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, audioProperties.getHideSuccessMessageTimer());
-        } else {
-            audioProperties.getHideSuccessMessageTimer().playFromStart();
         }
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        audioProperties.getHideSuccessMessageTimer().playFromStart();
-    }
-
-    @Override
-    protected void handleTaskFailure(Throwable exception) {
-        super.handleTaskFailure(exception);
-        audioProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
@@ -136,10 +130,9 @@ public class ConverterAudioController extends AbstractMediaController {
         audioProperties.setSrcFile(selectedFile);
         ErrorLogger.info("User select file (video/audio): " + audioProperties.getSrcFile().getAbsolutePath());
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + audioProperties.getSrcFile().getName());
-        }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        textDragZone.setText("Selected: " + audioProperties.getSrcFile().getName());
+
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
         labelSelectAudioFile.setText("Selected audio file: " + audioProperties.getSrcFile().getName());
@@ -148,9 +141,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML
     public void onSelectOutputDirectoryPressed() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        directoryChooser(stage, audioProperties.getOutput(), "Select directory for save audio")
-                .ifPresent(audioProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSave, audioProperties.getOutput(), audioProperties::setOutput, "Select directory for save audio");
     }
 
     @FXML
@@ -270,16 +261,7 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private void selectFormat(String format, ToggleButton selectedBtn) {
-        audioProperties.setTargetFormat(format);
-        btnToMP3.setSelected(selectedBtn == btnToMP3);
-        btnToAAC.setSelected(selectedBtn == btnToAAC);
-        btnToOggVorbis.setSelected(selectedBtn == btnToOggVorbis);
-        btnToOPUS.setSelected(selectedBtn == btnToOPUS);
-        btnToFLAC.setSelected(selectedBtn == btnToFLAC);
-        btnToALAC.setSelected(selectedBtn == btnToALAC);
-        btnToWAV.setSelected(selectedBtn == btnToWAV);
-        btnToAIFF.setSelected(selectedBtn == btnToAIFF);
-        hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(), true);
+        super.selectFormat(format, selectedBtn, listBtn, audioProperties::setTargetFormat);
     }
 
     @FXML
@@ -300,22 +282,6 @@ public class ConverterAudioController extends AbstractMediaController {
     public void onChoiceSamplingRate() {
         audioProperties.setSamplingRate(parseComboBoxStringToInt(comboBoxChoiceSamplingRate));
         ErrorLogger.info("User select sampling rate: " + audioProperties.getSamplingRate());
-    }
-
-    @FXML
-    private void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
-    }
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
-        allFormats.addAll(Global.getAllSupportedVideoFormats());
-
-        DragDropped.handleDragOver(e, allFormats, dropZone);
     }
 
     @FXML

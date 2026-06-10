@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -12,9 +11,9 @@ import model.compressorVideo.Compressor;
 import model.compressorVideo.VideoPresets;
 import model.compressorVideo.CompressVideoTask;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
-import model.utility.DragDropped;
 import model.utility.Global;
 import model.utility.ResetContext;
 import model.utility.Util;
@@ -34,13 +33,14 @@ public class CompressorVideoController extends AbstractMediaController {
     private static final ToggleGroup group = new ToggleGroup();
     private CompressVideoTask currentTask;
 
-    @FXML private Label labelSelectVideoName;
-    @FXML private Label textDragZone;
-    @FXML private Button btnChoiceDirForSave;
-    @FXML private Button btnSelectVideoFile;
-    @FXML private ToggleButton btnBasicCompress;
-    @FXML private ToggleButton btnStrongCompress;
-    @FXML private ToggleButton btnSuperCompress;
+    @Override
+    protected MediaProperties getProperties() {
+        return videoProperties;
+    }
+
+    @FXML private Label labelSelectVideoName,textDragZone;
+    @FXML private Button btnChoiceDirForSave, btnSelectVideoFile;
+    @FXML private ToggleButton btnBasicCompress, btnStrongCompress, btnSuperCompress;
     @FXML private StackPane dropZone;
     @FXML private CheckBox chkUseGPU;
     @FXML private Button btnCompress;
@@ -57,6 +57,8 @@ public class CompressorVideoController extends AbstractMediaController {
         btnSuperCompress.setToggleGroup(group);
 
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
+
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedVideoFormats(), this::loadFile);
     }
 
     @Override
@@ -64,8 +66,8 @@ public class CompressorVideoController extends AbstractMediaController {
         btnSelectVideoFile.setDisable(true);
         btnChoiceDirForSave.setDisable(true);
         btnCompress.setDisable(true);
-        if (chkUseGPU != null) chkUseGPU.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        chkUseGPU.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
@@ -73,8 +75,8 @@ public class CompressorVideoController extends AbstractMediaController {
         btnSelectVideoFile.setDisable(false);
         btnChoiceDirForSave.setDisable(false);
         btnCompress.setDisable(false);
-        if (chkUseGPU != null) chkUseGPU.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        chkUseGPU.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
@@ -83,21 +85,7 @@ public class CompressorVideoController extends AbstractMediaController {
         if (Boolean.TRUE.equals(result)) {
             showSuccessText(labelSuccess, "Compression successful!", videoProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
-        } else {
-            videoProperties.getHideSuccessMessageTimer().playFromStart();
         }
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        videoProperties.getHideSuccessMessageTimer().playFromStart();
-    }
-
-    @Override
-    protected void handleTaskFailure(Throwable exception) {
-        super.handleTaskFailure(exception);
-        videoProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
@@ -105,15 +93,13 @@ public class CompressorVideoController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", Global.getAllSupportedVideoFormatsForFileChooser()), "Select video")
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), "Select video")
                 .ifPresent(this::loadFile);
     }
 
     @FXML
     public void onActionChoiceDirForSave() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        directoryChooser(stage, videoProperties.getOutput(), "Select directory for save image")
-                .ifPresent(videoProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSave, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
     }
 
     @FXML
@@ -175,17 +161,17 @@ public class CompressorVideoController extends AbstractMediaController {
         selectedPreset = null;
         durationMillis = 0;
 
-        if (progressBar != null) {
-            progressBar.setVisible(true);
-            progressBar.setManaged(true);
-            progressBar.setProgress(0);
-        }
 
-        if (chkUseGPU != null) chkUseGPU.setSelected(false);
+        progressBar.setVisible(true);
+        progressBar.setManaged(true);
+        progressBar.setProgress(0);
+
+
+        chkUseGPU.setSelected(false);
         
         btnSelectVideoFile.setDisable(false);
         btnChoiceDirForSave.setDisable(false);
-        if (chkUseGPU != null) chkUseGPU.setDisable(false);
+        chkUseGPU.setDisable(false);
     }
 
     private boolean checkChoicePreset() {
@@ -268,19 +254,6 @@ public class CompressorVideoController extends AbstractMediaController {
         );
     }
 
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedVideoFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
-    }
-
     private void loadFile(File selectedFile) {
         videoProperties.setSrcFile(selectedFile);
         selectedPreset = null;
@@ -302,16 +275,16 @@ public class CompressorVideoController extends AbstractMediaController {
                 .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
 
         hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
-        if (progressBar != null) {
-            progressBar.setVisible(true);
-            progressBar.setManaged(true);
-            progressBar.setProgress(0);
-        }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
-        }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        progressBar.setVisible(true);
+        progressBar.setManaged(true);
+        progressBar.setProgress(0);
+
+
+
+        textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
+
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

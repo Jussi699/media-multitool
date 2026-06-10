@@ -1,4 +1,4 @@
-package media_multitool;
+package app;
 
 import javafx.application.Application;
 import model.utility.Util;

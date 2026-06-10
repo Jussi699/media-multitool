@@ -34,11 +34,9 @@ public class DragDropped {
             file = db.getFiles().getFirst();
             success = true;
             
-            // UI feedback
             if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");
             }
-            textDragZone.setText("Selected: " + file.getName());
         }
 
         e.setDropCompleted(success);

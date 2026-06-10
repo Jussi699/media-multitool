@@ -169,9 +169,10 @@
                     <ScrollBar fx:id="tableVerticalScrollBar" managed="false" maxWidth="14.0" minWidth="14.0"
                                orientation="VERTICAL" prefWidth="14.0" visible="false"/>
                 </HBox>
-                <StackPane fx:id="dropZone" onDragDropped="#handleDragDropped" onDragOver="#handleDragOver"
+                <StackPane fx:id="dropZone"
+
                            styleClass="drop-zone" VBox.vgrow="NEVER" minHeight="100.0">
-                    <Label fx:id="textDragZone" style="-fx-font-size: 18px; " text="Drag files here" textFill="WHITE"/>
+                    <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone"/>
                 </StackPane>
             </VBox>
         </GridPane>

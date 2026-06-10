@@ -4,7 +4,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -13,6 +12,7 @@ import model.compressorImage.CompressionResult;
 import model.compressorImage.CompressImageTask;
 import model.converterImage.UsefulMethods;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
@@ -28,6 +28,11 @@ import static viewHelp.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+
+    @Override
+    protected MediaProperties getProperties() {
+        return imageProperties;
+    }
 
     @FXML private StackPane dropZone, previewContainer;
     @FXML private ComboBox<Item> comboBoxOutputQuality, comboBoxScaleImage;
@@ -71,20 +76,22 @@ public class CompressorImageController extends AbstractMediaController {
                 new Item(0.25f, "25%"), new Item(0.15f, "15%"),
                 new Item(0.10f, "10%"), new Item(0.05f, "5%")
         );
+
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     @Override
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
         btnChoiceDirForSaveImage.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
         btnChoiceDirForSaveImage.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
@@ -92,7 +99,6 @@ public class CompressorImageController extends AbstractMediaController {
         super.handleTaskSuccess(result);
 
         if (Boolean.FALSE.equals(result)) {
-            imageProperties.getHideSuccessMessageTimer().playFromStart();
             return;
         }
 
@@ -128,16 +134,14 @@ public class CompressorImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
     }
 
     @FXML
     public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
-        directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
-                .ifPresent(imageProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -232,19 +236,6 @@ public class CompressorImageController extends AbstractMediaController {
         return String.format(Locale.US, "%.2f MB", bytes / (1024.0 * 1024.0));
     }
 
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
-    }
 
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);

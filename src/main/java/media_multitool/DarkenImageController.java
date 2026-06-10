@@ -7,12 +7,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
@@ -22,20 +22,24 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
 public class DarkenImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
-    public Slider sliderDarken;
-    private BufferedImage originalBufferedImage;
-    private BufferedImage currentBufferedImage;
+
+    @FXML private Slider sliderDarken;
+    private BufferedImage originalBufferedImage, currentBufferedImage;
 
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectPhoto, btnChoiceDirForSave;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
+
+    @Override
+    protected MediaProperties getProperties() {
+        return imageProperties;
+    }
 
     @FXML
     public void initialize() {
@@ -54,6 +58,7 @@ public class DarkenImageController extends AbstractMediaController {
         sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
 
         onResetPressed();
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     private void updatePreview(int offset) {
@@ -90,27 +95,14 @@ public class DarkenImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectPhoto.setDisable(true);
         btnChoiceDirForSave.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhoto.setDisable(false);
         btnChoiceDirForSave.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
-    }
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
+        btnReset.setDisable(false);
     }
 
     @FXML
@@ -125,9 +117,7 @@ public class DarkenImageController extends AbstractMediaController {
 
     @FXML
     public void btnChoiceDirForSave() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
-                .ifPresent(imageProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -169,7 +159,6 @@ public class DarkenImageController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.FALSE.equals(result)) {
-            imageProperties.getHideSuccessMessageTimer().playFromStart();
             return;
         }
         File outputFile = (File) result;
@@ -179,12 +168,6 @@ public class DarkenImageController extends AbstractMediaController {
             showSuccessText(labelSuccess, "Darkened image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override
@@ -221,19 +204,16 @@ public class DarkenImageController extends AbstractMediaController {
                 originalBufferedImage = ImageIO.read(selectedFile);
                 if (originalBufferedImage != null) {
                     updatePreview(- (int) sliderDarken.getValue());
-                    if (labelPreviewPlaceholder != null) {
                         labelPreviewPlaceholder.setVisible(false);
-                    }
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
             }
         }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        textDragZone.setText("Selected: " + selectedFile.getName());
+
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

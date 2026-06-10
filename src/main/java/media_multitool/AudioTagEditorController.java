@@ -5,13 +5,13 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.utility.DetailsAudioFile;
 import model.preprocessing.AudioPreprocessing;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.*;
@@ -34,11 +34,14 @@ import static viewHelp.Message.*;
 public class AudioTagEditorController extends AbstractMediaController {
     private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
 
+    @Override
+    protected MediaProperties getProperties() {
+        return audioProperties;
+    }
+
     @FXML private TableView<DetailsAudioFile> tableViewAudio;
     @FXML private ScrollPane tableScrollPane;
     @FXML private ScrollBar tableVerticalScrollBar;
-
-    private final ScrollBar[] tableInternalVBarRef = new ScrollBar[1];
 
     @FXML private TableColumn<DetailsAudioFile, String> colFileName, colPath, colTag, colTitle, colArtist, colAlbumArtist, colAlbum, colTrack,
         colDiscnumber, colYear, colGenre, colComment, colCodec, colBitrate, colFrequency;
@@ -49,12 +52,15 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML private Button btnChangeIcon,  btnSelectPhoto, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane dropZone;
-    @FXML private Label labelSelectImageName, textDragZone;@FXML private ComboBox<String> genreComboBox;
+    @FXML private Label labelSelectImageName, textDragZone;
+    @FXML private ComboBox<String> genreComboBox;
 
     @FXML private TextField titleField, artistField, albumField, albumArtistField, composerField, trackField, discNumberField, commentField, yearField;
 
     private File chosenDir;
     private List<TextField> textFields;
+    private List<Button> listBtn;
+    private final ScrollBar[] tableInternalVBarRef = new ScrollBar[1];
 
     @FXML
     public void initialize() {
@@ -67,6 +73,8 @@ public class AudioTagEditorController extends AbstractMediaController {
                 "discNumber", "year", "genre", "comment", "codec", "bitrate", "frequency", "modified", "length"
         );
 
+        listBtn = List.of(btnChangeIcon,  btnSelectPhoto, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag);
+
         tableViewAudio.setTableMenuButtonVisible(false);
         tableViewAudio.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         allTableCol.forEach(column -> {
@@ -74,6 +82,7 @@ public class AudioTagEditorController extends AbstractMediaController {
                 column.setMinWidth(column.getPrefWidth());
             }
         });
+
         SetupScrollPane.configureTableHorizontalScroll(
                 tableScrollPane, tableViewAudio, allTableCol, tableVerticalScrollBar, tableInternalVBarRef);
 
@@ -105,6 +114,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         });
 
         onResetPressed();
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedAudioFormats(), this::loadFile);
     }
 
     @FXML
@@ -129,35 +139,12 @@ public class AudioTagEditorController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhoto.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
-        btnSelectMultipleFile.setDisable(true);
-        btnSaveTag.setDisable(true);
-        btnChangeIcon.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        listBtn.forEach(button -> button.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhoto.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
-        btnSelectMultipleFile.setDisable(false);
-        btnSaveTag.setDisable(false);
-        btnChangeIcon.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
-    }
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedAudioFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
+        listBtn.forEach(button -> button.setDisable(false));
     }
 
     @FXML
@@ -172,9 +159,7 @@ public class AudioTagEditorController extends AbstractMediaController {
 
     @FXML
     public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        directoryChooser(stage, audioProperties.getOutput(), "Select directory for save audio")
-                .ifPresent(audioProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSave, audioProperties.getOutput(), audioProperties::setOutput, "Select directory for save audio");
     }
 
     @FXML
@@ -225,7 +210,7 @@ public class AudioTagEditorController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         if (result instanceof List<?> list) {
             if (!list.isEmpty() && list.getFirst() instanceof DetailsAudioFile) {
-                tableViewAudio.getItems().setAll((DetailsAudioFile) list);
+                tableViewAudio.getItems().setAll((Collection<? extends DetailsAudioFile>) list);
                 ErrorLogger.info("Loaded " + list.size() + " files to table.");
             }
             return;
@@ -233,7 +218,6 @@ public class AudioTagEditorController extends AbstractMediaController {
 
         super.handleTaskSuccess(result);
         if (result instanceof Boolean && Boolean.FALSE.equals(result)) {
-            audioProperties.getHideSuccessMessageTimer().playFromStart();
             return;
         }
         ErrorLogger.info("MP3 tags and icon changed successfully!");
@@ -258,12 +242,6 @@ public class AudioTagEditorController extends AbstractMediaController {
                 tableViewAudio.refresh();
             }
         });
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        audioProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override

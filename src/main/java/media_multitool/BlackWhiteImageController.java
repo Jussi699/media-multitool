@@ -7,13 +7,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
+import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
@@ -22,7 +22,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
@@ -40,6 +39,11 @@ public class BlackWhiteImageController extends AbstractMediaController {
     @FXML private Label labelPreviewPlaceholder;
     @FXML private StackPane previewContainer;
 
+    @Override
+    protected MediaProperties getProperties() {
+        return imageProperties;
+    }
+
     @FXML
     public void initialize() {
         imageProperties.setOutput(getSavedPath());
@@ -52,6 +56,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
         }
 
         onResetPressed();
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     private void updatePreview() {
@@ -98,19 +103,6 @@ public class BlackWhiteImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
-    }
-
-    @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
@@ -122,9 +114,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
     @FXML
     public void btnChoiceDirForSaveImage() {
-        Stage stage = (Stage) btnChoiceDirForSaveImage.getScene().getWindow();
-        directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
-                .ifPresent(imageProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -161,7 +151,6 @@ public class BlackWhiteImageController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.FALSE.equals(result)) {
-            imageProperties.getHideSuccessMessageTimer().playFromStart();
             return;
         }
         File outputFile = (File) result;
@@ -171,12 +160,6 @@ public class BlackWhiteImageController extends AbstractMediaController {
             showSuccessText(labelSuccess, "Black-White image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override

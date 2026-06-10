@@ -401,6 +401,27 @@
     -fx-background-color: #32CD32;
 }
 
+#tableVerticalScrollBar .thumb {
+    -fx-background-color: #555555 !important;
+    -fx-background-radius: 8;
+    -fx-background-insets: 2;
+    -fx-min-height: 20px;
+}
+
+#tableVerticalScrollBar .thumb:hover {
+    -fx-background-color: #666666 !important;
+}
+
+#tableVerticalScrollBar .thumb:pressed {
+    -fx-background-color: #32CD32 !important;
+}
+
+#tableVerticalScrollBar .track {
+    -fx-background-color: #3b3b3b;
+    -fx-border-color: #4b4b4b;
+    -fx-border-width: 0 0 0 1;
+}
+
 .scroll-bar .increment-button, .scroll-bar .decrement-button {
     -fx-background-color: transparent;
     -fx-padding: 0;
@@ -409,4 +430,22 @@
 .scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
     -fx-shape: "";
     -fx-padding: 0;
+}
+
+.text-field-find-pixel {
+    -fx-pref-width: 100px;
+}
+
+.label-find-pixel {
+    -fx-font-size: 12px;
+}
+
+.btn-find-pixel {
+    -fx-pref-width: 25px;
+    -fx-pref-height: 25px;
+    -fx-font-size: 10px;
+}
+
+.label-drag-zone {
+    -fx-font-size: 18px;
 }

@@ -11,8 +11,8 @@ import model.logger.ErrorLogger;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import model.properties.MediaProperties;
 import model.select.SelectFile;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import model.utility.*;
 
@@ -43,11 +43,16 @@ public class ConverterImageController extends AbstractMediaController {
     @FXML private ImageView imageViewPhoto;
     @FXML private StackPane dropZone, imageContainer;
 
-    private List<ToggleButton> listBtn;
+    private List<ToggleButton> listToggleBtn;
+
+    @Override
+    protected MediaProperties getProperties() {
+        return imageProperties;
+    }
 
     @FXML
     public void initialize() {
-        listBtn = List.of(
+        listToggleBtn = List.of(
                 btnToSVG, btnToWEBM, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM
         );
 
@@ -91,6 +96,8 @@ public class ConverterImageController extends AbstractMediaController {
                 }
             }
         });
+
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadImage);
     }
 
     @Override
@@ -99,7 +106,7 @@ public class ConverterImageController extends AbstractMediaController {
         btnSelectPhoto.setDisable(true);
         btnChoiceFolderForSave.setDisable(true);
         btnSelectBatchFileProcessing.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
@@ -108,7 +115,7 @@ public class ConverterImageController extends AbstractMediaController {
         btnSelectPhoto.setDisable(false);
         btnChoiceFolderForSave.setDisable(false);
         btnSelectBatchFileProcessing.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
@@ -116,28 +123,12 @@ public class ConverterImageController extends AbstractMediaController {
         super.handleTaskSuccess(result);
         if (Boolean.TRUE.equals(result)) {
             Platform.runLater(() -> showSuccessText(labelSuccess, "Conversion successful!", imageProperties.getHideSuccessMessageTimer()));
-        } else {
-            imageProperties.getHideSuccessMessageTimer().playFromStart();
         }
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        imageProperties.getHideSuccessMessageTimer().playFromStart();
-    }
-
-    @Override
-    protected void handleTaskFailure(Throwable exception) {
-        super.handleTaskFailure(exception);
-        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
     public void btnChoiceFolderForSave() {
-        Stage stage = getStage(btnChoiceFolderForSave);
-        directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
-                .ifPresent(imageProperties::setOutput);
+        selectOutputDirectory(btnChoiceFolderForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -175,14 +166,14 @@ public class ConverterImageController extends AbstractMediaController {
                         imageViewPhoto.setImage(fxImage);
                         updateImageSize();
 
-                        if (labelPreviewPlaceholder != null) {
-                            labelPreviewPlaceholder.setVisible(false);
-                        }
+
+                        labelPreviewPlaceholder.setVisible(false);
+
                         
-                        if (textDragZone != null) {
-                            textDragZone.setText("Batch: " + filesToProcess.size() + " files");
-                        }
-                        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+
+                        textDragZone.setText("Batch: " + filesToProcess.size() + " files");
+
+                        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                             dropZone.getStyleClass().add("drop-zone-filled");
                         }
 
@@ -201,9 +192,8 @@ public class ConverterImageController extends AbstractMediaController {
         if (selected == null || selected.equals(ICO_PLACEHOLDER)) return;
 
         imageProperties.setSizeIcoImage(Integer.parseInt(selected));
-        for(ToggleButton tb : listBtn) {
-            tb.setSelected(false);
-        }
+
+        listToggleBtn.forEach(tb -> tb.setSelected(false));
 
         imageProperties.setTypeImage("ico");
     }
@@ -219,9 +209,7 @@ public class ConverterImageController extends AbstractMediaController {
         path_folderBatchProcessing = null;
         filesToProcess.clear();
 
-        for(ToggleButton tb : listBtn) {
-            tb.setSelected(false);
-        }
+        listToggleBtn.forEach(tb -> tb.setSelected(false));
 
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
         imageScaleSlider.setValue(1.0);
@@ -232,7 +220,7 @@ public class ConverterImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getAllSupportedImageFormatsForFileChooser()),
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadImage);
     }
@@ -262,7 +250,7 @@ public class ConverterImageController extends AbstractMediaController {
 
             textDragZone.setText("Selected: " + file.getName());
 
-            if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+            if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");
             }
             
@@ -270,19 +258,6 @@ public class ConverterImageController extends AbstractMediaController {
         } catch (IOException e) {
             ErrorLogger.log(107, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "IO", "File error!");
-        }
-    }
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadImage(droppedFile);
         }
     }
 
@@ -343,17 +318,19 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     private void selectRasterFormat(String format) {
-        imageProperties.setTypeImage(format);
-        btnToPNG.setSelected("png".equals(format));
-        btnToJPEG.setSelected("jpeg".equals(format));
-        btnToWEBM.setSelected("webp".equals(format));
-        btnToTIFF.setSelected("tif".equals(format));
-        btnToBMP.setSelected("bmp".equals(format));
-        btnToPPM.setSelected("ppm".equals(format));
-        btnToPGM.setSelected("pgm".equals(format));
-        btnToPAM.setSelected("pam".equals(format));
-        btnToSVG.setSelected("svg".equals(format));
-
+        ToggleButton selected = switch (format) {
+            case "png" -> btnToPNG;
+            case "jpeg" -> btnToJPEG;
+            case "webp" -> btnToWEBM;
+            case "tif" -> btnToTIFF;
+            case "bmp" -> btnToBMP;
+            case "ppm" -> btnToPPM;
+            case "pgm" -> btnToPGM;
+            case "pam" -> btnToPAM;
+            case "svg" -> btnToSVG;
+            default -> null;
+        };
+        selectFormat(format, selected, listToggleBtn, imageProperties::setTypeImage);
         comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
     }
 
@@ -423,16 +400,12 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     private void lockButtonFormat() {
-        for(ToggleButton tb : listBtn) {
-            tb.setDisable(true);
-        }
+        listToggleBtn.forEach(tb -> tb.setDisable(true));
         comboBoxIcoSize.setDisable(true);
     }
 
     private void unlockButtonFormat() {
-        for(ToggleButton tb : listBtn) {
-            tb.setDisable(false);
-        }
+        listToggleBtn.forEach(tb -> tb.setDisable(false));
         comboBoxIcoSize.setDisable(false);
     }
 }

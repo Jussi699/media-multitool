@@ -13,6 +13,7 @@ module media_multitool {
     requires colorpicker;
     requires jaudiotagger;
     requires java.logging;
+    requires org.bytedeco.opencv;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;
@@ -23,4 +24,6 @@ module media_multitool {
     exports model.properties;
     exports viewHelp;
     exports viewHelp.audioEditor;
+    exports app;
+    opens app to javafx.fxml;
 }

@@ -12,7 +12,7 @@
 <HBox prefHeight="820.0" prefWidth="800.0"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="media_multitool.ControllerView">
+      fx:controller="media_multitool.ViewController">
 
     <VBox alignment="TOP_CENTER"
           prefHeight="820.0"
@@ -126,5 +126,6 @@
         <fx:include fx:id="blackAndWhitePage" source="black-white-image-view.fxml"/>
         <fx:include fx:id="blurPage" source="blur-image-view.fxml"/>
         <fx:include fx:id="audioEditorPage" source="editor-audio-tag-view.fxml"/>
+        <fx:include fx:id="findPixelPage" source="find-pixel-image-view.fxml"/>
     </StackPane>
 </HBox>

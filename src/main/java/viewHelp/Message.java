@@ -44,8 +44,8 @@ public class Message {
         if (bar != null) {
             bar.setProgress(0.0);
             bar.setStyle("");
-            bar.setVisible(false);
-            bar.setManaged(false);
+            bar.setVisible(true);
+            bar.setManaged(true);
         }
     }
 

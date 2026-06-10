@@ -9,13 +9,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.embed.swing.SwingFXUtils;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
+import model.properties.MediaProperties;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
@@ -25,24 +25,24 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import static model.utility.Util.directoryChooser;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
 public class TurnImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
-    private BufferedImage currentBufferedImage;
-    public Button btnTurnImageLeft;
-    public Button btnTurnImageRight;
 
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceDirForSave;
-    @FXML private Label labelSelectImageName;
-    @FXML private Label textDragZone;
+    @Override
+    protected MediaProperties getProperties() {
+        return imageProperties;
+    }
+
+    private BufferedImage currentBufferedImage;
+    @FXML private Button btnTurnImageLeft;
+
+    @FXML private StackPane dropZone, previewContainer;
+    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSave;
+    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
-    @FXML private Label labelPreviewPlaceholder;
-    @FXML private StackPane previewContainer;
 
     @FXML
     public void initialize() {
@@ -56,6 +56,7 @@ public class TurnImageController extends AbstractMediaController {
         }
 
         onResetPressed();
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     @FXML
@@ -81,27 +82,14 @@ public class TurnImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectPhotoFile.setDisable(true);
         btnChoiceDirForSave.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectPhotoFile.setDisable(false);
         btnChoiceDirForSave.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
-    }
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedImageFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
+        btnReset.setDisable(false);
     }
 
     @FXML
@@ -116,9 +104,7 @@ public class TurnImageController extends AbstractMediaController {
 
     @FXML
     public void onActionChoiceDirForSave() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        directoryChooser(stage, imageProperties.getOutput(), "Select directory for save image")
-                .ifPresent(imageProperties::setOutput);
+        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -169,7 +155,6 @@ public class TurnImageController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (Boolean.FALSE.equals(result)) {
-            imageProperties.getHideSuccessMessageTimer().playFromStart();
             return;
         }
         File outputFile = (File) result;
@@ -179,12 +164,6 @@ public class TurnImageController extends AbstractMediaController {
             showSuccessText(labelSuccess, "Rotated image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        imageProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override
@@ -217,19 +196,16 @@ public class TurnImageController extends AbstractMediaController {
                 currentBufferedImage = ImageIO.read(selectedFile);
                 if (currentBufferedImage != null) {
                     setPreview(currentBufferedImage);
-                    if (labelPreviewPlaceholder != null) {
                         labelPreviewPlaceholder.setVisible(false);
-                    }
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
             }
         }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        textDragZone.setText("Selected: " + selectedFile.getName());
+
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

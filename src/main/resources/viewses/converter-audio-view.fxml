@@ -124,8 +124,6 @@
 
 
         <StackPane fx:id="dropZone" styleClass="drop-zone"
-                   onDragOver="#handleDragOver"
-                   onDragDropped="#handleDragDropped"
                    minHeight="215.0"
                    prefHeight="215.0"
                    prefWidth="560.0"
@@ -134,7 +132,7 @@
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" style="-fx-font-size: 18px;" />
+            <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone" />
         </StackPane>
 
         <VBox alignment="CENTER" spacing="6.0">

@@ -84,13 +84,11 @@
             </StackPane>
 
             <StackPane fx:id="dropZone" styleClass="drop-zone"
-                       onDragOver="#handleDragOver"
-                       onDragDropped="#handleDragDropped"
                        GridPane.columnIndex="1"
                        minHeight="200.0"
                        prefHeight="300.0"
                        style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
-                <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" style="-fx-font-size: 18px;"/>
+                <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone"/>
             </StackPane>
         </GridPane>
 

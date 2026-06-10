@@ -3,13 +3,11 @@ package media_multitool;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
 import model.logger.ErrorLogger;
+import model.utility.Clipboards;
 import model.utility.Util;
 import viewHelp.Alerts;
-import viewHelp.Tooltips;
 
 import java.awt.*;
 import java.io.File;
@@ -45,16 +43,8 @@ public class InfoController {
         }
 
         String discordId = "jussi6";
-        
-        final Clipboard clipboard = Clipboard.getSystemClipboard();
-        final ClipboardContent content = new ClipboardContent();
-        content.putString(discordId);
-        clipboard.setContent(content);
 
-        showSuccessTooltip(mouseEvent);
-    }
-
-    private void showSuccessTooltip(MouseEvent mouseEvent) {
-        Tooltips.setupTooltipInfo(mouseEvent, "Discord ID copied to clipboard!\nNow you can paste it.", 2);
+        Clipboards clipboards = new Clipboards();
+        clipboards.clip(discordId,"Discord ID copied to clipboard!\nNow you can paste it.", 2, mouseEvent);
     }
 }

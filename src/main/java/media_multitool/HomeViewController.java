@@ -5,9 +5,9 @@ import javafx.scene.control.Alert;
 import viewHelp.Alerts;
 
 public class HomeViewController {
-    private ControllerView mainController;
+    private ViewController mainController;
 
-    public void setMainController(ControllerView mainController) {
+    public void setMainController(ViewController mainController) {
         this.mainController = mainController;
     }
 

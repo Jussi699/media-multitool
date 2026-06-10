@@ -3,15 +3,14 @@ package media_multitool;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.converterVideo.ConvertVideoAudioTask;
+import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
-import model.utility.DragDropped;
 import model.utility.Global;
 import model.utility.Item;
 import viewHelp.Alerts;
@@ -39,11 +38,19 @@ public class ConverterVideoController extends AbstractMediaController {
     @FXML private CheckBox checkBoxGPU;
     @FXML private StackPane dropZone;
 
-    private List<ToggleButton> listBtn;
+    private List<ToggleButton> listToggleBtn;
+
+    @Override
+    protected MediaProperties getProperties() {
+        return videoProperties;
+    }
 
     @FXML
     public void initialize() {
-        listBtn = List.of(
+        assert dropZone != null;
+        assert textDragZone != null;
+
+        listToggleBtn = List.of(
                 btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP
         );
 
@@ -86,6 +93,8 @@ public class ConverterVideoController extends AbstractMediaController {
                 "Match source",
                 "1280x720", "1920x1080", "3840x2160"
         );
+
+        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedVideoFormats(), this::loadFile);
     }
 
     private void resetToDefaults() {
@@ -101,20 +110,20 @@ public class ConverterVideoController extends AbstractMediaController {
         comboBoxChoiceFPS.setValue(new Item(30, "30 fps"));
         comboBoxChoiceResolution.setValue("1920x1080");
 
-        if (dropZone != null) dropZone.getStyleClass().remove("drop-zone-filled");
-        if (textDragZone != null) textDragZone.setText("Drag files here");
+        dropZone.getStyleClass().remove("drop-zone-filled");
+        textDragZone.setText("Drag files here");
     }
 
     @Override
     protected void lockUI() {
         btnSubmitConvert.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSubmitConvert.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
@@ -131,15 +140,7 @@ public class ConverterVideoController extends AbstractMediaController {
         if (Boolean.TRUE.equals(result)) {
             showSuccessMessage(labelSuccess, videoProperties.getTargetFormat(), videoProperties.getHideSuccessMessageTimer());
             showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
-        } else {
-            videoProperties.getHideSuccessMessageTimer().playFromStart();
         }
-    }
-
-    @Override
-    protected void handleTaskCancelled() {
-        super.handleTaskCancelled();
-        videoProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @Override
@@ -157,7 +158,6 @@ public class ConverterVideoController extends AbstractMediaController {
             return;
         }
         super.handleTaskFailure(exception);
-        videoProperties.getHideSuccessMessageTimer().playFromStart();
     }
 
     @FXML
@@ -177,11 +177,10 @@ public class ConverterVideoController extends AbstractMediaController {
             .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
         
         hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
-        
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
-        }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+
+        textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
+
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }
@@ -203,12 +202,7 @@ public class ConverterVideoController extends AbstractMediaController {
     }
     @FXML
     public void onSelectOutputDirectoryPressed() {
-        Stage stage = (Stage) btnChoiceDirForSaveVideo.getScene().getWindow();
-        directoryChooser(stage, videoProperties.getOutput(), "Select directory for save video")
-                .ifPresent(selectedPath -> {
-                    videoProperties.setOutput(selectedPath);
-                    hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
-                });
+        selectOutputDirectory(btnChoiceDirForSaveVideo, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
     }
 
     @FXML
@@ -281,16 +275,7 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private void selectFormat(String format, ToggleButton selectedBtn) {
-        videoProperties.setTargetFormat(format);
-        btnToMP4.setSelected(selectedBtn == btnToMP4);
-        btnToAVI.setSelected(selectedBtn == btnToAVI);
-        btnToMKV.setSelected(selectedBtn == btnToMKV);
-        btnToWEBM.setSelected(selectedBtn == btnToWEBM);
-        btnToMOV.setSelected(selectedBtn == btnToMOV);
-        btnToFLV.setSelected(selectedBtn == btnToFLV);
-        btnToWMV.setSelected(selectedBtn == btnToWMV);
-        btnTo3GP.setSelected(selectedBtn == btnTo3GP);
-        hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
+        super.selectFormat(format, selectedBtn, listToggleBtn, videoProperties::setTargetFormat);
     }
 
     @FXML
@@ -374,11 +359,9 @@ public class ConverterVideoController extends AbstractMediaController {
         videoProperties.setTargetFormat(null);
         labelSelectVideoName.setText("Selected file: none");
 
-        for (ToggleButton tb : listBtn) {
-            tb.setSelected(false);
-        }
+        listToggleBtn.forEach(tb -> tb.setSelected(false));
 
-        if (checkBoxGPU != null) checkBoxGPU.setSelected(false);
+        checkBoxGPU.setSelected(false);
         onCancelConversation();
         resetToDefaults();
         hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
@@ -387,19 +370,6 @@ public class ConverterVideoController extends AbstractMediaController {
     @FXML
     public void onCancelConversation() {
         if (currentTask != null) currentTask.cancelConversion();
-    }
-
-    @FXML
-    public void handleDragOver(DragEvent e) {
-        DragDropped.handleDragOver(e, Global.getAllSupportedVideoFormats(), dropZone);
-    }
-
-    @FXML
-    public void handleDragDropped(DragEvent e) {
-        File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
-        if (droppedFile != null) {
-            loadFile(droppedFile);
-        }
     }
 
     @FXML

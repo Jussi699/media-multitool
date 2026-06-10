@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Tooltips {
     private static final Map<Node, Tooltip> activeTooltips = new HashMap<>();
-    public static void setupTooltipInfo(MouseEvent event, String text, int showSeconds) {
+    public static void setupTooltip(MouseEvent event, String text, int showSeconds) {
         Node source = (Node) event.getSource();
 
         if (activeTooltips.containsKey(source) && activeTooltips.get(source).isShowing()) {

@@ -7,36 +7,47 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import model.preprocessing.ImagePreprocessing;
+import model.helper.PixelHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
+import model.preprocessing.ImagePreprocessing;
 import model.properties.MediaProperties;
+import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
+import viewHelp.ImageZoomHelper;
+import viewHelp.ZoomControlHelper;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.concurrent.CompletableFuture;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.Util.*;
 import static viewHelp.Message.*;
 
-public class BlurImageController extends AbstractMediaController {
+public class FindPixelImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
-    private BufferedImage originalBufferedImage;
-    private BufferedImage currentBufferedImage;
 
-    @FXML private Slider sliderBlurry;
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSaveImage;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
+    @FXML private Slider imageScaleSlider;
+    @FXML private ScrollPane scrollPanePhoto;
+    @FXML private BufferedImage originalBufferedImage;
+
+    @FXML private StackPane dropZone, previewContainer;
+    @FXML private Button btnSelectPhoto, btnChoiceDirForSave;
+    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, labelHex;
     @FXML private ImageView imageViewPreview;
-    @FXML private StackPane previewContainer;
+
+    @FXML private TextField textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB;
+    @FXML private Rectangle colorPreview;
+
+    private ZoomControlHelper zoomControlHelper;
 
     @Override
     protected MediaProperties getProperties() {
@@ -49,70 +60,79 @@ public class BlurImageController extends AbstractMediaController {
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        if (imageViewPreview != null && previewContainer != null) {
-            imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
-            imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+        zoomControlHelper = new ZoomControlHelper(scrollPanePhoto, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
+
+        if(imageViewPreview != null) {
+            imageViewPreview.setOnMouseClicked(this::handlePixelSelection);
+            ImageZoomHelper.applyZoomEffect(imageViewPreview, previewContainer);
         }
-
-        sliderBlurry.setMin(0);
-        sliderBlurry.setMax(20);
-        sliderBlurry.setValue(0);
-
+        else {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "ImageView", "ImageView is not loaded!",
+                    "Something wrong with ImageView! Maybe his (null).\nTry restarting the application.");
+            ErrorLogger.error("ImageView not loaded (null)!");
+            return;
+        }
         onResetPressed();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
-    private void updatePreview(int radius) {
-        if (originalBufferedImage == null) {
-            return;
-        }
+    private void handlePixelSelection(MouseEvent e) {
+        if (e.getButton() != MouseButton.PRIMARY) return;
 
-       CompletableFuture.runAsync(() ->
-               ImagePreprocessing.blurryImage(originalBufferedImage, radius).ifPresent(blurry -> {
-           currentBufferedImage = blurry;
-           setPreview(currentBufferedImage);
-       }));
+        PixelHelper.pixelSelection(e, imageViewPreview).ifPresent(this::updatePixelInfo);
+    }
+
+    private void updatePixelInfo(Color color) {
+        textFieldR.setText(String.valueOf((int) (color.getRed() * 255)));
+        textFieldG.setText(String.valueOf((int) (color.getGreen() * 255)));
+        textFieldB.setText(String.valueOf((int) (color.getBlue() * 255)));
+        textFieldRGB.setText((int) (color.getRed() * 255) + " " + (int) (color.getGreen() * 255) + " " + (int) (color.getBlue() * 255));
+        textFieldHEX.setText(PixelHelper.toHexString(color));
+        colorPreview.setFill(color);
+        labelHex.setTextFill(color);
     }
 
     @FXML
     private void showInfo() {
+
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Blur Image",
+                "Find Pixel Color",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Use the slider to choose how much you want to blur.
-                        4. Click 'Download' to apply the effect.
-                        
-                        The effect may take a long time to complete!
-                        
-                        This tool blurry your image.
-                        
+                        2. Info:\s
+                        The left mouse button lets you find the pixel.
+                        The right  mouse button lets you drag and drop the photo.
+                       \s
+                        3. Click on any pixel in the image to see its coordinates and color.
+                        4. Use the slider or mouse wheel to zoom in for better precision.
+                       \s
+                        This tool helps you find the exact color and position of pixels in your image.
+                       \s
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnSelectPhoto.setDisable(true);
+        btnChoiceDirForSave.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnSelectPhoto.setDisable(false);
+        btnChoiceDirForSave.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -120,18 +140,13 @@ public class BlurImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    private void handleSliderRelease() {
-        updatePreview((int) sliderBlurry.getValue());
+    public void btnChoiceDirForSave() {
+        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
             return;
         }
 
@@ -148,7 +163,7 @@ public class BlurImageController extends AbstractMediaController {
 
                 updateProgress(50, 100);
 
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
+                ImagePreprocessing.downloadImage(originalBufferedImage, imageProperties.getTypeImage(), outputFile);
                 updateProgress(100, 100);
 
                 return outputFile;
@@ -166,10 +181,10 @@ public class BlurImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Image blur successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Image saved successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Blurry image saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
     }
@@ -191,44 +206,61 @@ public class BlurImageController extends AbstractMediaController {
         );
         Util.reset(imageProperties, ctx, "Selected image file: none");
 
-        currentBufferedImage = null;
         originalBufferedImage = null;
-        if (sliderBlurry != null) {
-            sliderBlurry.setValue(0);
-        }
+        zoomControlHelper.resetZoom();
+
+        textFieldR.setText("0");
+        textFieldG.setText("0");
+        textFieldB.setText("0");
+        textFieldRGB.setText("0 0 0");
+        textFieldHEX.setText("#000000");
+        colorPreview.setFill(Color.WHITE);
+        labelHex.setTextFill(Color.WHITE);
     }
 
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
 
         if (imageViewPreview != null) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
                 if (originalBufferedImage != null) {
-                    updatePreview((int) sliderBlurry.getValue());
                     if (labelPreviewPlaceholder != null) {
                         labelPreviewPlaceholder.setVisible(false);
                     }
+                    zoomControlHelper.resetZoom();
+                    setPreview(originalBufferedImage);
+                    zoomControlHelper.updateImageSize();
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
             }
         }
 
-        if (textDragZone != null) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }
 
     private void setPreview(BufferedImage bi) {
+
         if (bi != null && imageViewPreview != null) {
             Image image = SwingFXUtils.toFXImage(bi, null);
             imageViewPreview.setImage(image);
         }
+    }
+
+    public void onClickSaveHex(MouseEvent event) {
+        saveToClipboard(textFieldHEX.getText(), "HEX copied successfully!", 2, event);
+    }
+
+    public void onClickSaveRGB(MouseEvent event) {
+        saveToClipboard(textFieldRGB.getText(), "RBG copied successfully!", 2, event);
+    }
+
+    public void saveToClipboard(String copyText, String textSuccess, int showSecond, MouseEvent event) {
+        Clipboards clipboards = new Clipboards();
+        clipboards.clip(copyText, textSuccess, showSecond, event);
     }
 }

@@ -153,11 +153,13 @@ public class SetupScrollPane {
                 if (internalBarRef[0] != null) {
                     externalBar.minProperty().unbind();
                     externalBar.maxProperty().unbind();
+                    externalBar.visibleAmountProperty().unbind();
                     externalBar.valueProperty().unbindBidirectional(internalBarRef[0].valueProperty());
                 }
                 internalBarRef[0] = internalBar;
                 externalBar.minProperty().bind(internalBar.minProperty());
                 externalBar.maxProperty().bind(internalBar.maxProperty());
+                externalBar.visibleAmountProperty().bind(internalBar.visibleAmountProperty());
                 externalBar.valueProperty().bindBidirectional(internalBar.valueProperty());
             }
 

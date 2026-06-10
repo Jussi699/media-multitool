@@ -178,7 +178,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>media_multitool/media_multitool.Launcher</mainClass>
+                            <mainClass>media_multitool/app.Launcher</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
