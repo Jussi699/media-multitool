@@ -30,7 +30,7 @@ import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
 public class ColorizeImageController extends AbstractMediaController {
-    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSaveImage, btnColorPicker;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnColorPicker;
     @FXML private Label textDragZone, labelPreviewPlaceholder, labelSelectImageName;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer, dropZone;
@@ -48,7 +48,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        btnChoiceDirForSaveImage.setTooltip(new Tooltip("Default directory: Desktop"));
+        btnChoiceFolderForSaveFile.setTooltip(new Tooltip("Default directory: Desktop"));
 
         imageProperties.setOutput(getSavedPath());
 
@@ -59,7 +59,7 @@ public class ColorizeImageController extends AbstractMediaController {
             imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
         }
 
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -84,16 +84,16 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSaveFile.setDisable(true);
         btnColorPicker.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSaveFile.setDisable(false);
         btnColorPicker.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
@@ -101,7 +101,7 @@ public class ColorizeImageController extends AbstractMediaController {
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -109,8 +109,8 @@ public class ColorizeImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -172,7 +172,7 @@ public class ColorizeImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true

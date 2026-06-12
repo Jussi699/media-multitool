@@ -10,14 +10,15 @@
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="media_multitool.FindPixelImageController">
     <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" style="-fx-background-color: #4b4b4b;">
 
-        <Label alignment="CENTER" prefWidth="320.0" style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Find Pixel Color" textFill="RED">
+        <Label text="Find Pixel"
+               styleClass="main-label-name-page">
             <VBox.margin>
-                <Insets top="8.0" />
+                <Insets top="8.0"/>
             </VBox.margin>
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectPhoto" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0" text="Select image file" />
+            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0" text="Select image file" />
         </HBox>
 
         <VBox spacing="12.0" VBox.vgrow="ALWAYS">
@@ -28,15 +29,16 @@
                 <Insets top="2.0" />
             </VBox.margin>
 
-            <ScrollPane fx:id="scrollPanePhoto" fitToHeight="true" fitToWidth="true" pannable="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-radius: 10;" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
-                <StackPane fx:id="previewContainer" minHeight="200.0" style="-fx-border-color: white; -fx-border-style: solid; -fx-border-width: 2; -fx-border-radius: 10;">
+            <ScrollPane fx:id="scrollPanePhoto" fitToHeight="true" fitToWidth="true" pannable="true" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
+                <StackPane fx:id="previewContainer" minHeight="200.0">
                     <ImageView fx:id="imageViewPreview" preserveRatio="true" />
                     <Label fx:id="labelPreviewPlaceholder" style="-fx-font-size: 16px;" text="Preview" textFill="WHITE" />
                 </StackPane>
             </ScrollPane>
 
             <HBox spacing="12.0">
-                <StackPane maxHeight="150.0" maxWidth="1.7976931348623157E308" minHeight="150.0" prefHeight="150.0" style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
+                <StackPane maxHeight="150.0"  minHeight="150.0" prefHeight="150.0"
+                           style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
                     <HBox alignment="CENTER" spacing="12.0">
                         <padding>
                             <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
@@ -86,11 +88,19 @@
                         </VBox>
 
                         <StackPane>
-                            <Rectangle fx:id="colorPreview" arcHeight="10.0" arcWidth="10.0" fill="WHITE" height="85.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="85.0" />
+                            <Rectangle fx:id="colorPreview"
+                                       arcHeight="10.0"
+                                       arcWidth="10.0"
+                                       fill="WHITE"
+                                       height="85.0"
+                                       stroke="WHITE"
+                                       strokeType="INSIDE"
+                                       strokeWidth="2.0"
+                                       width="85.0" />
                         </StackPane>
                     </HBox>
                 </StackPane>
-                <StackPane fx:id="dropZone" maxHeight="150.0" minHeight="150.0" prefHeight="150.0" style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2;                            -fx-border-radius: 10;" styleClass="drop-zone" HBox.hgrow="ALWAYS">
+                <StackPane fx:id="dropZone" maxHeight="150.0" minHeight="150.0" prefHeight="150.0" HBox.hgrow="ALWAYS" styleClass="drop-zone-find-pixel">
 
                     <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here" textFill="WHITE" />
                 </StackPane>
@@ -104,9 +114,11 @@
                 <Label text="+" textFill="RED" />
             </HBox>
 
-            <Label fx:id="labelSelectImageName" alignment="CENTER" minHeight="18.0" prefWidth="600.0" styleClass="labelSelect" text="Selected image file: none" textFill="RED" wrapText="true" />
+            <Label fx:id="labelSelectImageName"
+                   styleClass="labelSelect"
+                   text="Selected image file: none"/>
 
-            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#onResetPressed" prefWidth="240.0" text="Reset" />
+            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
         </VBox>
 
         <padding>

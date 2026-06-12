@@ -40,7 +40,7 @@ public class FindPixelImageController extends AbstractMediaController {
     @FXML private BufferedImage originalBufferedImage;
 
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectPhoto, btnChoiceDirForSave;
+    @FXML private Button btnSelectFile;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, labelHex;
     @FXML private ImageView imageViewPreview;
 
@@ -72,7 +72,7 @@ public class FindPixelImageController extends AbstractMediaController {
             ErrorLogger.error("ImageView not loaded (null)!");
             return;
         }
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -117,31 +117,24 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhoto.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
+        btnSelectFile.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhoto.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void btnChoiceDirForSave() {
-        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -199,7 +192,7 @@ public class FindPixelImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
@@ -220,7 +213,9 @@ public class FindPixelImageController extends AbstractMediaController {
 
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);
+
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
+        textDragZone.setText("Select image: " + selectedFile.getName());
 
         if (imageViewPreview != null) {
             try {

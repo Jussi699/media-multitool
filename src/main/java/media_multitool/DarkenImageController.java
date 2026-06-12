@@ -32,7 +32,7 @@ public class DarkenImageController extends AbstractMediaController {
     private BufferedImage originalBufferedImage, currentBufferedImage;
 
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectPhoto, btnChoiceDirForSave;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
@@ -57,7 +57,7 @@ public class DarkenImageController extends AbstractMediaController {
         sliderDarken.setValue(0);
         sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
 
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -93,22 +93,22 @@ public class DarkenImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhoto.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhoto.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -116,8 +116,8 @@ public class DarkenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSave() {
-        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -180,7 +180,7 @@ public class DarkenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true

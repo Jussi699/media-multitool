@@ -14,26 +14,23 @@
           spacing="12.0"
           style="-fx-background-color: #4b4b4b;">
 
-        <Label alignment="CENTER"
-               prefWidth="320.0"
-               text="Negative Image"
-               textFill="RED"
-               style="-fx-font-size: 22px; -fx-font-weight: bold;">
+        <Label styleClass="main-label-name-page"
+               text="Negative Image">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectPhotoFile"
+            <Button fx:id="btnSelectFile"
                     mnemonicParsing="false"
-                    onAction="#ActionBtnSelectFile"
+                    onAction="#onActionBtnSelectFile"
                     prefWidth="180.0"
                     text="Select image file"/>
 
-            <Button fx:id="btnChoiceDirForSave"
+            <Button fx:id="btnChoiceDirForSaveFile"
                     mnemonicParsing="false"
-                    onAction="#onActionChoiceDirForSave"
+                    onAction="#onActionChoiceDirForSaveFile"
                     prefWidth="180.0"
                     text="Directory for save" >
                 <tooltip>
@@ -44,14 +41,8 @@
 
         <VBox alignment="CENTER" spacing="8.0">
             <Label fx:id="labelSuccess" styleClass="labelSuccess"
-                   alignment="CENTER"
-                   prefWidth="560.0"
-                   minHeight="20.0"
-                   prefHeight="20.0"
                    visible="false"
-                   text="Negative status: success"
-                   textFill="#32CD32"
-                   wrapText="true"/>
+                   text="Negative status: success"/>
 
             <Button mnemonicParsing="false"
                     onAction="#submitNegativeAndDownload"
@@ -59,51 +50,30 @@
                     text="Negative and Download" />
         </VBox>
 
-        <GridPane hgap="12.0" VBox.vgrow="ALWAYS">
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS" >
             <padding>
-                <Insets left="4.0" right="4.0"/>
+                <Insets left="4.0" right="4.0" />
             </padding>
             <VBox.margin>
-                <Insets top="2.0"/>
+                <Insets top="2.0" />
             </VBox.margin>
-            <columnConstraints>
-                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints vgrow="ALWAYS"/>
-            </rowConstraints>
-            <StackPane fx:id="previewContainer"
-                       GridPane.columnIndex="0"
-                       minHeight="200.0"
-                       prefHeight="300.0"
-                       style="-fx-border-color: white; -fx-border-style: solid; -fx-border-width: 2; -fx-border-radius: 10;">
-                <ImageView fx:id="imageViewPreview"
-                           preserveRatio="true"/>
-                <Label fx:id="labelPreviewPlaceholder" text="Preview" textFill="WHITE" style="-fx-font-size: 16px;"/>
+            <StackPane fx:id="previewContainer" styleClass="preview-container" VBox.vgrow="ALWAYS" minWidth="200">
+                <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>
 
-            <StackPane fx:id="dropZone" styleClass="drop-zone"
-                       GridPane.columnIndex="1"
-                       minHeight="200.0"
-                       prefHeight="300.0"
-                       style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
-                <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone"/>
+            <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
             </StackPane>
-        </GridPane>
+        </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectImageName" styleClass="labelSelect"
-                   alignment="CENTER"
-                   prefWidth="600.0"
-                   minHeight="18.0"
-                   text="Selected image file: none"
-                   textFill="RED"
-                   wrapText="true"/>
+            <Label fx:id="labelSelectFileName" styleClass="labelSelect"
+                   text="Selected image file: none"/>
 
             <Button fx:id="btnReset"
                     mnemonicParsing="false"
-                    onAction="#onResetPressed"
+                    onAction="#isPressedReset"
                     prefWidth="240.0"
                     text="Reset"/>
         </VBox>

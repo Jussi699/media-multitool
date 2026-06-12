@@ -96,6 +96,20 @@
                     text="Blur Photo"/>
         </HBox>
 
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenFindPixelPressed"
+                    prefWidth="220.0"
+                    text="Find Pixel"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenEditorAudioPressed"
+                    prefWidth="220.0"
+                    text="Editor Audio"/>
+        </HBox>
+
         <Button mnemonicParsing="false"
                 onAction="#onOpenInfoPressed"
                 prefWidth="220.0"

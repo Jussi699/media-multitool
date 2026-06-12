@@ -31,9 +31,9 @@ public class BlackWhiteImageController extends AbstractMediaController {
     private BufferedImage currentBufferedImage;
 
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectPhotoFile;
-    @FXML private Button btnChoiceDirForSaveImage;
-    @FXML private Label labelSelectImageName;
+    @FXML private Button btnSelectFile;
+    @FXML private Button btnChoiceFolderForSaveFile;
+    @FXML private Label labelSelectFile;
     @FXML private Label textDragZone;
     @FXML private ImageView imageViewPreview;
     @FXML private Label labelPreviewPlaceholder;
@@ -55,7 +55,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
             imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
         }
 
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -90,22 +90,22 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSaveFile.setDisable(true);
         if (btnReset != null) btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSaveFile.setDisable(false);
         if (btnReset != null) btnReset.setDisable(false);
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -113,8 +113,8 @@ public class BlackWhiteImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -172,9 +172,9 @@ public class BlackWhiteImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
         Util.reset(imageProperties, ctx, "Selected image file: none");
@@ -186,7 +186,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
+        labelSelectFile.setText("Select image: " + selectedFile.getName());
 
         if (imageViewPreview != null) {
             try {

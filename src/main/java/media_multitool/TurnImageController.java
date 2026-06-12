@@ -40,8 +40,8 @@ public class TurnImageController extends AbstractMediaController {
     @FXML private Button btnTurnImageLeft;
 
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSave;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSave;
+    @FXML private Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
     @FXML
@@ -55,7 +55,7 @@ public class TurnImageController extends AbstractMediaController {
             imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
         }
 
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -80,22 +80,22 @@ public class TurnImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSave.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSave.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @FXML
-    public void ActionBtnSelectFile() {
+    public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -103,8 +103,8 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onActionChoiceDirForSave() {
-        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void btnChoiceFolderForSave() {
+        selectOutputDirectory(btnChoiceFolderForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -176,9 +176,9 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
         Util.reset(imageProperties, ctx, "Selected image file: none");
@@ -189,7 +189,7 @@ public class TurnImageController extends AbstractMediaController {
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
+        labelSelectFile.setText("Select image: " + selectedFile.getName());
 
         if (imageViewPreview != null) {
             try {

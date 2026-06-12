@@ -33,7 +33,7 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML private Slider sliderBlurry;
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSaveImage;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer;
@@ -58,7 +58,7 @@ public class BlurImageController extends AbstractMediaController {
         sliderBlurry.setMax(20);
         sliderBlurry.setValue(0);
 
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -97,22 +97,22 @@ public class BlurImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -120,8 +120,8 @@ public class BlurImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -184,7 +184,7 @@ public class BlurImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true

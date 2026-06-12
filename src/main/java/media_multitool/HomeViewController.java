@@ -53,6 +53,12 @@ public class HomeViewController {
         }
     }
 
+    public void onOpenEditorAudioPressed() {
+        if (mainController != null) {
+            mainController.showEditorAudioPage();
+        }
+    }
+
 
     @FXML
     private void showInfo() {
@@ -103,6 +109,12 @@ public class HomeViewController {
     public void onOpenBlurImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(7);
+        }
+    }
+
+    public void onOpenFindPixelPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(8);
         }
     }
 }

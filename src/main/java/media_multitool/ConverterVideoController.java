@@ -13,6 +13,8 @@ import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.Item;
+import model.utility.ResetContext;
+import model.utility.Util;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
@@ -30,8 +32,8 @@ public class ConverterVideoController extends AbstractMediaController {
     private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
     private ConvertVideoAudioTask currentTask;
 
-    @FXML private Label labelSelectVideoName, textDragZone;
-    @FXML private Button btnSubmitConvert, btnSelectVideoFile, btnChoiceDirForSaveVideo;
+    @FXML private Label labelSelectFile, textDragZone;
+    @FXML private Button btnSubmitAndDownload, btnSelectFile, btnChoiceDirForSaveFile;
     @FXML private ToggleButton btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP;
     @FXML private ComboBox<Item> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, comboBoxChoiceFPS;
     @FXML private ComboBox<String> comboBoxChoiceResolution;
@@ -98,6 +100,12 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private void resetToDefaults() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true
+        );
+        Util.reset(videoProperties, ctx, "Selected video file: none");
+
         videoProperties.setBitRate(5000);
         videoProperties.setChannel(2);
         videoProperties.setSamplingRate(48000);
@@ -110,31 +118,26 @@ public class ConverterVideoController extends AbstractMediaController {
         comboBoxChoiceFPS.setValue(new Item(30, "30 fps"));
         comboBoxChoiceResolution.setValue("1920x1080");
 
-        dropZone.getStyleClass().remove("drop-zone-filled");
-        textDragZone.setText("Drag files here");
+        progressBar.setProgress(0);
+        for (ToggleButton tb : listToggleBtn) {
+            tb.setSelected(false);
+        }
     }
 
     @Override
     protected void lockUI() {
-        btnSubmitConvert.setDisable(true);
+        btnSubmitAndDownload.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSubmitConvert.setDisable(false);
+        btnSubmitAndDownload.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @Override
     protected void handleTaskSuccess(Object result) {
-        if (Boolean.FALSE.equals(result)) {
-            if (currentTask != null && currentTask.isCancelled()) {
-                handleTaskCancelled();
-                return;
-            }
-        }
-
         super.handleTaskSuccess(result);
 
         if (Boolean.TRUE.equals(result)) {
@@ -163,7 +166,7 @@ public class ConverterVideoController extends AbstractMediaController {
     @FXML
     public void onSelectVideoPressed() {
         SelectFile selectFile = new SelectFile();
-        Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), "Select video")
                 .ifPresent(this::loadFile);
@@ -171,7 +174,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
     private void loadFile(File selectedFile) {
         videoProperties.setSrcFile(selectedFile);
-        labelSelectVideoName.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
+        labelSelectFile.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
         
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
             .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
@@ -198,11 +201,11 @@ public class ConverterVideoController extends AbstractMediaController {
                 res,
                 f, vbr, abr);
 
-        labelSelectVideoName.setText(infoText);
+        labelSelectFile.setText(infoText);
     }
     @FXML
     public void onSelectOutputDirectoryPressed() {
-        selectOutputDirectory(btnChoiceDirForSaveVideo, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
+        selectOutputDirectory(btnChoiceDirForSaveFile, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
     }
 
     @FXML
@@ -306,7 +309,19 @@ public class ConverterVideoController extends AbstractMediaController {
                         if (proceed) continueWithConversion(sourceInfo);
                     });
                 } else {
-                    Platform.runLater(() -> continueWithConversion(sourceInfo));
+                    int originalChannels = parseChannels(sourceInfo);
+                    if (originalChannels == 1 && videoProperties.getChannel() == 2) {
+                        Platform.runLater(() -> {
+                            boolean proceed = Alerts.confirmationDialog(
+                                    "Mono to Stereo Confirmation",
+                                    "The source file is mono (1 channel).",
+                                    "Do you want to convert it to stereo (2 channels) anyway?"
+                            );
+                            if (proceed) continueWithConversion(sourceInfo);
+                        });
+                    } else {
+                        Platform.runLater(() -> continueWithConversion(sourceInfo));
+                    }
                 }
             });
     }
@@ -354,21 +369,14 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
-        videoProperties.setSrcFile(null);
-        videoProperties.setTargetFormat(null);
-        labelSelectVideoName.setText("Selected file: none");
-
-        listToggleBtn.forEach(tb -> tb.setSelected(false));
-
-        checkBoxGPU.setSelected(false);
-        onCancelConversation();
+    public void isPressedReset() {
+        onCancelConversion();
         resetToDefaults();
         hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
     }
 
     @FXML
-    public void onCancelConversation() {
+    public void onCancelConversion() {
         if (currentTask != null) currentTask.cancelConversion();
     }
 

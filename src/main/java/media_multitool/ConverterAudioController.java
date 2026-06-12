@@ -36,7 +36,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML private StackPane dropZone;
     @FXML private Button btnSelectAudioVideoFile, btnChoiceDirForSave, btnSubmitAndDownload;
-    @FXML private Label textDragZone, labelSelectAudioFile;
+    @FXML private Label textDragZone, labelSelectFile;
     @FXML private ComboBox<String> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate;
     @FXML private ToggleButton btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF;
 
@@ -73,10 +73,10 @@ public class ConverterAudioController extends AbstractMediaController {
 
     private void resetToDefaults() {
         ResetContext ctx = new ResetContext(
-                labelSelectAudioFile, labelSuccess, textDragZone, null,
+                labelSelectFile, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(audioProperties, ctx, "Selected file: none");
+        Util.reset(audioProperties, ctx, "Selected media file: none");
 
         comboBoxChoiceBitRate.setValue("320 kbps");
         comboBoxChoiceChannels.setValue("2 Channels");
@@ -135,7 +135,7 @@ public class ConverterAudioController extends AbstractMediaController {
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
-        labelSelectAudioFile.setText("Selected audio file: " + audioProperties.getSrcFile().getName());
+        labelSelectFile.setText("Selected audio file: " + audioProperties.getSrcFile().getName());
         hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(), true);
     }
 
@@ -214,7 +214,8 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
+        onCancelConversion();
         resetToDefaults();
         audioProperties.setOutput(getSavedPath());
         hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(),true);
@@ -285,7 +286,7 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     @FXML
-    public void onCancelConversation() {
+    public void onCancelConversion() {
         if (currentTask != null) currentTask.cancelConversion();
     }
 

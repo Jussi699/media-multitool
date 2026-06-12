@@ -38,8 +38,8 @@ public class CompressorVideoController extends AbstractMediaController {
         return videoProperties;
     }
 
-    @FXML private Label labelSelectVideoName,textDragZone;
-    @FXML private Button btnChoiceDirForSave, btnSelectVideoFile;
+    @FXML private Label labelSelectFile,textDragZone;
+    @FXML private Button btnChoiceDirForSaveFile, btnSelectFile;
     @FXML private ToggleButton btnBasicCompress, btnStrongCompress, btnSuperCompress;
     @FXML private StackPane dropZone;
     @FXML private CheckBox chkUseGPU;
@@ -63,8 +63,8 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectVideoFile.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceDirForSaveFile.setDisable(true);
         btnCompress.setDisable(true);
         chkUseGPU.setDisable(true);
         btnReset.setDisable(true);
@@ -72,8 +72,8 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @Override
     protected void unlockUI() {
-        btnSelectVideoFile.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceDirForSaveFile.setDisable(false);
         btnCompress.setDisable(false);
         chkUseGPU.setDisable(false);
         btnReset.setDisable(false);
@@ -91,19 +91,19 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML
     public void onActionBtnSelectVideoFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectVideoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), "Select video")
                 .ifPresent(this::loadFile);
     }
 
     @FXML
-    public void onActionChoiceDirForSave() {
-        selectOutputDirectory(btnChoiceDirForSave, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
+    public void onActionChoiceDirForSaveFile() {
+        selectOutputDirectory(btnChoiceDirForSaveFile, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
     }
 
     @FXML
-    public void onActionCompressAndDownload() {
+    public void submitAndDownload() {
         if (!checkChoicePreset()) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Unselected preset option!", "Unselected preset option!",
                     "First, select a pre-configured compression option!");
@@ -144,12 +144,12 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     @FXML
-    public void onActionPressedReset() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectVideoName, labelSuccess, textDragZone, null,
+                labelSelectFile, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(videoProperties, ctx, "Select video: none");
+        Util.reset(videoProperties, ctx, "Select video file: none");
 
         if (currentTask != null) currentTask.cancelCompress();
         
@@ -169,8 +169,8 @@ public class CompressorVideoController extends AbstractMediaController {
 
         chkUseGPU.setSelected(false);
         
-        btnSelectVideoFile.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceDirForSaveFile.setDisable(false);
         chkUseGPU.setDisable(false);
     }
 
@@ -269,7 +269,7 @@ public class CompressorVideoController extends AbstractMediaController {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Preset Creation Error",
                     "Could not create presets from video. Check log for details.");
         }
-        labelSelectVideoName.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
+        labelSelectFile.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
 
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
                 .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
@@ -303,17 +303,17 @@ public class CompressorVideoController extends AbstractMediaController {
         int vbr = parseVideoBitrate(info);
         int abr = parseAudioBitrate(info);
 
-        String infoText = String.format("Selected file: %s [%s, %d fps, V:%d kbps, A:%d kbps]",
+        String infoText = String.format("Selected video file: %s [%s, %d fps, V:%d kbps, A:%d kbps]",
                 videoProperties.getSrcFile().getName(),
                 res,
                 f, vbr, abr);
 
-        labelSelectVideoName.setText(infoText);
+        labelSelectFile.setText(infoText);
         updateEstimatedSize();
     }
 
     @FXML
-    private void onActionCancelCompress() {
+    private void onActionCancelOperation() {
         if (currentTask != null) currentTask.cancelCompress();
     }
 }

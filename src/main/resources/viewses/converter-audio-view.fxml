@@ -14,8 +14,7 @@
           style="-fx-background-color: #4b4b4b;">
 
 
-        <Label alignment="CENTER" prefWidth="320.0"
-               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: RED"
+        <Label styleClass="main-label-name-page"
                text="Audio Converter">
             <VBox.margin>
                 <Insets top="8.0"/>
@@ -98,7 +97,7 @@
                 </Button>
 
                 <Button mnemonicParsing="false"
-                        onAction="#onCancelConversation"
+                        onAction="#onCancelConversion"
                         prefWidth="220.0" text="Cancel Conversion" />
             </HBox>
         </StackPane>
@@ -115,39 +114,35 @@
             <StackPane minHeight="24.0" prefHeight="24.0">
                 <Label fx:id="labelSuccess"
                        styleClass="labelSuccess"
-                       alignment="CENTER"
-                       prefWidth="560.0"
                        textFill="#32CD32"
                        text="Convert has been success!" />
             </StackPane>
         </VBox>
 
 
-        <StackPane fx:id="dropZone" styleClass="drop-zone"
-                   minHeight="215.0"
-                   prefHeight="215.0"
-                   prefWidth="560.0"
-                   VBox.vgrow="ALWAYS"
-                   style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
+        <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone" />
-        </StackPane>
+            <StackPane fx:id="dropZone" styleClass="drop-zone-solo" HBox.hgrow="ALWAYS"
+                       maxWidth="Infinity"
+                       maxHeight="Infinity"
+                       minHeight="200.0">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+            </StackPane>
+        </HBox>
 
         <VBox alignment="CENTER" spacing="6.0">
-            <Label fx:id="labelSelectAudioFile" styleClass="labelSelect"
-                   alignment="CENTER"
-                   prefWidth="600.0"
-                   minHeight="18.0"
-                   text="Selected file: none"
-                   textFill="RED"
-                   wrapText="true"/>
+            <Label fx:id="labelSelectFile" styleClass="labelSelect"
+                   text="Selected file: none" />
 
-            <Button fx:id="btnReset"
+            <Button fx:id="btnReset" styleClass="btn-reset"
                     mnemonicParsing="false"
-                    onAction="#onResetPressed"
-                    prefWidth="240.0" text="Reset" />
+                    onAction="#isPressedReset"
+                    text="Reset"/>
         </VBox>
 
         <padding>

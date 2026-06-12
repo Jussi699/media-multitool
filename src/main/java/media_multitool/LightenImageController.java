@@ -36,7 +36,7 @@ public class LightenImageController extends AbstractMediaController {
     private BufferedImage originalBufferedImage, currentBufferedImage;
 
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectPhoto, btnChoiceDirForSave;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSave;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
@@ -56,7 +56,7 @@ public class LightenImageController extends AbstractMediaController {
         sliderLighten.setValue(0);
         sliderLighten.valueProperty().addListener((_, _, newValue) -> updatePreview(newValue.intValue()));
 
-        onResetPressed();
+        isPressedReset();
         setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
@@ -92,22 +92,22 @@ public class LightenImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhoto.setDisable(true);
-        btnChoiceDirForSave.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSave.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhoto.setDisable(false);
-        btnChoiceDirForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSave.setDisable(false);
         btnReset.setDisable(false);
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -115,8 +115,8 @@ public class LightenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void btnChoiceFolderForSave() {
+        selectOutputDirectory(btnChoiceFolderForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -179,7 +179,7 @@ public class LightenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true

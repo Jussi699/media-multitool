@@ -9,8 +9,8 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.CompressorImageController">
     <VBox alignment="TOP_CENTER"
-          prefHeight="820.0"
-          prefWidth="630.0"
+          maxWidth="Infinity"
+          maxHeight="Infinity"
           spacing="12.0"
           style="-fx-background-color: #4b4b4b;">
 
@@ -54,13 +54,8 @@
 
         <VBox alignment="CENTER" spacing="8.0">
             <Label fx:id="labelSuccess" styleClass="labelSuccess"
-                   alignment="CENTER"
-                   prefWidth="560.0"
-                   minHeight="20.0"
-                   prefHeight="20.0"
                    visible="false"
                    text="Compression status"
-                   textFill="#32CD32"
                    wrapText="true"/>
 
             <Button mnemonicParsing="false"
@@ -68,51 +63,34 @@
                     prefWidth="240.0"
                     text="Convert and Download" />
         </VBox>
-        <GridPane hgap="12.0" VBox.vgrow="ALWAYS">
+
+        <VBox spacing="12.0" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets left="4.0" right="4.0"/>
+                <Insets left="4.0" right="4.0" />
             </padding>
             <VBox.margin>
-                <Insets top="2.0"/>
+                <Insets top="2.0" />
             </VBox.margin>
-            <columnConstraints>
-                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints vgrow="ALWAYS"/>
-            </rowConstraints>
-            <StackPane fx:id="previewContainer"
-                       GridPane.columnIndex="0"
-                       minHeight="200.0"
-                       prefHeight="300.0"
-                       style="-fx-border-color: white; -fx-border-style: solid; -fx-border-width: 2; -fx-border-radius: 10;">
-                <ImageView fx:id="imageViewPreview"
-                           preserveRatio="true"/>
-                <Label fx:id="labelPreviewPlaceholder" text="Preview" textFill="WHITE" style="-fx-font-size: 16px;"/>
+
+            <StackPane fx:id="previewContainer" styleClass="preview-container" VBox.vgrow="ALWAYS" minWidth="200">
+                <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>
 
-            <StackPane fx:id="dropZone" styleClass="drop-zone"
-                       GridPane.columnIndex="1"
-                       minHeight="200.0"
-                       prefHeight="300.0"
-                       style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
-                <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone"/>
-            </StackPane>
-        </GridPane>
-        <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectImageName" styleClass="labelSelect"
-                   alignment="CENTER"
-                   prefWidth="600.0"
-                   minHeight="18.0"
-                   text="Selected image file: none"
-                   textFill="RED"
-                   wrapText="true"/>
+            <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+                <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS" maxHeight="Infinity">
+                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+                </StackPane>
+            </HBox>
+        </VBox>
 
-            <Button fx:id="btnReset"
+        <VBox alignment="CENTER" spacing="6.0">
+            <Label fx:id="labelSelectFile" styleClass="labelSelect"
+                   text="Selected file: none" />
+
+            <Button fx:id="btnReset" styleClass="btn-reset"
                     mnemonicParsing="false"
-                    onAction="#onResetPressed"
-                    prefWidth="240.0"
+                    onAction="#isPressedReset"
                     text="Reset"/>
         </VBox>
 

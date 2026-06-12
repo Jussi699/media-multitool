@@ -37,7 +37,7 @@ public class CompressorImageController extends AbstractMediaController {
     @FXML private StackPane dropZone, previewContainer;
     @FXML private ComboBox<Item> comboBoxOutputQuality, comboBoxScaleImage;
     @FXML private Button btnSelectPhotoFile, btnChoiceDirForSaveImage;
-    @FXML private Label textDragZone, labelSelectImageName, labelPreviewPlaceholder;
+    @FXML private Label textDragZone, labelSelectFile, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
     @FXML
@@ -57,7 +57,7 @@ public class CompressorImageController extends AbstractMediaController {
             imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
         }
 
-        onResetPressed();
+        isPressedReset();
 
         comboBoxOutputQuality.getItems().addAll(
                 new Item(-1f, "Quality"),
@@ -171,12 +171,12 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onResetPressed() {
+    public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected file: none");
+        Util.reset(imageProperties, ctx, "Selected image file: none");
 
         comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
         comboBoxScaleImage.setValue(new Item(-1, "Scale"));
@@ -240,7 +240,7 @@ public class CompressorImageController extends AbstractMediaController {
     private void loadFile(File selectedFile) {
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
+        labelSelectFile.setText("Select image: " + selectedFile.getName());
 
         if (imageViewPreview != null) {
             try {

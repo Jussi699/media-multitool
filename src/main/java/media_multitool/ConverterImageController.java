@@ -29,19 +29,16 @@ import static model.utility.Util.*;
 import static model.converterImage.UsefulMethods.*;
 
 public class ConverterImageController extends AbstractMediaController {
-    private final String ICO_PLACEHOLDER = "to ICO";
     private final ImageProperties imageProperties = new ImageProperties();
     private File path_folderBatchProcessing;
     private List<File> filesToProcess = new ArrayList<>();
 
-    @FXML private Button btnSelectPhoto, btnChoiceFolderForSave, btnSelectBatchFileProcessing;
-    @FXML private Label labelSelectImage, textDragZone, labelPreviewPlaceholder;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing;
+    @FXML private Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
     @FXML private ToggleButton btnToSVG, btnToWEBM, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM;
-    @FXML private Slider imageScaleSlider;
     @FXML private ComboBox<String> comboBoxIcoSize;
-    @FXML private ScrollPane scrollPanePhoto;
-    @FXML private ImageView imageViewPhoto;
-    @FXML private StackPane dropZone, imageContainer;
+    @FXML private ImageView imageViewPreview;
+    @FXML private StackPane dropZone, previewContainer;
 
     private List<ToggleButton> listToggleBtn;
 
@@ -58,38 +55,28 @@ public class ConverterImageController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        imageScaleSlider.setMin(1.0);
-        imageScaleSlider.setMax(5.0);
-        imageScaleSlider.setValue(1.0);
-
         comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256", "512", "768");
-        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
-
-        imageViewPhoto.scaleXProperty().bind(imageScaleSlider.valueProperty());
-        imageViewPhoto.scaleYProperty().bind(imageScaleSlider.valueProperty());
-
-        imageScaleSlider.valueProperty().addListener((_, _, newVal) -> {
-            updateImageContainerSize(newVal.doubleValue());
-            Platform.runLater(this::adjustScrollBarToCenter);
-        });
-
-        scrollPanePhoto.viewportBoundsProperty().addListener((_, _, _) -> updateImageSize());
-        imageViewPhoto.imageProperty().addListener((_, _, _) -> updateImageSize());
+        comboBoxIcoSize.setValue("to ICO");
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        Cells.comboBoxIcoSizeButtonCell(comboBoxIcoSize, ICO_PLACEHOLDER);
-        Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, ICO_PLACEHOLDER);
+        if (imageViewPreview != null && previewContainer != null) {
+            imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+            imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+        }
+
+        Cells.comboBoxIcoSizeButtonCell(comboBoxIcoSize, "to ICO");
+        Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, "to ICO");
 
         comboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
-            if (newVal != null && !newVal.equals(ICO_PLACEHOLDER) && imageViewPhoto.getImage() != null) {
+            if (newVal != null && !newVal.equals("to ICO") && imageViewPreview.getImage() != null) {
                 if (imageProperties.getImage() != null && imageProperties.getImage().getName().toLowerCase().endsWith(".ico")) {
                     try {
                         double size = Double.parseDouble(newVal);
-                        imageViewPhoto.setFitHeight(size);
-                        imageViewPhoto.setFitWidth(size);
-                        updateImageContainerSize(imageScaleSlider.getValue());
-                        Platform.runLater(this::adjustScrollBarToCenter);
+                        imageViewPreview.fitHeightProperty().unbind();
+                        imageViewPreview.fitWidthProperty().unbind();
+                        imageViewPreview.setFitHeight(size);
+                        imageViewPreview.setFitWidth(size);
                     } catch (NumberFormatException e) {
                         Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Invalid size value!");
                     }
@@ -103,8 +90,8 @@ public class ConverterImageController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         lockButtonFormat();
-        btnSelectPhoto.setDisable(true);
-        btnChoiceFolderForSave.setDisable(true);
+        btnSelectFile.setDisable(true);
+        btnChoiceFolderForSaveFile.setDisable(true);
         btnSelectBatchFileProcessing.setDisable(true);
         btnReset.setDisable(true);
     }
@@ -112,8 +99,8 @@ public class ConverterImageController extends AbstractMediaController {
     @Override
     protected void unlockUI() {
         unlockButtonFormat();
-        btnSelectPhoto.setDisable(false);
-        btnChoiceFolderForSave.setDisable(false);
+        btnSelectFile.setDisable(false);
+        btnChoiceFolderForSaveFile.setDisable(false);
         btnSelectBatchFileProcessing.setDisable(false);
         btnReset.setDisable(false);
     }
@@ -127,8 +114,8 @@ public class ConverterImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void btnChoiceFolderForSave() {
-        selectOutputDirectory(btnChoiceFolderForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -151,7 +138,7 @@ public class ConverterImageController extends AbstractMediaController {
                     for (File s : filesToProcess) ErrorLogger.info("User selected file (image): " + s.getName());
 
                     imageProperties.setImage(filesToProcess.getFirst());
-                    labelSelectImage.setText("Current file in list: " + imageProperties.getImage().getName());
+                    labelSelectFile.setText("Current file in list: " + imageProperties.getImage().getName());
 
                     try {
                         Optional<BufferedImage> biOpt = readPreviewImage(imageProperties.getImage());
@@ -162,14 +149,17 @@ public class ConverterImageController extends AbstractMediaController {
                         }
 
                         Image fxImage = SwingFXUtils.toFXImage(biOpt.get(), null);
-                        imageScaleSlider.setValue(1.0);
-                        imageViewPhoto.setImage(fxImage);
-                        updateImageSize();
 
+                        if (!imageViewPreview.fitWidthProperty().isBound()) {
+                            imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+                        }
+                        if (!imageViewPreview.fitHeightProperty().isBound()) {
+                            imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+                        }
+
+                        imageViewPreview.setImage(fxImage);
 
                         labelPreviewPlaceholder.setVisible(false);
-
-                        
 
                         textDragZone.setText("Batch: " + filesToProcess.size() + " files");
 
@@ -189,7 +179,7 @@ public class ConverterImageController extends AbstractMediaController {
     private void onActionChoiceIcoSize() {
         String selected = comboBoxIcoSize.getValue();
 
-        if (selected == null || selected.equals(ICO_PLACEHOLDER)) return;
+        if (selected == null || selected.equals("to ICO")) return;
 
         imageProperties.setSizeIcoImage(Integer.parseInt(selected));
 
@@ -200,25 +190,31 @@ public class ConverterImageController extends AbstractMediaController {
 
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectImage, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPhoto, progressBar, true
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true
         );
 
         Util.reset(imageProperties, ctx, "Selected image file: none");
+
+        if (!imageViewPreview.fitWidthProperty().isBound()) {
+            imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+        }
+        if (!imageViewPreview.fitHeightProperty().isBound()) {
+            imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+        }
 
         path_folderBatchProcessing = null;
         filesToProcess.clear();
 
         listToggleBtn.forEach(tb -> tb.setSelected(false));
 
-        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
-        imageScaleSlider.setValue(1.0);
+        comboBoxIcoSize.setValue("to ICO");
     }
 
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
+        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -230,7 +226,7 @@ public class ConverterImageController extends AbstractMediaController {
         filesToProcess.clear();
 
         ErrorLogger.info("User selected file (image): " + imageProperties.getImage().getAbsolutePath());
-        labelSelectImage.setText("Select image: " + imageProperties.getImage().getName());
+        labelSelectFile.setText("Select image file: " + imageProperties.getImage().getName());
 
         try {
             Optional<BufferedImage> biOpt = readPreviewImage(imageProperties.getImage());
@@ -241,10 +237,16 @@ public class ConverterImageController extends AbstractMediaController {
             }
 
             Image fxImage = SwingFXUtils.toFXImage(biOpt.get(), null);
-            imageScaleSlider.setValue(1.0);
-            imageViewPhoto.setImage(fxImage);
 
-            updateImageSize();
+            if (!imageViewPreview.fitWidthProperty().isBound()) {
+                imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+            }
+            if (!imageViewPreview.fitHeightProperty().isBound()) {
+                imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+            }
+
+            imageViewPreview.setImage(fxImage);
+
 
             labelPreviewPlaceholder.setVisible(false);
 
@@ -259,34 +261,6 @@ public class ConverterImageController extends AbstractMediaController {
             ErrorLogger.log(107, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "IO", "File error!");
         }
-    }
-
-    private void updateImageSize() {
-        if (imageViewPhoto.getImage() != null) {
-            if (imageScaleSlider.getValue() == 1.0) {
-                double viewPortWidth = scrollPanePhoto.getViewportBounds().getWidth();
-                double viewPortHeight = scrollPanePhoto.getViewportBounds().getHeight();
-
-                imageViewPhoto.setFitWidth(viewPortWidth - 20);
-                imageViewPhoto.setFitHeight(viewPortHeight - 20);
-                imageViewPhoto.setPreserveRatio(true);
-            }
-        }
-    }
-
-    private void adjustScrollBarToCenter() {
-            scrollPanePhoto.setHvalue(0.5);
-            scrollPanePhoto.setVvalue(0.5);
-    }
-
-    private void updateImageContainerSize(double zoom) {
-        double newWidth = imageViewPhoto.getFitWidth() * zoom;
-        double newHeight = imageViewPhoto.getFitHeight() * zoom;
-
-        imageContainer.setMinWidth(newWidth);
-        imageContainer.setMinHeight(newHeight);
-        imageContainer.setPrefWidth(newWidth);
-        imageContainer.setPrefHeight(newHeight);
     }
 
     @FXML
@@ -331,7 +305,7 @@ public class ConverterImageController extends AbstractMediaController {
             default -> null;
         };
         selectFormat(format, selected, listToggleBtn, imageProperties::setTypeImage);
-        comboBoxIcoSize.setValue(ICO_PLACEHOLDER);
+        comboBoxIcoSize.setValue("to ICO");
     }
 
     @FXML

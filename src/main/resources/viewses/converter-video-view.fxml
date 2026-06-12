@@ -17,15 +17,14 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.ConverterVideoController">
     <VBox alignment="TOP_CENTER"
-          prefWidth="630.0"
+          maxWidth="Infinity"
+          maxHeight="Infinity"
           spacing="14.0"
           style="-fx-background-color: #4b4b4b;">
 
         <Label alignment="CENTER"
-               prefWidth="300.0"
-               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: RED"
                text="Video Converter"
-               textFill="WHITE">
+               styleClass="main-label-name-page">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
@@ -33,9 +32,9 @@
 
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectVideoFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="180.0" text="Select video file" />
+            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="180.0" text="Select video file" />
 
-            <Button fx:id="btnChoiceDirForSaveVideo" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save">
+            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save">
                 <tooltip>
                     <Tooltip text="Default directory: Desktop" />
                 </tooltip>
@@ -47,44 +46,46 @@
                 <ToggleButton fx:id="btnToMP4"
                               mnemonicParsing="false"
                               onAction="#onFormatMp4Pressed"
-                              prefWidth="100.0"
-                              text="to MP4"/>
+                              text="to MP4" styleClass="btn-to-video-format"/>
+
                 <ToggleButton fx:id="btnToAVI"
                               mnemonicParsing="false"
                               onAction="#onFormatAviPressed"
-                              prefWidth="100.0"
-                              text="to AVI"/>
+                              text="to AVI" styleClass="btn-to-video-format"/>
+
                 <ToggleButton fx:id="btnToMKV"
                               mnemonicParsing="false"
                               onAction="#onFormatMkvPressed"
-                              prefWidth="100.0"
-                              text="to MKV"/>
+                              text="to MKV" styleClass="btn-to-video-format"/>
+
                 <ToggleButton fx:id="btnToWEBM"
                               mnemonicParsing="false"
                               onAction="#onFormatWEBMPressed"
-                              prefWidth="100.0"
-                              text="to WEBM"/>
+                              text="to WEBM" styleClass="btn-to-video-format"/>
             </HBox>
             <HBox alignment="CENTER" spacing="16.0">
                 <ToggleButton fx:id="btnToMOV"
                               mnemonicParsing="false"
                               onAction="#onFormatMOVPressed"
-                              prefWidth="100.0"
+                              styleClass="btn-to-video-format"
                               text="to MOV"/>
+
                 <ToggleButton fx:id="btnToFLV"
                               mnemonicParsing="false"
                               onAction="#onFormatFlvPressed"
-                              prefWidth="100.0"
+                              styleClass="btn-to-video-format"
                               text="to FLV"/>
+
                 <ToggleButton fx:id="btnToWMV"
                               mnemonicParsing="false"
                               onAction="#onFormatWmvPressed"
-                              prefWidth="100.0"
+                              styleClass="btn-to-video-format"
                               text="to WMV"/>
+
                 <ToggleButton fx:id="btnTo3GP"
                               mnemonicParsing="false"
                               onAction="#onFormat3gpPressed"
-                              prefWidth="100.0"
+                              styleClass="btn-to-video-format"
                               text="to 3GP"/>
             </HBox>
         </VBox>
@@ -125,13 +126,13 @@
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <Button fx:id="btnSubmitConvert"
+            <Button fx:id="btnSubmitAndDownload"
                     mnemonicParsing="false"
                     onAction="#onStartConversionPressed"
                     prefWidth="220.0" text="Convert and Download" />
 
             <Button mnemonicParsing="false"
-                    onAction="#onCancelConversation"
+                    onAction="#onCancelConversion"
                     prefWidth="220.0" text="Cancel Conversion" />
         </HBox>
 
@@ -143,37 +144,30 @@
 
             <Label fx:id="labelSuccess"
                    styleClass="labelSuccess"
-                   alignment="CENTER"
-                   prefWidth="400.0"
-                   textFill="#32CD32"
                    visible="false"
                    text="Convert has been success!" />
         </VBox>
 
-        <StackPane fx:id="dropZone" styleClass="drop-zone"
-                   minHeight="200.0"
-                   prefHeight="300.0"
-                   prefWidth="580.0"
-                   VBox.vgrow="ALWAYS"
-                   style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;">
+        <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <Label fx:id="textDragZone" text="Drag files here" textFill="WHITE" styleClass="label-drag-zone" />
-        </StackPane>
+            <StackPane fx:id="dropZone" styleClass="drop-zone-solo" HBox.hgrow="ALWAYS">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+            </StackPane>
+        </HBox>
 
-        <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSelectVideoName"
-                   styleClass="labelSelect"
-                   alignment="CENTER" prefWidth="600.0"
-                   textFill="RED"
-                   wrapText="true"
-                   text="Selected file: none"/>
+        <VBox alignment="CENTER" spacing="6.0">
+            <Label fx:id="labelSelectFile" styleClass="labelSelect"
+                   text="Selected file: none" />
 
-            <Button fx:id="btnReset"
+            <Button fx:id="btnReset" styleClass="btn-reset"
                     mnemonicParsing="false"
-                    onAction="#onResetPressed"
-                    prefWidth="240.0" text="Reset" />
+                    onAction="#isPressedReset"
+                    text="Reset"/>
         </VBox>
 
         <padding>
