@@ -1,5 +1,6 @@
 package model.compressorVideo;
 
+import lombok.Setter;
 import model.logger.ErrorLogger;
 import model.utility.DetermineType;
 import model.utility.EncoderUtility;
@@ -19,7 +20,7 @@ public class Compressor {
     private String videoCodec;
     private String audioCodec;
     private String ffmpegFormat;
-    private boolean useGPU;
+    @Setter private boolean useGPU;
     private volatile File currentTarget;
     private final Encoder encoder = new Encoder();
 
@@ -99,7 +100,7 @@ public class Compressor {
     public void getCodec(File videoFile) {
         String formatVideo = DetermineType.determineFormat(videoFile).orElse("");
         switch (formatVideo) {
-            case "mp4", "m4v" -> {
+            case "mp4", "m4v", "wmv", "x-ms-wmv" -> {
                 videoCodec = useGPU ? "h264_nvenc" : "libx264";
                 audioCodec = "aac";
                 ffmpegFormat = "mp4";
@@ -129,11 +130,6 @@ public class Compressor {
                 audioCodec = "aac";
                 ffmpegFormat = "flv";
             }
-            case "wmv", "x-ms-wmv" -> {
-                videoCodec = useGPU ? "h264_nvenc" : "libx264";
-                audioCodec = "aac";
-                ffmpegFormat = "mp4";
-            }
             case "3gp", "3gpp" -> {
                 videoCodec = useGPU ? "h264_nvenc" : "libx264";
                 audioCodec = "aac";
@@ -145,9 +141,4 @@ public class Compressor {
             }
         }
     }
-
-    public void setUseGPU(boolean enable) {
-        useGPU = enable;
-    }
-
 }

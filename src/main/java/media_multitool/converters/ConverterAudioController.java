@@ -59,6 +59,16 @@ public class ConverterAudioController extends AbstractMediaController {
         audioProperties.setOutput(getSavedPath());
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
+        initComboBoxes();
+
+        isPressedReset();
+
+        List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
+        allFormats.addAll(Global.getAllSupportedVideoFormats());
+        setupDragAndDrop(dropZone, allFormats, this::loadFile);
+    }
+
+    private void initComboBoxes() {
         ComboBoxes.setupStringComboBox(comboBoxChoiceBitRate);
         ComboBoxes.setupStringComboBox(comboBoxChoiceChannels);
         ComboBoxes.setupStringComboBox(comboBoxChoiceSamplingRate);
@@ -66,14 +76,8 @@ public class ConverterAudioController extends AbstractMediaController {
         comboBoxChoiceBitRate.getItems().addAll("128 kbps", "192 kbps", "256 kbps", "320 kbps");
         comboBoxChoiceChannels.getItems().addAll("1 Channels", "2 Channels");
         comboBoxChoiceSamplingRate.getItems().addAll("8000 Hz", "11025 Hz", "12000 Hz", "16000 Hz",
-                                                        "22050 Hz", "24000 Hz", "32000 Hz",
-                                                        "44100 Hz", "48000 Hz");
-
-        isPressedReset();
-
-        List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
-        allFormats.addAll(Global.getAllSupportedVideoFormats());
-        setupDragAndDrop(dropZone, textDragZone, allFormats, this::loadFile);
+                "22050 Hz", "24000 Hz", "32000 Hz",
+                "44100 Hz", "48000 Hz");
     }
 
     private void resetToDefaults() {

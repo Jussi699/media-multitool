@@ -81,16 +81,22 @@
         <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="140.0"
                   onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"/>
 
+        <Line startX="85.0"
+              endX="85.0" endY="5.0"
+              stroke="red" strokeWidth="2.0" />
+
+        <ComboBox fx:id="comboBoxChoiceActionPdf" prefWidth="140.0"
+                  onAction="#onActionChoiceActionPdf" styleClass="combo-box-choice-action"/>
 
         <Line startX="85.0"
               endX="85.0" endY="5.0"
               stroke="red" strokeWidth="2.0" />
 
-        <Button fx:id="navEditorAudio"
+        <Button fx:id="navEditorAudioTag"
                 mnemonicParsing="false"
-                onAction="#showEditorAudioPage"
+                onAction="#showEditorAudioTagPage"
                 prefWidth="140.0"
-                text="Editor Audio"/>
+                text="Editor audio tag"/>
 
         <Line startX="85.0"
               endX="85.0" endY="5.0"
@@ -112,20 +118,22 @@
                style="-fx-background-color: #2b2b2b;"
                HBox.hgrow="ALWAYS">
         <fx:include fx:id="homeView" source="home-view.fxml"/>
-        <fx:include fx:id="converterImagePage" source="converter-image-view.fxml"/>
-        <fx:include fx:id="converterVideoPage" source="converter-video-view.fxml"/>
-        <fx:include fx:id="converterMP3Page" source="converter-audio-view.fxml"/>
-        <fx:include fx:id="compressorImagePage" source="compressor-image-view.fxml"/>
-        <fx:include fx:id="compressorVideoPage" source="compressor-video-view.fxml"/>
-        <fx:include fx:id="negativeImagePage" source="negative-image-view.fxml"/>
-        <fx:include fx:id="turnImagePage" source="turn-image-view.fxml"/>
+        <fx:include fx:id="converterImagePage" source="converter-views/converter-image-view.fxml"/>
+        <fx:include fx:id="converterVideoPage" source="converter-views/converter-video-view.fxml"/>
+        <fx:include fx:id="converterMP3Page" source="converter-views/converter-audio-view.fxml"/>
+        <fx:include fx:id="compressorImagePage" source="compressor-views/compressor-image-view.fxml"/>
+        <fx:include fx:id="compressorVideoPage" source="compressor-views/compressor-video-view.fxml"/>
+        <fx:include fx:id="negativeImagePage" source="image-tools-views/negative-image-view.fxml"/>
+        <fx:include fx:id="turnImagePage" source="image-tools-views/turn-image-view.fxml"/>
         <fx:include fx:id="infoPage" source="info-view.fxml"/>
-        <fx:include fx:id="lightenPage" source="lighten-image-view.fxml"/>
-        <fx:include fx:id="darkenPage" source="darken-image-view.fxml"/>
-        <fx:include fx:id="colorizePage" source="colorize-image-view.fxml"/>
-        <fx:include fx:id="blackAndWhitePage" source="black-white-image-view.fxml"/>
-        <fx:include fx:id="blurPage" source="blur-image-view.fxml"/>
-        <fx:include fx:id="audioEditorPage" source="editor-audio-tag-view.fxml"/>
-        <fx:include fx:id="findPixelPage" source="find-pixel-image-view.fxml"/>
+        <fx:include fx:id="lightenPage" source="image-tools-views/lighten-image-view.fxml"/>
+        <fx:include fx:id="darkenPage" source="image-tools-views/darken-image-view.fxml"/>
+        <fx:include fx:id="colorizePage" source="image-tools-views/colorize-image-view.fxml"/>
+        <fx:include fx:id="blackAndWhitePage" source="image-tools-views/black-white-image-view.fxml"/>
+        <fx:include fx:id="blurPage" source="image-tools-views/blur-image-view.fxml"/>
+        <fx:include fx:id="audioEditorTagPage" source="editors-views/editor-audio-tag-view.fxml"/>
+        <fx:include fx:id="findPixelPage" source="image-tools-views/find-pixel-image-view.fxml"/>
+        <fx:include fx:id="cropPage" source="image-tools-views/crop-image-view.fxml"/>
+        <fx:include fx:id="imageToPdfPage" source="pdf-views/converter-image-to-pdf-view.fxml"/>
     </StackPane>
 </HBox>

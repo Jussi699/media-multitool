@@ -14,7 +14,7 @@ public class PreparingAttributes {
         audio.setChannels(channels);
         audio.setCodec(audioCodec);
         audio.setSamplingRate(samplingRate);
-        if(ConverterVideoAudioFile.isLossless(audioCodec)){
+        if(ConverterVideoAudioFile.shouldSetAudioBitrate(audioCodec)){
             audio.setBitRate(bitrate * 1000);
         }
         return audio;

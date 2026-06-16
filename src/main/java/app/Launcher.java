@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Launcher {
-    static void main(String[] args) {
+   static void main(String[] args) {
         Logger jaudiotaggerLogger = Logger.getLogger("org.jaudiotagger");
         jaudiotaggerLogger.setLevel(Level.OFF);
         jaudiotaggerLogger.setUseParentHandlers(false);

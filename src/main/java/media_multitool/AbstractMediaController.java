@@ -5,10 +5,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import lombok.NonNull;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.utility.DragDropped;
+import model.utility.Util;
 import viewHelp.Alerts;
+import viewHelp.Message;
 
 import java.io.File;
 import java.util.List;
@@ -25,6 +28,8 @@ public abstract class AbstractMediaController {
 
     protected abstract void lockUI();
     protected abstract void unlockUI();
+    protected abstract void disableControls();
+    protected abstract void enableControls();
     protected abstract MediaProperties getProperties();
 
     protected <T> void executeMediaTask(Task<T> task) {
@@ -56,7 +61,7 @@ public abstract class AbstractMediaController {
             handleTaskFailure(exception);
         });
 
-        model.utility.Util.IO_EXECUTOR.execute(task);
+        Util.IO_EXECUTOR.execute(task);
     }
 
     private void unbindProgress() {
@@ -117,13 +122,26 @@ public abstract class AbstractMediaController {
     }
 
     protected void selectFormat(String format, ToggleButton selectedBtn, List<ToggleButton> allButtons, Consumer<String> propertySetter) {
-        propertySetter.accept(format);
-        if (allButtons != null) {
-            for (ToggleButton tb : allButtons) {
-                tb.setSelected(tb == selectedBtn);
+        if (selectedBtn != null && !selectedBtn.isSelected()) {
+            propertySetter.accept(null);
+            if (allButtons != null) {
+                allButtons.forEach(tb -> tb.setSelected(false));
+            }
+        } else {
+            propertySetter.accept(format);
+            if (allButtons != null) {
+                for (ToggleButton tb : allButtons) {
+                    tb.setSelected(tb == selectedBtn);
+                }
             }
         }
-        viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
+        Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
+    }
+
+    protected void selectFormat(String format ,Consumer<String> propertySetter) {
+        propertySetter.accept(format);
+
+        Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
     }
 
     protected void selectOutputDirectory(Button triggerButton, File currentPath, Consumer<File> propertySetter, String title) {
@@ -131,16 +149,14 @@ public abstract class AbstractMediaController {
         directoryChooser(stage, currentPath, title)
                 .ifPresent(selectedPath -> {
                     propertySetter.accept(selectedPath);
-                    viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
+                    Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
                 });
     }
 
-    protected void setupDragAndDrop(StackPane dropZone, Label textDragZone, List<String> supportedFormats, Consumer<File> fileProcessor) {
-        if (dropZone == null) return;
-
+    protected void setupDragAndDrop(@NonNull StackPane dropZone, List<String> supportedFormats, Consumer<File> fileProcessor) {
         dropZone.setOnDragOver(e -> DragDropped.handleDragOver(e, supportedFormats, dropZone));
         dropZone.setOnDragDropped(e -> {
-            File droppedFile = DragDropped.handleDragDropped(e, dropZone, textDragZone);
+            File droppedFile = DragDropped.handleDragDropped(e, dropZone);
             if (droppedFile != null) {
                 fileProcessor.accept(droppedFile);
             }

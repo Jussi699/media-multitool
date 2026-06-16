@@ -1,6 +1,5 @@
 package model.utility;
 
-import javafx.scene.control.Label;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -12,7 +11,6 @@ import java.util.List;
 import static model.utility.Checking.isSupportedMediaFile;
 
 public class DragDropped {
-    
     public static void handleDragOver(DragEvent e, List<String> supportedExtensions, StackPane dropZone) {
         Dragboard db = e.getDragboard();
         if (e.getGestureSource() != dropZone && db.hasFiles()) {
@@ -25,7 +23,7 @@ public class DragDropped {
         e.consume();
     }
 
-    public static File handleDragDropped(DragEvent e, StackPane dropZone, Label textDragZone) {
+    public static File handleDragDropped(DragEvent e, StackPane dropZone) {
         Dragboard db = e.getDragboard();
         boolean success = false;
         File file = null;

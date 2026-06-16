@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class ImagePreprocessing {
-
     public static Optional<BufferedImage> toNegative(File file) {
         try {
             BufferedImage image = ImageIO.read(file);
@@ -53,12 +52,13 @@ public class ImagePreprocessing {
     }
 
     /**
-     * Determines the direction of movement or placement.
-     * <p>
-     * A value of {@code true} means moving to the right,
-     * and {@code false} — to left.
+     * Rotates or flips the image based on the specified side.
+     *
+     * @param image the image to be processed
+     * @param side the transformation type: "turn_right", "turn_left", "flip_horizontally", or "flip_vertically"
+     * @return an Optional containing the processed BufferedImage, or empty if the input image is null
      */
-    public static Optional<BufferedImage> turnImage(BufferedImage image, boolean side) {
+    public static Optional<BufferedImage> turnImage(BufferedImage image, String side) {
         if (image == null) {
             return Optional.empty();
         }
@@ -66,18 +66,36 @@ public class ImagePreprocessing {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        // For 90 degree rotation, width and height are swapped
-        BufferedImage outputImage = new BufferedImage(height, width,
+        int targetWidth = (side.equals("turn_right") || side.equals("turn_left")) ? height : width;
+        int targetHeight = (side.equals("turn_right") || side.equals("turn_left")) ? width : height;
+
+        BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight,
                 image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
         
         java.awt.Graphics2D g2d = outputImage.createGraphics();
-        
-        if (side) { // Right (90 degrees clockwise)
-            g2d.translate(height, 0);
-            g2d.rotate(Math.toRadians(90));
-        } else { // Left (90 degrees counter-clockwise)
-            g2d.translate(0, width);
-            g2d.rotate(Math.toRadians(-90));
+
+        switch (side) {
+            // Right (90 degrees clockwise)
+            case "turn_right" -> {
+                g2d.translate(targetWidth, 0);
+                g2d.rotate(Math.toRadians(90));
+            }
+
+            // Left (90 degrees counter-clockwise)
+            case "turn_left" -> {
+                g2d.translate(0, targetHeight);
+                g2d.rotate(Math.toRadians(-90));
+            }
+
+            case "flip_horizontally" -> {
+                g2d.translate(width, 0);
+                g2d.scale(-1, 1);
+            }
+
+            case "flip_vertically" -> {
+                g2d.translate(0, height);
+                g2d.scale(1, -1);
+            }
         }
         
         g2d.drawImage(image, 0, 0, null);
@@ -163,7 +181,6 @@ public class ImagePreprocessing {
         Lighting lighting = new Lighting();
         lighting.setLight(light);
         lighting.setSurfaceScale(0.0);
-
 
         return lighting;
     }

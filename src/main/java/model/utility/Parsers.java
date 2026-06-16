@@ -3,10 +3,23 @@ package model.utility;
 import javafx.scene.control.ComboBox;
 import ws.schild.jave.info.MultimediaInfo;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Parsers {
     public static int parseComboBoxStringToInt(ComboBox<String> cb) {
         return Integer.parseInt(cb.getValue().replaceAll("[^0-9]", ""));
+    }
+
+    public static double parseComboBoxStringToDouble(ComboBox<String> cb) {
+        String text = cb.getValue();
+        Matcher matcher = Pattern.compile("\\d+\\.\\d+").matcher(text);
+
+        if (matcher.find()) {
+            return Double.parseDouble(matcher.group());
+        } else {
+            return 0.0;
+        }
     }
 
     public static int parseChannels(MultimediaInfo info) {

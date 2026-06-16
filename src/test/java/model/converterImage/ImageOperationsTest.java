@@ -71,4 +71,35 @@ public class ImageOperationsTest {
         assertTrue(result.isPresent());
         assertTrue(result.get().outputFile().exists());
     }
+
+    @Test
+    public void testTurnImage() {
+        int width = 100;
+        int height = 50;
+        java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        
+        // Test horizontal flip
+        java.util.Optional<java.awt.image.BufferedImage> flippedH = model.preprocessing.ImagePreprocessing.turnImage(image, "flip_horizontally");
+        assertTrue(flippedH.isPresent());
+        assertEquals(width, flippedH.get().getWidth());
+        assertEquals(height, flippedH.get().getHeight());
+
+        // Test vertical flip
+        java.util.Optional<java.awt.image.BufferedImage> flippedV = model.preprocessing.ImagePreprocessing.turnImage(image, "flip_vertically");
+        assertTrue(flippedV.isPresent());
+        assertEquals(width, flippedV.get().getWidth());
+        assertEquals(height, flippedV.get().getHeight());
+
+        // Test rotate right
+        java.util.Optional<java.awt.image.BufferedImage> rotatedR = model.preprocessing.ImagePreprocessing.turnImage(image, "turn_right");
+        assertTrue(rotatedR.isPresent());
+        assertEquals(height, rotatedR.get().getWidth());
+        assertEquals(width, rotatedR.get().getHeight());
+
+        // Test rotate left
+        java.util.Optional<java.awt.image.BufferedImage> rotatedL = model.preprocessing.ImagePreprocessing.turnImage(image, "turn_left");
+        assertTrue(rotatedL.isPresent());
+        assertEquals(height, rotatedL.get().getWidth());
+        assertEquals(width, rotatedL.get().getHeight());
+    }
 }

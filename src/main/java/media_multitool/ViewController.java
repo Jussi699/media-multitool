@@ -8,43 +8,56 @@ import model.utility.Item;
 import viewHelp.ComboBoxes;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ViewController {
 
-    @FXML private StackPane audioEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
+    @FXML private StackPane audioEditorTagPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
-            negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage;
+            negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage;
 
     @FXML private HomeViewController homeViewController;
 
     @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
-            navCompressorImage, navCompressorVideo, navInfo, navEditorAudio;
+            navCompressorImage, navCompressorVideo, navInfo, navEditorAudioTag;
 
-    @FXML private ComboBox<Item> comboBoxChoiceActionImage;
+    @FXML private ComboBox<Item> comboBoxChoiceActionImage, comboBoxChoiceActionPdf;
 
-    /** index page
-     * 1, negativeImagePage,
-     * 2, turnImagePage,
-     * 3, lightenPage,
-     * 4, darkenPage,
-     * 5, colorizePage,
-     * 6, blackAndWhitePage,
-     * 7, blurPage
-     * 8  audioEditorPage
-     * 9 findPixelPage
-     * **/
+    /* index page image
+      1, negativeImagePage,
+      2, turnImagePage,
+      3, lightenPage,
+      4, darkenPage,
+      5, colorizePage,
+      6, blackAndWhitePage,
+      7, blurPage
+      8  audioEditorTagPage
+      9 findPixelPage
+      10 cropPage
+      */
 
-    private final Map<Integer, StackPane> stackPaneMap = new HashMap<>();
+    /* index page pdf
+       21, Image To Pdf,
+     */
+
+    private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
+    private final Map<Integer, StackPane> stackPaneMapPdfTools = new HashMap<>();
+
+    private List<Button> listNavBtn;
 
     @FXML
     public void initialize() {
+        listNavBtn = List.of(navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
+                navCompressorImage, navCompressorVideo, navInfo, navEditorAudioTag);
+
         if (homeViewController != null) {
             homeViewController.setMainController(this);
         }
 
         showHomePage();
 
+        // Image
         comboBoxChoiceActionImage.setPromptText("Image tools");
         ComboBoxes.setupComboBox(comboBoxChoiceActionImage, Item::title);
         comboBoxChoiceActionImage.getSelectionModel().clearSelection();
@@ -61,7 +74,24 @@ public class ViewController {
             return null;
         }, comboBoxChoiceActionImage.getSelectionModel().selectedItemProperty()));
 
-        stackPaneMap.putAll(Map.of(
+        // PDF
+        comboBoxChoiceActionPdf.setPromptText("PDF tools");
+        ComboBoxes.setupComboBox(comboBoxChoiceActionPdf, Item::title);
+        comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
+        comboBoxChoiceActionPdf.buttonCellProperty().bind(javafx.beans.binding.Bindings.createObjectBinding(() -> {
+            if (comboBoxChoiceActionPdf.getSelectionModel().isEmpty()) {
+                return new javafx.scene.control.ListCell<Item>() {
+                    @Override
+                    protected void updateItem(Item item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText("PDF tools");
+                    }
+                };
+            }
+            return null;
+        }, comboBoxChoiceActionPdf.getSelectionModel().selectedItemProperty()));
+
+        stackPaneMapImageTools.putAll(Map.of(
                 1, negativeImagePage,
                 2, turnImagePage,
                 3, lightenPage,
@@ -69,8 +99,13 @@ public class ViewController {
                 5, colorizePage,
                 6, blackAndWhitePage,
                 7, blurPage,
-                8, findPixelPage
+                8, findPixelPage,
+                9, cropPage
         ));
+
+        stackPaneMapPdfTools.put(
+                21, imageToPdfPage
+        );
 
         comboBoxChoiceActionImage.getItems().addAll(
                 new Item(1, "Negative photo"),
@@ -80,7 +115,12 @@ public class ViewController {
                 new Item(5, "Colorize photo"),
                 new Item(6, "Black-White photo"),
                 new Item(7, "Blurry photo"),
-                new Item(8, "Find Pixel")
+                new Item(8, "Find Pixel"),
+                new Item(9, "Crop Image")
+        );
+
+        comboBoxChoiceActionPdf.getItems().addAll(
+                new Item(21, "Image To Pdf")
         );
     }
 
@@ -115,24 +155,45 @@ public class ViewController {
     }
 
     @FXML
-    public void showEditorAudioPage() {
-        setActivePage(audioEditorPage, navEditorAudio);
+    public void showEditorAudioTagPage() {
+        setActivePage(audioEditorTagPage, navEditorAudioTag);
+    }
+
+    @FXML
+    public void onActionChoiceActionPdf() {
+        Item selectedItem = comboBoxChoiceActionPdf.getValue();
+        if (selectedItem != null) {
+            currentPageFromComboBoxAction = stackPaneMapPdfTools.get((int) selectedItem.id());
+            setActivePage(currentPageFromComboBoxAction, null);
+            comboBoxChoiceActionImage.getSelectionModel().clearSelection();
+            comboBoxChoiceActionPdf.setStyle(getComboBoxStyle(true));
+        }
+    }
+
+    @FXML
+    public void onActionChoiceActionPdf(int index) {
+        currentPageFromComboBoxAction = stackPaneMapPdfTools.get(index);
+        setActivePage(currentPageFromComboBoxAction, null);
+        comboBoxChoiceActionImage.getSelectionModel().clearSelection();
+        comboBoxChoiceActionPdf.setStyle(getComboBoxStyle(true));
     }
 
     @FXML
     public void onActionChoiceActionImage() {
         Item selectedItem = comboBoxChoiceActionImage.getValue();
         if (selectedItem != null) {
-            currentPageFromComboBoxAction = stackPaneMap.get((int) selectedItem.id());
+            currentPageFromComboBoxAction = stackPaneMapImageTools.get((int) selectedItem.id());
             setActivePage(currentPageFromComboBoxAction, null);
+            comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
             comboBoxChoiceActionImage.setStyle(getComboBoxStyle(true));
         }
     }
 
     @FXML
     public void onActionChoiceActionImage(int index) {
-            currentPageFromComboBoxAction = stackPaneMap.get(index);
+            currentPageFromComboBoxAction = stackPaneMapImageTools.get(index);
             setActivePage(currentPageFromComboBoxAction, null);
+            comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
             comboBoxChoiceActionImage.setStyle(getComboBoxStyle(true));
     }
 
@@ -145,7 +206,8 @@ public class ViewController {
         StackPane[] allPages = {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
-                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage, audioEditorPage, findPixelPage
+                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
+                audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage
         };
 
         for (StackPane page : allPages) {
@@ -155,19 +217,15 @@ public class ViewController {
             }
         }
 
+        comboBoxChoiceActionImage.setStyle(getComboBoxStyle(false));
+        comboBoxChoiceActionPdf.setStyle(getComboBoxStyle(false));
+
         if (activeButton != null) {
             comboBoxChoiceActionImage.getSelectionModel().clearSelection();
-            comboBoxChoiceActionImage.setStyle(getComboBoxStyle(false));
+            comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
         }
 
-        navHomeButton.setStyle(getNavButtonStyle(activeButton == navHomeButton));
-        navConverterImageButton.setStyle(getNavButtonStyle(activeButton == navConverterImageButton));
-        navConverterVideoButton.setStyle(getNavButtonStyle(activeButton == navConverterVideoButton));
-        navConverterAudioButton.setStyle(getNavButtonStyle(activeButton == navConverterAudioButton));
-        navCompressorImage.setStyle(getNavButtonStyle(activeButton == navCompressorImage));
-        navCompressorVideo.setStyle(getNavButtonStyle(activeButton == navCompressorVideo));
-        navEditorAudio.setStyle(getNavButtonStyle(activeButton == navEditorAudio));
-        navInfo.setStyle(getNavButtonStyle(activeButton == navInfo));
+        listNavBtn.forEach(btn -> btn.setStyle(getNavButtonStyle(activeButton == btn)));
     }
 
     private String getNavButtonStyle(boolean active) {
@@ -183,4 +241,5 @@ public class ViewController {
         }
         return "-fx-background-color: #323232; -fx-background-radius: 8;";
     }
+
 }

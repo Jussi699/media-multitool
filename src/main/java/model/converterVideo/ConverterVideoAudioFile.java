@@ -1,13 +1,15 @@
 package model.converterVideo;
 
+import model.enums.TypeMedia;
 import model.logger.ErrorLogger;
+import model.properties.VideoAndAudioProperties;
 import model.utility.EncoderUtility;
+import model.utility.PreparingAttributes;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
 import ws.schild.jave.encode.VideoAttributes;
-import ws.schild.jave.info.VideoSize;
 import ws.schild.jave.info.MultimediaInfo;
 import ws.schild.jave.progress.EncoderProgressListener;
 
@@ -21,96 +23,24 @@ public class ConverterVideoAudioFile {
 
     public File nameFileAfter;
 
-    public boolean convert(File file, File pathForSave, int videoBitrate, int audioBitrate,
-                           int channels, int samplingRate, int fps, String videoCodec,
-                           String audioCodec, String output_format, String resolution, String typeConvert,
-                           Consumer<Double> progressConsumer) {
+    public boolean convert(VideoAndAudioProperties properties, TypeMedia typeConvert, Consumer<Double> progressConsumer) {
+        File file = properties.getSrcFile();
         if (!checkingFile(file)) {
             return false;
         }
 
-        File target;
-        if (pathForSave.isDirectory()) {
-            String fileName = file.getName();
-            int dotIndex = fileName.lastIndexOf('.');
-            String nameWithoutExtension = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-            String extension = output_format;
-            if ("matroska".equalsIgnoreCase(output_format)) {
-                extension = "mkv";
-            } else if ("ipod".equalsIgnoreCase(output_format)) {
-                extension = "m4a";
-            } else if ("adts".equalsIgnoreCase(output_format)) {
-                extension = "aac";
-            } else if ("asf".equalsIgnoreCase(output_format)) {
-                extension = "wmv";
-            }
-            target = new File(pathForSave, nameWithoutExtension + "_" + UUID.randomUUID().toString().replace("-", "") + "." + extension);
-            nameFileAfter = target;
-        } else {
-            target = pathForSave;
-        }
-
+        File target = prepareTargetFile(file, properties.getOutput(), properties.getFfmpegFormat());
         currentTarget = target;
+        nameFileAfter = target;
 
         ErrorLogger.info("Starting conversion...");
         try {
             MultimediaObject multimediaObject = new MultimediaObject(file);
             MultimediaInfo sourceInfo = multimediaObject.getInfo();
-            
-            EncodingAttributes attrs = new EncodingAttributes();
-            String normalizedFormat = output_format;
-            if ("mkv".equalsIgnoreCase(output_format)) {
-                normalizedFormat = "matroska";
-            } else if ("m4a".equalsIgnoreCase(output_format)) {
-                normalizedFormat = "ipod";
-            }
-            attrs.setOutputFormat(normalizedFormat);
 
-            boolean isVideo = "video".equalsIgnoreCase(typeConvert);
+            EncodingAttributes attrs = createEncodingAttributes(properties, typeConvert, sourceInfo);
 
-            if (sourceInfo.getAudio() != null || !isVideo) {
-                AudioAttributes audio = new AudioAttributes();
-                audio.setCodec(audioCodec);
-
-                if (audioBitrate > 0 && isLossless(audioCodec)) {
-                    audio.setBitRate(audioBitrate * 1000);
-                }
-                audio.setChannels(channels);
-                audio.setSamplingRate(samplingRate);
-                attrs.setAudioAttributes(audio);
-            } else {
-                ErrorLogger.info("Source file has no audio track. Skipping audio attributes for video conversion.");
-            }
-
-            if (isVideo) {
-                VideoAttributes video = new VideoAttributes();
-                video.setCodec(videoCodec);
-                if (videoBitrate > 0) {
-                    video.setBitRate(videoBitrate * 1000);
-                }
-                video.setPixelFormat("yuv420p");
-
-                if (fps > 0) {
-                    video.setFrameRate(fps);
-                }
-                if (resolution != null && resolution.contains("x")) {
-                    try {
-                        String[] res = resolution.split("x");
-                        int width = Integer.parseInt(res[0]);
-                        int height = Integer.parseInt(res[1]);
-
-                        if (width % 2 != 0) width--;
-                        if (height % 2 != 0) height--;
-
-                        video.setSize(new VideoSize(width, height));
-                    } catch (Exception e) {
-                        ErrorLogger.warn("Invalid resolution format: " + resolution);
-                    }
-                }
-                attrs.setVideoAttributes(video);
-            }
-
-            ErrorLogger.info("Starting encoding: " + file.getName() + " [V-BR: " + videoBitrate + ", A-BR: " + audioBitrate + "]");
+            ErrorLogger.info("Starting encoding: " + file.getName() + " [V-BR: " + properties.getVideoBitRate() + ", A-BR: " + properties.getAudioBitRate() + "]");
 
             encoder.encode(multimediaObject, target, attrs, new EncoderProgressListener() {
                 @Override
@@ -141,12 +71,79 @@ public class ConverterVideoAudioFile {
         }
     }
 
-    public boolean convert(File file,
-                                                     File pathForSave,
-                                                     int bitRate, int channels, int samplingRate,
-                                                     String audioCodec, String output_format,
-                                                     Consumer<Double> progressConsumer) {
-        return convert(file, pathForSave, -1, bitRate, channels, samplingRate, -1, null, audioCodec, output_format, null, "audio", progressConsumer);
+    private File prepareTargetFile(File file, File pathForSave, String outputFormat) {
+        if (pathForSave.isDirectory()) {
+            String fileName = file.getName();
+            int dotIndex = fileName.lastIndexOf('.');
+            String nameWithoutExtension = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+            String extension = getExtensionFromFormat(outputFormat);
+            return new File(pathForSave, nameWithoutExtension + "_" + UUID.randomUUID().toString().replace("-", "") + "." + extension);
+        }
+        return pathForSave;
+    }
+
+    private String getExtensionFromFormat(String format) {
+        if ("matroska".equalsIgnoreCase(format)) return "mkv";
+        if ("ipod".equalsIgnoreCase(format)) return "m4a";
+        if ("adts".equalsIgnoreCase(format)) return "aac";
+        if ("asf".equalsIgnoreCase(format)) return "wmv";
+        return format;
+    }
+
+    private EncodingAttributes createEncodingAttributes(VideoAndAudioProperties properties, TypeMedia type, MultimediaInfo sourceInfo) {
+        EncodingAttributes attrs = new EncodingAttributes();
+        String outputFormat = properties.getFfmpegFormat();
+        String normalizedFormat = outputFormat;
+        if ("mkv".equalsIgnoreCase(outputFormat)) {
+            normalizedFormat = "matroska";
+        } else if ("m4a".equalsIgnoreCase(outputFormat)) {
+            normalizedFormat = "ipod";
+        }
+        attrs.setOutputFormat(normalizedFormat);
+
+        boolean isVideo = (type == TypeMedia.VIDEO);
+
+        if (sourceInfo.getAudio() != null || !isVideo) {
+            attrs.setAudioAttributes(setupAudioAttributes(properties));
+        } else {
+            ErrorLogger.info("Source file has no audio track. Skipping audio attributes for video conversion.");
+        }
+
+        if (isVideo) {
+            attrs.setVideoAttributes(setupVideoAttributes(properties));
+        }
+        return attrs;
+    }
+
+    private AudioAttributes setupAudioAttributes(VideoAndAudioProperties properties) {
+        AudioAttributes audio = new AudioAttributes();
+        audio.setCodec(properties.getAudioCodec());
+
+        int audioBitrate = properties.getAudioBitRate();
+        if (audioBitrate > 0 && shouldSetAudioBitrate(properties.getAudioCodec())) {
+            audio.setBitRate(audioBitrate * 1000);
+        }
+        audio.setChannels(properties.getChannel());
+        audio.setSamplingRate(properties.getSamplingRate());
+        return audio;
+    }
+
+    private VideoAttributes setupVideoAttributes(VideoAndAudioProperties properties) {
+        VideoAttributes video = new VideoAttributes();
+        video.setCodec(properties.getVideoCodec());
+        int videoBitrate = properties.getVideoBitRate();
+        if (videoBitrate > 0) {
+            video.setBitRate(videoBitrate * 1000);
+        }
+        video.setPixelFormat("yuv420p");
+
+        int fps = properties.getFps();
+        if (fps > 0) {
+            video.setFrameRate(fps);
+        }
+
+        PreparingAttributes.parseSize(properties.getResolution()).ifPresent(video::setSize);
+        return video;
     }
 
     public void cancelConversion() {
@@ -163,7 +160,7 @@ public class ConverterVideoAudioFile {
         return file != null && file.exists();
     }
 
-    public static boolean isLossless(String codec) {
+    public static boolean shouldSetAudioBitrate(String codec) {
         if (codec == null) return true;
         String c = codec.toLowerCase();
         return !c.contains("flac") && !c.contains("alac") && !c.contains("pcm");
@@ -176,7 +173,7 @@ public class ConverterVideoAudioFile {
 
         boolean isCancelled = (msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
                 || (causeMsg != null && causeMsg.contains("Stream Closed"));
-        
+
         if (isCancelled) {
             ErrorLogger.info("Conversion was cancelled by user.");
         } else {

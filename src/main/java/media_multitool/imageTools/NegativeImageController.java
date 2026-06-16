@@ -1,34 +1,30 @@
-package media_multitool.converters;
+package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
-import model.helper.pdfWorker.ConverterPdfHelper;
+import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.Util.*;
 import static viewHelp.Message.*;
 
-public class ConverterImageToPdfController extends AbstractMediaController {
+public class NegativeImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @Override
@@ -36,47 +32,25 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         return imageProperties;
     }
 
-    @FXML private ImageView imageViewPdf;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
-    
-    @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;
+    @FXML private ImageView imageViewPreview;
 
-    private PDDocument currentDoc;
-    private List<Control> listControls;
+    private BufferedImage originalBufferedImage, currentBufferedImage;
+    private java.util.List<Control> listControls;
+
     @FXML
     public void initialize() {
-        listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit);
-
+        listControls = java.util.List.of(btnSubmit);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        initComboBoxes();
-        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
+        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
-    }
-
-    private void initComboBoxes() {
-        comboMargin.getItems().addAll("No margin", "Small", "Big");
-        comboMargin.setValue("No margin");
-        comboMargin.setOnAction(_ -> updatePdfAndPreview());
-
-        comboOrientation.getItems().addAll("Portrait", "Landscape");
-        comboOrientation.setValue("Portrait");
-        comboOrientation.setOnAction(_ -> updatePdfAndPreview());
-
-        comboPageSize.getItems().addAll("A4 297x210 mm", "US Letter 215x279,4 mm", "Fix (image size)");
-        comboPageSize.setValue("Fix (image size)");
-        comboPageSize.setOnAction(_ -> updatePdfAndPreview());
-    }
-
-    private void updatePdfAndPreview() {
-        if (imageProperties.getImage() != null) {
-            loadFile(imageProperties.getImage());
-        }
+        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     @Override
@@ -95,12 +69,12 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -108,7 +82,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg"),
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
         ).ifPresent(this::loadFile);
     }
@@ -119,8 +93,8 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     }
 
     @FXML
-    public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties)) {
+    public void submitNegativeAndDownload() {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
             return;
         }
 
@@ -132,15 +106,12 @@ public class ConverterImageToPdfController extends AbstractMediaController {
                 File outputFile = Util.createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
-                        "pdf"
+                        imageProperties.getTypeImage()
                 );
 
                 updateProgress(50, 100);
 
-                if (currentDoc != null) {
-                    currentDoc.save(outputFile);
-                }
-
+                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
                 updateProgress(100, 100);
 
                 return outputFile;
@@ -151,19 +122,6 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         labelSuccess.setManaged(true);
     }
 
-    private void updatePreview() {
-        if (currentDoc != null) {
-            try {
-                PDFRenderer renderer = new PDFRenderer(currentDoc);
-                BufferedImage bim = renderer.renderImageWithDPI(0, 72);
-                imageViewPdf.setImage(SwingFXUtils.toFXImage(bim, null));
-                labelPreviewPlaceholder.setVisible(false);
-            } catch (IOException e) {
-                ErrorLogger.error("Error rendering PDF preview: " + e.getMessage());
-            }
-        }
-    }
-
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
@@ -171,10 +129,10 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Conversion to PDF successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Image negative successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Negative image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
     }
@@ -192,33 +150,12 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPdf, progressBar, true
+                dropZone, imageViewPreview, progressBar, true
         );
         Util.reset(imageProperties, ctx, "Selected image file: none");
-
+        originalBufferedImage = null;
+        currentBufferedImage = null;
         disableControls();
-
-        closeCurrentDoc();
-        if (imageViewPdf != null) {
-            imageViewPdf.setImage(null);
-        }
-
-         labelPreviewPlaceholder.setVisible(true);
-
-         comboMargin.setValue("No margin");
-         comboOrientation.setValue("Portrait");
-         comboPageSize.setValue("Fix (image size)");
-    }
-
-    private void closeCurrentDoc() {
-        if (currentDoc != null) {
-            try {
-                currentDoc.close();
-            } catch (IOException e) {
-                ErrorLogger.error("Error closing PDF document: " + e.getMessage());
-            }
-            currentDoc = null;
-        }
     }
 
     @FXML
@@ -226,44 +163,59 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Image to PDF",
+                "Negative Image",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
-                        2. Choose Margin, Orientation and Page Size.
-                        3. Click 'Submit and Download' to save the PDF.
+                        2. (Optional) Choose a directory for saving the output.
+                        3. Click 'Negative and Download' to apply the effect.
+                        
+                        This tool creates a negative version of your image.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
 
+    private void updatePreview() {
+        if (originalBufferedImage == null) {
+            return;
+        }
+
+        ImagePreprocessing.toNegative(imageProperties.getImage()).ifPresent(negative -> {
+            currentBufferedImage = negative;
+            setPreview(currentBufferedImage);
+        });
+    }
+
     private void loadFile(File selectedFile) {
         enableControls();
-
-        closeCurrentDoc();
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFileName.setText("Select image: " + selectedFile.getName());
+
+        if (imageViewPreview != null) {
+            try {
+                originalBufferedImage = javax.imageio.ImageIO.read(selectedFile);
+                updatePreview();
+                if (currentBufferedImage != null) {
+                    labelPreviewPlaceholder.setVisible(false);
+                }
+            } catch (Exception e) {
+                ErrorLogger.error("Failed to load preview: " + e.getMessage());
+            }
+        }
+
         textDragZone.setText("Selected: " + selectedFile.getName());
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
+    }
 
-        Util.bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
-
-        String pageSize = comboPageSize.getValue();
-        
-        String marginVal =  comboMargin.getValue().toLowerCase();
-        String orientationVal = comboOrientation.getValue().toLowerCase();
-        String pageSizeVal = "fix";
-        if (pageSize.contains("A4")) pageSizeVal = "a4";
-        else if (pageSize.contains("US Letter")) pageSizeVal = "us letter";
-
-        ConverterPdfHelper helper = new ConverterPdfHelper();
-        helper.getDocumentFromImage(imageProperties.getPathToImage(), marginVal, pageSizeVal, orientationVal).ifPresent(doc -> {
-            currentDoc = doc;
-            updatePreview();
-        });
+    private void setPreview(BufferedImage bi) {
+        if (bi != null && imageViewPreview != null) {
+            Image image = javafx.embed.swing.SwingFXUtils.toFXImage(bi, null);
+            imageViewPreview.setImage(image);
+        }
     }
 }

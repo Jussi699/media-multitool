@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.ComboBox?>
+
+<?import javafx.scene.control.Tooltip?>
+<StackPane xmlns="http://javafx.com/javafx/17.0.12"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.converters.ConverterVideoController">
+    <VBox alignment="TOP_CENTER"
+          maxWidth="Infinity"
+          maxHeight="Infinity"
+          spacing="14.0"
+          style="-fx-background-color: #4b4b4b;">
+
+        <Label alignment="CENTER"
+               text="Video Converter"
+               styleClass="main-label-name-page">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onSelectVideoPressed" prefWidth="180.0" text="Select video file" />
+
+            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onSelectOutputDirectoryPressed" prefWidth="180.0" text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="10.0">
+            <HBox alignment="CENTER" spacing="16.0">
+                <ToggleButton fx:id="btnToMP4"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              text="to MP4" styleClass="btn-to-video-format"/>
+
+                <ToggleButton fx:id="btnToAVI"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              text="to AVI" styleClass="btn-to-video-format"/>
+
+                <ToggleButton fx:id="btnToMKV"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              text="to MKV" styleClass="btn-to-video-format"/>
+
+                <ToggleButton fx:id="btnToWEBM"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              text="to WEBM" styleClass="btn-to-video-format"/>
+            </HBox>
+            <HBox alignment="CENTER" spacing="16.0">
+                <ToggleButton fx:id="btnToMOV"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              styleClass="btn-to-video-format"
+                              text="to MOV"/>
+
+                <ToggleButton fx:id="btnToFLV"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              styleClass="btn-to-video-format"
+                              text="to FLV"/>
+
+                <ToggleButton fx:id="btnToWMV"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              styleClass="btn-to-video-format"
+                              text="to WMV"/>
+
+                <ToggleButton fx:id="btnTo3GP"
+                              mnemonicParsing="false"
+                              onAction="#onActionClickToggleBtnFormat"
+                              styleClass="btn-to-video-format"
+                              text="to 3GP"/>
+            </HBox>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="12.0">
+            <HBox alignment="CENTER" spacing="16.0">
+                <ComboBox fx:id="comboBoxChoiceBitRate"
+                          onAction="#onChoiceParameters"
+                          prefWidth="150.0" />
+
+                <ComboBox fx:id="comboBoxChoiceChannels"
+                          onAction="#onChoiceParameters"
+                          prefWidth="140.0" />
+
+                <ComboBox fx:id="comboBoxChoiceSamplingRate"
+                          onAction="#onChoiceParameters"
+                          prefWidth="140.0" />
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="16.0">
+                <ComboBox fx:id="comboBoxChoiceFPS"
+                          onAction="#onChoiceParameters"
+                          prefWidth="140.0" />
+
+
+                <ComboBox fx:id="comboBoxChoiceResolution"
+                          onAction="#onChoiceResolution"
+                          prefWidth="140.0" />
+
+                <CheckBox fx:id="checkBoxGPU"
+                          onAction="#onGPUSelected"
+                          prefWidth="150.0"
+                          text="GPU Acceleration"
+                          textFill="WHITE"
+                          style="-fx-font-size: 14px;" >
+                    <tooltip>
+                        <Tooltip text="Use NVENC (NVIDIA GPU) if available (may significantly speed up encoding)." />
+                    </tooltip>
+                </CheckBox>
+            </HBox>
+        </VBox>
+
+        <HBox alignment="CENTER" spacing="16.0">
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+            <Button fx:id="btnSubmitAndDownload"
+                    mnemonicParsing="false"
+                    onAction="#onStartConversionPressed"
+                    prefWidth="220.0" text="Convert and Download" />
+
+            <Button fx:id="btnCancelConversion"
+                    mnemonicParsing="false"
+                    onAction="#onCancelConversion"
+                    prefWidth="220.0" text="Cancel Conversion" />
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="10.0">
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="460.0"
+                         minHeight="20.0"
+                         progress="0.0"/>
+
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   visible="false"
+                   text="Convert has been success!" />
+        </VBox>
+
+        <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+            <StackPane fx:id="dropZone" styleClass="drop-zone-solo" HBox.hgrow="ALWAYS">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+            </StackPane>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="6.0">
+            <Label fx:id="labelSelectFile" styleClass="labelSelect"
+                   text="Selected file: none" />
+
+            <Button fx:id="btnReset" styleClass="btn-reset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    text="Reset"/>
+        </VBox>
+
+        <padding>
+            <Insets top="8.0" left="16.0" right="16.0" bottom="16.0"/>
+        </padding>
+    </VBox>
+
+    <Button text="?"
+            onAction="#showInfo"
+            styleClass="info-button"
+            StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets top="10.0" left="10.0"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

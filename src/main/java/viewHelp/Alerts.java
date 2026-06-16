@@ -1,5 +1,8 @@
 package viewHelp;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
@@ -11,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.logger.ErrorLogger;
 
 public class Alerts {
@@ -31,13 +35,16 @@ public class Alerts {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
 
-        Label messageLabel = new Label("Read files: ∞ / ∞");
+        Label messageLabel = new Label("Files is loading: ");
         ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(320);
         progressBar.progressProperty().bind(task.progressProperty());
 
+        Timeline timeline = getTimeline(messageLabel);
+
         task.messageProperty().addListener((_, _, message) -> {
             if (message != null && !message.isEmpty()) {
+                timeline.stop();
                 Platform.runLater(() -> messageLabel.setText(message));
             }
         });
@@ -57,9 +64,27 @@ public class Alerts {
             if (newState == Worker.State.SUCCEEDED
                     || newState == Worker.State.FAILED
                     || newState == Worker.State.CANCELLED) {
+                timeline.stop();
                 Platform.runLater(alert::close);
             }
         });
+    }
+
+    private static Timeline getTimeline(Label messageLabel) {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(500), _ -> {
+            String currentText = messageLabel.getText();
+            String text = "Files is loading: ";
+            if (currentText.equals(text + ".")) {
+                messageLabel.setText(text + "..");
+            } else if (currentText.equals(text + "..")) {
+                messageLabel.setText(text + "...");
+            } else {
+                messageLabel.setText(text + ".");
+            }
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+        return timeline;
     }
 
     private static void applyDialogStyles(Alert alert, Alert.AlertType type) {

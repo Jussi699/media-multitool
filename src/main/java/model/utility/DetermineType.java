@@ -47,15 +47,16 @@ public class DetermineType {
             if (type != null && type.contains("/")) {
                 String format = type.split("/")[1].toLowerCase();
                 return switch (format) {
-                    case "svg+xml" -> Optional.of("svg");
+                    case "svg+xml"                      -> Optional.of("svg");
+                    case "quicktime"                    -> Optional.of("mov");
+                    case "x-msvideo", "avi"             -> Optional.of("avi");
+                    case "webm"                         -> Optional.of("webm");
+                    case "x-matroska", "matroska"       -> Optional.of("mkv");
+                    case "x-flv", "flv"                 -> Optional.of("flv");
+                    case "x-ms-wmv", "wmv"              -> Optional.of("wmv");
+                    case "3gpp", "3gpp2"                -> Optional.of("3gp");
+                    case "jpg", "jpeg"                  -> Optional.of("jpg");
                     case "x-icon", "vnd.microsoft.icon" -> Optional.of("ico");
-                    case "quicktime" -> Optional.of("mov");
-                    case "x-msvideo", "avi" -> Optional.of("avi");
-                    case "webm" -> Optional.of("webm");
-                    case "x-matroska", "matroska" -> Optional.of("mkv");
-                    case "x-flv", "flv" -> Optional.of("flv");
-                    case "x-ms-wmv", "wmv" -> Optional.of("wmv");
-                    case "3gpp", "3gpp2" -> Optional.of("3gp");
                     default -> Optional.of(format);
                 };
             }

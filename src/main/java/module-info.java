@@ -1,6 +1,7 @@
 module media_multitool {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.media;
 
     requires java.desktop;
     requires image4j;
@@ -13,7 +14,9 @@ module media_multitool {
     requires colorpicker;
     requires jaudiotagger;
     requires java.logging;
-    requires org.bytedeco.opencv;
+    requires javafx.web;
+    requires org.apache.pdfbox;
+    requires static lombok;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;
@@ -22,8 +25,19 @@ module media_multitool {
     exports media_multitool;
     exports model.utility;
     exports model.properties;
+    exports model.select;
+    exports model.preprocessing;
     exports viewHelp;
+    exports model.enums;
     exports viewHelp.audioEditor;
     exports app;
     opens app to javafx.fxml;
+    exports media_multitool.imageTools;
+    opens media_multitool.imageTools to javafx.fxml;
+    exports media_multitool.converters;
+    opens media_multitool.converters to javafx.fxml;
+    exports media_multitool.compressors;
+    opens media_multitool.compressors to javafx.fxml;
+    exports media_multitool.editors;
+    opens media_multitool.editors to javafx.fxml;
 }

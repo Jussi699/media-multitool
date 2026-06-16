@@ -2,6 +2,7 @@ package viewHelp.audioEditor;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -9,7 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import model.utility.DetailsAudioFile;
-import model.worker.TableViewWorker;
+import model.helper.TableViewHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,7 @@ public class SetupScrollPane {
         if (viewportHeight <= 0 || tableView.getItems().isEmpty()) {
             return false;
         }
-        double contentHeight = TableViewWorker.getTableHeaderHeight(tableView) + tableView.getItems().size() * tableView.getFixedCellSize();
+        double contentHeight = TableViewHelper.getTableHeaderHeight(tableView) + tableView.getItems().size() * tableView.getFixedCellSize();
         return contentHeight > viewportHeight + 0.5;
     }
 
@@ -90,11 +91,12 @@ public class SetupScrollPane {
     public static void configureTableHorizontalScroll(
             ScrollPane scrollPane,
             TableView<DetailsAudioFile> tableView,
+            ObservableList<DetailsAudioFile> modifiableList,
             List<TableColumn<DetailsAudioFile, ?>> columns,
             ScrollBar externalBar,
             ScrollBar[] internalBarRef) {
 
-        tableView.setFixedCellSize(TableViewWorker.TABLE_ROW_HEIGHT);
+        tableView.setFixedCellSize(TableViewHelper.TABLE_ROW_HEIGHT);
 
         Runnable updateTableWidth = () -> {
             double totalWidth = columns.stream().mapToDouble(TableColumnBase::getWidth).sum();
@@ -109,8 +111,8 @@ public class SetupScrollPane {
         scrollPane.viewportBoundsProperty().addListener((_, _, bounds) -> {
             tableView.setPrefHeight(bounds.getHeight());
             tableView.setMinHeight(bounds.getHeight());
-            if (!hasRealTableData(tableView)) {
-                fillPlaceholderRows(tableView, bounds.getHeight());
+            if (!hasRealTableData(modifiableList)) {
+                fillPlaceholderRows(tableView, modifiableList, bounds.getHeight());
             }
         });
 
@@ -120,8 +122,8 @@ public class SetupScrollPane {
         Platform.runLater(() -> {
             updateTableWidth.run();
             setupHorizontalDragScroll(scrollPane);
-            if (!hasRealTableData(tableView)) {
-                fillPlaceholderRows(tableView, scrollPane.getViewportBounds().getHeight());
+            if (!hasRealTableData(modifiableList)) {
+                fillPlaceholderRows(tableView, modifiableList, scrollPane.getViewportBounds().getHeight());
             }
         });
     }
@@ -173,26 +175,57 @@ public class SetupScrollPane {
             Platform.runLater(() -> updateVerticalScrollBarVisibility(tableView, scrollPane, externalBar));
         });
 
+        onSkinOrItemsChange(tableView, sync);
+    }
+
+    private static void onSkinOrItemsChange(TableView<?> tableView, Runnable sync) {
+        InvalidationListener onItemsChange = _ -> Platform.runLater(sync);
+
         tableView.skinProperty().addListener((_, _, newSkin) -> {
             if (newSkin != null) {
                 Platform.runLater(sync);
             }
         });
-        InvalidationListener onItemsChange = _ -> Platform.runLater(sync);
-        tableView.getItems().addListener(onItemsChange);
+
+        tableView.itemsProperty().addListener((_, oldItems, newItems) -> {
+            if (oldItems != null) {
+                oldItems.removeListener(onItemsChange);
+            }
+            if (newItems != null) {
+                newItems.addListener(onItemsChange);
+            }
+            Platform.runLater(sync);
+        });
+
+        if (tableView.getItems() != null) {
+            tableView.getItems().addListener(onItemsChange);
+        }
+
         Platform.runLater(sync);
     }
 
-    public static boolean hasRealTableData(TableView<DetailsAudioFile> tableView) {
-        return tableView.getItems().stream().anyMatch(Objects::nonNull);
+    public static boolean hasRealTableData(List<?> list) {
+        return list != null && list.stream().anyMatch(Objects::nonNull);
     }
 
-    public static void fillPlaceholderRows(TableView<DetailsAudioFile> tableView, double viewportHeight) {
-        int rowCount = Math.max(1, TableViewWorker.getVisibleRowCount(tableView, viewportHeight));
-        if (tableView.getItems().size() == rowCount && tableView.getItems().stream().allMatch(Objects::isNull)) {
-            return;
+    public static void fillPlaceholderRows(TableView<DetailsAudioFile> tableView, ObservableList<DetailsAudioFile> modifiableList, double viewportHeight) {
+        tableView.setPlaceholder(new Label(""));
+
+        int rowCount = Math.max(1, TableViewHelper.getVisibleRowCount(tableView, viewportHeight));
+        
+        long visibleRealCount = tableView.getItems().stream()
+                .filter(Objects::nonNull)
+                .count();
+
+        int neededNulls = Math.max(0, rowCount - (int) visibleRealCount);
+
+        while (!modifiableList.isEmpty() && modifiableList.getLast() == null) {
+            modifiableList.removeLast();
         }
-        tableView.getItems().setAll(Collections.nCopies(rowCount, null));
+        
+        if (neededNulls > 0) {
+            modifiableList.addAll(Collections.nCopies(neededNulls, null));
+        }
     }
 
     public static void hideTableViewHorizontalScrollBar(TableView<?> tableView) {
@@ -207,13 +240,6 @@ public class SetupScrollPane {
             }
         };
 
-        tableView.skinProperty().addListener((_, _, newSkin) -> {
-            if (newSkin != null) {
-                Platform.runLater(hide);
-            }
-        });
-        InvalidationListener onItemsChange = _ -> Platform.runLater(hide);
-        tableView.getItems().addListener(onItemsChange);
-        Platform.runLater(hide);
+        onSkinOrItemsChange(tableView, hide);
     }
 }

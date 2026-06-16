@@ -2,14 +2,12 @@ package media_multitool;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import lombok.Setter;
 import viewHelp.Alerts;
 
 public class HomeViewController {
+    @Setter
     private ViewController mainController;
-
-    public void setMainController(ViewController mainController) {
-        this.mainController = mainController;
-    }
 
     @FXML
     private void onOpenImageConverterPressed() {
@@ -40,6 +38,13 @@ public class HomeViewController {
     }
 
     @FXML
+    private void onOpenEditorAudioTagPressed() {
+        if (mainController != null) {
+            mainController.showEditorAudioTagPage();
+        }
+    }
+
+    @FXML
     private void onOpenImageCompressorPressed() {
         if (mainController != null) {
             mainController.showCompressorImagePage();
@@ -53,13 +58,6 @@ public class HomeViewController {
         }
     }
 
-    public void onOpenEditorAudioPressed() {
-        if (mainController != null) {
-            mainController.showEditorAudioPage();
-        }
-    }
-
-
     @FXML
     private void showInfo() {
         Alerts.alertDialog(
@@ -70,51 +68,66 @@ public class HomeViewController {
         );
     }
 
-    public void onOpenNegativeImagePressed() {
+    @FXML
+    private void onOpenNegativeImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(1);
         }
     }
 
-    public void onOpenTurnImagePressed() {
+    @FXML
+    private void onOpenTurnImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(2);
         }
     }
 
-    public void onOpenLightenImagePressed() {
+    @FXML
+    private void onOpenLightenImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(3);
         }
     }
 
-    public void onOpenDarkenImagePressed() {
+    @FXML
+    private void onOpenDarkenImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(4);
         }
     }
 
-    public void onOpenColorizeImagePressed() {
+    @FXML
+    private void onOpenColorizeImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(5);
         }
     }
 
-    public void onOpenBlackAndWhiteImagePressed() {
+    @FXML
+    private void onOpenBlackAndWhiteImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(6);
         }
     }
 
-    public void onOpenBlurImagePressed() {
+    @FXML
+    private void onOpenBlurImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(7);
         }
     }
 
-    public void onOpenFindPixelPressed() {
+    @FXML
+    private void onOpenFindPixelPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(8);
+        }
+    }
+
+    @FXML
+    private void onOpenImageToPdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionPdf(21);
         }
     }
 }

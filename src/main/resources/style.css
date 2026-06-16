@@ -339,8 +339,6 @@
 
 #tableScrollPane {
     -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-border-color: WHITE;
     -fx-border-width: 2px;
 }
 
@@ -543,4 +541,46 @@
     -fx-pref-height: 150px !important;
 
     -fx-max-width: 400px !important;
+}
+
+.drop-zone-crop {
+    -fx-background-color: #555555;
+    -fx-background-radius: 10px;
+
+    -fx-border-style: dashed !important;
+    -fx-border-color: white !important;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+
+    -fx-max-height: 120px;
+    -fx-min-height: 120px;
+    -fx-pref-height: 120px !important;
+
+    -fx-max-width: 400px !important;
+}
+
+.btn-aspect-ration {
+    -fx-pref-width: 60px;
+}
+
+.label-pdf-h {
+    -fx-text-fill: WHITE;
+    -fx-text-alignment: CENTER;
+    -fx-font-size: 12px;
+}
+
+#comboPageSize .list-view {
+    -fx-pref-width: 160px;
+}
+
+#comboOrientation .list-view {
+    -fx-pref-width: 120px !important;
+    -fx-min-width: 120px !important;
+    -fx-max-width: 120px !important;
+}
+
+#comboMargin .list-view {
+    -fx-pref-width: 120px !important;
+    -fx-min-width: 120px !important;
+    -fx-max-width: 120px !important;
 }

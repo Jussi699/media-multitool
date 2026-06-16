@@ -2,6 +2,8 @@ package model.converterVideo;
 
 import model.compressorVideo.Compressor;
 import model.compressorVideo.VideoPresets;
+import model.enums.TypeMedia;
+import model.properties.VideoAndAudioProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -19,18 +21,25 @@ public class VideoOperationsTest {
     Path tempDir;
 
     @Test
-    public void testVideoConversion() throws Exception {
+    public void testVideoConversion() {
         File source = new File(PATH_TO_VIDEO);
         ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
-        
-        boolean success = converter.convert(
-                source,
-                tempDir.toFile(),
-                2000, 128, 2, 44100, 30,
-                "libx264", "aac", "mp4", "1280x720", "video",
-                _ -> {}
-        );
-        
+
+        VideoAndAudioProperties properties = new VideoAndAudioProperties();
+        properties.setSrcFile(source);
+        properties.setOutput(tempDir.toFile());
+        properties.setVideoBitRate(2000);
+        properties.setAudioBitRate(128);
+        properties.setChannel(2);
+        properties.setSamplingRate(44100);
+        properties.setFps(30);
+        properties.setVideoCodec("h264_nvenc");
+        properties.setAudioCodec("aac");
+        properties.setFfmpegFormat("mp4");
+        properties.setResolution("1280x720");
+
+        boolean success = converter.convert(properties, TypeMedia.VIDEO , _  -> {});
+
         assertTrue(success);
         File result = converter.nameFileAfter;
         assertNotNull(result);
@@ -40,15 +49,16 @@ public class VideoOperationsTest {
     @Test
     public void testVideoCompression() throws Exception {
         File source = new File(PATH_TO_VIDEO);
+        File output = new File(tempDir.toFile(), "compressed_" + UUID.randomUUID() + ".mp4");
+
         Compressor compressor = new Compressor();
         
-        File output = new File(tempDir.toFile(), "compressed_" + UUID.randomUUID() + ".mp4");
-        
+        // Get adaptive presets for the source file
         VideoPresets.Preset[] presets = VideoPresets.createAdaptivePresets(source).orElseThrow();
-        VideoPresets.Preset selected = presets[0];
+        VideoPresets.Preset selectedPreset = presets[0]; // Use Basic preset
         
-        compressor.compress(source, output, selected.video(), selected.audio(), _ -> {});
-        
+        compressor.compress(source, output, selectedPreset.video(), selectedPreset.audio(), _ -> {});
+
         assertTrue(output.exists());
         assertTrue(output.length() > 0);
     }

@@ -4,6 +4,7 @@ import javafx.animation.PauseTransition;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Control;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -130,10 +131,8 @@ public class Util {
         String normalizedExtension = extension.toLowerCase(Locale.ROOT);
         String shortId = UUID.randomUUID().toString().split("-")[0];
         String fileName = getBaseName(image.getName())
-                + "_"
-                + shortId
-                + "."
-                + normalizedExtension;
+                + "_" + shortId
+                + "." + normalizedExtension;
 
         return new File(pathForSave, fileName);
     }
@@ -164,15 +163,23 @@ public class Util {
 
 
     public static void resetDropZone(Label textDragZone, StackPane dropZone) {
-        if (textDragZone != null) {
-            textDragZone.setText("Drag files here");
-        }
-        if (dropZone != null && dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().remove("drop-zone-filled");
-        }
+        textDragZone.setText("Drag files here");
+
+        dropZone.getStyleClass().removeAll(java.util.Collections.singleton("drop-zone-filled"));
     }
 
     private static String nullToEmpty(String value) {
         return value != null ? value : "";
+    }
+
+    public static void bindingImageViewToPreviewContainer(ImageView imageViewPreview, StackPane previewContainer) {
+        if(imageViewPreview != null && previewContainer != null) {
+            if (!imageViewPreview.fitWidthProperty().isBound()) {
+                imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+            }
+            if (!imageViewPreview.fitHeightProperty().isBound()) {
+                imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+            }
+        }
     }
 }
