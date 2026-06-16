@@ -74,7 +74,7 @@ public class CropImageController extends AbstractMediaController {
         cropHelper = new CropHelper(cropOverlay, imageViewPreview, cropRect, scrollPanePhoto, previewContainer, imageScaleSlider);
 
         isPressedReset();
-        setupDragAndDrop(dropZone, textDragZone, Global.getAllSupportedImageFormats(), this::loadFile);
+        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
     @FXML
