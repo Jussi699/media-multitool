@@ -38,7 +38,7 @@ public class CompressorImageController extends AbstractMediaController {
 
     @FXML private StackPane dropZone, previewContainer;
     @FXML private ComboBox<Item> comboBoxOutputQuality, comboBoxScaleImage;
-    @FXML private Button btnSelectPhotoFile, btnChoiceDirForSaveImage, btnSubmit;
+    @FXML private Button btnSelectImageFile, btnChoiceDirForSaveImage, btnSubmit;
     @FXML private Label textDragZone, labelSelectFile, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
@@ -89,14 +89,14 @@ public class CompressorImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectPhotoFile.setDisable(true);
+        btnSelectImageFile.setDisable(true);
         btnChoiceDirForSaveImage.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectPhotoFile.setDisable(false);
+        btnSelectImageFile.setDisable(false);
         btnChoiceDirForSaveImage.setDisable(false);
         btnReset.setDisable(false);
     }
@@ -149,7 +149,7 @@ public class CompressorImageController extends AbstractMediaController {
     @FXML
     public void ActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhotoFile.getScene().getWindow();
+        Stage stage = (Stage) btnSelectImageFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
                 "Choice image"
@@ -205,7 +205,7 @@ public class CompressorImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Image Compressor",
+                "Compressor Image",
                 """
                         How to use:
                         1. Select an image file using 'Select image'.

@@ -342,7 +342,7 @@ public class ConverterImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Image Converter",
+                "Converter Image",
                 """
                         How to use:
                         1. Select an image file using 'Select image'.

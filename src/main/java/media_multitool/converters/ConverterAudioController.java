@@ -11,7 +11,7 @@ import media_multitool.AbstractMediaController;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.converterVideo.ConvertVideoAudioTask;
 import model.enums.TypeMedia;
-import model.helper.pdfWorker.MediaHelper;
+import model.helper.MediaHelper;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
@@ -40,8 +40,10 @@ public class ConverterAudioController extends AbstractMediaController {
     @FXML private Label textDragZone, labelSelectFile;
     @FXML private ComboBox<String> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate;
     @FXML private ToggleButton btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF;
+    @FXML private CheckBox checkBoxLossyCompression;
 
     private List<Control> listControls;
+    private List<Control> listModifiableControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -50,22 +52,36 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        List<ToggleButton> listToggleBtn = List.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF);
-        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
-
-        listControls = new ArrayList<>(listToggleBtn);
-        listControls.addAll(List.of(comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, btnSubmitAndDownload, btnCancelConversion));
+        initLists();
 
         audioProperties.setOutput(getSavedPath());
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
         initComboBoxes();
+        
+        checkBoxLossyCompression.setSelected(false);
+        checkBoxLossyCompression.setDisable(true);
 
         isPressedReset();
 
         List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
         allFormats.addAll(Global.getAllSupportedVideoFormats());
         setupDragAndDrop(dropZone, allFormats, this::loadFile);
+    }
+
+    private void initLists() {
+        List<ToggleButton> listToggleBtn = new ArrayList<>(List.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF));
+        List<ComboBox<String>> listComboBox = new ArrayList<>(List.of(comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate));
+
+        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
+
+        listControls = new ArrayList<>(listToggleBtn);
+        listControls.addAll(listComboBox);
+        listControls.addAll(List.of(btnSubmitAndDownload, btnCancelConversion));
+
+        listModifiableControls = new ArrayList<>(listToggleBtn);
+        listModifiableControls.addAll(listComboBox);
+        listModifiableControls.addAll(List.of(btnSelectAudioVideoFile, btnChoiceDirForSave, checkBoxLossyCompression));
     }
 
     private void initComboBoxes() {
@@ -96,29 +112,41 @@ public class ConverterAudioController extends AbstractMediaController {
         progressBar.setProgress(0);
 
         toggleGroup.selectToggle(null);
+        
+        checkBoxLossyCompression.setSelected(false);
+        checkBoxLossyCompression.setDisable(true);
     }
 
     @Override
     protected void lockUI() {
         btnSubmitAndDownload.setDisable(true);
         btnReset.setDisable(true);
+        listModifiableControls.forEach(tb -> tb.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
+        btnSelectAudioVideoFile.setDisable(false);
         btnSubmitAndDownload.setDisable(false);
         btnReset.setDisable(false);
-
+        listModifiableControls.forEach(tb -> tb.setDisable(false));
     }
 
     @Override
     protected void disableControls() {
         if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        checkBoxLossyCompression.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        if (audioProperties.getTargetFormat() != null) {
+            boolean supportsChoice = MediaHelper.supportsCodecChoice(audioProperties.getTargetFormat());
+            checkBoxLossyCompression.setDisable(!supportsChoice);
+        } else {
+            checkBoxLossyCompression.setDisable(true);
+        }
     }
 
     @Override
@@ -256,7 +284,8 @@ public class ConverterAudioController extends AbstractMediaController {
 
         ErrorLogger.info("Final audio properties set: BR=" + finalAudioBitrate + ", CH=" + finalChannels + ", SR=" + finalSamplingRate);
 
-        audioProperties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, false));
+        boolean useLossy = checkBoxLossyCompression.isSelected();
+        audioProperties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, useLossy));
         audioProperties.setFfmpegFormat(MediaHelper.getFFmpegFormat(targetFormat));
         audioProperties.setTypeConvert(TypeMedia.AUDIO);
 
@@ -283,18 +312,30 @@ public class ConverterAudioController extends AbstractMediaController {
 
         if (!tb.isSelected()) {
             audioProperties.setTargetFormat(null);
+            checkBoxLossyCompression.setDisable(true);
             return;
         }
 
+        String selectedFormat = null;
         switch (tb.getId()) {
-            case "btnToMP3" -> selectFormat("mp3", audioProperties::setTargetFormat);
-            case "btnToAAC" -> selectFormat("aac", audioProperties::setTargetFormat);
-            case "btnToOggVorbis" -> selectFormat("ogg", audioProperties::setTargetFormat);
-            case "btnToOPUS" -> selectFormat("opus", audioProperties::setTargetFormat);
-            case "btnToFLAC" -> selectFormat("flac", audioProperties::setTargetFormat);
-            case "btnToALAC" -> selectFormat("m4a", audioProperties::setTargetFormat);
-            case "btnToWAV" -> selectFormat("wav", audioProperties::setTargetFormat);
-            case "btnToAIFF" -> selectFormat("aiff", audioProperties::setTargetFormat);
+            case "btnToMP3" -> selectedFormat = "mp3";
+            case "btnToAAC" -> selectedFormat = "aac";
+            case "btnToOggVorbis" -> selectedFormat = "ogg";
+            case "btnToOPUS" -> selectedFormat = "opus";
+            case "btnToFLAC" -> selectedFormat = "flac";
+            case "btnToALAC" -> selectedFormat = "m4a";
+            case "btnToWAV" -> selectedFormat = "wav";
+            case "btnToAIFF" -> selectedFormat = "aiff";
+        }
+
+        if (selectedFormat != null) {
+            selectFormat(selectedFormat, audioProperties::setTargetFormat);
+            
+            boolean supportsChoice = MediaHelper.supportsCodecChoice(selectedFormat);
+            checkBoxLossyCompression.setDisable(!supportsChoice);
+            if (supportsChoice) {
+                checkBoxLossyCompression.setSelected(false);
+            }
         }
     }
 
@@ -321,7 +362,7 @@ public class ConverterAudioController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Audio Converter",
+                "Converter Audio",
                 """
                         How to use:
                         1. Select an audio or video file using 'Select audio/video' or drag and drop it into the dash-bordered zone.

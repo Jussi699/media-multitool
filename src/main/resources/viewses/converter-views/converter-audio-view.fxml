@@ -15,7 +15,7 @@
 
 
         <Label styleClass="main-label-name-page"
-               text="Audio Converter">
+               text="Converter Audio">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
@@ -80,6 +80,19 @@
             <ComboBox fx:id="comboBoxChoiceBitRate" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="comboBoxMP3"/>
             <ComboBox fx:id="comboBoxChoiceChannels" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="comboBoxMP3"/>
             <ComboBox fx:id="comboBoxChoiceSamplingRate" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="comboBoxMP3" />
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="10.0">
+            <VBox.margin>
+                <Insets top="4.0"/>
+            </VBox.margin>
+            <CheckBox fx:id="checkBoxLossyCompression" 
+                      text="Use Lossy Compression (AAC)"
+                      style="-fx-text-fill: white; -fx-font-size: 13px;">
+                <tooltip>
+                    <Tooltip text="When unchecked, uses lossless codec (ALAC). Only available for M4A/MP4/MOV/MKV formats." />
+                </tooltip>
+            </CheckBox>
         </HBox>
 
         <StackPane>

@@ -60,7 +60,7 @@
                 <Insets top="2.0" />
             </VBox.margin>
 
-            <ScrollPane fx:id="scrollPanePhoto" fitToHeight="true" fitToWidth="true" pannable="true" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
+            <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" pannable="true" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
                 <StackPane fx:id="previewContainer" minHeight="200.0">
                     <ImageView fx:id="imageViewPreview" preserveRatio="true" />
                     <Pane fx:id="cropOverlay">

@@ -132,8 +132,10 @@
         <fx:include fx:id="blackAndWhitePage" source="image-tools-views/black-white-image-view.fxml"/>
         <fx:include fx:id="blurPage" source="image-tools-views/blur-image-view.fxml"/>
         <fx:include fx:id="audioEditorTagPage" source="editors-views/editor-audio-tag-view.fxml"/>
-        <fx:include fx:id="findPixelPage" source="image-tools-views/find-pixel-image-view.fxml"/>
+        <fx:include fx:id="findPixelPage" source="image-tools-views/find-color-pixel-image-view.fxml"/>
         <fx:include fx:id="cropPage" source="image-tools-views/crop-image-view.fxml"/>
         <fx:include fx:id="imageToPdfPage" source="pdf-views/converter-image-to-pdf-view.fxml"/>
+        <fx:include fx:id="pdfToImagePage" source="pdf-views/converter-pdf-to-image-view.fxml"/>
+        <fx:include fx:id="imagesToPdfPage" source="pdf-views/images-to-pdf-view.fxml"/>
     </StackPane>
 </HBox>

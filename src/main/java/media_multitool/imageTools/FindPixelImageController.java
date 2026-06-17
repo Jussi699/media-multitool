@@ -37,7 +37,7 @@ public class FindPixelImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Slider imageScaleSlider;
-    @FXML private ScrollPane scrollPanePhoto;
+    @FXML private ScrollPane scrollPaneImage;
     @FXML private BufferedImage originalBufferedImage;
 
     @FXML private StackPane dropZone, previewContainer;
@@ -63,7 +63,7 @@ public class FindPixelImageController extends AbstractMediaController {
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        zoomControlHelper = new ZoomControlHelper(scrollPanePhoto, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
+        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
         if(imageViewPreview != null) {
             imageViewPreview.setOnMouseClicked(this::handlePixelSelection);
@@ -101,7 +101,7 @@ public class FindPixelImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Find Pixel Color",
+                "Find Color Pixel",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.

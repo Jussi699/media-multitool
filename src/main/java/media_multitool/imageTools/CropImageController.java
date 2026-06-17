@@ -35,7 +35,7 @@ public class CropImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Slider imageScaleSlider;
-    @FXML private ScrollPane scrollPanePhoto;
+    @FXML private ScrollPane scrollPaneImage;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Pane cropOverlay;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
@@ -70,8 +70,8 @@ public class CropImageController extends AbstractMediaController {
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
-        zoomControlHelper = new ZoomControlHelper(scrollPanePhoto, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
-        cropHelper = new CropHelper(cropOverlay, imageViewPreview, cropRect, scrollPanePhoto, previewContainer, imageScaleSlider);
+        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
+        cropHelper = new CropHelper(cropOverlay, imageViewPreview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);

@@ -23,6 +23,7 @@ public class VideoAndAudioProperties implements MediaProperties {
     private File srcFile;
     private File pathToImage;
     private boolean useGPU;
+    private boolean losslessAudio;
     private boolean isReverb;
     private String videoCodec;
     private String audioCodec;

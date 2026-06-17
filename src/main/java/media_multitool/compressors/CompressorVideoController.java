@@ -44,7 +44,7 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML private Button btnChoiceDirForSaveFile, btnSelectFile, btnCancelConversion, btnCompress;
     @FXML private ToggleButton btnBasicCompress, btnStrongCompress, btnSuperCompress;
     @FXML private StackPane dropZone;
-    @FXML private CheckBox chkUseGPU;
+    @FXML private CheckBox chkUseGPU, chkCompressAudio;
 
     private List<Control> listControls;
 
@@ -53,7 +53,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnBasicCompress, btnStrongCompress, btnSuperCompress, chkUseGPU, btnCompress, btnCancelConversion);
+        listControls = List.of(btnBasicCompress, btnStrongCompress, btnSuperCompress, chkUseGPU, chkCompressAudio, btnCompress, btnCancelConversion);
 
         videoProperties.setOutput(getSavedPath());
 
@@ -64,6 +64,8 @@ public class CompressorVideoController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
 
         setupDragAndDrop(dropZone, Global.getAllSupportedVideoFormats(), this::loadFile);
+        
+        chkCompressAudio.setSelected(true);
         
         isPressedReset();
     }
@@ -120,6 +122,27 @@ public class CompressorVideoController extends AbstractMediaController {
         videoProperties.setUseGPU(chkUseGPU.isSelected());
     }
 
+    @FXML
+    private void onAudioCompressionSelected() {
+        // Recreate presets when audio compression setting changes
+        if (videoProperties.getSrcFile() != null && adaptivePresets != null) {
+            adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
+            
+            // Update the selected preset if one is active
+            if (selectedPreset != null) {
+                ToggleButton selected = (ToggleButton) toggleGroup.getSelectedToggle();
+                if (selected == btnBasicCompress) {
+                    selectedPreset = adaptivePresets[0];
+                } else if (selected == btnStrongCompress) {
+                    selectedPreset = adaptivePresets[1];
+                } else if (selected == btnSuperCompress) {
+                    selectedPreset = adaptivePresets[2];
+                }
+                updateEstimatedSize();
+            }
+        }
+    }
+
     private boolean checkForNull() {
         if (!(btnBasicCompress.isSelected() || btnStrongCompress.isSelected() || btnSuperCompress.isSelected())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Unselected preset option!", "Unselected preset option!",
@@ -164,6 +187,7 @@ public class CompressorVideoController extends AbstractMediaController {
         Compressor compressor = new Compressor();
         videoProperties.setUseGPU(chkUseGPU != null && chkUseGPU.isSelected());
         compressor.setUseGPU(videoProperties.isUseGPU());
+        compressor.setCompressAudio(chkCompressAudio != null && chkCompressAudio.isSelected());
         
         currentTask = new CompressVideoTask(compressor, videoProperties.getSrcFile(), videoProperties.getOutput(), selectedPreset);
         
@@ -190,6 +214,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
 
         chkUseGPU.setSelected(false);
+        chkCompressAudio.setSelected(true);
         
         disableControls();
     }
@@ -259,7 +284,7 @@ public class CompressorVideoController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Video Compressor",
+                "Compressor Video",
                 """
                         How to use:
                         1. Select a video file using 'Select video'.
@@ -283,7 +308,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
         durationMillis = 0;
 
-        adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile()).orElse(null);
+        adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
         if (adaptivePresets != null) {
             ErrorLogger.info("Adaptive presets created successfully for: " + videoProperties.getSrcFile().getName());
         } else {

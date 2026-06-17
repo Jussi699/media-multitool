@@ -30,17 +30,17 @@
             <Button mnemonicParsing="false"
                     onAction="#onOpenImageConverterPressed"
                     prefWidth="220.0"
-                    text="Image Converter" />
+                    text="Converter Image" />
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenVideoConverterPressed"
                     prefWidth="220.0"
-                    text="Video Converter" />
+                    text="Converter Image" />
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenMP3ConverterPressed"
                     prefWidth="220.0"
-                    text="Audio Converter" />
+                    text="Converter Audio" />
 
         </HBox>
 
@@ -48,34 +48,34 @@
             <Button mnemonicParsing="false"
                     onAction="#onOpenImageCompressorPressed"
                     prefWidth="220.0"
-                    text="Image Compressor" />
+                    text="Compressor image" />
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenVideoCompressorPressed"
                     prefWidth="220.0"
-                    text="Video Compressor" />
+                    text="Compressor Video" />
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenNegativeImagePressed"
                     prefWidth="220.0"
-                    text="Negative Photo" />
+                    text="Negative Image" />
         </HBox>
 
         <HBox alignment="CENTER" spacing="20.0">
         <Button mnemonicParsing="false"
                 onAction="#onOpenTurnImagePressed"
                 prefWidth="220.0"
-                text="Turn Photo" />
+                text="Turn Image" />
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenLightenImagePressed"
                     prefWidth="220.0"
-                    text="Lighten Photo" />
+                    text="Lighten Image" />
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenDarkenImagePressed"
                     prefWidth="220.0"
-                    text="Darken Photo"/>
+                    text="Darken Image"/>
 
         </HBox>
 
@@ -83,17 +83,17 @@
             <Button mnemonicParsing="false"
                     onAction="#onOpenColorizeImagePressed"
                     prefWidth="220.0"
-                    text="Colorize Photo"/>
+                    text="Colorize Image"/>
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenBlackAndWhiteImagePressed"
                     prefWidth="220.0"
-                    text="Black-White Photo"/>
+                    text="Black-White Image"/>
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenBlurImagePressed"
                     prefWidth="220.0"
-                    text="Blur Photo"/>
+                    text="Blur Image"/>
         </HBox>
 
         <HBox alignment="CENTER" spacing="20.0">
@@ -111,6 +111,18 @@
                     onAction="#onOpenImageToPdfPressed"
                     prefWidth="220.0"
                     text="Image To Pdf"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenPdfToImagePressed"
+                    prefWidth="220.0"
+                    text="Pdf To Image"/>
+
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenImagesToPdfPressed"
+                    prefWidth="220.0"
+                    text="Images To Pdf (merge)"/>
         </HBox>
 
         <Button mnemonicParsing="false"

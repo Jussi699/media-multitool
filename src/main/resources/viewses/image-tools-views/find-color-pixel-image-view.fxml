@@ -11,7 +11,7 @@
            fx:controller="media_multitool.imageTools.FindPixelImageController">
     <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" style="-fx-background-color: #4b4b4b;">
 
-        <Label text="Find Pixel"
+        <Label text="Find Color Pixel"
                styleClass="main-label-name-page">
             <VBox.margin>
                 <Insets top="8.0"/>
@@ -30,7 +30,7 @@
                 <Insets top="2.0" />
             </VBox.margin>
 
-            <ScrollPane fx:id="scrollPanePhoto" fitToHeight="true" fitToWidth="true" pannable="true" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
+            <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" pannable="true" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
                 <StackPane fx:id="previewContainer" minHeight="200.0">
                     <ImageView fx:id="imageViewPreview" preserveRatio="true" />
                     <Label fx:id="labelPreviewPlaceholder" style="-fx-font-size: 16px;" text="Preview" textFill="WHITE" />

@@ -14,8 +14,8 @@
           spacing="12.0"
           style="-fx-background-color: #4b4b4b;">
 
-        <Label  styleClass="main-label-name-page"
-                text="Black and White Image">
+        <Label styleClass="main-label-name-page"
+               text="Black-White Image">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>

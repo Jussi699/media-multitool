@@ -21,6 +21,7 @@ public class Compressor {
     private String audioCodec;
     private String ffmpegFormat;
     @Setter private boolean useGPU;
+    @Setter private boolean compressAudio = true;
     private volatile File currentTarget;
     private final Encoder encoder = new Encoder();
 
@@ -41,8 +42,16 @@ public class Compressor {
             attrs.setVideoAttributes(video);
 
             if (sourceInfo.getAudio() != null) {
-                audio.setCodec(audioCodec);
-                attrs.setAudioAttributes(audio);
+                if (compressAudio) {
+                    audio.setCodec(audioCodec);
+                    attrs.setAudioAttributes(audio);
+                } else {
+                    // Use "copy" codec to preserve original audio without re-encoding
+                    AudioAttributes copyAudio = new AudioAttributes();
+                    copyAudio.setCodec("copy");
+                    attrs.setAudioAttributes(copyAudio);
+                    ErrorLogger.info("Using copy codec for audio - preserving original audio stream.");
+                }
             } else {
                 ErrorLogger.info("Source video has no audio track. Skipping audio attributes in compressor.");
             }

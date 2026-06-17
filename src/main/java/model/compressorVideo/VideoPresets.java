@@ -15,6 +15,10 @@ public class VideoPresets {
     public record Preset(String name, VideoAttributes video, AudioAttributes audio) {}
 
     public static Optional<Preset[]> createAdaptivePresets(File srcFile) {
+        return createAdaptivePresets(srcFile, true);
+    }
+
+    public static Optional<Preset[]> createAdaptivePresets(File srcFile, boolean compressAudio) {
         Optional<MultimediaInfo> infoOpt = Util.getMetadata(srcFile);
         if (infoOpt.isEmpty()) {
             return Optional.empty();
@@ -30,7 +34,42 @@ public class VideoPresets {
         int fps = Parsers.parseFps(info);
         if (fps <= 0) fps = 30;
 
+        int samplingRate = Parsers.parseSamplingRate(info);
+        if (samplingRate <= 0) samplingRate = 48000;
+
+        int channels = Parsers.parseChannels(info);
+        if (channels <= 0) channels = 2;
+
         String resolution = Parsers.parseResolution(info).orElse("1920x1080");
+
+        // If audio compression is disabled, use original audio settings for all presets
+        if (!compressAudio) {
+            AudioAttributes originalAudio = PreparingAttributes.audioAttributes(channels, samplingRate, aBitrate, null);
+
+            Preset basic = new Preset("Basic",
+                    PreparingAttributes.videoAttributes(fps, (int) (vBitrate * 0.7), null, null, resolution),
+                    originalAudio);
+
+            String strongRes = resolution;
+            try {
+                String[] parts = resolution.split("x");
+                int w = Integer.parseInt(parts[0]) / 2;
+                int h = Integer.parseInt(parts[1]) / 2;
+                if (w % 2 != 0) w--;
+                if (h % 2 != 0) h--;
+                strongRes = w + "x" + h;
+            } catch (Exception ignored) {}
+
+            Preset strong = new Preset("Strong",
+                    PreparingAttributes.videoAttributes(Math.min(fps, 24), (int) (vBitrate * 0.3), null, null, strongRes),
+                    originalAudio);
+
+            Preset superPreset = new Preset("Super",
+                    PreparingAttributes.videoAttributes(fps, (int) (vBitrate * 0.5), null, null, resolution),
+                    originalAudio);
+
+            return Optional.of(new Preset[]{basic, strong, superPreset});
+        }
 
         // Basic: Balanced size and quality (70% video bitrate, 128k audio)
         Preset basic = new Preset("Basic",

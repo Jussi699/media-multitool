@@ -1,4 +1,4 @@
-package model.helper.pdfWorker;
+package model.helper.pdfHelper;
 
 import model.logger.ErrorLogger;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -31,7 +31,6 @@ public class ConverterPdfHelper {
 
             float scale = Math.min(printableWidth / imageWidth, printableHeight / imageHeight);
             
-            // If "fix" and no margin, we might want to just use image size
             if (pageSizeType.equals("fix") && margin == 0) {
                 scale = 1.0f;
             }
@@ -70,7 +69,7 @@ public class ConverterPdfHelper {
             case "fix":
             default:
                 rect = new PDRectangle(image.getWidth(), image.getHeight());
-                return rect; // Orientation doesn't apply to 'fix' usually, or it's already inherent
+                return rect;
         }
 
         if ("landscape".equalsIgnoreCase(orientation)) {
@@ -80,14 +79,10 @@ public class ConverterPdfHelper {
     }
 
     private float determineMargin(String marginType) {
-        switch (marginType.toLowerCase()) {
-            case "small":
-                return 20f;
-            case "big":
-                return 50f;
-            case "no margin":
-            default:
-                return 0f;
-        }
+        return switch (marginType.toLowerCase()) {
+            case "small" -> 20f;
+            case "big" -> 50f;
+            default -> 0f;
+        };
     }
 }

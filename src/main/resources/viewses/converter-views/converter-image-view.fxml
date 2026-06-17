@@ -21,7 +21,7 @@
           spacing="14.0"
           style="-fx-background-color: #4b4b4b;">
 
-        <Label text="Convert Photo"
+        <Label text="Convert Image"
                styleClass="main-label-name-page">
             <VBox.margin>
                 <Insets top="8.0"/>

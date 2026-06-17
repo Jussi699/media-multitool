@@ -15,7 +15,7 @@ public class ViewController {
 
     @FXML private StackPane audioEditorTagPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
-            negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage;
+            negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage, imagesToPdfPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -39,6 +39,8 @@ public class ViewController {
 
     /* index page pdf
        21, Image To Pdf,
+       22, Pdf To Image,
+       23, Images To Pdf (merge),
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -103,9 +105,11 @@ public class ViewController {
                 9, cropPage
         ));
 
-        stackPaneMapPdfTools.put(
-                21, imageToPdfPage
-        );
+        stackPaneMapPdfTools.putAll(Map.of(
+                21, imageToPdfPage,
+                22, pdfToImagePage,
+                23, imagesToPdfPage
+        ));
 
         comboBoxChoiceActionImage.getItems().addAll(
                 new Item(1, "Negative photo"),
@@ -120,7 +124,9 @@ public class ViewController {
         );
 
         comboBoxChoiceActionPdf.getItems().addAll(
-                new Item(21, "Image To Pdf")
+                new Item(21, "Image To Pdf"),
+                new Item(22, "Pdf To Image"),
+                new Item(23, "Image(s) To Pdf")
         );
     }
 
@@ -175,6 +181,12 @@ public class ViewController {
         currentPageFromComboBoxAction = stackPaneMapPdfTools.get(index);
         setActivePage(currentPageFromComboBoxAction, null);
         comboBoxChoiceActionImage.getSelectionModel().clearSelection();
+        
+        comboBoxChoiceActionPdf.getItems().stream()
+                .filter(item -> item.id() == index)
+                .findFirst()
+                .ifPresent(item -> comboBoxChoiceActionPdf.getSelectionModel().select(item));
+        
         comboBoxChoiceActionPdf.setStyle(getComboBoxStyle(true));
     }
 
@@ -194,6 +206,13 @@ public class ViewController {
             currentPageFromComboBoxAction = stackPaneMapImageTools.get(index);
             setActivePage(currentPageFromComboBoxAction, null);
             comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
+            
+            // Find and select the item with matching ID
+            comboBoxChoiceActionImage.getItems().stream()
+                    .filter(item -> item.id() == index)
+                    .findFirst()
+                    .ifPresent(item -> comboBoxChoiceActionImage.getSelectionModel().select(item));
+            
             comboBoxChoiceActionImage.setStyle(getComboBoxStyle(true));
     }
 
@@ -207,7 +226,7 @@ public class ViewController {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
-                audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage
+                audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage, imagesToPdfPage
         };
 
         for (StackPane page : allPages) {

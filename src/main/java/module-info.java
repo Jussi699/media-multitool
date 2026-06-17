@@ -17,6 +17,8 @@ module media_multitool {
     requires javafx.web;
     requires org.apache.pdfbox;
     requires static lombok;
+    requires ch.qos.logback.classic;
+    requires ch.qos.logback.core;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;

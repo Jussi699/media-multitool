@@ -564,7 +564,7 @@
 }
 
 .label-pdf-h {
-    -fx-text-fill: WHITE;
+    -fx-text-fill: RED;
     -fx-text-alignment: CENTER;
     -fx-font-size: 12px;
 }

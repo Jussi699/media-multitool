@@ -24,7 +24,7 @@ public class ImageOperationsTest {
     public void testConvertPngToAllFormats() throws IOException {
         String PATH_TO_PNG = "E:\\test\\srcImage\\PNG.png";
         File source = new File(PATH_TO_PNG);
-        String[] formats = {"jpg", "bmp", "webp", "ico", "svg"};
+        String[] formats = {"jpg", "bmp", "webp", "ico", "svg", "tiff", "ppm", "pgm", "pam"};
         
         for (String format : formats) {
             ImageConversionStrategy strategy = ImageStrategyFactory.getStrategy(source, format);

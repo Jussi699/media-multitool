@@ -58,7 +58,7 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML private TableColumn<DetailsAudioFile, LocalDate> colModified;
     @FXML private TableColumn<DetailsAudioFile, LocalTime> colLength;
 
-    @FXML private Button btnChangeIcon,  btnSelectPhoto, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag;
+    @FXML private Button btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane dropZone;
     @FXML private Label labelSelectImageName, textDragZone;
@@ -106,7 +106,7 @@ public class AudioTagEditorController extends AbstractMediaController {
                 "discNumber", "year", "genre", "comment", "codec", "bitrate", "frequency", "modified", "length"
         );
 
-        listBtn = List.of(btnChangeIcon,  btnSelectPhoto, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag);
+        listBtn = List.of(btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag);
 
         initTableViewAndScrollPane(allTableCol, property);
     }
@@ -173,7 +173,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "MP3 Tag Editor",
+                "Audio Tag Editor",
                 """
                         How to use:
                         1. Select an audio file using 'Select audio file' or drag and drop.
@@ -182,7 +182,7 @@ public class AudioTagEditorController extends AbstractMediaController {
                         4. (Optional) Change the icon using 'Change Icon'.
                         5. Click 'Save Tags' to apply all changes.
                         
-                        This tool allows you to edit MP3 tags and album art.
+                        This tool allows you to edit audio tags and album art.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -211,7 +211,7 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML
     public void onActionBtnSelectFile() {
         SelectFile selectAudioFile = new SelectFile();
-        Stage stage = (Stage) btnSelectPhoto.getScene().getWindow();
+        Stage stage = (Stage) btnSelectImage.getScene().getWindow();
         selectAudioFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Audio Files", Global.getSupportedAudioFormatsForFileChooser()),
                 "Choice audio"

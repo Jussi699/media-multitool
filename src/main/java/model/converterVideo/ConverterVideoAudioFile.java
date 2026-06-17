@@ -102,14 +102,19 @@ public class ConverterVideoAudioFile {
         attrs.setOutputFormat(normalizedFormat);
 
         boolean isVideo = (type == TypeMedia.VIDEO);
+        boolean hasAudio = (sourceInfo != null && sourceInfo.getAudio() != null);
+        
+        ErrorLogger.info("Creating encoding attributes - Format: " + normalizedFormat + ", IsVideo: " + isVideo + ", HasAudio: " + hasAudio);
 
-        if (sourceInfo.getAudio() != null || !isVideo) {
+        if (hasAudio || !isVideo) {
+            ErrorLogger.info("Setting up audio attributes...");
             attrs.setAudioAttributes(setupAudioAttributes(properties));
         } else {
             ErrorLogger.info("Source file has no audio track. Skipping audio attributes for video conversion.");
         }
 
         if (isVideo) {
+            ErrorLogger.info("Setting up video attributes...");
             attrs.setVideoAttributes(setupVideoAttributes(properties));
         }
         return attrs;
@@ -117,14 +122,34 @@ public class ConverterVideoAudioFile {
 
     private AudioAttributes setupAudioAttributes(VideoAndAudioProperties properties) {
         AudioAttributes audio = new AudioAttributes();
-        audio.setCodec(properties.getAudioCodec());
+        String audioCodec = properties.getAudioCodec();
+        audio.setCodec(audioCodec);
+        ErrorLogger.info("Setting audio codec: " + audioCodec);
 
         int audioBitrate = properties.getAudioBitRate();
-        if (audioBitrate > 0 && shouldSetAudioBitrate(properties.getAudioCodec())) {
+        if (audioBitrate > 0 && shouldSetAudioBitrate(audioCodec)) {
             audio.setBitRate(audioBitrate * 1000);
+            ErrorLogger.info("Setting audio bitrate: " + audioBitrate + " kbps");
+        } else {
+            ErrorLogger.info("Skipping audio bitrate (value=" + audioBitrate + ", shouldSet=" + shouldSetAudioBitrate(audioCodec) + ")");
         }
-        audio.setChannels(properties.getChannel());
-        audio.setSamplingRate(properties.getSamplingRate());
+        
+        int channels = properties.getChannel();
+        if (channels > 0) {
+            audio.setChannels(channels);
+            ErrorLogger.info("Setting audio channels: " + channels);
+        } else {
+            ErrorLogger.info("Skipping audio channels (value=" + channels + ")");
+        }
+        
+        int samplingRate = properties.getSamplingRate();
+        if (samplingRate > 0) {
+            audio.setSamplingRate(samplingRate);
+            ErrorLogger.info("Setting audio sampling rate: " + samplingRate + " Hz");
+        } else {
+            ErrorLogger.info("Skipping audio sampling rate (value=" + samplingRate + ")");
+        }
+        
         return audio;
     }
 

@@ -1,4 +1,4 @@
-package model.helper.pdfWorker;
+package model.helper;
 
 import javafx.event.ActionEvent;
 import javafx.scene.control.ToggleButton;
@@ -10,13 +10,13 @@ import java.util.Optional;
 public class MediaHelper {
     public static String getVideoCodec(String format, boolean useGPU) {
         return switch (format.toLowerCase(Locale.ROOT)) {
-            case "mp4", "m4v",
-                 "mov", "mkv",
-                 "matroska", "3gp" -> useGPU ? "h264_nvenc" : "libx264";
             case "avi"             -> useGPU ? "h264_nvenc" : "mpeg4";
             case "webm"            -> "libvpx";
             case "wmv", "asf"      -> "wmv2";
             case "flv"             -> "flv1";
+            case "mp4", "m4v",
+                 "mov", "mkv",
+                 "matroska", "3gp" -> useGPU ? "h264_nvenc" : "libx264";
             default ->  {
                 ErrorLogger.error("Unexpected value: " + format);
                 throw new IllegalArgumentException("Unexpected value: " + format);
@@ -44,22 +44,31 @@ public class MediaHelper {
         };
     }
 
+    public static boolean supportsCodecChoice(String format) {
+        return switch (format.toLowerCase(Locale.ROOT)) {
+            case "mkv", "matroska", "mp4", "m4v", "mov", "3gp", "m4a", "m4b" -> true;
+            default -> false;
+        };
+    }
+
     public static String getFFmpegFormat(String format) {
         return switch (format.toLowerCase(Locale.ROOT)) {
-            case "mp4", "m4v"      -> "mp4";
             case "mkv", "matroska" -> "matroska";
-            case "avi"             -> "avi";
-            case "webm"            -> "webm";
-            case "mov"             -> "mov";
-            case "wmv", "asf"      -> "asf";
-            case "flv"             -> "flv";
-            case "3gp"             -> "3gp";
-            case "mp3"             -> "mp3";
-            case "wav"             -> "wav";
-            case "ogg"             -> "ogg";
-            case "flac"            -> "flac";
-            case "aac"             -> "adts";
-            case "opus"            -> "opus";
+            case "avi"                -> "avi";
+            case "webm"               -> "webm";
+            case "mov"                -> "mov";
+            case "wmv", "asf"         -> "asf";
+            case "flv"                -> "flv";
+            case "3gp"                -> "3gp";
+            case "mp3"                -> "mp3";
+            case "wav"                -> "wav";
+            case "ogg"                -> "ogg";
+            case "flac"               -> "flac";
+            case "aac"                -> "adts";
+            case "opus"               -> "opus";
+            case "aiff", "aif"        -> "aiff";
+            case "mp4", "m4v",
+                 "m4a", "m4b", "alac" -> "mp4";
             default -> {
                 ErrorLogger.error("Unexpected value: " + format);
                 throw new IllegalArgumentException("Unexpected value: " + format);
@@ -72,14 +81,14 @@ public class MediaHelper {
         if (!tb.isSelected()) return Optional.empty();
 
         return switch (tb.getId()) {
-            case "btnToMP4" -> Optional.of("mp4");
-            case "btnToAVI" -> Optional.of("avi");
-            case "btnToMKV" -> Optional.of("mkv");
+            case "btnToMP4"  -> Optional.of("mp4");
+            case "btnToAVI"  -> Optional.of("avi");
+            case "btnToMKV"  -> Optional.of("mkv");
             case "btnToWEBM" -> Optional.of("webm");
-            case "btnToMOV" -> Optional.of("mov");
-            case "btnToFLV" -> Optional.of("flv");
-            case "btnToWMV" -> Optional.of("wmv");
-            case "btnTo3GP" -> Optional.of("3gp");
+            case "btnToMOV"  -> Optional.of("mov");
+            case "btnToFLV"  -> Optional.of("flv");
+            case "btnToWMV"  -> Optional.of("wmv");
+            case "btnTo3GP"  -> Optional.of("3gp");
             default -> {
                 ErrorLogger.error("Unexpected value: " + tb.getId());
                 yield Optional.empty();

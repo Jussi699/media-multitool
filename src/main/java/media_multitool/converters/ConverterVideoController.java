@@ -11,7 +11,7 @@ import media_multitool.AbstractMediaController;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.converterVideo.ConvertVideoAudioTask;
 import model.enums.TypeMedia;
-import model.helper.pdfWorker.MediaHelper;
+import model.helper.MediaHelper;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
@@ -41,7 +41,7 @@ public class ConverterVideoController extends AbstractMediaController {
     @FXML private Label labelSelectFile, textDragZone;
     @FXML private Button btnSubmitAndDownload, btnSelectFile, btnChoiceDirForSaveFile, btnCancelConversion;
     @FXML private ToggleButton btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP;
-    @FXML private ComboBox<Item> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, comboBoxChoiceFPS;
+    @FXML private ComboBox<Item> comboBoxChoiceVideoBitRate, comboBoxChoiceAudioBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, comboBoxChoiceFPS;
     @FXML private ComboBox<String> comboBoxChoiceResolution;
     @FXML private CheckBox checkBoxGPU;
     @FXML private StackPane dropZone;
@@ -67,7 +67,7 @@ public class ConverterVideoController extends AbstractMediaController {
         listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
         
         listControls = new ArrayList<>(listToggleBtn);
-        listControls.addAll(List.of(comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, 
+        listControls.addAll(List.of(comboBoxChoiceVideoBitRate, comboBoxChoiceAudioBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, 
                 comboBoxChoiceFPS, comboBoxChoiceResolution, checkBoxGPU, btnSubmitAndDownload, btnCancelConversion));
 
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
@@ -81,15 +81,23 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private void initComboBoxes() {
-        ComboBoxes.setupComboBox(comboBoxChoiceBitRate, Item::title);
+        ComboBoxes.setupComboBox(comboBoxChoiceVideoBitRate, Item::title);
+        ComboBoxes.setupComboBox(comboBoxChoiceAudioBitRate, Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceChannels, Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceSamplingRate, Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceFPS, Item::title);
 
-        comboBoxChoiceBitRate.getItems().addAll(
-                new Item(-1, "Match source"),
-                new Item(1000, "1000 kbps (SD)"), new Item(2500, "2500 kbps (720p)"),
-                new Item(5000, "5000 kbps (1080p)"), new Item(8000, "8000 kbps (High)")
+        comboBoxChoiceVideoBitRate.getItems().addAll(
+                new Item(-1, "V: Match source"),
+                new Item(1000, "V: 1000 kbps (SD)"), new Item(2500, "V: 2500 kbps (720p)"),
+                new Item(5000, "V: 5000 kbps (1080p)"), new Item(8000, "V: 8000 kbps (High)")
+        );
+
+        comboBoxChoiceAudioBitRate.getItems().addAll(
+                new Item(-1, "A: Match source"),
+                new Item(96, "A: 96 kbps"), new Item(128, "A: 128 kbps"),
+                new Item(192, "A: 192 kbps"), new Item(256, "A: 256 kbps"),
+                new Item(320, "A: 320 kbps")
         );
 
         comboBoxChoiceChannels.getItems().addAll(
@@ -125,12 +133,14 @@ public class ConverterVideoController extends AbstractMediaController {
         Util.reset(videoProperties, ctx, "Selected video file: none");
 
         videoProperties.setVideoBitRate(5000);
+        videoProperties.setAudioBitRate(192);
         videoProperties.setChannel(2);
         videoProperties.setSamplingRate(48000);
         videoProperties.setFps(30);
         videoProperties.setResolution("1920x1080");
 
-        comboBoxChoiceBitRate.setValue(new Item(5000, "5000 kbps (1080p)"));
+        comboBoxChoiceVideoBitRate.setValue(new Item(5000, "V: 5000 kbps (1080p)"));
+        comboBoxChoiceAudioBitRate.setValue(new Item(192, "A: 192 kbps"));
         comboBoxChoiceChannels.setValue(new Item(2, "2 Channels"));
         comboBoxChoiceSamplingRate.setValue(new Item(48000, "48000 Hz"));
         comboBoxChoiceFPS.setValue(new Item(30, "30 fps"));
@@ -250,9 +260,13 @@ public class ConverterVideoController extends AbstractMediaController {
 
         Item selectedItem;
         switch (comboBox.getId()) {
-            case "comboBoxChoiceBitRate" -> {
-                selectedItem = comboBoxChoiceBitRate.getValue();
+            case "comboBoxChoiceVideoBitRate" -> {
+                selectedItem = comboBoxChoiceVideoBitRate.getValue();
                 videoProperties.setVideoBitRate((selectedItem != null) ? (int) selectedItem.id() : -1);
+            }
+            case "comboBoxChoiceAudioBitRate" -> {
+                selectedItem = comboBoxChoiceAudioBitRate.getValue();
+                videoProperties.setAudioBitRate((selectedItem != null) ? (int) selectedItem.id() : -1);
             }
             case "comboBoxChoiceChannels" -> {
                 selectedItem = comboBoxChoiceChannels.getValue();
@@ -346,7 +360,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
     private void continueWithConversion(MultimediaInfo sourceInfo) {
         int finalVideoBitrate = (videoProperties.getVideoBitRate() == -1) ? parseVideoBitrate(sourceInfo) : videoProperties.getVideoBitRate();
-        int finalAudioBitrate = (videoProperties.getAudioBitRate() > 0) ? videoProperties.getAudioBitRate() : parseAudioBitrate(sourceInfo);
+        int finalAudioBitrate = (videoProperties.getAudioBitRate() == -1) ? parseAudioBitrate(sourceInfo) : videoProperties.getAudioBitRate();
         int finalChannels = (videoProperties.getChannel() == -1) ? parseChannels(sourceInfo) : videoProperties.getChannel();
         int finalSamplingRate = (videoProperties.getSamplingRate() == -1) ? parseSamplingRate(sourceInfo) : videoProperties.getSamplingRate();
         int finalFps = (videoProperties.getFps() == -1) ? parseFps(sourceInfo) : videoProperties.getFps();
@@ -385,7 +399,7 @@ public class ConverterVideoController extends AbstractMediaController {
         videoProperties.setFps(finalFps);
         videoProperties.setResolution(finalResolution);
         videoProperties.setVideoCodec(MediaHelper.getVideoCodec(format, useGPU));
-        videoProperties.setAudioCodec(MediaHelper.getAudioCodec(format, false));
+        videoProperties.setAudioCodec(MediaHelper.getAudioCodec(format, true));
         videoProperties.setFfmpegFormat(MediaHelper.getFFmpegFormat(format));
         videoProperties.setTypeConvert(TypeMedia.VIDEO);
 
@@ -413,7 +427,7 @@ public class ConverterVideoController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Video Converter",
+                "Converter Video",
                 """
                         How to use:
                         1. Select a video or audio file using 'Select audio/video' or drag and drop it into the dash-bordered zone.

@@ -10,7 +10,6 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
-import model.helper.pdfHelper.ConverterPdfHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
@@ -20,6 +19,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.util.List;
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
 
-public class ConverterImageToPdfController extends AbstractMediaController {
+public class ConverterPdfToImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @Override
@@ -41,41 +41,42 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
     
-    @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;
+    @FXML private ToggleButton btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP;
+    @FXML private ToggleButton btnToPPM, btnToPGM, btnToPAM;
 
     private PDDocument currentDoc;
     private List<Control> listControls;
+    private ToggleGroup toggleGroup;
     @FXML
     public void initialize() {
-        listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit);
+        toggleGroup = new ToggleGroup();
+        btnToPNG.setToggleGroup(toggleGroup);
+        btnToJPEG.setToggleGroup(toggleGroup);
+        btnToWEBP.setToggleGroup(toggleGroup);
+        btnToTIFF.setToggleGroup(toggleGroup);
+        btnToBMP.setToggleGroup(toggleGroup);
+        btnToPPM.setToggleGroup(toggleGroup);
+        btnToPGM.setToggleGroup(toggleGroup);
+        btnToPAM.setToggleGroup(toggleGroup);
+
+        listControls = List.of(btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, 
+                               btnToPPM, btnToPGM, btnToPAM, btnSubmit);
 
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        initComboBoxes();
-        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
+        setupDragAndDrop(dropZone, List.of("*.pdf"), this::loadFile);
 
         isPressedReset();
     }
 
-    private void initComboBoxes() {
-        comboMargin.getItems().addAll("No margin", "Small", "Big");
-        comboMargin.setValue("No margin");
-        comboMargin.setOnAction(_ -> updatePdfAndPreview());
-
-        comboOrientation.getItems().addAll("Portrait", "Landscape");
-        comboOrientation.setValue("Portrait");
-        comboOrientation.setOnAction(_ -> updatePdfAndPreview());
-
-        comboPageSize.getItems().addAll("A4 297x210 mm", "US Letter 215x279,4 mm", "Fix (image size)");
-        comboPageSize.setValue("Fix (image size)");
-        comboPageSize.setOnAction(_ -> updatePdfAndPreview());
-    }
-
-    private void updatePdfAndPreview() {
-        if (imageProperties.getImage() != null) {
-            loadFile(imageProperties.getImage());
+    @FXML
+    public void onActionClickToggleBtnFormat() {
+        ToggleButton selectedBtn = (ToggleButton) toggleGroup.getSelectedToggle();
+        if (selectedBtn != null) {
+            String format = selectedBtn.getText().replace("to ", "").toLowerCase();
+            imageProperties.setTypeImage(format);
         }
     }
 
@@ -105,17 +106,17 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
     @FXML
     public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
+        SelectFile selectPdfFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg"),
-                "Choice image"
+        selectPdfFile.choiceFile(stage,
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
+                "Choice PDF file"
         ).ifPresent(this::loadFile);
     }
 
     @FXML
     public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save images");
     }
 
     @FXML
@@ -124,22 +125,43 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             return;
         }
 
+        if (imageProperties.getTypeImage() == null || imageProperties.getTypeImage().isEmpty()) {
+            Platform.runLater(() -> {
+                showErrorMessage(labelSuccess, "Please select output format", imageProperties.getHideSuccessMessageTimer());
+                labelSuccess.setManaged(true);
+            });
+            return;
+        }
+
         Task<File> task = new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
+                if (currentDoc == null) {
+                    throw new IOException("PDF document not loaded");
+                }
+
+                PDFRenderer renderer = new PDFRenderer(currentDoc);
+
+                updateProgress(30, 100);
+
+                BufferedImage image = renderer.renderImageWithDPI(0, 300);
+
+                updateProgress(60, 100);
+
                 File outputFile = Util.createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
-                        "pdf"
+                        imageProperties.getTypeImage()
                 );
 
-                updateProgress(50, 100);
-
-                if (currentDoc != null) {
-                    currentDoc.save(outputFile);
+                String format = imageProperties.getTypeImage().toUpperCase();
+                if (format.equals("JPEG") || format.equals("JPG")) {
+                    format = "jpg";
                 }
+
+                ImageIO.write(image, format, outputFile);
 
                 updateProgress(100, 100);
 
@@ -171,10 +193,10 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Conversion to PDF successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Conversion to image successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Image saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
     }
@@ -194,7 +216,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        Util.reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
 
@@ -203,11 +225,10 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             imageViewPdf.setImage(null);
         }
 
-         labelPreviewPlaceholder.setVisible(true);
+        labelPreviewPlaceholder.setVisible(true);
 
-         comboMargin.setValue("No margin");
-         comboOrientation.setValue("Portrait");
-         comboPageSize.setValue("Fix (image size)");
+        toggleGroup.selectToggle(null);
+        imageProperties.setTypeImage(null);
     }
 
     private void closeCurrentDoc() {
@@ -226,12 +247,14 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Image to PDF",
+                "PDF to Image",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. Choose Margin, Orientation and Page Size.
-                        3. Click 'Submit and Download' to save the PDF.
+                        1. Select a PDF file using 'Select PDF file' or drag and drop.
+                        2. Choose output format (PNG, JPEG, WEBP, TIFF, BMP, PPM, PGM, PAM).
+                        3. Click 'Convert and Download' to save the image.
+                        
+                        Note: Only the first page of the PDF will be converted.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -242,8 +265,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
         closeCurrentDoc();
         imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectFileName.setText("Select image: " + selectedFile.getName());
+        labelSelectFileName.setText("Selected PDF: " + selectedFile.getName());
         textDragZone.setText("Selected: " + selectedFile.getName());
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
@@ -252,18 +274,15 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
         Util.bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
 
-        String pageSize = comboPageSize.getValue();
-        
-        String marginVal =  comboMargin.getValue().toLowerCase();
-        String orientationVal = comboOrientation.getValue().toLowerCase();
-        String pageSizeVal = "fix";
-        if (pageSize.contains("A4")) pageSizeVal = "a4";
-        else if (pageSize.contains("US Letter")) pageSizeVal = "us letter";
-
-        ConverterPdfHelper helper = new ConverterPdfHelper();
-        helper.getDocumentFromImage(imageProperties.getPathToImage(), marginVal, pageSizeVal, orientationVal).ifPresent(doc -> {
-            currentDoc = doc;
+        try {
+            currentDoc = org.apache.pdfbox.Loader.loadPDF(selectedFile);
             updatePreview();
-        });
+        } catch (IOException e) {
+            ErrorLogger.error("Error loading PDF: " + e.getMessage());
+            Platform.runLater(() -> {
+                showErrorMessage(labelSuccess, "Error loading PDF: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
+                labelSuccess.setManaged(true);
+            });
+        }
     }
 }

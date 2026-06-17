@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="media_multitool.converters.ConverterImagesToPdfController">
+    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" style="-fx-background-color: #4b4b4b;">
+
+        <Label styleClass="main-label-name-page" text="Images To PDF">
+            <VBox.margin>
+                <Insets top="8.0" />
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectFiles" mnemonicParsing="false" onAction="#onActionBtnSelectFiles" prefWidth="180.0" text="Select images" />
+
+            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onActionChoiceDirForSaveFile" prefWidth="180.0" text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="10.0" style="-fx-padding: 5; -fx-background-color: transparent; ">
+            <HBox alignment="CENTER" spacing="15.0">
+                <VBox alignment="TOP_CENTER" spacing="5.0">
+                    <Label text="Margin:" styleClass="label-pdf-h" />
+                    <ComboBox fx:id="comboMargin" prefWidth="120.0" />
+                </VBox>
+                <VBox alignment="TOP_CENTER" spacing="5.0">
+                    <Label text="Orientation:" styleClass="label-pdf-h"/>
+                    <ComboBox fx:id="comboOrientation" prefWidth="120.0" />
+                </VBox>
+                <VBox alignment="TOP_CENTER" spacing="5.0">
+                    <Label text="Page Size:" styleClass="label-pdf-h"/>
+                    <ComboBox fx:id="comboPageSize" prefWidth="160.0" />
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Conversion status: success" visible="false" />
+            <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0" visible="false" managed="false" />
+            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Submit and Download" />
+        </VBox>
+
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="CENTER">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+            
+            <Label text="Images preview (drag to reorder):" styleClass="label-pdf-h"/>
+            
+            <ScrollPane fx:id="scrollPanePreview" fitToWidth="true" VBox.vgrow="ALWAYS" 
+                        style="-fx-background: #3a3a3a; -fx-background-color: #3a3a3a; -fx-border-color: WHITE; -fx-border-radius: 5px; -fx-border-width: 2px">
+                <FlowPane fx:id="imagesFlowPane" hgap="10.0" vgap="10.0" 
+                          style="-fx-background-color: #3a3a3a; -fx-padding: 10;">
+                </FlowPane>
+            </ScrollPane>
+
+            <StackPane fx:id="dropZone" styleClass="drop-zone" minHeight="80.0">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag images here'" />
+            </StackPane>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <Label fx:id="labelSelectFileName" styleClass="labelSelect" text="Selected images: 0" />
+
+            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0" />
+        </padding>
+    </VBox>
+
+    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets left="10.0" top="10.0" />
+        </StackPane.margin>
+    </Button>
+</StackPane>
