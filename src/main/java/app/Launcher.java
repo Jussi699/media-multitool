@@ -41,6 +41,6 @@ public class Launcher {
             System.setProperty("jave.ffmpeg.executable", ffmpegPath);
         }
 
-        Application.launch(ConverterApp.class, args);
+        Application.launch(MediaMultitoolApp.class, args);
     }
 }

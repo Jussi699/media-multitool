@@ -3,6 +3,7 @@ package media_multitool.converters;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -22,8 +23,13 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
@@ -37,8 +43,9 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     }
 
     @FXML private ImageView imageViewPdf;
+    @FXML private ProgressBar progressBar;
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
+    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnAllImageToPng, btnAllImageToJpeg;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
     
     @FXML private ToggleButton btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP;
@@ -46,33 +53,38 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
     private PDDocument currentDoc;
     private List<Control> listControls;
+    List<ToggleButton> listToggleBtn;
     private ToggleGroup toggleGroup;
+    private boolean isExtract = false;
+
     @FXML
     public void initialize() {
         toggleGroup = new ToggleGroup();
-        btnToPNG.setToggleGroup(toggleGroup);
-        btnToJPEG.setToggleGroup(toggleGroup);
-        btnToWEBP.setToggleGroup(toggleGroup);
-        btnToTIFF.setToggleGroup(toggleGroup);
-        btnToBMP.setToggleGroup(toggleGroup);
-        btnToPPM.setToggleGroup(toggleGroup);
-        btnToPGM.setToggleGroup(toggleGroup);
-        btnToPAM.setToggleGroup(toggleGroup);
 
-        listControls = List.of(btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, 
-                               btnToPPM, btnToPGM, btnToPAM, btnSubmit);
+        listToggleBtn = List.of(btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM);
+
+        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
+
+        listControls = List.copyOf(listToggleBtn);
+        listControls = List.of(btnAllImageToJpeg, btnAllImageToPng, btnSubmit);
 
         imageProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setManaged(true);
+            progressBar.setProgress(0);
+        }
 
-        setupDragAndDrop(dropZone, List.of("*.pdf"), this::loadFile);
+        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
+
+        setupDragAndDrop(dropZone, List.of(".pdf"), this::loadFile);
 
         isPressedReset();
     }
 
     @FXML
-    public void onActionClickToggleBtnFormat() {
+    private void onActionClickToggleBtnFormat() {
         ToggleButton selectedBtn = (ToggleButton) toggleGroup.getSelectedToggle();
         if (selectedBtn != null) {
             String format = selectedBtn.getText().replace("to ", "").toLowerCase();
@@ -80,11 +92,33 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         }
     }
 
+    @FXML
+    private void onActionClickBtnToExtractImages(ActionEvent event) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties)) {
+            return;
+        }
+
+        Button selectedBtn = (Button) event.getSource();
+
+        switch (selectedBtn.getId()) {
+            case "btnAllImageToPng" -> imageProperties.setTypeImage("png");
+            case "btnAllImageToJpeg" -> imageProperties.setTypeImage("jpeg");
+        }
+
+        isExtract = true;
+        executeMediaTask(taskConvertAllToZip());
+        labelSuccess.setManaged(true);
+    }
+
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
         btnChoiceDirForSaveFile.setDisable(true);
         btnReset.setDisable(true);
+        btnAllImageToJpeg.setDisable(true);
+        btnAllImageToPng.setDisable(true);
+        btnSubmit.setDisable(true);
+        listToggleBtn.forEach(tb -> tb.setDisable(true));
     }
 
     @Override
@@ -92,6 +126,10 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         btnSelectFile.setDisable(false);
         btnChoiceDirForSaveFile.setDisable(false);
         btnReset.setDisable(false);
+        btnAllImageToJpeg.setDisable(false);
+        btnAllImageToPng.setDisable(false);
+        btnSubmit.setDisable(false);
+        listToggleBtn.forEach(tb -> tb.setDisable(false));
     }
 
     @Override
@@ -127,13 +165,18 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
         if (imageProperties.getTypeImage() == null || imageProperties.getTypeImage().isEmpty()) {
             Platform.runLater(() -> {
-                showErrorMessage(labelSuccess, "Please select output format", imageProperties.getHideSuccessMessageTimer());
+                showErrorMessage(labelSuccess, progressBar,"Please select output format", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
             });
             return;
         }
 
-        Task<File> task = new Task<>() {
+        executeMediaTask(taskConvert());
+        labelSuccess.setManaged(true);
+    }
+
+    private Task<File> taskConvert() {
+        return new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
@@ -168,9 +211,85 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 return outputFile;
             }
         };
+    }
 
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
+    private Task<File> taskConvertAllToZip() {
+        return new Task<>() {
+            @Override
+            protected File call() throws Exception {
+                if (currentDoc == null) {
+                    throw new IOException("PDF document not loaded");
+                }
+
+                PDFRenderer renderer = new PDFRenderer(currentDoc);
+                int totalPages = currentDoc.getNumberOfPages();
+                List<File> tempFiles = new ArrayList<>();
+
+                try {
+                    for (int i = 0; i < totalPages; i++) {
+                        updateProgress(i * 50L / totalPages, 100);
+
+                        BufferedImage image = renderer.renderImageWithDPI(i, 300);
+
+                        String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
+                        File tempFile = new File(imageProperties.getOutput(), baseName + "_page_" + (i + 1) + "." + imageProperties.getTypeImage());
+
+                        String format = imageProperties.getTypeImage().toUpperCase();
+                        if (format.equals("JPEG") || format.equals("JPG")) {
+                            format = "jpg";
+                        }
+
+                        ImageIO.write(image, format, tempFile);
+                        tempFiles.add(tempFile);
+                    }
+
+                    updateProgress(60, 100);
+
+                    String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
+                    File zipFile = new File(imageProperties.getOutput(), baseName + "_images.zip");
+
+                    try (FileOutputStream fos = new FileOutputStream(zipFile);
+                         ZipOutputStream zos = new ZipOutputStream(fos)) {
+
+                        for (int i = 0; i < tempFiles.size(); i++) {
+                            File file = tempFiles.get(i);
+                            updateProgress(60 + (i * 35L / tempFiles.size()), 100);
+
+                            try (FileInputStream fis = new FileInputStream(file)) {
+                                ZipEntry zipEntry = new ZipEntry(file.getName());
+                                zos.putNextEntry(zipEntry);
+
+                                byte[] buffer = new byte[1024];
+                                int length;
+                                while ((length = fis.read(buffer)) > 0) {
+                                    zos.write(buffer, 0, length);
+                                }
+
+                                zos.closeEntry();
+                            }
+
+                            if (file.delete()) {
+                                ErrorLogger.info("Temp files has been deleted.");
+                            }
+                        }
+                    }
+
+                    updateProgress(100, 100);
+
+                    return zipFile;
+
+                } catch (Exception e) {
+                    for (File tempFile : tempFiles) {
+                        if (tempFile.exists()) {
+                            if(tempFile.delete()) {
+                                ErrorLogger.info(tempFile.getAbsolutePath() + " has been deleted.");
+                            }
+                        }
+                    }
+                    throw e;
+                }
+            }
+        };
     }
 
     private void updatePreview() {
@@ -193,20 +312,26 @@ public class ConverterPdfToImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Conversion to image successful! Saved to: " + outputFile.getAbsolutePath());
+        
+        String message = isExtract ? "Images saved to ZIP!" : "Image saved!";
+        ErrorLogger.info("Conversion successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Image saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, message, imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
+            progressBar.setProgress(0);
         });
+        
+        isExtract = false;
     }
 
     @Override
     protected void handleTaskFailure(Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
-            showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
+            showErrorMessage(labelSuccess, progressBar,"Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
+            progressBar.setProgress(0);
         });
     }
 
@@ -220,6 +345,8 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
         disableControls();
 
+        listToggleBtn.forEach(tb -> tb.setDisable(true));
+
         closeCurrentDoc();
         if (imageViewPdf != null) {
             imageViewPdf.setImage(null);
@@ -229,6 +356,9 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
         toggleGroup.selectToggle(null);
         imageProperties.setTypeImage(null);
+
+        isExtract = false;
+
     }
 
     private void closeCurrentDoc() {
@@ -261,8 +391,6 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        enableControls();
-
         closeCurrentDoc();
         imageProperties.setImage(selectedFile);
         labelSelectFileName.setText("Selected PDF: " + selectedFile.getName());
@@ -277,10 +405,14 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         try {
             currentDoc = org.apache.pdfbox.Loader.loadPDF(selectedFile);
             updatePreview();
+            
+            enableControls();
+
+            listToggleBtn.forEach(tb -> tb.setDisable(false));
         } catch (IOException e) {
             ErrorLogger.error("Error loading PDF: " + e.getMessage());
             Platform.runLater(() -> {
-                showErrorMessage(labelSuccess, "Error loading PDF: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
+                showErrorMessage(labelSuccess, progressBar,"Error loading PDF: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
             });
         }

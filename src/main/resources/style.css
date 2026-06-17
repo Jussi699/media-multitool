@@ -88,6 +88,11 @@
     -fx-pref-width: 155px;
 }
 
+.progress-bar {
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+}
+
 .progress-bar > .track {
     -fx-background-radius: 10px;
 }
@@ -421,7 +426,7 @@
     -fx-border-radius: 10;
 
     -fx-min-height: 200px;
-    -fx-pref-height: 600px;
+    -fx-pref-height: 500px;
 }
 
 
