@@ -568,7 +568,7 @@
     -fx-pref-width: 60px;
 }
 
-.label-pdf-h {
+.label-h {
     -fx-text-fill: RED;
     -fx-text-alignment: CENTER;
     -fx-font-size: 12px;
@@ -588,4 +588,67 @@
     -fx-pref-width: 120px !important;
     -fx-min-width: 120px !important;
     -fx-max-width: 120px !important;
+}
+
+.btn-turn-show-password {
+    -fx-font-size: 24px !important;
+    -fx-pref-height: 50px;
+    -fx-pref-width: 50px;
+    -fx-max-height: 50px;
+    -fx-max-width: 50px;
+    -fx-min-height: 50px;
+    -fx-min-width: 50px;
+    -fx-background-color: #ef2b2b;
+    -fx-background-radius: 0 4 4 0;
+    -fx-border-radius: 0 4 4 0;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-alignment: center;
+}
+
+.btn-turn-show-password:hover {
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 0);
+}
+
+.btn-turn-show-password:selected:hover {
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 0);
+}
+
+.btn-turn-show-password:pressed {
+    -fx-background-color: #d81f1f;
+}
+
+.btn-turn-show-password:selected:pressed {
+    -fx-background-color: derive(#32CD32, -20%);
+}
+
+.password-field-with-button {
+    -fx-pref-height: 50px;
+    -fx-min-height: 50px;
+    -fx-max-height: 50px;
+    -fx-font-size: 14px;
+    -fx-min-width: 400px !important;
+    -fx-background-radius: 4 0 0 4;
+    -fx-border-radius: 4 0 0 4;
+}
+
+.label-parameter {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.checkbox-replace-mode {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+}
+
+.label-password-match {
+    -fx-font-size: 32px;
+    -fx-min-width: 50px;
+    -fx-max-width: 50px;
+    -fx-pref-width: 50px;
+    -fx-alignment: center;
+    -fx-padding: 0 10 0 10;
 }

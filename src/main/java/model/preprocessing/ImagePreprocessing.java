@@ -215,7 +215,6 @@ public class ImagePreprocessing {
                 int g = (argb >> 8) & 0xFF;
                 int b = argb & 0xFF;
 
-                // Normalize pixel components to 0.0-1.0
                 double normR = r / 255.0;
                 double normG = g / 255.0;
                 double normB = b / 255.0;

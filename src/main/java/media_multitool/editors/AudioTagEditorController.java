@@ -64,7 +64,8 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML private Label labelSelectImageName, textDragZone;
     @FXML private ComboBox<String> genreComboBox;
 
-    @FXML private TextField titleField, artistField, albumField, albumArtistField, composerField, trackField, discNumberField, commentField, yearField, textFieldFindFile;
+    @FXML private TextField titleField, artistField, albumField, albumArtistField, composerField, trackField,
+            discNumberField, commentField, yearField, textFieldFindFile;
 
     private File chosenDir;
     private List<TextField> textFields;
@@ -75,7 +76,8 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML
     public void initialize() {
         tableViewAudio.setItems(filteredFile);
-        textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField, trackField, discNumberField, commentField, yearField, textFieldFindFile);
+        textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField,
+                trackField, discNumberField, commentField, yearField, textFieldFindFile);
 
         initLists();
 

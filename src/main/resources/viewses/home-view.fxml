@@ -110,19 +110,32 @@
             <Button mnemonicParsing="false"
                     onAction="#onOpenImageToPdfPressed"
                     prefWidth="220.0"
-                    text="Image To Pdf"/>
+                    text="Image To PDF"/>
         </HBox>
 
         <HBox alignment="CENTER" spacing="20.0">
             <Button mnemonicParsing="false"
                     onAction="#onOpenPdfToImagePressed"
                     prefWidth="220.0"
-                    text="Pdf To Image"/>
+                    text="PDF To Image"/>
 
             <Button mnemonicParsing="false"
                     onAction="#onOpenImagesToPdfPressed"
                     prefWidth="220.0"
-                    text="Images To Pdf (merge)"/>
+                    text="Images To PDF (merge)"/>
+
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenProtectPdfPressed"
+                    prefWidth="220.0"
+                    text="Protect PDF"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="20.0">
+        <Button mnemonicParsing="false"
+                onAction="#onOpenColorReplaceInImagePressed"
+                prefWidth="220.0"
+                text="Color Replace In Image"/>
+
         </HBox>
 
         <Button mnemonicParsing="false"

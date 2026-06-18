@@ -1,4 +1,4 @@
-package model.helper;
+package model.helper.imageTools;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

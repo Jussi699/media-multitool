@@ -27,15 +27,15 @@
         <VBox alignment="CENTER" spacing="10.0" style="-fx-padding: 5; -fx-background-color: transparent; ">
             <HBox alignment="CENTER" spacing="15.0">
                 <VBox alignment="TOP_CENTER" spacing="5.0">
-                    <Label text="Margin:" styleClass="label-pdf-h" />
+                    <Label text="Margin:" styleClass="label-h" />
                     <ComboBox fx:id="comboMargin" prefWidth="120.0" />
                 </VBox>
                 <VBox alignment="TOP_CENTER" spacing="5.0">
-                    <Label text="Orientation:" styleClass="label-pdf-h"/>
+                    <Label text="Orientation:" styleClass="label-h"/>
                     <ComboBox fx:id="comboOrientation" prefWidth="120.0" />
                 </VBox>
                 <VBox alignment="TOP_CENTER" spacing="5.0">
-                    <Label text="Page Size:" styleClass="label-pdf-h"/>
+                    <Label text="Page Size:" styleClass="label-h"/>
                     <ComboBox fx:id="comboPageSize" prefWidth="160.0" />
                 </VBox>
             </HBox>

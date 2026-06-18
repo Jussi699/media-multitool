@@ -15,7 +15,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
-import model.helper.PixelHelper;
+import model.helper.imageTools.PixelHelper;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
 import model.properties.MediaProperties;

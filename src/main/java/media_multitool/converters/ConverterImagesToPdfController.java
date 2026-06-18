@@ -12,7 +12,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import media_multitool.AbstractMediaController;
-import model.helper.pdfHelper.ConvertImagesToPdfHelper;
+import model.helper.pdf.ConvertImagesToPdfHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;

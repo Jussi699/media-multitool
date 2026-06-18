@@ -1,4 +1,4 @@
-package model.helper.pdfHelper;
+package model.helper.pdf;
 
 import model.logger.ErrorLogger;
 import org.apache.pdfbox.pdmodel.PDDocument;

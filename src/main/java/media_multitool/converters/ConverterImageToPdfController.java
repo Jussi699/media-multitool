@@ -10,7 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
-import model.helper.pdfHelper.ConverterPdfHelper;
+import model.helper.pdf.ConverterPdfHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;

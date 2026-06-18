@@ -1,5 +1,6 @@
 package viewHelp.audioEditor;
 
+import app.Launcher;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
@@ -25,7 +26,7 @@ public class AudioEditor {
     }
 
     public static void loadDefaultPreview(ImageView imageViewPreview) {
-        setPreview(new Image(Objects.requireNonNull(AudioEditor.class.getResourceAsStream("/img/defaultImageMp3.png"))), imageViewPreview);
+        setPreview(new Image(Objects.requireNonNull(Launcher.class.getResourceAsStream("/img/defaultImageMp3.png"))), imageViewPreview);
     }
 
     public static void clearFields(List<TextField> textFields, ComboBox<String> comboBox) {

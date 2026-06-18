@@ -1,4 +1,4 @@
-package model.helper;
+package model.helper.imageTools;
 
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
