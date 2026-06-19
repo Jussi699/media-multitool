@@ -6,7 +6,7 @@
 <?import javafx.scene.image.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="media_multitool.converters.ProtectPdfController">
+           fx:controller="media_multitool.pdf.ProtectPdfController">
     <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" style="-fx-background-color: #4b4b4b;">
 
         <Label styleClass="main-label-name-page" text="Protect PDF">
@@ -48,9 +48,9 @@
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Conversion status" visible="false" />
+            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Protect status" visible="false" />
             <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0" />
-            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Convert and Download" />
+            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Protect and Download" />
         </VBox>
 
         <VBox spacing="10.0" VBox.vgrow="ALWAYS">
