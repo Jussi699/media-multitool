@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.helper.pdf.ConverterPdfHelper;
+import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
@@ -115,7 +116,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
     @FXML
     public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save PDF");
     }
 
     @FXML
@@ -198,7 +199,12 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
         disableControls();
 
-        closeCurrentDoc();
+        try {
+            currentDoc = PdfHelper.closeDocument(currentDoc);
+        } catch (IOException e) {
+            ErrorLogger.error("Error closing document during reset: " + e.getMessage());
+        }
+        
         if (imageViewPdf != null) {
             imageViewPdf.setImage(null);
         }
@@ -210,16 +216,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
          comboPageSize.setValue("Fix (image size)");
     }
 
-    private void closeCurrentDoc() {
-        if (currentDoc != null) {
-            try {
-                currentDoc.close();
-            } catch (IOException e) {
-                ErrorLogger.error("Error closing PDF document: " + e.getMessage());
-            }
-            currentDoc = null;
-        }
-    }
+
 
     @FXML
     private void showInfo() {
@@ -240,7 +237,12 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     private void loadFile(File selectedFile) {
         enableControls();
 
-        closeCurrentDoc();
+        try {
+            currentDoc = PdfHelper.closeDocument(currentDoc);
+        } catch (IOException e) {
+            ErrorLogger.error("Error closing previous document: " + e.getMessage());
+        }
+        
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFileName.setText("Select image: " + selectedFile.getName());

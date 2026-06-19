@@ -11,6 +11,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.helper.pdf.PdfHelper;
 import model.helper.pdf.ProtectPdfHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -222,7 +223,7 @@ public class ProtectPdfController extends AbstractMediaController {
 
     @FXML
     public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save images");
+        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save PDF");
     }
 
     private boolean checks() {
@@ -360,7 +361,12 @@ public class ProtectPdfController extends AbstractMediaController {
 
         disableControls();
 
-        closeCurrentDoc();
+        try {
+            currentDoc = PdfHelper.closeDocument(currentDoc);
+        } catch (IOException e) {
+            ErrorLogger.error("Error closing document during reset: " + e.getMessage());
+        }
+        
         if (imageViewPdf != null) {
             imageViewPdf.setImage(null);
         }
@@ -397,16 +403,7 @@ public class ProtectPdfController extends AbstractMediaController {
         }
     }
 
-    private void closeCurrentDoc() {
-        if (currentDoc != null) {
-            try {
-                currentDoc.close();
-            } catch (IOException e) {
-                ErrorLogger.error("Error closing PDF document: " + e.getMessage());
-            }
-            currentDoc = null;
-        }
-    }
+
 
     @FXML
     private void showInfo() {
@@ -432,7 +429,12 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        closeCurrentDoc();
+        try {
+            currentDoc = PdfHelper.closeDocument(currentDoc);
+        } catch (IOException e) {
+            ErrorLogger.error("Error closing previous document: " + e.getMessage());
+        }
+        
         imageProperties.setImage(selectedFile);
         labelSelectFileName.setText("Selected PDF: " + selectedFile.getName());
         textDragZone.setText("Selected: " + selectedFile.getName());
