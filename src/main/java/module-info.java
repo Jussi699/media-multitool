@@ -42,4 +42,6 @@ module media_multitool {
     opens media_multitool.compressors to javafx.fxml;
     exports media_multitool.editors;
     opens media_multitool.editors to javafx.fxml;
+    exports media_multitool.pdf;
+    opens media_multitool.pdf to javafx.fxml;
 }

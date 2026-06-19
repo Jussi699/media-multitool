@@ -1,5 +1,6 @@
 package media_multitool;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import lombok.Setter;
@@ -156,6 +157,12 @@ public class HomeViewController {
     private void onOpenColorReplaceInImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(10);
+        }
+    }
+
+    public void onOpenUnlockPdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionPdf(25);
         }
     }
 }

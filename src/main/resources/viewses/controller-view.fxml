@@ -139,5 +139,6 @@
         <fx:include fx:id="imagesToPdfPage" source="pdf-views/images-to-pdf-view.fxml"/>
         <fx:include fx:id="protectPdfPage" source="pdf-views/protect-pdf-view.fxml"/>
         <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
+        <fx:include fx:id="unlockPdfPage" source="pdf-views/unlock-pdf-view.fxml"/>
     </StackPane>
 </HBox>
