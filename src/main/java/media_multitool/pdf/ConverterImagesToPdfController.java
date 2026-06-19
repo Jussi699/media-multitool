@@ -1,4 +1,4 @@
-package media_multitool.converters;
+package media_multitool.pdf;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
