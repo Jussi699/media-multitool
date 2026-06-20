@@ -171,4 +171,10 @@ public class HomeViewController {
             mainController.onActionChoiceActionPdf(26);
         }
     }
+
+    public void onOpenCompressPdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionPdf(27);
+        }
+    }
 }

@@ -147,6 +147,14 @@
                     text="Remove Pages PDF"/>
         </HBox>
 
+        <HBox alignment="CENTER" spacing="20.0">
+        <Button mnemonicParsing="false"
+                onAction="#onOpenCompressPdfPressed"
+                prefWidth="220.0"
+                text="Compress PDF"/>
+        </HBox>
+
+
         <Button mnemonicParsing="false"
                 onAction="#onOpenInfoPressed"
                 prefWidth="220.0"

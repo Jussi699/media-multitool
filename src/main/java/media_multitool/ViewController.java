@@ -16,7 +16,8 @@ public class ViewController {
     @FXML private StackPane audioEditorTagPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
-            pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage;
+            pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
+            compressPdfPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -44,7 +45,8 @@ public class ViewController {
        23, Images To Pdf (merge),
        24, Protect PDF,
        25, unlockPdfPage,
-       26, removePagesPdfPage
+       26, removePagesPdfPage,
+       27, compressPdfPage,
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -116,7 +118,8 @@ public class ViewController {
                 23, imagesToPdfPage,
                 24, removePagesPdfPage,
                 25, protectPdfPage,
-                26, unlockPdfPage
+                26, unlockPdfPage,
+                27, compressPdfPage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -138,8 +141,8 @@ public class ViewController {
                 new Item(23, "Image(s) To PDF"),
                 new Item(24, "Remove Pages PDF"),
                 new Item(25, "Protect PDF"),
-                new Item(26, "Unlock PDF")
-
+                new Item(26, "Unlock PDF"),
+                new Item(27, "Compress PDF")
         );
     }
 
@@ -239,7 +242,8 @@ public class ViewController {
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
-                imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage
+                imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
+                removePagesPdfPage, compressPdfPage
         };
 
         for (StackPane page : allPages) {
