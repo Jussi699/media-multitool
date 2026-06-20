@@ -1,3 +1,7 @@
+### PROJECT ###
+/out
+src/main/resources/META-INF
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -9,6 +13,11 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/encodings.xml
+.idea/artifacts/Media_Multitool_jar.xml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/inspectionProfiles/Project_Default.xml
 *.iws
 *.iml
 *.ipr
