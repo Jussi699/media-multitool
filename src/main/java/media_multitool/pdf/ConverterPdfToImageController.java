@@ -65,9 +65,9 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
         listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
 
-        listControls = List.copyOf(listToggleBtn);
-        listControls = List.of(btnAllImageToJpeg, btnAllImageToPng, btnSubmit);
-
+        List<Control> temp = new ArrayList<>(listToggleBtn);
+        temp.addAll(List.of(btnAllImageToJpeg, btnAllImageToPng, btnSubmit));
+        listControls = List.copyOf(temp);
         imageProperties.setOutput(getSavedPath());
 
         if (progressBar != null) {

@@ -151,7 +151,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
             }
         };
 
-        loadTask.setOnSucceeded(e -> {
+        loadTask.setOnSucceeded(_ -> {
             progressBar.progressProperty().unbind();
             List<BufferedImage> pageImages = loadTask.getValue();
             for (int i = 0; i < pageImages.size(); i++) {
@@ -160,13 +160,11 @@ public class RemovePagesPdfController extends AbstractMediaController {
             enableControls();
             
             PauseTransition hideBar = imageProperties.getHideSuccessMessageTimer();
-            hideBar.setOnFinished(_ -> {
-                progressBar.setProgress(0);
-            });
+            hideBar.setOnFinished(_ -> progressBar.setProgress(0));
             hideBar.playFromStart();
         });
 
-        loadTask.setOnFailed(e -> {
+        loadTask.setOnFailed(_ -> {
             progressBar.progressProperty().unbind();
             ErrorLogger.error("Failed to load PDF: " + loadTask.getException().getMessage());
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to load PDF", loadTask.getException().getMessage());

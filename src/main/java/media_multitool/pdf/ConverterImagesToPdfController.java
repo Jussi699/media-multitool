@@ -16,6 +16,7 @@ import model.helper.pdf.ConvertImagesToPdfHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
+import model.select.SelectFile;
 import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import viewHelp.Alerts;
@@ -135,20 +136,13 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
     @FXML
     public void onActionBtnSelectFiles() {
+        SelectFile selectPdf = new SelectFile();
         Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
-        
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select images");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg", "*.bmp")
-        );
-        
-        List<File> files = fileChooser.showOpenMultipleDialog(stage);
-        if (files != null && !files.isEmpty()) {
-            for (File file : files) {
-                addImageToList(file);
-            }
-        }
+
+        selectPdf.showOpenMultipleDialog(stage,
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg", "*.bmp"),
+                "Select images"
+        ).ifPresent(f -> f.forEach(this::addImageToList));
     }
 
     private void addImageToList(File file) {

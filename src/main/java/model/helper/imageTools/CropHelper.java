@@ -14,6 +14,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -34,8 +36,8 @@ public class CropHelper {
 
     private final Map<HandlePosition, Rectangle> handles = new EnumMap<>(HandlePosition.class);
 
-    private BufferedImage originalBufferedImage;
-    private CropArea cropArea;
+    @Setter private BufferedImage originalBufferedImage;
+    @Getter private CropArea cropArea;
     private Point2D dragStartImagePoint;
     private CropArea dragStartCrop;
     private DragMode dragMode = DragMode.NONE;
@@ -344,18 +346,10 @@ public class CropHelper {
         updateCropOverlay();
     }
 
-    public void setOriginalBufferedImage(BufferedImage originalBufferedImage) {
-        this.originalBufferedImage = originalBufferedImage;
-    }
-
     public void reset() {
         cropArea = null;
         cropRect.setVisible(false);
         handles.values().forEach(handle -> handle.setVisible(false));
-    }
-
-    public CropArea getCropArea() {
-        return cropArea;
     }
 
     public record CropArea(double x, double y, double width, double height) {
@@ -388,20 +382,6 @@ public class CropHelper {
         cropRect.setHeight(cropBounds.getHeight());
 
         positionHandles(cropBounds);
-    }
-
-    public double getImageWidth() {
-        if (originalBufferedImage != null) {
-            return originalBufferedImage.getWidth();
-        }
-        return 0.0;
-    }
-
-    public double getImageHeight() {
-        if (originalBufferedImage != null) {
-            return originalBufferedImage.getHeight();
-        }
-        return 0.0;
     }
 
     public void setupAspectRatio(double ratioWidth, double ratioHeight) {
