@@ -71,7 +71,7 @@ public class ProtectPdfController extends AbstractMediaController {
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
-        setupDragAndDrop(dropZone, List.of(".pdf"), this::loadFile);
+        setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
 
         isPressedReset();
     }

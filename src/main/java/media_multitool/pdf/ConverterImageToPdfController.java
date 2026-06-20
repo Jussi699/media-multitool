@@ -110,7 +110,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg"),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 

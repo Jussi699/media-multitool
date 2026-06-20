@@ -78,7 +78,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
         setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
 
-        setupDragAndDrop(dropZone, List.of(".pdf"), this::loadFile);
+        setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
 
         isPressedReset();
     }

@@ -24,7 +24,7 @@
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Remove Page status: success" visible="false" managed="true" />
+            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Remove Page status: success" visible="false" />
             <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0" />
             <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Submit and Download" />
         </VBox>
