@@ -42,6 +42,7 @@ public class Message {
         label.setManaged(managed);
         label.setText("");
         if (bar != null) {
+            bar.progressProperty().unbind();
             bar.setProgress(0.0);
             bar.setStyle("");
             bar.setVisible(true);

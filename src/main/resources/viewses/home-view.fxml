@@ -140,6 +140,11 @@
                 onAction="#onOpenUnlockPdfPressed"
                 prefWidth="220.0"
                 text="Unlock PDF"/>
+
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenRemovePagesPdfPressed"
+                    prefWidth="220.0"
+                    text="Remove Pages PDF"/>
         </HBox>
 
         <Button mnemonicParsing="false"

@@ -165,4 +165,10 @@ public class HomeViewController {
             mainController.onActionChoiceActionPdf(25);
         }
     }
+
+    public void onOpenRemovePagesPdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionPdf(26);
+        }
+    }
 }

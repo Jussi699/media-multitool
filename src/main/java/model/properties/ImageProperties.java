@@ -32,6 +32,8 @@ public class ImageProperties implements MediaProperties {
 
     public void setImage(File image) {
         this.image = image;
-        pathToImage = image.getPath();
+        if(image != null) {
+            pathToImage = image.getPath();
+        }
     }
 }

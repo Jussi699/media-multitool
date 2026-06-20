@@ -16,7 +16,7 @@ public class ViewController {
     @FXML private StackPane audioEditorTagPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
-            pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage;
+            pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -43,7 +43,8 @@ public class ViewController {
        22, Pdf To Image,
        23, Images To Pdf (merge),
        24, Protect PDF,
-       25, unlockPdfPage
+       25, unlockPdfPage,
+       26, removePagesPdfPage
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -113,8 +114,9 @@ public class ViewController {
                 21, imageToPdfPage,
                 22, pdfToImagePage,
                 23, imagesToPdfPage,
-                24, protectPdfPage,
-                25, unlockPdfPage
+                24, removePagesPdfPage,
+                25, protectPdfPage,
+                26, unlockPdfPage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -134,8 +136,10 @@ public class ViewController {
                 new Item(21, "Image To PDF"),
                 new Item(22, "PDF To Image"),
                 new Item(23, "Image(s) To PDF"),
-                new Item(24, "Protect PDF"),
-                new Item(25, "Unlock PDF")
+                new Item(24, "Remove Pages PDF"),
+                new Item(25, "Protect PDF"),
+                new Item(26, "Unlock PDF")
+
         );
     }
 
@@ -235,7 +239,7 @@ public class ViewController {
                 compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
-                imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage
+                imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage
         };
 
         for (StackPane page : allPages) {
