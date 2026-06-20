@@ -14,6 +14,7 @@ import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.DoubleConsumer;
 
 public class ImagePreprocessing {
     public static Optional<BufferedImage> toNegative(File file) {
@@ -262,7 +263,7 @@ public class ImagePreprocessing {
         return Optional.of(gray);
     }
 
-    public static Optional<BufferedImage> blurryImage(BufferedImage image, int radius) {
+    public static Optional<BufferedImage> blurryImage(BufferedImage image, int radius, DoubleConsumer progressConsumer) {
         if (image == null) {
             return Optional.empty();
         }
@@ -281,6 +282,12 @@ public class ImagePreprocessing {
         BufferedImage dest = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         for (int y = 0; y < height; y++) {
+            if (Thread.interrupted()) {
+                return Optional.empty();
+            }
+            if (progressConsumer != null) {
+                progressConsumer.accept((double) y / height);
+            }
             for (int x = 0; x < width; x++) {
 
                 long sumR = 0, sumG = 0, sumB = 0, sumA = 0;
@@ -309,6 +316,10 @@ public class ImagePreprocessing {
                 int blurredRGB = (avgA << 24) | (avgR << 16) | (avgG << 8) | avgB;
                 dest.setRGB(x, y, blurredRGB);
             }
+        }
+
+        if (progressConsumer != null) {
+            progressConsumer.accept(1.0);
         }
 
         return Optional.of(dest);

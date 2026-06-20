@@ -22,7 +22,7 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 
 import static model.utility.Util.bindingImageViewToPreviewContainer;
 import static model.utility.Util.getSavedPath;
@@ -35,11 +35,12 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML private Slider sliderBlurry;
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit, btnCancel;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer;
 
+    private Task<?> currentTask;
     private java.util.List<Control> listControls;
 
     @Override
@@ -69,11 +70,20 @@ public class BlurImageController extends AbstractMediaController {
             return;
         }
 
-       CompletableFuture.runAsync(() ->
-               ImagePreprocessing.blurryImage(originalBufferedImage, radius).ifPresent(blurry -> {
-           currentBufferedImage = blurry;
-           setPreview(currentBufferedImage);
-       }));
+        currentTask = new Task<BufferedImage>() {
+            @Override
+            protected BufferedImage call() throws Exception {
+                updateProgress(0, 1.0);
+                updateMessage("Updating preview...");
+                return ImagePreprocessing.blurryImage(
+                        originalBufferedImage,
+                        radius,
+                        progress -> updateProgress(progress, 1.0)
+                ).orElseThrow(() -> new Exception("Preview generation failed"));
+            }
+        };
+
+        executeMediaTask(currentTask);
     }
 
     @FXML
@@ -99,16 +109,26 @@ public class BlurImageController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
+        disableControls();
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
+        if (btnCancel != null) {
+            btnCancel.setVisible(true);
+            btnCancel.setManaged(true);
+        }
     }
 
     @Override
     protected void unlockUI() {
+        enableControls();
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
+        if (btnCancel != null) {
+            btnCancel.setVisible(false);
+            btnCancel.setManaged(false);
+        }
     }
 
     @Override
@@ -143,37 +163,80 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
             return;
         }
 
-        Task<File> task = new Task<>() {
+        currentTask = new Task<File>() {
             @Override
             protected File call() throws Exception {
-                updateProgress(10, 100);
+                updateProgress(0, 1.0);
+                updateMessage("Blurring image...");
+                int radius = (int) sliderBlurry.getValue();
+                
+                Optional<BufferedImage> blurred = ImagePreprocessing.blurryImage(
+                        originalBufferedImage, 
+                        radius, 
+                        progress -> updateProgress(progress, 1.0)
+                );
 
+                if (isCancelled()) {
+                    return null;
+                }
+
+                if (blurred.isEmpty()) {
+                    throw new Exception("Blurring failed");
+                }
+
+                currentBufferedImage = blurred.get();
+
+                updateMessage("Saving image...");
                 File outputFile = Util.createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
                 );
 
-                updateProgress(50, 100);
-
                 ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
+                updateProgress(1.0, 1.0);
 
                 return outputFile;
             }
         };
 
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
+        executeMediaTask(currentTask);
+        if (labelSuccess != null) {
+            labelSuccess.setManaged(true);
+        }
+    }
+
+    @FXML
+    private void cancelTask() {
+        if (currentTask != null && currentTask.isRunning()) {
+            currentTask.cancel();
+        }
     }
 
     @Override
     protected void handleTaskSuccess(Object result) {
+        if (result instanceof BufferedImage bi) {
+            currentBufferedImage = bi;
+            setPreview(currentBufferedImage);
+            Platform.runLater(() -> {
+                if (progressBar != null) {
+                    progressBar.setVisible(true);
+                    progressBar.setManaged(true);
+                }
+                if (labelSuccess != null) {
+                    labelSuccess.setVisible(true);
+                    labelSuccess.setManaged(true);
+                }
+            });
+            return;
+        }
+
         super.handleTaskSuccess(result);
+        
         if (Boolean.FALSE.equals(result)) {
             return;
         }
