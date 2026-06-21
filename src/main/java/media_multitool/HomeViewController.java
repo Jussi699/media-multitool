@@ -1,6 +1,5 @@
 package media_multitool;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import lombok.Setter;
@@ -175,6 +174,12 @@ public class HomeViewController {
     public void onOpenCompressPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(27);
+        }
+    }
+
+    public void onOpenMergePdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionPdf(28);
         }
     }
 }

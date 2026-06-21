@@ -17,7 +17,7 @@ public class ViewController {
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage;
+            compressPdfPage, mergePdfPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -47,6 +47,7 @@ public class ViewController {
        25, unlockPdfPage,
        26, removePagesPdfPage,
        27, compressPdfPage,
+       28, mergePdfPage
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -119,7 +120,8 @@ public class ViewController {
                 24, removePagesPdfPage,
                 25, protectPdfPage,
                 26, unlockPdfPage,
-                27, compressPdfPage
+                27, compressPdfPage,
+                28, mergePdfPage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -142,7 +144,8 @@ public class ViewController {
                 new Item(24, "Remove Pages PDF"),
                 new Item(25, "Protect PDF"),
                 new Item(26, "Unlock PDF"),
-                new Item(27, "Compress PDF")
+                new Item(27, "Compress PDF"),
+                new Item(28, "Merge PDF")
         );
     }
 
@@ -243,7 +246,7 @@ public class ViewController {
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
-                removePagesPdfPage, compressPdfPage
+                removePagesPdfPage, compressPdfPage, mergePdfPage
         };
 
         for (StackPane page : allPages) {

@@ -129,7 +129,7 @@ public class Util {
 
     public static File createOutputFile(File image, File pathForSave, String extension) {
         String normalizedExtension = extension.toLowerCase(Locale.ROOT);
-        String shortId = UUID.randomUUID().toString().split("-")[0];
+        String shortId = UUID.randomUUID().toString().substring(0, 8);
         String fileName = getBaseName(image.getName())
                 + "_" + shortId
                 + "." + normalizedExtension;

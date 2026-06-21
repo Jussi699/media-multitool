@@ -142,5 +142,6 @@
         <fx:include fx:id="unlockPdfPage" source="pdf-views/unlock-pdf-view.fxml"/>
         <fx:include fx:id="removePagesPdfPage" source="pdf-views/remove-pages-pdf-view.fxml"/>
         <fx:include fx:id="compressPdfPage" source="pdf-views/compress-pdf-view.fxml"/>
+        <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>
     </StackPane>
 </HBox>
