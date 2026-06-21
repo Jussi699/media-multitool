@@ -157,6 +157,11 @@
                     onAction="#onOpenMergePdfPressed"
                     prefWidth="220.0"
                     text="Merge PDF"/>
+
+            <Button mnemonicParsing="false"
+                    onAction="#onOpenSplitPdfPressed"
+                    prefWidth="220.0"
+                    text="Split PDF"/>
         </HBox>
 
 

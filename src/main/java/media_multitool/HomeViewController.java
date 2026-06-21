@@ -182,4 +182,10 @@ public class HomeViewController {
             mainController.onActionChoiceActionPdf(28);
         }
     }
+
+    public void onOpenSplitPdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionPdf(29);
+        }
+    }
 }

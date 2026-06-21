@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="media_multitool.pdf.SplitPdfController">
+    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" style="-fx-background-color: #4b4b4b;">
+
+        <Label styleClass="main-label-name-page" text="Split PDF">
+            <VBox.margin>
+                <Insets top="8.0" />
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectFiles" mnemonicParsing="false" onAction="#onActionBtnSelectFiles" prefWidth="180.0" text="Select PDF file" />
+
+            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onActionChoiceDirForSaveFile" prefWidth="180.0" text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="12.0">
+            <Label text="Split Mode" style="-fx-text-fill: #931c1c; -fx-font-weight: bold;"/>
+            <HBox alignment="CENTER" spacing="15.0">
+                <RadioButton fx:id="rbRange" mnemonicParsing="false" text="Range" selected="true" style="-fx-text-fill: white;">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="splitModeGroup" />
+                    </toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="rbPages" mnemonicParsing="false" text="Pages" toggleGroup="$splitModeGroup" style="-fx-text-fill: white;"/>
+            </HBox>
+
+            <StackPane>
+                <VBox fx:id="vboxRangeOptions" alignment="CENTER" spacing="8.0">
+                    <HBox alignment="CENTER" spacing="15.0">
+                        <RadioButton fx:id="rbCustomRange" mnemonicParsing="false" text="Custom Range" selected="true" style="-fx-text-fill: white;">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="rangeTypeGroup" />
+                            </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="rbFixedRange" mnemonicParsing="false" text="Fixed Range (1 to N)" toggleGroup="$rangeTypeGroup" style="-fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <VBox alignment="CENTER" spacing="4.0">
+                            <Label text="From" style="-fx-text-fill: #ccc; -fx-font-size: 10px;"/>
+                            <TextField fx:id="tfFromPage" prefWidth="60.0" text="1" alignment="CENTER"/>
+                        </VBox>
+                        <VBox fx:id="vboxToPage" alignment="CENTER" spacing="4.0">
+                            <Label text="To" style="-fx-text-fill: #ccc; -fx-font-size: 10px;"/>
+                            <TextField fx:id="tfToPage" prefWidth="60.0" text="1" alignment="CENTER"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <VBox fx:id="vboxPagesOptions" alignment="CENTER" spacing="8.0" visible="false">
+                    <Label text="Select pages to extract as separate files" style="-fx-text-fill: RED;"/>
+                    <Label text="(Use Ctrl/Shift + click in preview below)" style="-fx-text-fill: RED; -fx-font-size: 11px;"/>
+                </VBox>
+            </StackPane>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Split PDF status: success" visible="false" />
+            <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0" />
+            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Submit and Download" />
+        </VBox>
+
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="CENTER">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+            
+            <Label text="PDF preview (Select pages here for 'Pages' mode):" styleClass="label-h"/>
+            
+            <ScrollPane fx:id="scrollPanePreview" fitToWidth="true" VBox.vgrow="ALWAYS" 
+                        style="-fx-background: #3a3a3a; -fx-background-color: #3a3a3a; -fx-border-color: WHITE; -fx-border-radius: 5px; -fx-border-width: 2px">
+                <FlowPane fx:id="imagesFlowPane" hgap="10.0" vgap="10.0" 
+                          style="-fx-background-color: #3a3a3a; -fx-padding: 10;">
+                </FlowPane>
+            </ScrollPane>
+
+            <StackPane fx:id="dropZone" styleClass="drop-zone" minHeight="80.0">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag PDF here" />
+            </StackPane>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <Label fx:id="labelSelectFileName" styleClass="labelSelect" text="Selected PDF file: none" />
+
+            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0" />
+        </padding>
+    </VBox>
+
+    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets left="10.0" top="10.0" />
+        </StackPane.margin>
+    </Button>
+</StackPane>

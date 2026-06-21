@@ -17,7 +17,7 @@ public class ViewController {
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage, mergePdfPage;
+            compressPdfPage, mergePdfPage, splitPdfPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -47,7 +47,8 @@ public class ViewController {
        25, unlockPdfPage,
        26, removePagesPdfPage,
        27, compressPdfPage,
-       28, mergePdfPage
+       28, mergePdfPage,
+       29, splitPdfPage
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -121,7 +122,8 @@ public class ViewController {
                 25, protectPdfPage,
                 26, unlockPdfPage,
                 27, compressPdfPage,
-                28, mergePdfPage
+                28, mergePdfPage,
+                29, splitPdfPage
         ));
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -145,7 +147,8 @@ public class ViewController {
                 new Item(25, "Protect PDF"),
                 new Item(26, "Unlock PDF"),
                 new Item(27, "Compress PDF"),
-                new Item(28, "Merge PDF")
+                new Item(28, "Merge PDF"),
+                new Item(29, "Split PDF")
         );
     }
 
@@ -246,7 +249,7 @@ public class ViewController {
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
-                removePagesPdfPage, compressPdfPage, mergePdfPage
+                removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage
         };
 
         for (StackPane page : allPages) {

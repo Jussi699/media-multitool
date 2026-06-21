@@ -143,5 +143,6 @@
         <fx:include fx:id="removePagesPdfPage" source="pdf-views/remove-pages-pdf-view.fxml"/>
         <fx:include fx:id="compressPdfPage" source="pdf-views/compress-pdf-view.fxml"/>
         <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>
+        <fx:include fx:id="splitPdfPage" source="pdf-views/split-pdf-view.fxml"/>
     </StackPane>
 </HBox>
