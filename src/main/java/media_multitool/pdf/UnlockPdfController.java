@@ -218,7 +218,8 @@ public class UnlockPdfController extends AbstractMediaController {
                 updateProgress(30, 100);
 
                 String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                File outputFile = new File(imageProperties.getOutput(), baseName + "_unlocked_" + UUID.randomUUID().toString().substring(0, 8)  + ".pdf");
+                String shortId = UUID.randomUUID().toString().substring(0, 8);
+                File outputFile = new File(imageProperties.getOutput(), baseName + "_unlocked_" + shortId + ".pdf");
 
                 updateProgress(50, 100);
 
@@ -230,7 +231,6 @@ public class UnlockPdfController extends AbstractMediaController {
                             typePassword
                     );
                 } else {
-                    // Just copy the file if not encrypted
                     java.nio.file.Files.copy(
                             imageProperties.getImage().toPath(),
                             outputFile.toPath(),

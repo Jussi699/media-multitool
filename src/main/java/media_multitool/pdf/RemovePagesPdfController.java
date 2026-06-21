@@ -19,6 +19,7 @@ import model.select.SelectFile;
 import model.utility.ResetContext;
 import model.utility.Util;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
@@ -120,7 +121,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
 
         selectPdf.choiceFile(stage,
                 new FileChooser.ExtensionFilter("PDF", "*.pdf"),
-                "Choice PDF"
+                "Select PDF"
         ).ifPresent(this::loadPdfFile);
     }
 
@@ -187,16 +188,20 @@ public class RemovePagesPdfController extends AbstractMediaController {
     private void createPagePreviewCard(PageEntry entry, BufferedImage image) {
         PdfPagePreviewCard card = new PdfPagePreviewCard(
             image,
+            imageProperties.getImage() != null ? imageProperties.getImage().getName() : "PDF",
             entry.originalPageIndex,
             entry.id,
-            () -> removePage(entry.id)
+            () -> removePage(entry.id),
+                null,
+                240, 270, 230, 260
         );
         pageCards.add(card);
         imagesFlowPane.getChildren().add(card.getContainer());
     }
 
     private void updateUIState() {
-        labelSelectFileName.setText(imageProperties.getImage() == null ? "Selected PDF file: none" : "Selected PDF: " + imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
+        labelSelectFileName.setText(imageProperties.getImage() == null ? "Selected PDF file: none" : "Selected PDF: " +
+                imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
         
         if (!selectedPages.isEmpty()) {
             enableControls();
@@ -243,9 +248,13 @@ public class RemovePagesPdfController extends AbstractMediaController {
                 try (PDDocument sourceDoc = Loader.loadPDF(inputFile);
                      PDDocument targetDoc = new PDDocument()) {
                     
+                    PDFMergerUtility merger = new PDFMergerUtility();
                     int total = selectedPages.size();
                     for (int i = 0; i < total; i++) {
-                        targetDoc.addPage(sourceDoc.getPage(selectedPages.get(i).originalPageIndex));
+                        try (PDDocument tempDoc = new PDDocument()) {
+                            tempDoc.addPage(sourceDoc.getPage(selectedPages.get(i).originalPageIndex));
+                            merger.appendDocument(targetDoc, tempDoc);
+                        }
                         updateProgress(30 + (60L * (i + 1) / total), 100);
                     }
                     
@@ -261,10 +270,11 @@ public class RemovePagesPdfController extends AbstractMediaController {
     }
 
     private File generateUniqueOutputFile(String outputDirectory, String baseName) {
-        File outputFile = new File(outputDirectory + File.separator + baseName + ".pdf");
+        String shortId = UUID.randomUUID().toString().substring(0, 8);
+        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
         int counter = 1;
         while (outputFile.exists()) {
-            outputFile = new File(outputDirectory + File.separator + baseName + "_" + counter + ".pdf");
+            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
             counter++;
         }
         return outputFile;

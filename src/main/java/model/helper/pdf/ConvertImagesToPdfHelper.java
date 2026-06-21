@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class ConvertImagesToPdfHelper {
@@ -37,15 +38,12 @@ public class ConvertImagesToPdfHelper {
      * @return unique File object with .pdf extension
      */
     public File generateUniqueOutputFile(String outputDirectory, String baseName) {
-        File outputFile = new File(outputDirectory + File.separator + baseName + ".pdf");
-        
-        if (!outputFile.exists()) {
-            return outputFile;
-        }
+        String shortId = UUID.randomUUID().toString().substring(0, 8);
+        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
         
         int counter = 1;
         while (outputFile.exists()) {
-            outputFile = new File(outputDirectory + File.separator + baseName + "_" + counter + ".pdf");
+            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
             counter++;
         }
         

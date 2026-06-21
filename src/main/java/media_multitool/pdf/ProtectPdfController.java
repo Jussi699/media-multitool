@@ -293,7 +293,8 @@ public class ProtectPdfController extends AbstractMediaController {
                 updateProgress(30, 100);
 
                 String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                File outputFile = new File(imageProperties.getOutput(), baseName + "_protected_" + UUID.randomUUID().toString().substring(0, 8)  + ".pdf");
+                String shortId = UUID.randomUUID().toString().substring(0, 8);
+                File outputFile = new File(imageProperties.getOutput(), baseName + "_protected_" + shortId + ".pdf");
 
                 updateProgress(50, 100);
 
