@@ -23,6 +23,8 @@ public class Alerts {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
+        alert.setResizable(true);
+        alert.setWidth(600);
         applyDialogStyles(alert, type);
         alert.showAndWait();
     }
