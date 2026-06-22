@@ -1,5 +1,6 @@
 package model.converterImage.strategy;
 
+import lombok.Setter;
 import model.utility.Util;
 import net.ifok.image.image4j.codec.ico.ICOEncoder;
 import net.ifok.image.image4j.codec.ico.ICODecoder;
@@ -14,11 +15,7 @@ import model.converterImage.UsefulMethods;
 import model.converterImage.ConverterImage;
 
 public class IcoImageStrategy implements ImageConversionStrategy {
-    private int size = 256; // Default size
-
-    public void setSize(int size) {
-        this.size = size;
-    }
+    @Setter private int size = 256; // Default size
 
     @Override
     public File convert(File source, File destinationDir, String format) throws IOException {

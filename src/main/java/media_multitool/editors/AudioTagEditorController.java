@@ -15,7 +15,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import media_multitool.AbstractMediaController;
-import model.utility.DetailsAudioFile;
 import model.preprocessing.AudioPreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
@@ -76,24 +75,23 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML
     public void initialize() {
         tableViewAudio.setItems(filteredFile);
-        textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField,
-                trackField, discNumberField, commentField, yearField, textFieldFindFile);
 
         initLists();
+        initTextFieldFind();
+        initComboBoxes();
 
         audioProperties.setOutput(getSavedPath());
 
-        initTextFieldFind();
-
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
-
-        initComboBoxes();
 
         onResetPressed();
         setupDragAndDrop(dropZone, Global.getAllSupportedAudioFormats(), this::loadFile);
     }
 
     private void initLists() {
+        textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField,
+                trackField, discNumberField, commentField, yearField, textFieldFindFile);
+
         listControls = new ArrayList<>();
         listControls.addAll(textFields);
         listControls.add(genreComboBox);
@@ -125,6 +123,15 @@ public class AudioTagEditorController extends AbstractMediaController {
         TextFormatter<String> textFormatter = new TextFormatter<>(filter);
         yearField.setTextFormatter(textFormatter);
 
+        Timeline searchDebounce = createSearchDebounce();
+
+        textFieldFindFile.textProperty().addListener((_, _, _) -> {
+            searchDebounce.stop();
+            searchDebounce.playFromStart();
+        });
+    }
+
+    private Timeline createSearchDebounce() {
         Timeline searchDebounce = new Timeline(new KeyFrame(Duration.millis(300), _ -> {
             String query = textFieldFindFile.getText().toLowerCase();
             filteredFile.setPredicate(file -> {
@@ -135,11 +142,7 @@ public class AudioTagEditorController extends AbstractMediaController {
             SetupScrollPane.fillPlaceholderRows(tableViewAudio, masterFile, tableScrollPane.getViewportBounds().getHeight());
         }));
         searchDebounce.setCycleCount(1);
-
-        textFieldFindFile.textProperty().addListener((_, _, _) -> {
-            searchDebounce.stop();
-            searchDebounce.playFromStart();
-        });
+        return searchDebounce;
     }
 
     private void initTableViewAndScrollPane(List<TableColumn<DetailsAudioFile, ?>> allTableCol, List<String> property) {
@@ -202,12 +205,12 @@ public class AudioTagEditorController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -349,7 +352,8 @@ public class AudioTagEditorController extends AbstractMediaController {
         labelSelectImageName.setText("Selected audio: " + selectedFile.getName());
 
         try {
-            AudioPreprocessing.getIconMp3(audioProperties.getSrcFile()).ifPresentOrElse(file -> AudioEditor.setPreview(file, imageViewPreview),
+            AudioPreprocessing.getIconMp3(audioProperties.getSrcFile())
+                    .ifPresentOrElse(file -> AudioEditor.setPreview(file, imageViewPreview),
                     () -> AudioEditor.loadDefaultPreview(imageViewPreview));
 
             populateFields(AudioPreprocessing.getTags(selectedFile));

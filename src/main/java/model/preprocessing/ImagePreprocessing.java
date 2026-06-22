@@ -269,7 +269,8 @@ public class ImagePreprocessing {
         }
 
         if (radius <= 0) {
-            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
+            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), image.getType() == BufferedImage.TYPE_CUSTOM
+                    ? BufferedImage.TYPE_INT_ARGB : image.getType());
             Graphics2D g2d = copy.createGraphics();
             g2d.drawImage(image, 0, 0, null);
             g2d.dispose();

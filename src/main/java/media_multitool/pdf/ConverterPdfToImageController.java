@@ -11,6 +11,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
@@ -28,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -47,27 +49,20 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnAllImageToPng, btnAllImageToJpeg;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
-    
-    @FXML private ToggleButton btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP;
-    @FXML private ToggleButton btnToPPM, btnToPGM, btnToPAM;
+    @FXML private ToggleButton btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM;
 
     private PDDocument currentDoc;
-    private List<Control> listControls;
-    List<ToggleButton> listToggleBtn;
     private ToggleGroup toggleGroup;
+    private List<Control> listControls;
+    private List<ToggleButton> listToggleBtn;
     private boolean isExtract = false;
 
     @FXML
     public void initialize() {
         toggleGroup = new ToggleGroup();
 
-        listToggleBtn = List.of(btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM);
+        initLists();
 
-        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
-
-        List<Control> temp = new ArrayList<>(listToggleBtn);
-        temp.addAll(List.of(btnAllImageToJpeg, btnAllImageToPng, btnSubmit));
-        listControls = List.copyOf(temp);
         imageProperties.setOutput(getSavedPath());
 
         if (progressBar != null) {
@@ -81,6 +76,16 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
 
         isPressedReset();
+    }
+
+    private void initLists() {
+        listToggleBtn = List.of(btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM);
+
+        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
+
+        List<Control> temp = new ArrayList<>(listToggleBtn);
+        temp.addAll(List.of(btnAllImageToJpeg, btnAllImageToPng, btnSubmit));
+        listControls = List.copyOf(temp);
     }
 
     @FXML
@@ -101,7 +106,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         Button selectedBtn = (Button) event.getSource();
 
         switch (selectedBtn.getId()) {
-            case "btnAllImageToPng" -> imageProperties.setTypeImage("png");
+            case "btnAllImageToPng"  -> imageProperties.setTypeImage("png");
             case "btnAllImageToJpeg" -> imageProperties.setTypeImage("jpeg");
         }
 
@@ -148,7 +153,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectPdfFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
-                "Choice PDF file"
+                "Select PDF"
         ).ifPresent(this::loadFile);
     }
 
@@ -246,7 +251,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                     updateProgress(60, 100);
 
                     String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                    File zipFile = new File(imageProperties.getOutput(), baseName + "_images.zip");
+                    File zipFile = new File(imageProperties.getOutput(), baseName + "_" + UUID.randomUUID().toString().substring(0, 3) + "_images.zip");
 
                     try (FileOutputStream fos = new FileOutputStream(zipFile);
                          ZipOutputStream zos = new ZipOutputStream(fos)) {
@@ -358,7 +363,6 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         imageProperties.setTypeImage(null);
 
         isExtract = false;
-
     }
 
     private void closeCurrentDoc() {

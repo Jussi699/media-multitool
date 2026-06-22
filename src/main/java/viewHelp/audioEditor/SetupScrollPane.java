@@ -67,7 +67,7 @@ public class SetupScrollPane {
     }
 
     private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
+        return Math.clamp(value, min, max);
     }
 
     public static boolean needsVerticalScroll(TableView<?> tableView, double viewportHeight) {
@@ -106,7 +106,8 @@ public class SetupScrollPane {
         };
 
         updateTableWidth.run();
-        columns.forEach(column -> column.widthProperty().addListener((_, _, _) -> updateTableWidth.run()));
+        columns.forEach(column -> column.widthProperty().addListener((_, _, _)
+                -> updateTableWidth.run()));
 
         scrollPane.viewportBoundsProperty().addListener((_, _, bounds) -> {
             tableView.setPrefHeight(bounds.getHeight());

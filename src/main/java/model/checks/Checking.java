@@ -1,10 +1,11 @@
-package model.utility;
+package model.checks;
 
 import javafx.scene.control.Alert;
 
 import model.properties.ImageProperties;
 import viewHelp.Alerts;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
@@ -15,6 +16,10 @@ public class Checking {
             return true;
         }
         return false;
+    }
+
+    public static boolean checkImageAndOutputOnNull(ImageProperties props, BufferedImage image) {
+        return image == null || checkImageAndOutputOnNull(props);
     }
 
     public static boolean isSupportedMediaFile(File file, List<String> list) {

@@ -26,10 +26,10 @@ import viewHelp.PdfPagePreviewCard;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.function.BiConsumer;
+
+import static model.helper.pdf.SplitPdfHelper.*;
 
 public class SplitPdfController extends AbstractMediaController {
     @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit, btnReset;
@@ -169,7 +169,7 @@ public class SplitPdfController extends AbstractMediaController {
     private void loadPdfFile(File file) {
         isPressedReset();
         imageProperties.setImage(file);
-        
+
         if (dropZone.getStyleClass().contains("drop-zone")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
@@ -203,7 +203,7 @@ public class SplitPdfController extends AbstractMediaController {
             }
             enableControls();
             updateUIState();
-            
+
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -229,13 +229,13 @@ public class SplitPdfController extends AbstractMediaController {
 
     private void createPagePreviewCard(PageEntry entry, BufferedImage image) {
         PdfPagePreviewCard card = new PdfPagePreviewCard(
-            image,
-            imageProperties.getImage().getName(),
-            entry.originalPageIndex,
-            entry.id,
-            () -> {},
-            null,
-            240, 270, 230, 260
+                image,
+                imageProperties.getImage().getName(),
+                entry.originalPageIndex,
+                entry.id,
+                () -> {},
+                null,
+                240, 270, 230, 260
         );
 
         card.getContainer().setOnMouseClicked(event -> {
@@ -311,112 +311,19 @@ public class SplitPdfController extends AbstractMediaController {
 
     @FXML
     public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), 
-            imageProperties::setOutput, "Select directory for save PDF");
+        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(),
+                imageProperties::setOutput, "Select directory for save PDF");
     }
 
     @FXML
     public void submitAndDownload() {
         if (imageProperties.getImage() == null) return;
 
-        File outputDir = imageProperties.getOutput();
-        if (outputDir == null) {
-            outputDir = new File(System.getProperty("user.home"), "Desktop");
-        }
+        File outputDir = imageProperties.getOutput() != null
+                ? imageProperties.getOutput()
+                : new File(System.getProperty("user.home"), "Desktop");
 
-        final File finalOutputDir = outputDir;
-        
-        Task<Void> splitTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                updateProgress(0, 100);
-                
-                try (PDDocument sourceDoc = Loader.loadPDF(imageProperties.getImage())) {
-                    int totalPages = sourceDoc.getNumberOfPages();
-                    PDFMergerUtility merger = new PDFMergerUtility();
-
-                    if (rbRange.isSelected()) {
-                        int from = Integer.parseInt(tfFromPage.getText());
-                        int to;
-                        if (rbCustomRange.isSelected()) {
-                            to = Integer.parseInt(tfToPage.getText());
-                        } else {
-                            to = Integer.parseInt(tfToPage.getText());
-                            from = 1;
-                        }
-
-                        from = Math.max(1, from);
-                        to = Math.min(totalPages, to);
-
-                        if (from > totalPages) {
-                             from = 1;
-                             to = totalPages;
-                        }
-
-                        if (from <= to) {
-                            try (PDDocument targetDoc = new PDDocument()) {
-                                int totalSteps = to - from + 1;
-                                for (int i = from - 1; i < to; i++) {
-                                    try (PDDocument tempDoc = new PDDocument()) {
-                                        tempDoc.addPage(sourceDoc.getPage(i));
-                                        merger.appendDocument(targetDoc, tempDoc);
-                                    }
-                                    updateProgress(i - from + 2, totalSteps);
-                                }
-                                String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                                File outputFile = generateUniqueOutputFile(finalOutputDir.getAbsolutePath(), baseName + "_range");
-                                targetDoc.save(outputFile);
-                            }
-                        }
-                    } else {
-                        if (selectedPageIndices.isEmpty()) {
-                            throw new RuntimeException("No pages selected");
-                        }
-
-                        List<Integer> sortedIndices = new ArrayList<>(selectedPageIndices);
-                        Collections.sort(sortedIndices);
-
-                        String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                        String shortId = UUID.randomUUID().toString().substring(0, 8);
-                        
-                        if (sortedIndices.size() == 1) {
-                            int idx = sortedIndices.getFirst();
-                            try (PDDocument targetDoc = new PDDocument()) {
-                                try (PDDocument tempDoc = new PDDocument()) {
-                                    tempDoc.addPage(sourceDoc.getPage(idx));
-                                    merger.appendDocument(targetDoc, tempDoc);
-                                }
-                                File outputFile = generateUniqueOutputFile(finalOutputDir.getAbsolutePath(), baseName + "_page_" + (idx + 1));
-                                targetDoc.save(outputFile);
-                            }
-                            updateProgress(100, 100);
-                        } else {
-                            File zipFile = new File(finalOutputDir, baseName + "_split_" + shortId + ".zip");
-                            int totalSteps = sortedIndices.size();
-                            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
-                                for (int j = 0; j < sortedIndices.size(); j++) {
-                                    int idx = sortedIndices.get(j);
-                                    try (PDDocument targetDoc = new PDDocument()) {
-                                        try (PDDocument tempDoc = new PDDocument()) {
-                                            tempDoc.addPage(sourceDoc.getPage(idx));
-                                            merger.appendDocument(targetDoc, tempDoc);
-                                        }
-                                        
-                                        ZipEntry ze = new ZipEntry(baseName + "_page_" + (idx + 1) + "_" + shortId + ".pdf");
-                                        zos.putNextEntry(ze);
-                                        targetDoc.save(zos);
-                                        zos.closeEntry();
-                                    }
-                                    updateProgress(j + 1, totalSteps);
-                                }
-                            }
-                        }
-                    }
-                }
-                updateProgress(100, 100);
-                return null;
-            }
-        };
+        Task<Void> splitTask = buildSplitTask(outputDir);
 
         splitTask.setOnSucceeded(_ -> {
             labelSuccess.setVisible(true);
@@ -440,15 +347,38 @@ public class SplitPdfController extends AbstractMediaController {
         new Thread(splitTask).start();
     }
 
-    private File generateUniqueOutputFile(String outputDirectory, String baseName) {
-        String shortId = UUID.randomUUID().toString().substring(0, 8);
-        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
-        int counter = 1;
-        while (outputFile.exists()) {
-            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
-            counter++;
+    private Task<Void> buildSplitTask(File outputDir) {
+        boolean isRange = rbRange.isSelected();
+        int fromPage = isRange ? parsePageField(tfFromPage.getText()) : 0;
+        int toPage   = isRange ? parsePageField(tfToPage.getText())   : 0;
+        boolean fixedRange = isRange && rbFixedRange.isSelected();
+
+        return new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                updateProgress(0, 100);
+                BiConsumer<Long, Long> progress = this::updateProgress;
+                try (PDDocument sourceDoc = Loader.loadPDF(imageProperties.getImage())) {
+                    PDFMergerUtility merger = new PDFMergerUtility();
+                    if (isRange) {
+                        int from = fixedRange ? 1 : fromPage;
+                        splitByRange(sourceDoc, merger, outputDir, progress, from, toPage, imageProperties.getImage());
+                    } else {
+                        splitByPages(sourceDoc, merger, outputDir, progress, selectedPageIndices, imageProperties.getImage());
+                    }
+                }
+                updateProgress(100, 100);
+                return null;
+            }
+        };
+    }
+
+    private int parsePageField(String text) {
+        try {
+            return text.isEmpty() ? 1 : Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return 1;
         }
-        return outputFile;
     }
 
     @FXML
@@ -457,7 +387,7 @@ public class SplitPdfController extends AbstractMediaController {
         pageCards.clear();
         selectedPageIndices.clear();
         imagesFlowPane.getChildren().clear();
-        
+
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
@@ -470,21 +400,21 @@ public class SplitPdfController extends AbstractMediaController {
     @FXML
     public void showInfo() {
         Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "How to use Split PDF",
-            """
-                How to use:
-                1. Select a PDF file.
-                2. Choose split mode:
-                Range:
-                a) Custom Range: Enter From and To page numbers.
-                b) Fixed Range: Enter N, will extract pages 1 to N.
-                Selected range will be highlighted with a green border.
-                \s
-                Pages:
-                Select pages in the preview area below. Each selected page will be saved as a separate file.
-                Use Shift + click to select a range of pages.
-                If multiple pages are selected, they will be packed into a ZIP archive.
-                \s
-                3. Click 'Submit and Download' to save.
-                """);
+                """
+                    How to use:
+                    1. Select a PDF file.
+                    2. Choose split mode:
+                    Range:
+                    a) Custom Range: Enter From and To page numbers.
+                    b) Fixed Range: Enter N, will extract pages 1 to N.
+                    Selected range will be highlighted with a green border.
+                    \s
+                    Pages:
+                    Select pages in the preview area below. Each selected page will be saved as a separate file.
+                    Use Shift + click to select a range of pages.
+                    If multiple pages are selected, they will be packed into a ZIP archive.
+                    \s
+                    3. Click 'Submit and Download' to save.
+                    """);
     }
 }

@@ -53,6 +53,19 @@ public class ConverterImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
+        initLists();
+        initComboBoxes();
+
+        imageProperties.setOutput(getSavedPath());
+
+        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+
+        isPressedReset();
+        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadImage);
+    }
+
+    private void initLists() {
         List<ToggleButton> listToggleBtn = List.of(
                 btnToSVG, btnToWEBP, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM
         );
@@ -61,17 +74,6 @@ public class ConverterImageController extends AbstractMediaController {
         listControls.addAll(List.of(comboBoxIcoSize, btnSubmit));
 
         listToggleBtn.forEach(btn -> btn.setToggleGroup(toggleGroup));
-
-        imageProperties.setOutput(getSavedPath());
-
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
-
-        initComboBoxes();
-
-        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
-        isPressedReset();
-        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadImage);
     }
 
     private void initComboBoxes() {
@@ -251,7 +253,7 @@ public class ConverterImageController extends AbstractMediaController {
         }
     }
 
-    private boolean checkForNull() {
+    private boolean checks() {
         if (imageProperties.getImage() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
                     "Select image first.");
@@ -275,7 +277,7 @@ public class ConverterImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if(!checkForNull()) {
+        if(!checks()) {
             return;
         }
 
@@ -306,15 +308,15 @@ public class ConverterImageController extends AbstractMediaController {
         }
 
         switch (tb.getId()) {
-            case "btnToPNG" -> selectFormat("png", imageProperties::setTypeImage);
+            case "btnToPNG"  -> selectFormat("png",  imageProperties::setTypeImage);
             case "btnToJPEG" -> selectFormat("jpeg", imageProperties::setTypeImage);
             case "btnToWEBP" -> selectFormat("webp", imageProperties::setTypeImage);
-            case "btnToTIFF" -> selectFormat("tif", imageProperties::setTypeImage);
-            case "btnToBMP" -> selectFormat("bmp", imageProperties::setTypeImage);
-            case "btnToPPM" -> selectFormat("ppm", imageProperties::setTypeImage);
-            case "btnToPAM" -> selectFormat("pam", imageProperties::setTypeImage);
-            case "btnToPGM" -> selectFormat("pgm", imageProperties::setTypeImage);
-            case "btnToSVG" -> selectFormat("svg", imageProperties::setTypeImage);
+            case "btnToTIFF" -> selectFormat("tif",  imageProperties::setTypeImage);
+            case "btnToBMP"  -> selectFormat("bmp",  imageProperties::setTypeImage);
+            case "btnToPPM"  -> selectFormat("ppm",  imageProperties::setTypeImage);
+            case "btnToPAM"  -> selectFormat("pam",  imageProperties::setTypeImage);
+            case "btnToPGM"  -> selectFormat("pgm",  imageProperties::setTypeImage);
+            case "btnToSVG"  -> selectFormat("svg",  imageProperties::setTypeImage);
         }
     }
 

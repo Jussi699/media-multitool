@@ -159,7 +159,9 @@ public class MergePdfController extends AbstractMediaController {
             progressBar.setProgress(1.0);
             BufferedImage firstPage = loadTask.getValue();
             if (firstPage != null) {
-                addPageToList(file, 0, firstPage);
+                PageEntry entry = new PageEntry(file, 0);
+                selectedPages.add(entry);
+                createPagePreviewCard(entry, firstPage);
             }
             enableControls();
             updateUIState();
@@ -180,12 +182,6 @@ public class MergePdfController extends AbstractMediaController {
         progressBar.progressProperty().bind(loadTask.progressProperty());
         
         new Thread(loadTask).start();
-    }
-
-    private void addPageToList(File file, int index, BufferedImage image) {
-        PageEntry entry = new PageEntry(file, index);
-        selectedPages.add(entry);
-        createPagePreviewCard(entry, image);
     }
 
     private void createPagePreviewCard(PageEntry entry, BufferedImage image) {
@@ -223,7 +219,8 @@ public class MergePdfController extends AbstractMediaController {
     }
 
     private void updateUIState() {
-        labelSelectFileName.setText(imageProperties.getImage() == null ? "Selected PDF file: none" : "Selected PDF: " + imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
+        labelSelectFileName.setText(imageProperties.getImage() == null
+                ? "Selected PDF file: none" : "Selected PDF: " + imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
         
         if (!selectedPages.isEmpty()) {
             enableControls();
@@ -264,7 +261,7 @@ public class MergePdfController extends AbstractMediaController {
                 if (!selectedPages.isEmpty()) {
                     baseName = selectedPages.getFirst().sourceFile.getName().replace(".pdf", "") + "_merged";
                 }
-                File outputFile = generateUniqueOutputFile(outputDirFile.getAbsolutePath(), baseName);
+                File outputFile = Util.generateUniquePdfOutputFile(outputDirFile.getAbsolutePath(), baseName);
 
                 try (PDDocument targetDoc = new PDDocument()) {
                     int totalFiles = selectedPages.size();
@@ -286,17 +283,6 @@ public class MergePdfController extends AbstractMediaController {
         };
 
         executeMediaTask(task);
-    }
-
-    private File generateUniqueOutputFile(String outputDirectory, String baseName) {
-        String shortId = UUID.randomUUID().toString().substring(0, 8);
-        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
-        int counter = 1;
-        while (outputFile.exists()) {
-            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
-            counter++;
-        }
-        return outputFile;
     }
 
     @Override

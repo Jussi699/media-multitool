@@ -241,7 +241,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
                 File outputDirFile = imageProperties.getOutput();
                 
                 String baseName = inputFile.getName().replace(".pdf", "") + "_modified";
-                File outputFile = generateUniqueOutputFile(outputDirFile.getAbsolutePath(), baseName);
+                File outputFile = Util.generateUniquePdfOutputFile(outputDirFile.getAbsolutePath(), baseName);
 
                 updateProgress(30, 100);
 
@@ -267,17 +267,6 @@ public class RemovePagesPdfController extends AbstractMediaController {
         };
 
         executeMediaTask(task);
-    }
-
-    private File generateUniqueOutputFile(String outputDirectory, String baseName) {
-        String shortId = UUID.randomUUID().toString().substring(0, 8);
-        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
-        int counter = 1;
-        while (outputFile.exists()) {
-            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
-            counter++;
-        }
-        return outputFile;
     }
 
     @Override

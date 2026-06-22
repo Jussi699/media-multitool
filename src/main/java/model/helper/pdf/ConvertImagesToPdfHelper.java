@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class ConvertImagesToPdfHelper {
@@ -28,26 +27,6 @@ public class ConvertImagesToPdfHelper {
             }
         }
         return false;
-    }
-
-    /**
-     * Generates a unique output file path by appending a counter if the file already exists
-     * 
-     * @param outputDirectory directory where the file will be saved
-     * @param baseName base name for the PDF file (without extension)
-     * @return unique File object with .pdf extension
-     */
-    public File generateUniqueOutputFile(String outputDirectory, String baseName) {
-        String shortId = UUID.randomUUID().toString().substring(0, 8);
-        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
-        
-        int counter = 1;
-        while (outputFile.exists()) {
-            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
-            counter++;
-        }
-        
-        return outputFile;
     }
 
     /**

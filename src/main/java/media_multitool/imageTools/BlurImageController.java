@@ -11,6 +11,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -22,6 +23,7 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 
 import static model.utility.Util.bindingImageViewToPreviewContainer;
@@ -30,8 +32,7 @@ import static viewHelp.Message.*;
 
 public class BlurImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
-    private BufferedImage originalBufferedImage;
-    private BufferedImage currentBufferedImage;
+    private BufferedImage originalBufferedImage, currentBufferedImage;
 
     @FXML private Slider sliderBlurry;
     @FXML private StackPane dropZone;
@@ -41,7 +42,7 @@ public class BlurImageController extends AbstractMediaController {
     @FXML private StackPane previewContainer;
 
     private Task<?> currentTask;
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -50,7 +51,7 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(sliderBlurry, btnSubmit);
+        listControls = List.of(sliderBlurry, btnSubmit);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -113,10 +114,8 @@ public class BlurImageController extends AbstractMediaController {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
-        if (btnCancel != null) {
-            btnCancel.setVisible(true);
-            btnCancel.setManaged(true);
-        }
+        btnCancel.setVisible(true);
+        btnCancel.setManaged(true);
     }
 
     @Override
@@ -125,20 +124,18 @@ public class BlurImageController extends AbstractMediaController {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
-        if (btnCancel != null) {
-            btnCancel.setVisible(false);
-            btnCancel.setManaged(false);
-        }
+        btnCancel.setVisible(false);
+        btnCancel.setManaged(false);
     }
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -147,7 +144,7 @@ public class BlurImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 

@@ -76,13 +76,9 @@ public class Alerts {
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(500), _ -> {
             String currentText = messageLabel.getText();
             String text = "Files is loading: ";
-            if (currentText.equals(text + ".")) {
-                messageLabel.setText(text + "..");
-            } else if (currentText.equals(text + "..")) {
-                messageLabel.setText(text + "...");
-            } else {
-                messageLabel.setText(text + ".");
-            }
+            if (currentText.equals(text + "."))       { messageLabel.setText(text + "..");  }
+            else if (currentText.equals(text + "..")) { messageLabel.setText(text + "..."); }
+            else                                      { messageLabel.setText(text + ".");   }
         }));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -98,8 +94,8 @@ public class Alerts {
         pane.getStyleClass().add("dialog-pane");
 
         switch (type) {
-            case WARNING -> pane.getStyleClass().add("warning");
-            case ERROR -> pane.getStyleClass().add("danger");
+            case WARNING           -> pane.getStyleClass().add("warning");
+            case ERROR             -> pane.getStyleClass().add("danger");
             case INFORMATION, NONE -> pane.getStyleClass().add("info");
         }
     }

@@ -112,12 +112,12 @@ public class Compressor {
 
         String normalized = format.toLowerCase(Locale.ROOT);
         return switch (normalized) {
-            case "jpg", "jpeg" -> "jpeg";
-            case "svg+xml", "svg" -> "svg";
-            case "tif", "tiff" -> "tiff";
+            case "jpg", "jpeg"                  -> "jpeg";
+            case "svg+xml", "svg"               -> "svg";
+            case "tif", "tiff"                  -> "tiff";
             case "x-icon", "vnd.microsoft.icon" -> "ico";
-            case "x-portable-pixmap" -> "ppm";
-            case "x-portable-graymap" -> "pgm";
+            case "x-portable-pixmap"            -> "ppm";
+            case "x-portable-graymap"           -> "pgm";
             default -> normalized;
         };
     }

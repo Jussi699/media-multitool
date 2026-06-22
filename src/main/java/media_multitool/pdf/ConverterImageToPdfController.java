@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.helper.pdf.ConverterPdfHelper;
 import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
@@ -46,6 +47,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
     private PDDocument currentDoc;
     private List<Control> listControls;
+
     @FXML
     public void initialize() {
         listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit);

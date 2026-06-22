@@ -53,11 +53,10 @@ public class ConverterAudioController extends AbstractMediaController {
     @FXML
     public void initialize() {
         initLists();
+        initComboBoxes();
 
         audioProperties.setOutput(getSavedPath());
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
-
-        initComboBoxes();
         
         checkBoxLossyCompression.setSelected(false);
         checkBoxLossyCompression.setDisable(true);
@@ -134,13 +133,13 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
         checkBoxLossyCompression.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
         if (audioProperties.getTargetFormat() != null) {
             boolean supportsChoice = MediaHelper.supportsCodecChoice(audioProperties.getTargetFormat());
             checkBoxLossyCompression.setDisable(!supportsChoice);
@@ -205,7 +204,7 @@ public class ConverterAudioController extends AbstractMediaController {
         return true;
     }
 
-    private boolean checkForNull(VideoAndAudioProperties audioProperties) {
+    private boolean checks(VideoAndAudioProperties audioProperties) {
         if(audioProperties.getOutput() == null){
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
             return false;
@@ -226,7 +225,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML
     public void onStartConversionPressed() {
-        if(!checkForNull(audioProperties)) {
+        if(!checks(audioProperties)) {
             return;
         }
 
@@ -316,17 +315,7 @@ public class ConverterAudioController extends AbstractMediaController {
             return;
         }
 
-        String selectedFormat = null;
-        switch (tb.getId()) {
-            case "btnToMP3" -> selectedFormat = "mp3";
-            case "btnToAAC" -> selectedFormat = "aac";
-            case "btnToOggVorbis" -> selectedFormat = "ogg";
-            case "btnToOPUS" -> selectedFormat = "opus";
-            case "btnToFLAC" -> selectedFormat = "flac";
-            case "btnToALAC" -> selectedFormat = "m4a";
-            case "btnToWAV" -> selectedFormat = "wav";
-            case "btnToAIFF" -> selectedFormat = "aiff";
-        }
+        String selectedFormat = getString(tb);
 
         if (selectedFormat != null) {
             selectFormat(selectedFormat, audioProperties::setTargetFormat);
@@ -339,6 +328,21 @@ public class ConverterAudioController extends AbstractMediaController {
         }
     }
 
+    private static String getString(ToggleButton tb) {
+        String selectedFormat = null;
+        switch (tb.getId()) {
+            case "btnToMP3"       -> selectedFormat = "mp3";
+            case "btnToAAC"       -> selectedFormat = "aac";
+            case "btnToOggVorbis" -> selectedFormat = "ogg";
+            case "btnToOPUS"      -> selectedFormat = "opus";
+            case "btnToFLAC"      -> selectedFormat = "flac";
+            case "btnToALAC"      -> selectedFormat = "m4a";
+            case "btnToWAV"       -> selectedFormat = "wav";
+            case "btnToAIFF"      -> selectedFormat = "aiff";
+        }
+        return selectedFormat;
+    }
+
     @FXML
     public void onChoiceComboBox(ActionEvent event) {
         if (!(event.getSource() instanceof ComboBox<?> source)) {
@@ -346,8 +350,8 @@ public class ConverterAudioController extends AbstractMediaController {
         }
 
         switch (source.getId()) {
-            case "comboBoxChoiceBitRate" -> audioProperties.setAudioBitRate(parseComboBoxStringToInt(comboBoxChoiceBitRate));
-            case "comboBoxChoiceChannels" -> audioProperties.setChannel(parseComboBoxStringToInt(comboBoxChoiceChannels));
+            case "comboBoxChoiceBitRate"      -> audioProperties.setAudioBitRate(parseComboBoxStringToInt(comboBoxChoiceBitRate));
+            case "comboBoxChoiceChannels"     -> audioProperties.setChannel(parseComboBoxStringToInt(comboBoxChoiceChannels));
             case "comboBoxChoiceSamplingRate" -> audioProperties.setSamplingRate(parseComboBoxStringToInt(comboBoxChoiceSamplingRate));
         }
     }

@@ -53,9 +53,7 @@ public class CompressorImageController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         initComboBoxes();
-
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
-
         isPressedReset();
 
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -130,7 +128,9 @@ public class CompressorImageController extends AbstractMediaController {
                             "Compression skipped: file would not shrink (%s -> %s)",
                             formatBytes(compressionResult.originalSizeBytes()),
                             formatBytes(compressionResult.compressedSizeBytes()));
+
                     showErrorMessage(labelSuccess, warningMessage, imageProperties.getHideSuccessMessageTimer());
+
                     Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
                             "The compressed file would be larger than the original, so it was not kept.");
                     return;
@@ -152,7 +152,7 @@ public class CompressorImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectImageFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 
@@ -161,24 +161,36 @@ public class CompressorImageController extends AbstractMediaController {
         selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
-    @FXML
-    public void submitCompressAndDownload() {
-        if (imageProperties.getImage() == null || imageProperties.getOutput() == null) {
+    private boolean checks(boolean isSvg, boolean qualityRequired) {
+        if (imageProperties.getImage() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
-            return;
+            return false;
         }
 
-        String targetFormat = UsefulMethods.normalizeFormat(imageProperties.getTypeImage());
-        boolean isSvg = "svg".equalsIgnoreCase(targetFormat);
-        boolean qualityRequired = "jpeg".equalsIgnoreCase(targetFormat) || "jpg".equalsIgnoreCase(targetFormat) || "webp".equalsIgnoreCase(targetFormat);
+        if (imageProperties.getOutput() == null) {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Output missing!", "Select output path first.");
+            return false;
+        }
 
         if (!isSvg && imageProperties.getScale() == -1) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Setting missing", "Missing settings", "First select Scale!");
-            return;
+            return false;
         }
 
         if (qualityRequired && imageProperties.getQuality() == -1) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Setting missing", "Missing settings", "First select Quality!");
+            return false;
+        }
+        return true;
+    }
+
+    @FXML
+    public void submitCompressAndDownload() {
+        String targetFormat = UsefulMethods.normalizeFormat(imageProperties.getTypeImage());
+        boolean isSvg = "svg".equalsIgnoreCase(targetFormat);
+        boolean qualityRequired = "jpeg".equalsIgnoreCase(targetFormat) || "jpg".equalsIgnoreCase(targetFormat) || "webp".equalsIgnoreCase(targetFormat);
+
+        if(!checks(isSvg, qualityRequired)) {
             return;
         }
 
@@ -271,7 +283,6 @@ public class CompressorImageController extends AbstractMediaController {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
             }
         }
-
 
         textDragZone.setText("Selected: " + selectedFile.getName());
 

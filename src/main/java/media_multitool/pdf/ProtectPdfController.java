@@ -52,8 +52,7 @@ public class ProtectPdfController extends AbstractMediaController {
     private PDDocument currentDoc;
     private List<Control> listControls;
 
-    private String typePassword;
-    private String repeatPassword;
+    private String typePassword, repeatPassword;
 
     @FXML
     public void initialize() {
@@ -70,7 +69,6 @@ public class ProtectPdfController extends AbstractMediaController {
         setupListener();
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
         setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
 
         isPressedReset();
@@ -173,41 +171,48 @@ public class ProtectPdfController extends AbstractMediaController {
         btnShowRepeatPassword.setDisable(false);
     }
 
+    private void turnTypePassword(boolean isSelected) {
+       if(isSelected) {
+           typePasswordTextField.setText(typePassword);
+           typePasswordTextField.setVisible(true);
+           typePasswordTextField.setManaged(true);
+           typePasswordField.setVisible(false);
+           typePasswordField.setManaged(false);
+       }
+       else {
+           typePasswordField.setText(typePassword);
+           typePasswordField.setVisible(true);
+           typePasswordField.setManaged(true);
+           typePasswordTextField.setVisible(false);
+           typePasswordTextField.setManaged(false);
+       }
+    }
+
+    private void turnRepeatPassword(boolean isSelected) {
+        if(isSelected) {
+            repeatPasswordTextField.setText(repeatPassword);
+            repeatPasswordTextField.setVisible(true);
+            repeatPasswordTextField.setManaged(true);
+            repeatPasswordField.setVisible(false);
+            repeatPasswordField.setManaged(false);
+        }
+        else {
+            repeatPasswordField.setText(repeatPassword);
+            repeatPasswordField.setVisible(true);
+            repeatPasswordField.setManaged(true);
+            repeatPasswordTextField.setVisible(false);
+            repeatPasswordTextField.setManaged(false);
+        }
+    }
+
+
     @FXML
     private void turnShowPassword(ActionEvent actionEvent) {
         ToggleButton source = (ToggleButton) actionEvent.getSource();
 
         switch (source.getId()) {
-            case "btnShowTypePassword" -> {
-                if (source.isSelected()) {
-                    typePasswordTextField.setText(typePassword);
-                    typePasswordTextField.setVisible(true);
-                    typePasswordTextField.setManaged(true);
-                    typePasswordField.setVisible(false);
-                    typePasswordField.setManaged(false);
-                } else {
-                    typePasswordField.setText(typePassword);
-                    typePasswordField.setVisible(true);
-                    typePasswordField.setManaged(true);
-                    typePasswordTextField.setVisible(false);
-                    typePasswordTextField.setManaged(false);
-                }
-            }
-            case "btnShowRepeatPassword" -> {
-                if (source.isSelected()) {
-                    repeatPasswordTextField.setText(repeatPassword);
-                    repeatPasswordTextField.setVisible(true);
-                    repeatPasswordTextField.setManaged(true);
-                    repeatPasswordField.setVisible(false);
-                    repeatPasswordField.setManaged(false);
-                } else {
-                    repeatPasswordField.setText(repeatPassword);
-                    repeatPasswordField.setVisible(true);
-                    repeatPasswordField.setManaged(true);
-                    repeatPasswordTextField.setVisible(false);
-                    repeatPasswordTextField.setManaged(false);
-                }
-            }
+            case "btnShowTypePassword" -> turnTypePassword(source.isSelected());
+            case "btnShowRepeatPassword" -> turnRepeatPassword(source.isSelected());
         }
     }
 
@@ -217,7 +222,7 @@ public class ProtectPdfController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectPdfFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
-                "Choice PDF file"
+                "Select PDF"
         ).ifPresent(this::loadFile);
     }
 
@@ -386,7 +391,7 @@ public class ProtectPdfController extends AbstractMediaController {
         }
         
         labelPasswordMatch.setVisible(false);
-        
+
         if (btnShowTypePassword.isSelected()) {
             btnShowTypePassword.setSelected(false);
             typePasswordField.setVisible(true);

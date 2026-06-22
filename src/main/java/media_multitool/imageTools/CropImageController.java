@@ -14,6 +14,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.helper.imageTools.CropHelper;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
@@ -27,6 +28,7 @@ import viewHelp.ZoomControlHelper;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 import static model.utility.Util.getSavedPath;
 import static viewHelp.Message.*;
@@ -46,12 +48,10 @@ public class CropImageController extends AbstractMediaController {
             btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3,btnAspectRatio2x3, btnAspectRatio3x2,btnAspectRatio5x7,btnAspectRatio7x5,
             btnAspectRatio1x2,btnAspectRatio2x1, btnSubmit;
 
-
-
     private BufferedImage originalBufferedImage;
     private ZoomControlHelper zoomControlHelper;
     private CropHelper cropHelper;
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -60,7 +60,7 @@ public class CropImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(
+        listControls = List.of(
                 btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9, btnAspectRatio4x5,
                 btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3, btnAspectRatio2x3,
                 btnAspectRatio3x2, btnAspectRatio5x7, btnAspectRatio7x5, btnAspectRatio1x2,
@@ -108,28 +108,24 @@ public class CropImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
-        if (btnReset != null) {
-            btnReset.setDisable(true);
-        }
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
-        if (btnReset != null) {
-            btnReset.setDisable(false);
-        }
+        btnReset.setDisable(false);
     }
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -138,7 +134,7 @@ public class CropImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 
@@ -291,32 +287,18 @@ public class CropImageController extends AbstractMediaController {
     public void onActionSelectAspectRatio(ActionEvent event) {
         Object source = event.getSource();
 
-        if (source == btnAspectRatioSquare) {
-            cropHelper.setupAspectRatio(1.0, 1.0);
-        } else if (source == btnAspectRatio9x16) {
-            cropHelper.setupAspectRatio(9.0, 16.0);
-        } else if (source == btnAspectRatio16x9) {
-            cropHelper.setupAspectRatio(16.0, 9.0);
-        } else if (source == btnAspectRatio4x5) {
-            cropHelper.setupAspectRatio(4.0, 5.0);
-        } else if (source == btnAspectRatio5x4) {
-            cropHelper.setupAspectRatio(5.0, 4.0);
-        } else if (source == btnAspectRatio3x4) {
-            cropHelper.setupAspectRatio(3.0, 4.0);
-        } else if (source == btnAspectRatio4x3) {
-            cropHelper.setupAspectRatio(4.0, 3.0);
-        } else if (source == btnAspectRatio2x3) {
-            cropHelper.setupAspectRatio(2.0, 3.0);
-        } else if (source == btnAspectRatio3x2) {
-            cropHelper.setupAspectRatio(3.0, 2.0);
-        } else if (source == btnAspectRatio5x7) {
-            cropHelper.setupAspectRatio(5.0, 7.0);
-        } else if (source == btnAspectRatio7x5) {
-            cropHelper.setupAspectRatio(7.0, 5.0);
-        } else if (source == btnAspectRatio1x2) {
-            cropHelper.setupAspectRatio(1.0, 2.0);
-        } else if (source == btnAspectRatio2x1) {
-            cropHelper.setupAspectRatio(2.0, 1.0);
-        }
+        if      (source == btnAspectRatioSquare)  cropHelper.setupAspectRatio(1.0, 1.0);
+        else if (source == btnAspectRatio9x16)    cropHelper.setupAspectRatio(9.0, 16.0);
+        else if (source == btnAspectRatio16x9)    cropHelper.setupAspectRatio(16.0, 9.0);
+        else if (source == btnAspectRatio4x5)     cropHelper.setupAspectRatio(4.0, 5.0);
+        else if (source == btnAspectRatio5x4)     cropHelper.setupAspectRatio(5.0, 4.0);
+        else if (source == btnAspectRatio3x4)     cropHelper.setupAspectRatio(3.0, 4.0);
+        else if (source == btnAspectRatio4x3)     cropHelper.setupAspectRatio(4.0, 3.0);
+        else if (source == btnAspectRatio2x3)     cropHelper.setupAspectRatio(2.0, 3.0);
+        else if (source == btnAspectRatio3x2)     cropHelper.setupAspectRatio(3.0, 2.0);
+        else if (source == btnAspectRatio5x7)     cropHelper.setupAspectRatio(5.0, 7.0);
+        else if (source == btnAspectRatio7x5)     cropHelper.setupAspectRatio(7.0, 5.0);
+        else if (source == btnAspectRatio1x2)     cropHelper.setupAspectRatio(1.0, 2.0);
+        else if (source == btnAspectRatio2x1)     cropHelper.setupAspectRatio(2.0, 1.0);
     }
 }

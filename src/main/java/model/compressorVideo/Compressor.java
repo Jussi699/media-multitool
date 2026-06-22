@@ -20,10 +20,11 @@ public class Compressor {
     private String videoCodec;
     private String audioCodec;
     private String ffmpegFormat;
-    @Setter private boolean useGPU;
-    @Setter private boolean compressAudio = true;
     private volatile File currentTarget;
     private final Encoder encoder = new Encoder();
+
+    @Setter private boolean useGPU;
+    @Setter private boolean compressAudio = true;
 
     public void compress(File videoFile, File output,
                                 VideoAttributes video, AudioAttributes audio, Consumer<Double> progressConsumer) throws EncoderException {

@@ -150,7 +150,7 @@ public class PdfPagePreviewCard {
         StackPane.setAlignment(button, Pos.TOP_RIGHT);
         
         button.setOnMouseEntered(_ -> circle.setStyle("-fx-fill: #ff6666; -fx-stroke: white; -fx-stroke-width: 2;"));
-        button.setOnMouseExited(_ -> circle.setStyle("-fx-fill: #ff4444; -fx-stroke: white; -fx-stroke-width: 1;"));
+        button.setOnMouseExited(_  -> circle.setStyle("-fx-fill: #ff4444; -fx-stroke: white; -fx-stroke-width: 1;"));
         button.setOnMouseClicked(_ -> onDelete.run());
         
         return button;

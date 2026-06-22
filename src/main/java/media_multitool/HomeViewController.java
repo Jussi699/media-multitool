@@ -68,6 +68,8 @@ public class HomeViewController {
         );
     }
 
+    //--------------------------Image--------------------------//
+
     @FXML
     private void onOpenNegativeImagePressed() {
         if (mainController != null) {
@@ -125,6 +127,22 @@ public class HomeViewController {
     }
 
     @FXML
+    private void onOpenCropImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(9);
+        }
+    }
+
+    @FXML
+    private void onOpenColorReplaceInImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(10);
+        }
+    }
+
+    //--------------------------PDF--------------------------//
+
+    @FXML
     private void onOpenImageToPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(21);
@@ -146,46 +164,45 @@ public class HomeViewController {
     }
 
     @FXML
-    private void onOpenProtectPdfPressed() {
+    public void onOpenRemovePagesPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(24);
         }
     }
 
     @FXML
-    private void onOpenColorReplaceInImagePressed() {
-        if (mainController != null) {
-            mainController.onActionChoiceActionImage(10);
-        }
-    }
-
-    public void onOpenUnlockPdfPressed() {
+    private void onOpenProtectPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(25);
         }
     }
 
-    public void onOpenRemovePagesPdfPressed() {
+    @FXML
+    public void onOpenUnlockPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(26);
         }
     }
 
+    @FXML
     public void onOpenCompressPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(27);
         }
     }
 
+    @FXML
     public void onOpenMergePdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(28);
         }
     }
 
+    @FXML
     public void onOpenSplitPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(29);
         }
     }
+
 }

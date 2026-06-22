@@ -25,6 +25,17 @@ public class VideoOperationsTest {
         File source = new File(PATH_TO_VIDEO);
         ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
 
+        VideoAndAudioProperties properties = getVideoAndAudioProperties(source);
+
+        boolean success = converter.convert(properties, TypeMedia.VIDEO , _  -> {});
+
+        assertTrue(success);
+        File result = converter.nameFileAfter;
+        assertNotNull(result);
+        assertTrue(result.exists());
+    }
+
+    private VideoAndAudioProperties getVideoAndAudioProperties(File source) {
         VideoAndAudioProperties properties = new VideoAndAudioProperties();
         properties.setSrcFile(source);
         properties.setOutput(tempDir.toFile());
@@ -37,13 +48,7 @@ public class VideoOperationsTest {
         properties.setAudioCodec("aac");
         properties.setFfmpegFormat("mp4");
         properties.setResolution("1280x720");
-
-        boolean success = converter.convert(properties, TypeMedia.VIDEO , _  -> {});
-
-        assertTrue(success);
-        File result = converter.nameFileAfter;
-        assertNotNull(result);
-        assertTrue(result.exists());
+        return properties;
     }
 
     @Test

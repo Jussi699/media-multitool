@@ -11,6 +11,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -23,6 +24,7 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static model.utility.Util.bindingImageViewToPreviewContainer;
@@ -35,10 +37,8 @@ public class ColorReplaceImageController extends AbstractMediaController {
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer, dropZone;
     
-    @FXML private ComboBox<String> comboSourceColor;
-    @FXML private ComboBox<String> comboTargetColor;
-    @FXML private TextField textSourceColorHex;
-    @FXML private TextField textTargetColorHex;
+    @FXML private ComboBox<String> comboSourceColor, comboTargetColor;
+    @FXML private TextField textSourceColorHex, textTargetColorHex;
     @FXML private Spinner<Double> spinnerIntensity;
     @FXML private Spinner<Integer> spinnerSmoothing, spinnerEnhancement;
     @FXML private ToggleButton toggleJPEG, togglePNG;
@@ -47,7 +47,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
     private BufferedImage originalBufferedImage, currentBufferedImage;
 
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -56,7 +56,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(
+        listControls = List.of(
             comboSourceColor, comboTargetColor, textSourceColorHex, textTargetColorHex,
             spinnerIntensity, spinnerSmoothing, spinnerEnhancement, 
             toggleJPEG, togglePNG, checkBoxReplaceAllColors, btnSubmit
@@ -178,19 +178,18 @@ public class ColorReplaceImageController extends AbstractMediaController {
                 }
                 
                 BufferedImage processed;
-                
+
+                double intensity = spinnerIntensity.getValue();
+                int enhancement = spinnerEnhancement.getValue();
+
                 if (checkBoxReplaceAllColors.isSelected()) {
-                    double intensity = spinnerIntensity.getValue();
-                    int enhancement = spinnerEnhancement.getValue();
                     processed = ColorReplaceHelper.replaceAllColors(originalBufferedImage, targetHex, intensity, enhancement);
                 } else {
                     String sourceHex = textSourceColorHex.getText();
                     if (!ColorReplaceHelper.isValidHex(sourceHex)) {
                         return;
                     }
-                    double intensity = spinnerIntensity.getValue();
                     int smoothing = spinnerSmoothing.getValue();
-                    int enhancement = spinnerEnhancement.getValue();
                     processed = ColorReplaceHelper.replaceColor(originalBufferedImage, sourceHex, targetHex, intensity, smoothing, enhancement);
                 }
                 
@@ -230,24 +229,24 @@ public class ColorReplaceImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -256,7 +255,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 

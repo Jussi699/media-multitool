@@ -11,6 +11,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
@@ -22,6 +23,7 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 import static model.utility.Util.bindingImageViewToPreviewContainer;
 import static model.utility.Util.getSavedPath;
@@ -30,15 +32,14 @@ import static viewHelp.Message.*;
 public class DarkenImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
+    @FXML private BufferedImage originalBufferedImage, currentBufferedImage;
     @FXML private Slider sliderDarken;
-    private BufferedImage originalBufferedImage, currentBufferedImage;
-
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -47,11 +48,10 @@ public class DarkenImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(sliderDarken, btnSubmit);
+        listControls = List.of(sliderDarken, btnSubmit);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         sliderDarken.setMin(0);
@@ -109,12 +109,12 @@ public class DarkenImageController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -123,7 +123,7 @@ public class DarkenImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 

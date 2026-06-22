@@ -12,19 +12,7 @@ import java.io.IOException;
 public class ProtectPdfHelper {
     public static File protectPdf(File inputFile, File outputFile, String ownerPassword, String userPassword) throws IOException {
         try (PDDocument document = Loader.loadPDF(inputFile)) {
-            AccessPermission ap = new AccessPermission();
-            
-            ap.setCanPrint(false);
-            ap.setCanModify(false);
-            ap.setCanExtractContent(false);
-            ap.setCanModifyAnnotations(false);
-            ap.setCanFillInForm(false);
-            ap.setCanExtractForAccessibility(true);
-            ap.setCanAssembleDocument(false);
-
-            StandardProtectionPolicy policy = new StandardProtectionPolicy(ownerPassword, userPassword, ap);
-            policy.setEncryptionKeyLength(256);
-            policy.setPermissions(ap);
+            StandardProtectionPolicy policy = getStandardProtectionPolicy(ownerPassword, userPassword);
 
             document.protect(policy);
             document.save(outputFile);
@@ -35,5 +23,21 @@ public class ProtectPdfHelper {
             ErrorLogger.error("Error protecting PDF: " + e.getMessage());
             throw e;
         }
+    }
+
+    private static StandardProtectionPolicy getStandardProtectionPolicy(String ownerPassword, String userPassword) {
+        AccessPermission ap = new AccessPermission();
+
+        ap.setCanPrint(false);
+        ap.setCanModify(false);
+        ap.setCanExtractContent(false);
+        ap.setCanModifyAnnotations(false);
+        ap.setCanFillInForm(false);
+        ap.setCanExtractForAccessibility(true);
+        ap.setCanAssembleDocument(false);
+
+        StandardProtectionPolicy policy = new StandardProtectionPolicy(ownerPassword, userPassword, ap);
+        policy.setEncryptionKeyLength(256);
+        return policy;
     }
 }

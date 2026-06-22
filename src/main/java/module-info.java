@@ -1,7 +1,6 @@
 module media_multitool {
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.media;
 
     requires java.desktop;
     requires image4j;
@@ -14,7 +13,6 @@ module media_multitool {
     requires colorpicker;
     requires jaudiotagger;
     requires java.logging;
-    requires javafx.web;
     requires org.apache.pdfbox;
     requires static lombok;
     requires ch.qos.logback.classic;
@@ -44,4 +42,5 @@ module media_multitool {
     opens media_multitool.editors to javafx.fxml;
     exports media_multitool.pdf;
     opens media_multitool.pdf to javafx.fxml;
+    exports model.checks;
 }

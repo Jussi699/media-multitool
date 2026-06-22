@@ -158,7 +158,7 @@ public class UnlockPdfController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectPdfFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
-                "Choice PDF file"
+                "Select PDF"
         ).ifPresent(this::loadFile);
     }
 

@@ -11,6 +11,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -22,6 +23,7 @@ import viewHelp.Alerts;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 import static model.utility.Util.bindingImageViewToPreviewContainer;
 import static model.utility.Util.getSavedPath;
@@ -32,15 +34,12 @@ public class BlackWhiteImageController extends AbstractMediaController {
     private BufferedImage originalBufferedImage;
     private BufferedImage currentBufferedImage;
 
-    @FXML private StackPane dropZone;
+    @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit;
-    @FXML private Label labelSelectFile;
-    @FXML private Label textDragZone;
+    @FXML private Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
-    @FXML private Label labelPreviewPlaceholder;
-    @FXML private StackPane previewContainer;
 
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -49,11 +48,10 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(btnSubmit);
+        listControls = List.of(btnSubmit);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -93,24 +91,24 @@ public class BlackWhiteImageController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
-        if (btnReset != null) btnReset.setDisable(true);
+        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
-        if (btnReset != null) btnReset.setDisable(false);
+        btnReset.setDisable(false);
     }
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+         listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -119,7 +117,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 
@@ -130,9 +128,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
-            return;
-        }
+        if(Checking.checkImageAndOutputOnNull(imageProperties, currentBufferedImage)) return;
 
         Task<File> task = new Task<>() {
             @Override

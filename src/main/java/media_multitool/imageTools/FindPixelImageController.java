@@ -15,6 +15,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.helper.imageTools.PixelHelper;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
@@ -29,6 +30,7 @@ import viewHelp.ZoomControlHelper;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 import static model.utility.Util.*;
 import static viewHelp.Message.*;
@@ -49,7 +51,7 @@ public class FindPixelImageController extends AbstractMediaController {
     @FXML private Rectangle colorPreview;
 
     private ZoomControlHelper zoomControlHelper;
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -58,7 +60,7 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex);
+        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -132,12 +134,12 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -146,7 +148,7 @@ public class FindPixelImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 

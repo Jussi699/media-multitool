@@ -8,7 +8,7 @@ import javafx.scene.layout.StackPane;
 import java.io.File;
 import java.util.List;
 
-import static model.utility.Checking.isSupportedMediaFile;
+import static model.checks.Checking.isSupportedMediaFile;
 
 public class DragDropped {
     public static void handleDragOver(DragEvent e, List<String> supportedExtensions, StackPane dropZone) {

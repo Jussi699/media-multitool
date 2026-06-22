@@ -14,6 +14,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.embed.swing.SwingFXUtils;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
@@ -53,7 +54,6 @@ public class TurnImageController extends AbstractMediaController {
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -95,12 +95,12 @@ public class TurnImageController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -109,7 +109,7 @@ public class TurnImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 
@@ -128,9 +128,9 @@ public class TurnImageController extends AbstractMediaController {
 
         String side = switch (source.getId()) {
             case "btnFlipHorizontally" -> "flip_horizontally";
-            case "btnFlipVertically" -> "flip_vertically";
-            case "btnTurnImageRight" -> "turn_right";
-            case "btnTurnImageLeft" -> "turn_left";
+            case "btnFlipVertically"   -> "flip_vertically";
+            case "btnTurnImageRight"   -> "turn_right";
+            case "btnTurnImageLeft"    -> "turn_left";
 
             default -> throw new IllegalStateException("Unexpected value: " + source.getId());
         };

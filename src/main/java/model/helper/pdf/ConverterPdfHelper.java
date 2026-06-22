@@ -59,18 +59,12 @@ public class ConverterPdfHelper {
 
     private PDRectangle determinePageSize(String pageSizeType, PDImageXObject image, String orientation) {
         PDRectangle rect;
-        switch (pageSizeType.toLowerCase()) {
-            case "a4":
-                rect = PDRectangle.A4;
-                break;
-            case "us letter":
-                rect = PDRectangle.LETTER;
-                break;
-            case "fix":
-            default:
-                rect = new PDRectangle(image.getWidth(), image.getHeight());
-                return rect;
-        }
+
+        rect = switch (pageSizeType.toLowerCase()) {
+            case "a4"        -> PDRectangle.A4;
+            case "us letter" -> PDRectangle.LETTER;
+            default          -> new PDRectangle(image.getWidth(), image.getHeight());
+        };
 
         if ("landscape".equalsIgnoreCase(orientation)) {
             rect = new PDRectangle(rect.getHeight(), rect.getWidth());

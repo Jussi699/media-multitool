@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -20,6 +21,7 @@ import viewHelp.Alerts;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 import static model.utility.Util.*;
 import static viewHelp.Message.*;
@@ -38,15 +40,14 @@ public class NegativeImageController extends AbstractMediaController {
     @FXML private ImageView imageViewPreview;
 
     private BufferedImage originalBufferedImage, currentBufferedImage;
-    private java.util.List<Control> listControls;
+    private List<Control> listControls;
 
     @FXML
     public void initialize() {
-        listControls = java.util.List.of(btnSubmit);
+        listControls = List.of(btnSubmit);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -69,12 +70,12 @@ public class NegativeImageController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
@@ -83,7 +84,7 @@ public class NegativeImageController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
+                "Select image"
         ).ifPresent(this::loadFile);
     }
 

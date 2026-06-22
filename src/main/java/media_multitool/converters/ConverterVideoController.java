@@ -58,21 +58,12 @@ public class ConverterVideoController extends AbstractMediaController {
         assert dropZone != null;
         assert textDragZone != null;
 
+        initLists();
+        initComboBoxes();
+
         videoProperties.setOutput(getSavedPath());
 
-        List<ToggleButton> listToggleBtn = List.of(
-                btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP
-        );
-
-        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
-        
-        listControls = new ArrayList<>(listToggleBtn);
-        listControls.addAll(List.of(comboBoxChoiceVideoBitRate, comboBoxChoiceAudioBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate, 
-                comboBoxChoiceFPS, comboBoxChoiceResolution, checkBoxGPU, btnSubmitAndDownload, btnCancelConversion));
-
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
-
-        initComboBoxes();
 
         resetToDefaults();
 
@@ -80,12 +71,24 @@ public class ConverterVideoController extends AbstractMediaController {
         isPressedReset();
     }
 
+    private void initLists() {
+        List<ToggleButton> listToggleBtn = List.of(
+                btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP
+        );
+
+        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
+
+        listControls = new ArrayList<>(listToggleBtn);
+        listControls.addAll(List.of(comboBoxChoiceVideoBitRate, comboBoxChoiceAudioBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate,
+                comboBoxChoiceFPS, comboBoxChoiceResolution, checkBoxGPU, btnSubmitAndDownload, btnCancelConversion));
+    }
+
     private void initComboBoxes() {
         ComboBoxes.setupComboBox(comboBoxChoiceVideoBitRate, Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceAudioBitRate, Item::title);
-        ComboBoxes.setupComboBox(comboBoxChoiceChannels, Item::title);
+        ComboBoxes.setupComboBox(comboBoxChoiceChannels,     Item::title);
         ComboBoxes.setupComboBox(comboBoxChoiceSamplingRate, Item::title);
-        ComboBoxes.setupComboBox(comboBoxChoiceFPS, Item::title);
+        ComboBoxes.setupComboBox(comboBoxChoiceFPS,          Item::title);
 
         comboBoxChoiceVideoBitRate.getItems().addAll(
                 new Item(-1, "V: Match source"),
@@ -303,7 +306,7 @@ public class ConverterVideoController extends AbstractMediaController {
         );
     }
 
-    private boolean checkForNull() {
+    private boolean checks() {
         if(videoProperties.getSrcFile() == null) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Missing selection", "Select video file!");
             return false;
@@ -324,7 +327,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
     @FXML
     public void onStartConversionPressed() {
-       if(!checkForNull()) {
+       if(!checks()) {
            return;
        }
 

@@ -86,12 +86,12 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @Override
@@ -128,22 +128,18 @@ public class CompressorVideoController extends AbstractMediaController {
         if (videoProperties.getSrcFile() != null && adaptivePresets != null) {
             adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
             
-            // Update the selected preset if one is active
             if (selectedPreset != null) {
                 ToggleButton selected = (ToggleButton) toggleGroup.getSelectedToggle();
-                if (selected == btnBasicCompress) {
-                    selectedPreset = adaptivePresets[0];
-                } else if (selected == btnStrongCompress) {
-                    selectedPreset = adaptivePresets[1];
-                } else if (selected == btnSuperCompress) {
-                    selectedPreset = adaptivePresets[2];
-                }
+                if      (selected == btnBasicCompress)   {selectedPreset = adaptivePresets[0];}
+                else if (selected == btnStrongCompress)  {selectedPreset = adaptivePresets[1];}
+                else if (selected == btnSuperCompress)   {selectedPreset = adaptivePresets[2];}
+
                 updateEstimatedSize();
             }
         }
     }
 
-    private boolean checkForNull() {
+    private boolean checks() {
         if (!(btnBasicCompress.isSelected() || btnStrongCompress.isSelected() || btnSuperCompress.isSelected())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Unselected preset option!", "Unselected preset option!",
                     "First, select a pre-configured compression option!");
@@ -167,7 +163,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if(!checkForNull()) {
+        if(!checks()) {
             return;
         }
 
@@ -211,7 +207,6 @@ public class CompressorVideoController extends AbstractMediaController {
         progressBar.setVisible(true);
         progressBar.setManaged(true);
         progressBar.setProgress(0);
-
 
         chkUseGPU.setSelected(false);
         chkCompressAudio.setSelected(true);

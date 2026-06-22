@@ -1,6 +1,7 @@
 package model.helper.imageTools;
 
 import javafx.application.Platform;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
@@ -269,7 +270,7 @@ public class CropHelper {
         Point2D topLeft = imageViewPreview.localToParent(localX, localY);
         Point2D bottomRight = imageViewPreview.localToParent(localRight, localBottom);
 
-        return new javafx.geometry.BoundingBox(
+        return new BoundingBox(
                 topLeft.getX(),
                 topLeft.getY(),
                 bottomRight.getX() - topLeft.getX(),
@@ -289,7 +290,7 @@ public class CropHelper {
                 displayedImage.y + displayedImage.height
         );
 
-        return new javafx.geometry.BoundingBox(
+        return new BoundingBox(
                 topLeft.getX(),
                 topLeft.getY(),
                 bottomRight.getX() - topLeft.getX(),

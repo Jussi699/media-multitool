@@ -84,9 +84,9 @@ public class ConverterVideoAudioFile {
 
     private String getExtensionFromFormat(String format) {
         if ("matroska".equalsIgnoreCase(format)) return "mkv";
-        if ("ipod".equalsIgnoreCase(format)) return "m4a";
-        if ("adts".equalsIgnoreCase(format)) return "aac";
-        if ("asf".equalsIgnoreCase(format)) return "wmv";
+        if ("ipod".equalsIgnoreCase(format))     return "m4a";
+        if ("adts".equalsIgnoreCase(format))     return "aac";
+        if ("asf".equalsIgnoreCase(format))      return "wmv";
         return format;
     }
 
@@ -94,11 +94,9 @@ public class ConverterVideoAudioFile {
         EncodingAttributes attrs = new EncodingAttributes();
         String outputFormat = properties.getFfmpegFormat();
         String normalizedFormat = outputFormat;
-        if ("mkv".equalsIgnoreCase(outputFormat)) {
-            normalizedFormat = "matroska";
-        } else if ("m4a".equalsIgnoreCase(outputFormat)) {
-            normalizedFormat = "ipod";
-        }
+        if ("mkv".equalsIgnoreCase(outputFormat))      { normalizedFormat = "matroska"; }
+        else if ("m4a".equalsIgnoreCase(outputFormat)) { normalizedFormat = "ipod";     }
+
         attrs.setOutputFormat(normalizedFormat);
 
         boolean isVideo = (type == TypeMedia.VIDEO);
@@ -163,9 +161,7 @@ public class ConverterVideoAudioFile {
         video.setPixelFormat("yuv420p");
 
         int fps = properties.getFps();
-        if (fps > 0) {
-            video.setFrameRate(fps);
-        }
+        if (fps > 0) { video.setFrameRate(fps); }
 
         PreparingAttributes.parseSize(properties.getResolution()).ifPresent(video::setSize);
         return video;

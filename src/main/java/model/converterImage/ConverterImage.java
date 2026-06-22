@@ -12,23 +12,12 @@ public class ConverterImage {
             throw new IllegalArgumentException("Output format is null");
         }
 
-        switch (typeFile){
-            case "tiff", "tif" -> {
-                return "tif";
-            }
-            case "jpeg", "jpg", "jpe" -> {
-                if(typeFile.equalsIgnoreCase("jpe")){
-                    return "jpe";
-                }
-                return "jpg";
-            }
-            case "bmp" -> {
-                return "bmp";
-            }
-            default -> {
-                return typeFile.toLowerCase(Locale.ROOT);
-            }
-        }
+        return switch (typeFile){
+            case "tiff", "tif"        ->  "tif";
+            case "jpeg", "jpg", "jpe" ->  typeFile.equalsIgnoreCase("jpe") ? "jpe" : "jpg";
+            case "bmp"                ->  "bmp";
+            default                   ->  typeFile.toLowerCase(Locale.ROOT);
+        };
     }
 
     public static BufferedImage prepareImageForFormat(BufferedImage source, String format) {

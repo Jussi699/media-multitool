@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.checks.Checking;
 import model.helper.pdf.CompressPdfHelper;
 import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
@@ -56,7 +57,6 @@ public class CompressPdfController extends AbstractMediaController {
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
         setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
 
         isPressedReset();
@@ -207,9 +207,9 @@ public class CompressPdfController extends AbstractMediaController {
         CompressPdfHelper.CompressionLevel level = getSelectedCompressionLevel();
 
         double factor = switch (level) {
-            case LOW -> 0.9;
+            case LOW    -> 0.9;
             case MEDIUM -> 0.6;
-            case HIGH -> 0.3;
+            case HIGH   -> 0.3;
         };
 
         long estimatedSize = (long) (originalSize * factor);
@@ -240,6 +240,16 @@ public class CompressPdfController extends AbstractMediaController {
         );
     }
 
+    private void isEncrypted(PDDocument doc) {
+        if (doc.isEncrypted()) {
+            showErrorMessage(labelSuccess, "PDF file is encrypted! Please unlock it first.", imageProperties.getHideSuccessMessageTimer());
+            disableControls();
+            labelPreviewPlaceholder.setText("Encrypted PDF - Preview unavailable");
+            labelPreviewPlaceholder.setVisible(true);
+            imageViewPdf.setImage(null);
+        }
+    }
+
     private void loadFile(File selectedFile) {
         enableControls();
         hideSuccessMessage(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -248,13 +258,7 @@ public class CompressPdfController extends AbstractMediaController {
             currentDoc = PdfHelper.closeDocument(currentDoc);
             currentDoc = Loader.loadPDF(selectedFile);
 
-            if (currentDoc.isEncrypted()) {
-                showErrorMessage(labelSuccess, "PDF file is encrypted! Please unlock it first.", imageProperties.getHideSuccessMessageTimer());
-                disableControls();
-                labelPreviewPlaceholder.setText("Encrypted PDF - Preview unavailable");
-                labelPreviewPlaceholder.setVisible(true);
-                imageViewPdf.setImage(null);
-            }
+            isEncrypted(currentDoc);
         } catch (IOException e) {
             String errorMsg = e.getMessage().toLowerCase();
             if (errorMsg.contains("password") || errorMsg.contains("encrypted") || errorMsg.contains("owner") || errorMsg.contains("user")) {

@@ -57,11 +57,11 @@ public class UsefulMethods {
 
         String normalizedFormat = format.toLowerCase();
         return switch (normalizedFormat) {
-            case "jpg" -> "jpeg";
-            case "svg+xml" -> "svg";
-            case "tif" -> "tiff";
+            case "jpg"                          -> "jpeg";
+            case "svg+xml"                      -> "svg";
+            case "tif"                          -> "tiff";
             case "x-icon", "vnd.microsoft.icon" -> "ico";
-            default -> normalizedFormat;
+            default                             -> normalizedFormat;
         };
 
     }

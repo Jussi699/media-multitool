@@ -168,10 +168,6 @@ public class Util {
         dropZone.getStyleClass().removeAll(java.util.Collections.singleton("drop-zone-filled"));
     }
 
-    private static String nullToEmpty(String value) {
-        return value != null ? value : "";
-    }
-
     public static void bindingImageViewToPreviewContainer(ImageView imageViewPreview, StackPane previewContainer) {
         if(imageViewPreview != null && previewContainer != null) {
             if (!imageViewPreview.fitWidthProperty().isBound()) {
@@ -188,5 +184,16 @@ public class Util {
         final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return String.format("%.1f %s", size / Math.pow(1024, digitGroups), units[digitGroups]);
+    }
+
+    public static File generateUniquePdfOutputFile(String outputDirectory, String baseName) {
+        String shortId = UUID.randomUUID().toString().substring(0, 8);
+        File outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + ".pdf");
+        int counter = 1;
+        while (outputFile.exists()) {
+            outputFile = new File(outputDirectory + File.separator + baseName + "_" + shortId + "_" + counter + ".pdf");
+            counter++;
+        }
+        return outputFile;
     }
 }

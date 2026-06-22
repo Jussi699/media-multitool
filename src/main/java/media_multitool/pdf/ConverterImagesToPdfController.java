@@ -211,7 +211,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
                     imageProperties.getOutput() : 
                     getSavedPath();
                 String outputDir = outputDirFile.getAbsolutePath();
-                File outputFile = helper.generateUniqueOutputFile(
+                File outputFile = Util.generateUniquePdfOutputFile(
                     outputDir, 
                     "merged_images"
                 );

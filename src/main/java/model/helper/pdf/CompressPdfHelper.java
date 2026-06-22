@@ -35,7 +35,7 @@ public class CompressPdfHelper {
         }
     }
 
-    public static File compressPdf(File inputFile, File outputFile, CompressionLevel level) throws IOException {
+    public static void compressPdf(File inputFile, File outputFile, CompressionLevel level) throws IOException {
         try (PDDocument document = Loader.loadPDF(inputFile)) {
             
             if (level != CompressionLevel.LOW) {
@@ -48,7 +48,6 @@ public class CompressPdfHelper {
             document.save(outputFile);
 
             ErrorLogger.info("PDF compressed successfully: " + outputFile.getAbsolutePath());
-            return outputFile;
         } catch (IOException e) {
             ErrorLogger.error("Error compressing PDF: " + e.getMessage());
             throw e;
