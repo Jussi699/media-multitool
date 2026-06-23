@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.watermarks.WatermarkTextController">
+    <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
+          style="-fx-background-color: #4b4b4b;">
+
+        <Label text="Text Watermark Settings" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+        <VBox spacing="12.0" style="-fx-background-color: #3b3b3b; -fx-padding: 12;" VBox.vgrow="ALWAYS">
+            <Label text="Text Settings" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            
+            <Separator/>
+            
+            <VBox spacing="5.0">
+                <Label text="Your Text" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <TextField fx:id="fieldText" promptText="Enter watermark text" maxWidth="350"/>
+            </VBox>
+
+            <VBox spacing="5.0">
+                <Label text="Font" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <ComboBox fx:id="comboBoxFont" prefWidth="310.0"/>
+            </VBox>
+
+            <VBox spacing="5.0">
+                <Label text="Size" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderSizeText" min="0.5" max="5.0" value="2.5" prefWidth="250.0"/>
+                    <Label fx:id="labelSizeX" text="2.5x" minWidth="50.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="5.0">
+                <Label text="Color" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox prefHeight="40.0" alignment="CENTER_LEFT">
+                    <ColorPicker fx:id="colorPickerForText" prefWidth="310.0" maxWidth="310.0" maxHeight="25.0"/>
+                </HBox>
+            </VBox>
+
+            <Separator/>
+
+            <VBox spacing="5.0">
+                <Label text="Tile Mode" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0">
+                    <ToggleButton fx:id="tileSingle" text="Single" prefWidth="95.0"/>
+                    <ToggleButton fx:id="tileEvenGrid" text="Grid" prefWidth="95.0"/>
+                    <ToggleButton fx:id="tileDiamondMesh" text="Diamond" prefWidth="95.0"/>
+                </HBox>
+            </VBox>
+            
+            <VBox spacing="5.0">
+                <Label text="Spacing" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderSpacing" max="5.0" prefWidth="250.0"/>
+                    <Label fx:id="labelSpacingX" text="0x" minWidth="50.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+
+            <Separator/>
+
+            <VBox spacing="8.0">
+                <Label text="Opacity" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderOpacity" value="100" prefWidth="250.0"/>
+                    <Label fx:id="labelOpacityPercent" text="100%" minWidth="50.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="8.0">
+                <Label text="Rotation" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderRotation"  max="360"  prefWidth="250.0"/>
+                    <Label fx:id="labelRotationDegree" text="0°" minWidth="50.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+
+            <Separator/>
+
+            <VBox spacing="8.0">
+                <Label text="Effect" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <ComboBox fx:id="comboBoxEffect" prefWidth="310.0"/>
+            </VBox>
+            
+            <Separator/>
+            
+            <Button text="Reset Settings" onAction="#handleResetSettings" prefWidth="310.0"/>
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0"/>
+        </padding>
+    </VBox>
+</StackPane>

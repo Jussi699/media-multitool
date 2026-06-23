@@ -92,6 +92,13 @@
               endX="85.0" endY="5.0"
               stroke="red" strokeWidth="2.0" />
 
+        <ComboBox fx:id="comboBoxChoiceActionWatermark" prefWidth="140.0"
+                  onAction="#onActionChoiceActionWatermark" styleClass="combo-box-choice-action"/>
+
+        <Line startX="85.0"
+              endX="85.0" endY="5.0"
+              stroke="red" strokeWidth="2.0" />
+
         <Button fx:id="navEditorAudioTag"
                 mnemonicParsing="false"
                 onAction="#showEditorAudioTagPage"
@@ -144,5 +151,6 @@
         <fx:include fx:id="compressPdfPage" source="pdf-views/compress-pdf-view.fxml"/>
         <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>
         <fx:include fx:id="splitPdfPage" source="pdf-views/split-pdf-view.fxml"/>
+        <fx:include fx:id="watermarkImagePane" source="watermark-views/watermark-image-view.fxml"/>
     </StackPane>
 </HBox>

@@ -506,7 +506,8 @@
     -fx-border-color: #3b3b3b;
     -fx-background-color: transparent;
     -fx-background: transparent;
-    -fx-border-radius: 10;
+    -fx-border-radius: 15;
+    -fx-background-radius: 10;
 }
 
 #previewContainer {
@@ -631,4 +632,34 @@
     -fx-pref-width: 50px;
     -fx-alignment: center;
     -fx-padding: 0 10 0 10;
+}
+
+.hbox-home-page {
+    -fx-alignment: top-left;
+    -fx-spacing: 20;
+}
+
+.home-separator > .line {
+    -fx-border-color: red transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.scroll-pane {
+    -fx-background-color: #343434;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #343434;
+}
+
+.btn-watermark {
+}
+
+.main-label-in-window-setting-watermark {
+    -fx-text-fill: RED;
+}
+
+.name-settings {
+    -fx-text-fill: RED;
 }

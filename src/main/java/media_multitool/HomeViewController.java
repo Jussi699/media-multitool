@@ -6,9 +6,14 @@ import lombok.Setter;
 import viewHelp.Alerts;
 
 public class HomeViewController {
-    @Setter
-    private ViewController mainController;
 
+    @Setter private ViewController mainController;
+
+    @FXML
+    public void initialize() {
+    }
+
+    //--------------------------Converters--------------------------//
     @FXML
     private void onOpenImageConverterPressed() {
         if (mainController != null) {
@@ -29,18 +34,14 @@ public class HomeViewController {
             mainController.showConverterAudioPage();
         }
     }
+    //--------------------------/Converters--------------------------//
 
+
+    //--------------------------Compressors--------------------------//
     @FXML
     private void onOpenVideoCompressorPressed() {
         if (mainController != null) {
             mainController.showCompressorVideoPage();
-        }
-    }
-
-    @FXML
-    private void onOpenEditorAudioTagPressed() {
-        if (mainController != null) {
-            mainController.showEditorAudioTagPage();
         }
     }
 
@@ -50,23 +51,8 @@ public class HomeViewController {
             mainController.showCompressorImagePage();
         }
     }
+    //--------------------------/Compressors--------------------------//
 
-    @FXML
-    private void onOpenInfoPressed() {
-        if (mainController != null) {
-            mainController.showInfoPage();
-        }
-    }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Home Page",
-                "Welcome to Media Multitool! Select a tool from the buttons below or use the navigation sidebar to start converting or compressing your media files."
-        );
-    }
 
     //--------------------------Image--------------------------//
 
@@ -139,6 +125,8 @@ public class HomeViewController {
             mainController.onActionChoiceActionImage(10);
         }
     }
+    //--------------------------/Image Tools--------------------------//
+
 
     //--------------------------PDF--------------------------//
 
@@ -204,5 +192,36 @@ public class HomeViewController {
             mainController.onActionChoiceActionPdf(29);
         }
     }
+    //--------------------------/PDF tools--------------------------//
 
+
+    //--------------------------Audio Tag Editor--------------------------//
+    @FXML
+    private void onOpenEditorAudioTagPressed() {
+        if (mainController != null) {
+            mainController.showEditorAudioTagPage();
+        }
+    }
+    //--------------------------/Audio Tag Editor--------------------------//
+
+
+    //--------------------------Info--------------------------//
+
+    @FXML
+    private void onOpenInfoPressed() {
+        if (mainController != null) {
+            mainController.showInfoPage();
+        }
+    }
+
+    @FXML
+    private void showInfo() {
+        Alerts.alertDialog(
+                Alert.AlertType.INFORMATION,
+                "Information",
+                "Home Page",
+                "Welcome to Media Multitool! Select a tool from the buttons below or use the navigation sidebar to start converting or compressing your media files."
+        );
+    }
+    //--------------------------/Info--------------------------//
 }

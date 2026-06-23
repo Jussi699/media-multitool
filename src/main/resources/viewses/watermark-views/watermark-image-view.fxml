@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="media_multitool.watermarks.WatermarkImageController">
+    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" style="-fx-background-color: #4b4b4b;">
+
+        <Label styleClass="main-label-name-page" text="Watermark Image">
+            <VBox.margin>
+                <Insets top="8.0" />
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0" text="Select image file" />
+
+            <Button fx:id="btnChoiceFolderForSaveFile" mnemonicParsing="false" onAction="#onChoiceFolderForSaveFile" prefWidth="180.0" text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Watermark image status: success" visible="false" />
+
+            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Submit and Download" />
+        </VBox>
+
+        <VBox spacing="12.0" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+
+            <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" prefWidth="562.0"
+                        styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
+                <StackPane fx:id="previewContainer" minHeight="200.0">
+                    <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                    <Pane fx:id="cropOverlay">
+                        <Rectangle visible="false" />
+                    </Pane>
+                    
+                    <Pane fx:id="watermarkOverlayPane" visible="false" pickOnBounds="false" />
+                    
+                    <Label fx:id="labelPreviewPlaceholder" style="-fx-font-size: 16px;" text="Preview" textFill="WHITE" />
+                </StackPane>
+            </ScrollPane>
+
+            <HBox spacing="12.0">
+                <StackPane maxHeight="120.0" minHeight="120.0" prefHeight="120.0"
+                           style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER" spacing="12.0">
+                        <padding>
+                            <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+                        </padding>
+
+                        <VBox alignment="CENTER" spacing="8.0">
+                            <HBox alignment="CENTER" spacing="12.0">
+                                <Button fx:id="btnWatermarkText" mnemonicParsing="false" onAction="#handleOpenWindowWatermarkText" styleClass="btn-watermark" text="Text" />
+
+                                <Button fx:id="btnWatermarkPhoto" mnemonicParsing="false" onAction="#handleOpenWindowWatermarkPhoto" styleClass="btn-watermark" text="Photo" />
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </StackPane>
+                <StackPane fx:id="dropZone" maxHeight="120.0" minHeight="120.0" prefHeight="120.0" styleClass="drop-zone-crop" HBox.hgrow="ALWAYS">
+
+                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here" textFill="WHITE" />
+                </StackPane>
+            </HBox>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <Slider fx:id="imageScaleSlider" max="3.0" min="1.0" value="1.0" visible="false" managed="false" />
+
+            <Label fx:id="labelSelectImageName" styleClass="labelSelect" text="Selected image file: none" />
+
+            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0" />
+        </padding>
+    </VBox>
+
+    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets left="10.0" top="10.0" />
+        </StackPane.margin>
+    </Button>
+</StackPane>

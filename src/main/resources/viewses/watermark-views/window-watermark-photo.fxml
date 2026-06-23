@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.watermarks.WatermarkPhotoController">
+    <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
+          style="-fx-background-color: #4b4b4b;">
+
+        <Label text="Photo Watermark Settings" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+        <VBox spacing="12.0" style="-fx-background-color: #3b3b3b; -fx-padding: 12;" VBox.vgrow="ALWAYS">
+            <Label text="Watermark Settings" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            
+            <Separator/>
+            
+            <VBox spacing="8.0">
+                <Label text="Watermark Image" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <Button fx:id="btnSelectWatermark" text="Select Image" onAction="#handleSelectWatermark" prefWidth="310.0"/>
+                <Label fx:id="labelWatermarkName" text="None selected" style="-fx-text-fill: #cccccc;"/>
+            </VBox>
+            
+            <StackPane fx:id="watermarkDropZone" minHeight="80.0" 
+                       style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 5;">
+                <Label text="Drag watermark here" style="-fx-text-fill: #888888;"/>
+            </StackPane>
+            
+            <Separator/>
+            
+            <VBox spacing="8.0">
+                <Label text="Size" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderSize" min="10" max="2000" value="100" prefWidth="250.0"/>
+                    <Label fx:id="labelSize" text="100px" minWidth="60.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+            
+            <VBox spacing="8.0">
+                <Label text="Opacity" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderOpacity" value="100" prefWidth="250.0"/>
+                    <Label fx:id="labelOpacity" text="100%" minWidth="60.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+            
+            <VBox spacing="8.0">
+                <Label text="Rotation" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Slider fx:id="sliderRotation" max="360" prefWidth="250.0"/>
+                    <Label fx:id="labelRotation" text="0°" minWidth="60.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+            
+            <Separator/>
+            
+            <VBox spacing="8.0">
+                <Label text="Tile Mode" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <HBox alignment="CENTER" spacing="8.0">
+                    <ToggleButton fx:id="tileSingle" text="Single" prefWidth="95.0"/>
+                    <ToggleButton fx:id="tileEvenGrid" text="Grid" prefWidth="95.0"/>
+                    <ToggleButton fx:id="tileDiamondMesh" text="Diamond" prefWidth="95.0"/>
+                </HBox>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="Spacing" fx:id="labelSpacingText" style="-fx-font-size: 11px; -fx-text-fill: #e0e0e0;"/>
+                    <Slider fx:id="sliderSpacing" min="10" max="200" value="50" prefWidth="170.0"/>
+                    <Label fx:id="labelSpacingValue" text="50px" minWidth="60.0" style="-fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+            
+            <Separator/>
+            
+            <VBox spacing="8.0">
+                <Label text="Position Presets" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                <GridPane hgap="8.0" vgap="8.0">
+                    <Button text="↖" onAction="#handlePositionTopLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Button text="↑" onAction="#handlePositionTopCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Button text="↗" onAction="#handlePositionTopRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    
+                    <Button text="←" onAction="#handlePositionCenterLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Button text="●" onAction="#handlePositionCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Button text="→" onAction="#handlePositionCenterRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    
+                    <Button text="↙" onAction="#handlePositionBottomLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <Button text="↓" onAction="#handlePositionBottomCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <Button text="↘" onAction="#handlePositionBottomRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                </GridPane>
+            </VBox>
+            
+            <Separator/>
+            
+            <Button text="Reset Settings" onAction="#handleResetSettings" prefWidth="310.0"/>
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0"/>
+        </padding>
+    </VBox>
+</StackPane>
