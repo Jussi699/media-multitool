@@ -16,7 +16,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
-import model.helper.imageTools.PixelHelper;
+import model.helper.images.PixelHelper;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
 import model.properties.MediaProperties;

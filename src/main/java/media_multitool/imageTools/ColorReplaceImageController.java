@@ -18,7 +18,7 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
-import model.helper.imageTools.ColorReplaceHelper;
+import model.helper.images.ColorReplaceHelper;
 import viewHelp.Alerts;
 
 import javax.imageio.ImageIO;

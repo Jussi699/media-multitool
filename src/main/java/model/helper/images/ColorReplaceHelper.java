@@ -1,4 +1,4 @@
-package model.helper.imageTools;
+package model.helper.images;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;

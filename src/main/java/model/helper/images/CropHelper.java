@@ -1,4 +1,4 @@
-package model.helper.imageTools;
+package model.helper.images;
 
 import javafx.application.Platform;
 import javafx.geometry.BoundingBox;

@@ -13,6 +13,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.logger.ErrorLogger;
@@ -23,6 +24,7 @@ public class Alerts {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
+        alert.initModality(Modality.NONE);
         alert.setResizable(true);
         alert.setWidth(600);
         applyDialogStyles(alert, type);
@@ -34,6 +36,7 @@ public class Alerts {
         if (owner != null) {
             alert.initOwner(owner);
         }
+        alert.initModality(Modality.NONE);
         alert.setTitle(title);
         alert.setHeaderText(headerText);
 
@@ -103,6 +106,7 @@ public class Alerts {
     public static boolean confirmationDialog(String title, String headerText, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
         
