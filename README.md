@@ -104,21 +104,35 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 
 ---
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Jussi699/media-multitool.git
-   cd media-multitool
-   ```
+#### 1. Clone the repository
+```bash
+git clone https://github.com/Jussi699/media-multitool.git
+cd media-multitool
+```
 
-2. **Build the project:**
-   ```bash
-   mvn clean install
-   ```
+#### 2. Build the project
+```bash
+mvn clean install
+```
 
-3. **Run the application:**
-   ```bash
-   mvn javafx:run
-   ```
+#### 3. Run the application
+```bash
+mvn javafx:run
+```
+
+---
+
+### 💡 Running in IntelliJ IDEA
+
+> Make sure the following are configured before building:
+
+**Enable annotation processing:**
+`File` → `Settings` → `Build, Execution, Deployment` → `Compiler` → `Annotation Processors` → check **Enable annotation processing**
+
+**Activate the Lombok plugin:**
+`File` → `Settings` → `Plugins` → search for **Lombok** → install and enable it → restart the IDE
+
+After that, open the project, let Maven sync finish, then run via `mvn javafx:run` or use the built-in Maven panel on the right.
    
 ## 📄 License
 
