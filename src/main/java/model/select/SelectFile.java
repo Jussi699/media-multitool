@@ -7,7 +7,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
-import static model.utility.Util.*;
+import static model.utility.PathWorker.*;
+
 
 public class SelectFile extends AbstractSelectFile {
     private final FileChooser fileChooser = new FileChooser();

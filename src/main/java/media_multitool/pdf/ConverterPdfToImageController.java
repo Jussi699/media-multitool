@@ -33,7 +33,8 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.createOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class ConverterPdfToImageController extends AbstractMediaController {
@@ -198,7 +199,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
                 updateProgress(60, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
@@ -346,7 +347,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected PDF file: none");
+        reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
 
@@ -404,7 +405,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
-        Util.bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
+        bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
 
         try {
             currentDoc = org.apache.pdfbox.Loader.loadPDF(selectedFile);

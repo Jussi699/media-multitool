@@ -5,7 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import javafx.application.Application;
 import model.logger.ErrorLogger;
-import model.utility.Util;
+import model.utility.OS;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -19,7 +19,7 @@ public class Launcher {
         jaudiotaggerLogger.setLevel(Level.OFF);
         jaudiotaggerLogger.setUseParentHandlers(false);
 
-        String logDir = Util.getAppConfigDir() + File.separator + "logs";
+        String logDir = OS.getAppConfigDir() + File.separator + "logs";
         File logDirFile = new File(logDir);
         if (!logDirFile.exists()) {
             logDirFile.mkdirs();

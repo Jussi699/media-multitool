@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.generateUniquePdfOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 
 public class ConverterImagesToPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -211,7 +212,8 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
                     imageProperties.getOutput() : 
                     getSavedPath();
                 String outputDir = outputDirFile.getAbsolutePath();
-                File outputFile = Util.generateUniquePdfOutputFile(
+                File outputFile =
+                generateUniquePdfOutputFile(
                     outputDir, 
                     "merged_images"
                 );
@@ -296,7 +298,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             labelSelectFileName, labelSuccess, textDragZone, null,
             dropZone, null, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected images: 0");
+        reset(imageProperties, ctx, "Selected images: 0");
 
         disableControls();
 

@@ -1,6 +1,5 @@
 package model.converterImage.strategy;
 
-import model.utility.Util;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -10,13 +9,15 @@ import java.io.IOException;
 import java.util.Base64;
 import model.converterImage.UsefulMethods;
 
+import static model.utility.PathWorker.createOutputFile;
+
 public class SvgImageStrategy implements ImageConversionStrategy {
     @Override
     public File convert(File source, File destinationDir, String format) throws IOException {
         BufferedImage bufImage = UsefulMethods.readPreviewImage(source)
                 .orElseThrow(() -> new IOException("Unable to read image: " + source.getName()));
         
-        File outputImage = Util.createOutputFile(source, destinationDir, "svg");
+        File outputImage = createOutputFile(source, destinationDir, "svg");
         saveAsSvg(bufImage, outputImage);
         return outputImage;
     }

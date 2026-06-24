@@ -6,7 +6,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import model.logger.ErrorLogger;
 import model.utility.Clipboards;
-import model.utility.Util;
+import model.utility.OS;
 import viewHelp.Alerts;
 
 import java.awt.*;
@@ -18,7 +18,7 @@ public class InfoController {
 
     @FXML
     public void toLogsWindows() {
-        String logPath = Util.getAppConfigDir() + File.separator + "logs";
+        String logPath = OS.getAppConfigDir() + File.separator + "logs";
         File dirLog = new File(logPath);
 
         try {

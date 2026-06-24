@@ -2,13 +2,14 @@ package model.compressorVideo;
 
 import model.utility.Parsers;
 import model.utility.PreparingAttributes;
-import model.utility.Util;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.VideoAttributes;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
 import java.util.Optional;
+
+import static viewHelp.Utility.getMetadata;
 
 public class VideoPresets {
 
@@ -19,7 +20,7 @@ public class VideoPresets {
     }
 
     public static Optional<Preset[]> createAdaptivePresets(File srcFile, boolean compressAudio) {
-        Optional<MultimediaInfo> infoOpt = Util.getMetadata(srcFile);
+        Optional<MultimediaInfo> infoOpt = getMetadata(srcFile);
         if (infoOpt.isEmpty()) {
             return Optional.empty();
         }

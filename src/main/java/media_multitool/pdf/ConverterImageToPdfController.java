@@ -27,7 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.createOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class ConverterImageToPdfController extends AbstractMediaController {
@@ -132,7 +133,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         "pdf"
@@ -197,7 +198,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         disableControls();
 
@@ -254,7 +255,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
-        Util.bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
+        bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
 
         String pageSize = comboPageSize.getValue();
         

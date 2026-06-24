@@ -32,7 +32,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
-import static model.utility.Util.*;
+import static model.utility.PathWorker.createOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class FindPixelImageController extends AbstractMediaController {
@@ -163,7 +164,7 @@ public class FindPixelImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
@@ -212,7 +213,7 @@ public class FindPixelImageController extends AbstractMediaController {
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         originalBufferedImage = null;
         zoomControlHelper.resetZoom();

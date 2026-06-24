@@ -3,7 +3,6 @@ package model.compressorImage;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.DetermineType;
-import model.utility.Util;
 import net.coobird.thumbnailator.Thumbnails;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -26,10 +25,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import static model.utility.PathWorker.createOutputFile;
+
 public class Compressor {
     public Optional<CompressionResult> compressorStandardImage(ImageProperties imageProperties) {
         String format = normalizeFormat(DetermineType.determineFormat(imageProperties.getImage()).orElse(""));
-        File outputFile = Util.createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), format);
+        File outputFile = createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), format);
         long originalSize = imageProperties.getImage().length();
 
         try {
@@ -80,7 +81,7 @@ public class Compressor {
     }
 
     public Optional<CompressionResult> removeSvgMetadata(ImageProperties imageProperties) throws IOException {
-        File outputFile = Util.createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), "svg");
+        File outputFile = createOutputFile(imageProperties.getImage(), imageProperties.getOutput(), "svg");
         long originalSize = imageProperties.getImage().length();
 
         try {

@@ -27,8 +27,8 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static model.utility.Util.bindingImageViewToPreviewContainer;
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.createOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class ColorReplaceImageController extends AbstractMediaController {
@@ -292,7 +292,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
                 updateProgress(50, 100);
 
                 String outputFormat = toggleJPEG.isSelected() ? "jpeg" : "png";
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         outputFormat
@@ -341,7 +341,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         currentBufferedImage = null;
         originalBufferedImage = null;

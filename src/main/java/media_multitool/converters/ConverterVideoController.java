@@ -19,7 +19,6 @@ import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.Item;
 import model.utility.ResetContext;
-import model.utility.Util;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
@@ -31,7 +30,8 @@ import java.util.concurrent.CompletableFuture;
 
 import static viewHelp.Message.*;
 import static model.utility.Parsers.*;
-import static model.utility.Util.*;
+import static model.utility.PathWorker.*;
+import static viewHelp.Utility.getMetadata;
 
 public class ConverterVideoController extends AbstractMediaController {
     private static final ToggleGroup toggleGroup = new ToggleGroup();
@@ -133,7 +133,7 @@ public class ConverterVideoController extends AbstractMediaController {
                 labelSelectFile, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(videoProperties, ctx, "Selected video file: none");
+        reset(videoProperties, ctx, "Selected video file: none");
 
         videoProperties.setVideoBitRate(5000);
         videoProperties.setAudioBitRate(192);

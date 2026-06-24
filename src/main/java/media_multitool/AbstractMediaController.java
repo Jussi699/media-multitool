@@ -1,15 +1,18 @@
 package media_multitool;
 
+import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import lombok.NonNull;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.utility.DragDropped;
-import model.utility.Util;
+import model.utility.PathWorker;
+import model.utility.ResetContext;
 import viewHelp.Alerts;
 import viewHelp.Message;
 
@@ -17,8 +20,8 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static model.utility.Util.directoryChooser;
-import static model.utility.Util.getStage;
+import static model.utility.PathWorker.*;
+import static viewHelp.Message.hideSuccessMessage;
 
 public abstract class AbstractMediaController {
     
@@ -61,7 +64,7 @@ public abstract class AbstractMediaController {
             handleTaskFailure(exception);
         });
 
-        Util.IO_EXECUTOR.execute(task);
+        PathWorker.IO_EXECUTOR.execute(task);
     }
 
     private void unbindProgress() {
@@ -161,5 +164,61 @@ public abstract class AbstractMediaController {
                 fileProcessor.accept(droppedFile);
             }
         });
+    }
+
+    public static void showProgressBar(ProgressBar bar, PauseTransition timer) {
+        if (bar != null) {
+            bar.setVisible(true);
+            bar.setManaged(true);
+            bar.setProgress(1.0);
+        }
+        if (timer != null) timer.playFromStart();
+    }
+
+    public static Stage getStage(Control control) {
+        return (Stage) control.getScene().getWindow();
+    }
+
+
+    public static void reset(MediaProperties properties, ResetContext ctx, String defaultText) {
+        properties.reset();
+
+        if (ctx.labelSelectFileName() != null) {
+            ctx.labelSelectFileName().setText(defaultText != null ? defaultText : "Selected file: none");
+        }
+
+        if (ctx.labelSuccess() != null) {
+            ctx.labelSuccess().setVisible(true);
+            ctx.labelSuccess().setText("");
+            hideSuccessMessage(ctx.labelSuccess(), ctx.progressBar(), properties.getHideSuccessMessageTimer(), ctx.managed());
+            ctx.labelSuccess().setManaged(ctx.managed());
+        }
+
+        resetDropZone(ctx.textDragZone(), ctx.dropZone());
+
+        if (ctx.imageViewPreview() != null) {
+            ctx.imageViewPreview().setImage(null);
+        }
+        if (ctx.labelPreviewPlaceholder() != null) {
+            ctx.labelPreviewPlaceholder().setVisible(true);
+        }
+    }
+
+
+    public static void resetDropZone(Label textDragZone, StackPane dropZone) {
+        textDragZone.setText("Drag files here");
+
+        dropZone.getStyleClass().removeAll(java.util.Collections.singleton("drop-zone-filled"));
+    }
+
+    public static void bindingImageViewToPreviewContainer(ImageView imageViewPreview, StackPane previewContainer) {
+        if(imageViewPreview != null && previewContainer != null) {
+            if (!imageViewPreview.fitWidthProperty().isBound()) {
+                imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
+            }
+            if (!imageViewPreview.fitHeightProperty().isBound()) {
+                imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
+            }
+        }
     }
 }

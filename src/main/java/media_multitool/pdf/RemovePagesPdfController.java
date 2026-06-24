@@ -17,7 +17,6 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.ResetContext;
-import model.utility.Util;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -32,7 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.generateUniquePdfOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 
 public class RemovePagesPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -241,7 +241,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
                 File outputDirFile = imageProperties.getOutput();
                 
                 String baseName = inputFile.getName().replace(".pdf", "") + "_modified";
-                File outputFile = Util.generateUniquePdfOutputFile(outputDirFile.getAbsolutePath(), baseName);
+                File outputFile = generateUniquePdfOutputFile(outputDirFile.getAbsolutePath(), baseName);
 
                 updateProgress(30, 100);
 
@@ -300,7 +300,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
         if (progressBar != null) {
             progressBar.progressProperty().unbind();
         }
-        Util.reset(imageProperties, ctx, "Selected PDF file: none");
+        reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
         textDragZone.setText("Drag PDF here");

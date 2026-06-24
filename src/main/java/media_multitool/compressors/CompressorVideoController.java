@@ -17,7 +17,6 @@ import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.ResetContext;
-import model.utility.Util;
 import viewHelp.Alerts;
 
 import java.io.File;
@@ -25,8 +24,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static model.utility.Parsers.*;
-import static model.utility.Util.*;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
+import static viewHelp.Utility.getMetadata;
 
 public class CompressorVideoController extends AbstractMediaController {
     private VideoPresets.Preset[] adaptivePresets;
@@ -196,7 +196,7 @@ public class CompressorVideoController extends AbstractMediaController {
                 labelSelectFile, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(videoProperties, ctx, "Select video file: none");
+        reset(videoProperties, ctx, "Select video file: none");
 
         if (currentTask != null) currentTask.cancelCompress();
 

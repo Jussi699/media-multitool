@@ -27,7 +27,7 @@ import viewHelp.Alerts;
 import viewHelp.Cells;
 
 import static viewHelp.Message.*;
-import static model.utility.Util.*;
+import static model.utility.PathWorker.*;
 import static model.converterImage.UsefulMethods.*;
 
 public class ConverterImageController extends AbstractMediaController {
@@ -191,7 +191,7 @@ public class ConverterImageController extends AbstractMediaController {
                 dropZone, imageViewPreview, progressBar, true
         );
 
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
@@ -232,7 +232,7 @@ public class ConverterImageController extends AbstractMediaController {
 
             Image fxImage = SwingFXUtils.toFXImage(biOpt.get(), null);
 
-            Util.bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+            bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
             imageViewPreview.setImage(fxImage);
 

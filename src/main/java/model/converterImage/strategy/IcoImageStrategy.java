@@ -1,7 +1,6 @@
 package model.converterImage.strategy;
 
 import lombok.Setter;
-import model.utility.Util;
 import net.ifok.image.image4j.codec.ico.ICOEncoder;
 import net.ifok.image.image4j.codec.ico.ICODecoder;
 import javax.imageio.ImageIO;
@@ -13,6 +12,8 @@ import java.io.IOException;
 import java.util.List;
 import model.converterImage.UsefulMethods;
 import model.converterImage.ConverterImage;
+
+import static model.utility.PathWorker.createOutputFile;
 
 public class IcoImageStrategy implements ImageConversionStrategy {
     @Setter private int size = 256; // Default size
@@ -29,7 +30,7 @@ public class IcoImageStrategy implements ImageConversionStrategy {
             }
             String outputFormat = ConverterImage.normalizeOutputFormat(format);
             BufferedImage bestImage = ConverterImage.prepareImageForFormat(UsefulMethods.getLargestImage(images), outputFormat);
-            File outputImage = Util.createOutputFile(source, destinationDir, format);
+            File outputImage = createOutputFile(source, destinationDir, format);
             
             if ("svg".equalsIgnoreCase(outputFormat)) {
                 new SvgImageStrategy().convert(source, destinationDir, "svg");
@@ -46,7 +47,7 @@ public class IcoImageStrategy implements ImageConversionStrategy {
             BufferedImage bufImage = UsefulMethods.readPreviewImage(source)
                     .orElseThrow(() -> new IOException("Unable to read image: " + source.getName()));
             BufferedImage resized = resizeImage(bufImage, size, size);
-            File outputImage = Util.createOutputFile(source, destinationDir, "ico");
+            File outputImage = createOutputFile(source, destinationDir, "ico");
             ICOEncoder.write(resized, outputImage);
             return outputImage;
         }

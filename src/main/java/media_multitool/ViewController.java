@@ -4,6 +4,7 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.layout.StackPane;
 import model.utility.Item;
 import viewHelp.ComboBoxes;
@@ -77,51 +78,48 @@ public class ViewController {
         comboBoxChoiceActionImage.setPromptText("Image tools");
         ComboBoxes.setupComboBox(comboBoxChoiceActionImage, Item::title);
         comboBoxChoiceActionImage.getSelectionModel().clearSelection();
-        comboBoxChoiceActionImage.buttonCellProperty().bind(Bindings.createObjectBinding(() -> {
-            if (comboBoxChoiceActionImage.getSelectionModel().isEmpty()) {
-                return new javafx.scene.control.ListCell<Item>() {
-                    @Override
-                    protected void updateItem(Item item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText("Image tools");
-                    }
-                };
+        comboBoxChoiceActionImage.buttonCellProperty().bind(Bindings.createObjectBinding(() -> new ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Image tools");
+                } else {
+                    setText(item.title());
+                }
             }
-            return null;
         }, comboBoxChoiceActionImage.getSelectionModel().selectedItemProperty()));
 
         // PDF
         comboBoxChoiceActionPdf.setPromptText("PDF tools");
         ComboBoxes.setupComboBox(comboBoxChoiceActionPdf, Item::title);
         comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
-        comboBoxChoiceActionPdf.buttonCellProperty().bind(Bindings.createObjectBinding(() -> {
-            if (comboBoxChoiceActionPdf.getSelectionModel().isEmpty()) {
-                return new javafx.scene.control.ListCell<Item>() {
-                    @Override
-                    protected void updateItem(Item item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText("PDF tools");
-                    }
-                };
+        comboBoxChoiceActionPdf.buttonCellProperty().bind(Bindings.createObjectBinding(() -> new ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("PDF tools");
+                } else {
+                    setText(item.title());
+                }
             }
-            return null;
         }, comboBoxChoiceActionPdf.getSelectionModel().selectedItemProperty()));
 
         // Watermark
         comboBoxChoiceActionWatermark.setPromptText("Watermark");
         ComboBoxes.setupComboBox(comboBoxChoiceActionWatermark, Item::title);
         comboBoxChoiceActionWatermark.getSelectionModel().clearSelection();
-        comboBoxChoiceActionWatermark.buttonCellProperty().bind(Bindings.createObjectBinding(() -> {
-            if (comboBoxChoiceActionWatermark.getSelectionModel().isEmpty()) {
-                return new javafx.scene.control.ListCell<Item>() {
-                    @Override
-                    protected void updateItem(Item item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText("Watermark");
-                    }
-                };
+        comboBoxChoiceActionWatermark.buttonCellProperty().bind(Bindings.createObjectBinding(() -> new javafx.scene.control.ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Watermark");
+                } else {
+                    setText(item.title());
+                }
             }
-            return null;
         }, comboBoxChoiceActionWatermark.getSelectionModel().selectedItemProperty()));
 
         stackPaneMapImageTools.putAll(Map.of(
@@ -224,7 +222,6 @@ public class ViewController {
         if (selectedItem != null) {
             currentPageFromComboBoxAction = stackPaneMapPdfTools.get((int) selectedItem.id());
             setActivePage(currentPageFromComboBoxAction, null);
-            comboBoxChoiceActionPdf.getSelectionModel().clearSelection();
             comboBoxChoiceActionPdf.setStyle(getComboBoxStyle(true));
         }
     }
@@ -249,7 +246,6 @@ public class ViewController {
         if (selectedItem != null) {
             currentPageFromComboBoxAction = stackPaneMapWatermark.get((int) selectedItem.id());
             setActivePage(currentPageFromComboBoxAction, null);
-            comboBoxChoiceActionWatermark.getSelectionModel().clearSelection();
             comboBoxChoiceActionWatermark.setStyle(getComboBoxStyle(true));
         }
     }

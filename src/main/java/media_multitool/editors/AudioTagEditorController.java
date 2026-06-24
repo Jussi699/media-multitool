@@ -33,8 +33,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-import static model.utility.Util.directoryChooser;
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
 
 public class AudioTagEditorController extends AbstractMediaController {
@@ -330,7 +329,7 @@ public class AudioTagEditorController extends AbstractMediaController {
                 labelSelectImageName, labelSuccess, textDragZone, null,
                 dropZone, imageViewPreview, progressBar, true
         );
-        Util.reset(audioProperties, ctx, "Selected audio file: none");
+        reset(audioProperties, ctx, "Selected audio file: none");
         AudioEditor.loadDefaultPreview(imageViewPreview);
         AudioEditor.clearFields(textFields, genreComboBox);
         masterFile.clear();

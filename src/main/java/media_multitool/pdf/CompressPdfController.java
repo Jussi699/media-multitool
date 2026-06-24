@@ -28,8 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
+import static viewHelp.Utility.formatFileSize;
 
 public class CompressPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -110,7 +111,7 @@ public class CompressPdfController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         "pdf"
@@ -173,7 +174,7 @@ public class CompressPdfController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected PDF file: none");
+        reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
 
@@ -213,7 +214,7 @@ public class CompressPdfController extends AbstractMediaController {
         };
 
         long estimatedSize = (long) (originalSize * factor);
-        labelEstimatedSize.setText("Estimated size: ~" + Util.formatFileSize(estimatedSize));
+        labelEstimatedSize.setText("Estimated size: ~" + formatFileSize(estimatedSize));
     }
 
     private CompressPdfHelper.CompressionLevel getSelectedCompressionLevel() {
@@ -281,7 +282,7 @@ public class CompressPdfController extends AbstractMediaController {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
-        Util.bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
+        bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
         if (currentDoc != null && !currentDoc.isEncrypted()) {
             updatePreview();
         }

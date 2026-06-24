@@ -18,7 +18,6 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.ResetContext;
-import model.utility.Util;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
@@ -29,7 +28,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class ProtectPdfController extends AbstractMediaController {
@@ -363,7 +362,7 @@ public class ProtectPdfController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected PDF file: none");
+        reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
 
@@ -449,7 +448,7 @@ public class ProtectPdfController extends AbstractMediaController {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
-        Util.bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
+        bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
 
         try {
             currentDoc = org.apache.pdfbox.Loader.loadPDF(selectedFile);

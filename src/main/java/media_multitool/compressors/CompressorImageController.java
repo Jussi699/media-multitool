@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import static model.utility.Util.*;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
@@ -205,7 +205,7 @@ public class CompressorImageController extends AbstractMediaController {
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
         comboBoxScaleImage.setValue(new Item(-1, "Scale"));

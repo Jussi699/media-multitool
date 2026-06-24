@@ -15,7 +15,6 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.ResetContext;
-import model.utility.Util;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -239,22 +238,26 @@ public class SplitPdfController extends AbstractMediaController {
         );
 
         card.getContainer().setOnMouseClicked(event -> {
-            if (rbPages.isSelected()) {
-                if (event.isShiftDown() && !selectedPageIndices.isEmpty()) {
-                    int lastIdx = -1;
-                    for (int idx : selectedPageIndices) {
-                        if (lastIdx == -1 || idx > lastIdx) lastIdx = idx;
-                    }
-                    int start = Math.min(lastIdx, entry.originalPageIndex);
-                    int end = Math.max(lastIdx, entry.originalPageIndex);
-                    for (int i = start; i <= end; i++) {
-                        if (!selectedPageIndices.contains(i)) {
-                            togglePageSelection(i, pageCards.get(i));
+            try {
+                if (rbPages.isSelected()) {
+                    if (event.isShiftDown() && !selectedPageIndices.isEmpty()) {
+                        int lastIdx = -1;
+                        for (int idx : selectedPageIndices) {
+                            if (lastIdx == -1 || idx > lastIdx) lastIdx = idx;
                         }
+                        int start = Math.min(lastIdx, entry.originalPageIndex);
+                        int end = Math.max(lastIdx, entry.originalPageIndex);
+                        for (int i = start; i <= end; i++) {
+                            if (i >= 0 && i < pageCards.size() && !selectedPageIndices.contains(i)) {
+                                togglePageSelection(i, pageCards.get(i));
+                            }
+                        }
+                    } else {
+                        togglePageSelection(entry.originalPageIndex, card);
                     }
-                } else {
-                    togglePageSelection(entry.originalPageIndex, card);
                 }
+            } catch (IndexOutOfBoundsException e) {
+                // Silently ignore bounds exceptions during page selection
             }
         });
 
@@ -392,7 +395,7 @@ public class SplitPdfController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected PDF file: none");
+        reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
     }

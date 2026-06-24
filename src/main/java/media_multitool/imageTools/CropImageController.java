@@ -30,7 +30,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
 
 public class CropImageController extends AbstractMediaController {
@@ -162,7 +162,7 @@ public class CropImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
@@ -218,7 +218,7 @@ public class CropImageController extends AbstractMediaController {
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, null, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         originalBufferedImage = null;
         if (cropHelper != null) {

@@ -5,7 +5,7 @@ import ws.schild.jave.Encoder;
 
 import java.io.File;
 
-import static model.utility.Util.IO_EXECUTOR;
+import static model.utility.PathWorker.IO_EXECUTOR;
 
 public class EncoderUtility {
     public static void abortEncoding(Encoder encoder, File file){

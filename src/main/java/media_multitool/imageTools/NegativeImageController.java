@@ -23,7 +23,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
-import static model.utility.Util.*;
+import static model.utility.PathWorker.createOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class NegativeImageController extends AbstractMediaController {
@@ -104,7 +105,7 @@ public class NegativeImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
@@ -153,7 +154,7 @@ public class NegativeImageController extends AbstractMediaController {
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
         originalBufferedImage = null;
         currentBufferedImage = null;
         disableControls();

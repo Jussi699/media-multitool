@@ -2,7 +2,6 @@ package model.helper.pdf;
 
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import model.utility.Util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,6 +9,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static model.utility.PathWorker.generateUniquePdfOutputFile;
 
 public class SplitPdfHelper {
     public static void splitMultiplePagesToZip(PDDocument sourceDoc, PDFMergerUtility merger, File outputDir,
@@ -42,7 +43,7 @@ public class SplitPdfHelper {
                 tempDoc.addPage(sourceDoc.getPage(idx));
                 merger.appendDocument(targetDoc, tempDoc);
             }
-            File outputFile = Util.generateUniquePdfOutputFile(outputDir.getAbsolutePath(), baseName + "_page_" + (idx + 1));
+            File outputFile = generateUniquePdfOutputFile(outputDir.getAbsolutePath(), baseName + "_page_" + (idx + 1));
             targetDoc.save(outputFile);
         }
         progress.accept(100L, 100L);
@@ -91,7 +92,7 @@ public class SplitPdfHelper {
                 }
                 progress.accept((long) (i - from + 2), (long) totalSteps);
             }
-            File outputFile = Util.generateUniquePdfOutputFile(outputDir.getAbsolutePath(), baseName + "_range");
+            File outputFile = generateUniquePdfOutputFile(outputDir.getAbsolutePath(), baseName + "_range");
             targetDoc.save(outputFile);
         }
     }

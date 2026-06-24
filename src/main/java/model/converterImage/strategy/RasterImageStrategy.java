@@ -1,12 +1,13 @@
 package model.converterImage.strategy;
 
-import model.utility.Util;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import model.converterImage.UsefulMethods;
 import model.converterImage.ConverterImage;
+
+import static model.utility.PathWorker.createOutputFile;
 
 public class RasterImageStrategy implements ImageConversionStrategy {
     @Override
@@ -15,7 +16,7 @@ public class RasterImageStrategy implements ImageConversionStrategy {
                 .orElseThrow(() -> new IOException("Unable to read image: " + source.getName()));
         
         String outputFormat = ConverterImage.normalizeOutputFormat(format);
-        File outputImage = Util.createOutputFile(source, destinationDir, format);
+        File outputImage = createOutputFile(source, destinationDir, format);
         
         BufferedImage preparedImage = ConverterImage.prepareImageForFormat(bufImage, outputFormat);
         boolean written = ImageIO.write(preparedImage, outputFormat, outputImage);

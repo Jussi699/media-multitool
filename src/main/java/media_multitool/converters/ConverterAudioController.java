@@ -18,7 +18,6 @@ import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.ResetContext;
-import model.utility.Util;
 import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
 import viewHelp.Alerts;
@@ -26,9 +25,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import static model.utility.PathWorker.IO_EXECUTOR;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 import static model.utility.Parsers.*;
-import static model.utility.Util.*;
+import static viewHelp.Utility.getMetadata;
 
 public class ConverterAudioController extends AbstractMediaController {
     private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
@@ -100,7 +102,7 @@ public class ConverterAudioController extends AbstractMediaController {
                 labelSelectFile, labelSuccess, textDragZone, null,
                 dropZone, null, progressBar, true
         );
-        Util.reset(audioProperties, ctx, "Selected media file: none");
+        reset(audioProperties, ctx, "Selected media file: none");
 
         comboBoxChoiceBitRate.setValue("320 kbps");
         comboBoxChoiceChannels.setValue("2 Channels");
