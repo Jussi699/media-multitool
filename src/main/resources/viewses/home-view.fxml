@@ -59,6 +59,11 @@
                         onAction="#onOpenVideoCompressorPressed"
                         prefWidth="160.0"
                         text="Compressor Video"/>
+
+                <Button mnemonicParsing="false"
+                        onAction="#onOpenCompressorPdfPressed"
+                        prefWidth="160.0"
+                        text="Compressor PDF"/>
             </HBox>
 
             <Label text="Image Tools" textFill="RED"/>
@@ -162,9 +167,9 @@
                         text="Remove Pages PDF"/>
 
                 <Button mnemonicParsing="false"
-                        onAction="#onOpenCompressPdfPressed"
+                        onAction="#onOpenCompressorPdfPressed"
                         prefWidth="160.0"
-                        text="Compress PDF"/>
+                        text="Compressor PDF"/>
 
                 <Button mnemonicParsing="false"
                         onAction="#onOpenMergePdfPressed"

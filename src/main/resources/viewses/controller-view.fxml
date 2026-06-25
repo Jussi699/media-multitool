@@ -148,7 +148,7 @@
         <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
         <fx:include fx:id="unlockPdfPage" source="pdf-views/unlock-pdf-view.fxml"/>
         <fx:include fx:id="removePagesPdfPage" source="pdf-views/remove-pages-pdf-view.fxml"/>
-        <fx:include fx:id="compressPdfPage" source="pdf-views/compress-pdf-view.fxml"/>
+        <fx:include fx:id="compressPdfPage" source="pdf-views/compressor-pdf-view.fxml"/>
         <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>
         <fx:include fx:id="splitPdfPage" source="pdf-views/split-pdf-view.fxml"/>
         <fx:include fx:id="watermarkImagePane" source="watermark-views/watermark-image-view.fxml"/>

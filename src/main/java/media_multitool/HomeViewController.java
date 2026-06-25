@@ -173,7 +173,7 @@ public class HomeViewController {
     }
 
     @FXML
-    public void onOpenCompressPdfPressed() {
+    public void onOpenCompressorPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionPdf(27);
         }
