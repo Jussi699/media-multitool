@@ -3,7 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -13,196 +13,213 @@
            fx:controller="media_multitool.HomeViewController">
 
     <VBox alignment="TOP_CENTER"
-          spacing="18.0"
-          style="-fx-background-color: #343434;">
+          style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d);">
 
-        <Label alignment="CENTER"
-               style="-fx-font-size: 30px; -fx-font-weight: bold;"
-               text="Media multitool"
-               textFill="RED" />
+        <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 30 40 20 40; -fx-background-color: linear-gradient(to bottom, #2d2d2d, #1a1a1a);">
+            <Label alignment="CENTER"
+                   style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: linear-gradient(to right, #32CD32, #00FF00);"
+                   text="Media Multitool" />
 
-        <Label alignment="CENTER"
-               style="-fx-font-size: 16px;"
-               text="Select the type of media_multitool you want to use:"
-               textFill="#d6d6d6"
-               wrapText="true" />
-
-        <VBox spacing="18.0" style="-fx-background-color: #343434;" VBox.vgrow="ALWAYS">
-
-            <Label text="Converter" textFill="RED"/>
-            <Separator styleClass="home-separator"/>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenImageConverterPressed"
-                        prefWidth="160.0"
-                        text="Converter Image"/>
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenVideoConverterPressed"
-                        prefWidth="160.0"
-                        text="Converter Video"/>
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenMP3ConverterPressed"
-                        prefWidth="160.0"
-                        text="Converter Audio"/>
-            </HBox>
-
-            <Label text="Compressors" textFill="RED"/>
-            <Separator styleClass="home-separator"/>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenImageCompressorPressed"
-                        prefWidth="160.0"
-                        text="Compressor Image"/>
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenVideoCompressorPressed"
-                        prefWidth="160.0"
-                        text="Compressor Video"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenCompressorPdfPressed"
-                        prefWidth="160.0"
-                        text="Compressor PDF"/>
-            </HBox>
-
-            <Label text="Image Tools" textFill="RED"/>
-            <Separator styleClass="home-separator"/>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenNegativeImagePressed"
-                        prefWidth="160.0"
-                        text="Negative Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenTurnImagePressed"
-                        prefWidth="160.0"
-                        text="Turn Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenLightenImagePressed"
-                        prefWidth="160.0"
-                        text="Lighten Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenDarkenImagePressed"
-                        prefWidth="160.0"
-                        text="Darken Image"/>
-            </HBox>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenColorizeImagePressed"
-                        prefWidth="160.0"
-                        text="Colorize Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenBlackAndWhiteImagePressed"
-                        prefWidth="160.0"
-                        text="Black-White Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenBlurImagePressed"
-                        prefWidth="160.0"
-                        text="Blur Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenFindPixelPressed"
-                        prefWidth="160.0"
-                        text="Find Pixel"/>
-            </HBox>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenCropImagePressed"
-                        prefWidth="160.0"
-                        text="Crop Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenCropImagePressed"
-                        prefWidth="160.0"
-                        text="Crop Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenColorReplaceInImagePressed"
-                        prefWidth="160.0"
-                        text="Color Replace In Image"/>
-            </HBox>
-
-            <Label text="PDF Tools" textFill="RED"/>
-            <Separator styleClass="home-separator"/>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenImageToPdfPressed"
-                        prefWidth="160.0"
-                        text="Image To PDF"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenPdfToImagePressed"
-                        prefWidth="160.0"
-                        text="PDF To Image"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenImagesToPdfPressed"
-                        prefWidth="160.0"
-                        text="Images To PDF (merge)"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenProtectPdfPressed"
-                        prefWidth="160.0"
-                        text="Protect PDF"/>
-            </HBox>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenUnlockPdfPressed"
-                        prefWidth="160.0"
-                        text="Unlock PDF"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenRemovePagesPdfPressed"
-                        prefWidth="160.0"
-                        text="Remove Pages PDF"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenCompressorPdfPressed"
-                        prefWidth="160.0"
-                        text="Compressor PDF"/>
-
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenMergePdfPressed"
-                        prefWidth="160.0"
-                        text="Merge PDF"/>
-            </HBox>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenSplitPdfPressed"
-                        prefWidth="160.0"
-                        text="Split PDF"/>
-            </HBox>
-
-            <Label text="Audio Tag Editor" textFill="RED"/>
-            <Separator styleClass="home-separator"/>
-
-            <HBox styleClass="hbox-home-page">
-                <Button mnemonicParsing="false"
-                        onAction="#onOpenEditorAudioTagPressed"
-                        prefWidth="160.0"
-                        text="Audio Tag Editor"/>
-            </HBox>
-
-            <Button mnemonicParsing="false"
-                    onAction="#onOpenInfoPressed"
-                    prefWidth="160.0"
-                    text="Info"/>
+            <Label alignment="CENTER"
+                   style="-fx-font-size: 14px; -fx-text-fill: #b0b0b0;"
+                   text="Professional media conversion and editing tools"
+                   wrapText="true" />
         </VBox>
 
-        <padding>
-            <Insets left="40.0" right="40.0" top="40.0" bottom="40.0" />
-        </padding>
+        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-control-inner-background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 0;" VBox.vgrow="ALWAYS">
+            <VBox spacing="20.0" style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 20 40 30 40;">
+
+                <VBox spacing="12.0" styleClass="section-container">
+                    <Label text="🎬 Converter" styleClass="section-title"/>
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenImageConverterPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Image Converter"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenVideoConverterPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Video Converter"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenMP3ConverterPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Audio Converter"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="section-container">
+                    <Label text="🗜  Compressors" styleClass="section-title"/>
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenImageCompressorPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Compress Image"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenVideoCompressorPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Compress Video"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenCompressorPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Compress PDF"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="section-container">
+                    <Label text="🖼 Image Tools" styleClass="section-title"/>
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenNegativeImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Negative"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenTurnImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Rotate"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenLightenImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Lighten"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenDarkenImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Darken"/>
+                    </HBox>
+
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenColorizeImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Colorize"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenBlackAndWhiteImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="B&amp;W"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenBlurImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Blur"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenFindPixelPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Find Pixel"/>
+                    </HBox>
+
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenCropImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Crop"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenColorReplaceInImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Color Replace"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="section-container">
+                    <Label text="📄 PDF Tools" styleClass="section-title"/>
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenImageToPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Image to PDF"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenPdfToImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="PDF to Image"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenImagesToPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Merge Images"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenProtectPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Protect PDF"/>
+                    </HBox>
+
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenUnlockPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Unlock PDF"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenRemovePagesPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Remove Pages"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenMergePdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Merge PDF"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenSplitPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Split PDF"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="section-container">
+                    <Label text="🎵 Audio Tools" styleClass="section-title"/>
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenEditorAudioTagPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Tag Editor"/>
+                    </HBox>
+                </VBox>
+
+                <HBox alignment="CENTER">
+                    <Button mnemonicParsing="false"
+                            onAction="#onOpenInfoPressed"
+                            styleClass="info-tool-button"
+                            text="Application Info"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+
     </VBox>
 
     <Button text="?"
