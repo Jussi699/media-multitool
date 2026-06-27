@@ -368,6 +368,10 @@
     -fx-background-color: #666666 !important;
 }
 
+#tableVerticalScrollBar .thumb:pressed {
+    -fx-background-color: #32CD32 !important;
+}
+
 #tableVerticalScrollBar .track {
     -fx-border-color: #4b4b4b;
     -fx-border-width: 0 0 0 1;

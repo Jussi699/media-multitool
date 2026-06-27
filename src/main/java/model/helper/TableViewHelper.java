@@ -14,24 +14,23 @@ import org.jaudiotagger.tag.Tag;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 
 public class TableViewHelper {
     public static final double TABLE_ROW_HEIGHT = 28.0;
     public static final double TABLE_HEADER_HEIGHT = 28.0;
-
-    public static List<DetailsAudioFile> loadFilesFromDir(Path inputDirectory) {
-        return loadFilesFromDir(inputDirectory, null, () -> false);
-    }
 
     public static List<DetailsAudioFile> loadFilesFromDir(
             Path inputDirectory,
@@ -40,23 +39,44 @@ public class TableViewHelper {
         List<String> formats = Global.getAllSupportedAudioFormats();
         List<DetailsAudioFile> detailsList = new ArrayList<>();
 
-        try (Stream<Path> paths = Files.walk(inputDirectory)) {
-            List<Path> foundPaths = paths.filter(Files::isRegularFile)
-                    .filter(path -> formats.stream().anyMatch(ext -> path.toString().toLowerCase().endsWith(ext.toLowerCase())))
-                    .toList();
+        List<Path> foundPaths = new ArrayList<>();
+        try {
+            Files.walkFileTree(inputDirectory, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE,
+                new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                        String name = file.toString().toLowerCase();
+                        if (formats.stream().anyMatch(ext -> name.endsWith(ext.toLowerCase()))) {
+                            foundPaths.add(file);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
 
-            reportProgress(onProgress, 0, foundPaths.size());
+                    @Override
+                    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                        // Skip inaccessible files/directories
+                        return FileVisitResult.CONTINUE;
+                    }
 
-            for (int i = 0; i < foundPaths.size(); i++) {
-                if (isCancelled != null && isCancelled.getAsBoolean()) {
-                    break;
-                }
-                detailsList.add(createDetails(foundPaths.get(i)));
-                reportProgress(onProgress, i + 1, foundPaths.size());
-            }
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
         } catch (IOException e) {
             throw new RuntimeException("Error loading files from directory", e);
         }
+
+        reportProgress(onProgress, 0, foundPaths.size());
+
+        for (int i = 0; i < foundPaths.size(); i++) {
+            if (isCancelled != null && isCancelled.getAsBoolean()) {
+                break;
+            }
+            detailsList.add(createDetails(foundPaths.get(i)));
+            reportProgress(onProgress, i + 1, foundPaths.size());
+        }
+
         return detailsList;
     }
 
