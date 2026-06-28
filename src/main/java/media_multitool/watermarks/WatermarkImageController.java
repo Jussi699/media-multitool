@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
 import model.helper.images.CropHelper;
+import model.helper.watermarks.*;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
 import model.properties.ImageProperties;
@@ -30,8 +31,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
-import static model.utility.Util.bindingImageViewToPreviewContainer;
-import static model.utility.Util.getSavedPath;
+import static model.utility.PathWorker.createOutputFile;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
 public class WatermarkImageController extends AbstractMediaController {
@@ -71,9 +72,7 @@ public class WatermarkImageController extends AbstractMediaController {
         
         currentWatermarkSettings = new WatermarkSettings();
         
-        listControls = List.of(
-                btnSubmit, btnWatermarkText, btnWatermarkPhoto
-        );
+        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto);
 
         imageProperties.setOutput(getSavedPath());
 
@@ -103,6 +102,31 @@ public class WatermarkImageController extends AbstractMediaController {
             overlayManager.buildOverlayElements();
         }
         
+        // Listen for container size changes and update overlay position
+        previewContainer.widthProperty().addListener((_, _, _) -> {
+            if (originalBufferedImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
+                updateWatermarkOverlay();
+            }
+        });
+        previewContainer.heightProperty().addListener((_, _, _) -> {
+            if (originalBufferedImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
+                updateWatermarkOverlay();
+            }
+        });
+        
+        // Listen for imageView size changes
+        imageViewPreview.fitWidthProperty().addListener((_, _, _) -> {
+            if (originalBufferedImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
+                updateWatermarkOverlay();
+            }
+        });
+        imageViewPreview.fitHeightProperty().addListener((_, _, _) -> {
+            if (originalBufferedImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
+                updateWatermarkOverlay();
+            }
+        });
+        
+        // Configure drag handler callbacks
         dragHandler.setOnUpdate(settings -> {
             dragHandler.setContext(originalBufferedImage, settings);
             updatePreviewWithWatermark();
@@ -110,6 +134,7 @@ public class WatermarkImageController extends AbstractMediaController {
         });
         dragHandler.setOnDragComplete(this::syncSettingsToSubWindows);
         
+        // Configure resize handler callbacks
         resizeHandler.setOnUpdate(settings -> {
             resizeHandler.setContext(originalBufferedImage, settings);
             updatePreviewWithWatermark();
@@ -117,6 +142,7 @@ public class WatermarkImageController extends AbstractMediaController {
         });
         resizeHandler.setOnResizeComplete(this::syncSettingsToSubWindows);
         
+        // Wire mouse events to drag handler
         imageViewPreview.setOnMousePressed(event -> {
             dragHandler.setContext(originalBufferedImage, currentWatermarkSettings);
             dragHandler.handleMousePressed(event);
@@ -129,21 +155,19 @@ public class WatermarkImageController extends AbstractMediaController {
             dragHandler.handleMouseClicked(event);
         });
         
-        attachResizeHandlers();
-    }
-    
-    /**
-     * Attach resize event handlers to overlay handles
-     */
-    private void attachResizeHandlers() {
-        attachResizeHandler(overlayManager.getHandleTL(), "TL");
-        attachResizeHandler(overlayManager.getHandleTC(), "TC");
-        attachResizeHandler(overlayManager.getHandleTR(), "TR");
-        attachResizeHandler(overlayManager.getHandleML(), "ML");
-        attachResizeHandler(overlayManager.getHandleMR(), "MR");
-        attachResizeHandler(overlayManager.getHandleBL(), "BL");
-        attachResizeHandler(overlayManager.getHandleBC(), "BC");
-        attachResizeHandler(overlayManager.getHandleBR(), "BR");
+        // Attach resize handlers to corner handles only
+        WatermarkOverlayManager.HandlePosition[] cornerHandles = {
+            WatermarkOverlayManager.HandlePosition.TL,
+            WatermarkOverlayManager.HandlePosition.TR,
+            WatermarkOverlayManager.HandlePosition.BL,
+            WatermarkOverlayManager.HandlePosition.BR
+        };
+        for (WatermarkOverlayManager.HandlePosition pos : cornerHandles) {
+            javafx.scene.shape.Rectangle handle = overlayManager.getHandle(pos);
+            if (handle != null) {
+                attachResizeHandler(handle, pos.name());
+            }
+        }
     }
     
     /**
@@ -159,6 +183,24 @@ public class WatermarkImageController extends AbstractMediaController {
             resizeHandler.handleMouseDragged(event);
         });
         handle.setOnMouseReleased(resizeHandler::handleMouseReleased);
+    }
+    
+    /**
+     * Attach resize handlers to all overlay handles (called after rebuild)
+     */
+    private void attachAllResizeHandlers() {
+        WatermarkOverlayManager.HandlePosition[] cornerHandles = {
+            WatermarkOverlayManager.HandlePosition.TL,
+            WatermarkOverlayManager.HandlePosition.TR,
+            WatermarkOverlayManager.HandlePosition.BL,
+            WatermarkOverlayManager.HandlePosition.BR
+        };
+        for (WatermarkOverlayManager.HandlePosition pos : cornerHandles) {
+            javafx.scene.shape.Rectangle handle = overlayManager.getHandle(pos);
+            if (handle != null) {
+                attachResizeHandler(handle, pos.name());
+            }
+        }
     }
     
     private void syncSettingsToSubWindows() {
@@ -254,7 +296,7 @@ public class WatermarkImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File outputFile = Util.createOutputFile(
+                File outputFile = createOutputFile(
                         imageProperties.getImage(),
                         imageProperties.getOutput(),
                         imageProperties.getTypeImage()
@@ -305,11 +347,15 @@ public class WatermarkImageController extends AbstractMediaController {
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, null, true
         );
-        Util.reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected image file: none");
 
         originalBufferedImage = null;
         currentWatermarkSettings = new WatermarkSettings();
-        
+
+        if (watermarkOverlayPane != null) {
+            overlayManager.clearOverlay();
+        }
+
         if (cropHelper != null) {
             cropHelper.reset();
         }
@@ -331,6 +377,11 @@ public class WatermarkImageController extends AbstractMediaController {
                 return;
             }
 
+            if (watermarkOverlayPane != null) {
+                overlayManager.buildOverlayElements();
+                attachAllResizeHandlers();
+            }
+            
             updatePreviewWithWatermark();
             updateWatermarkOverlay();
 
@@ -388,69 +439,87 @@ public class WatermarkImageController extends AbstractMediaController {
         updateWatermarkPreview(settings);
     }
 
-    public void handleOpenWindowWatermarkText() {
+    /**
+     * Open or bring to front a watermark sub-window.
+     * Eliminates the copy-pasted window creation logic.
+     */
+    private <T> T openWatermarkWindow(
+            Stage[] stageHolder, String fxmlPath, String title,
+            Button ownerButton, java.util.function.Consumer<T> controllerSetup,
+            WatermarkSettings.WatermarkType expectedType, java.util.function.Consumer<T> settingsLoader
+    ) {
         try {
-            if (textWatermarkStage == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewses/watermark-views/window-watermark-text.fxml"));
+            T controller;
+            if (stageHolder[0] == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
                 Scene scene = new Scene(loader.load());
                 
-                textWatermarkController = loader.getController();
-                textWatermarkController.setMainController(this);
+                controller = loader.getController();
+                controllerSetup.accept(controller);
                 
-                textWatermarkStage = new Stage();
-                textWatermarkStage.initModality(Modality.NONE);
-                textWatermarkStage.initOwner(btnWatermarkText.getScene().getWindow());
-                textWatermarkStage.setTitle("Text Watermark Settings");
-                textWatermarkStage.setScene(scene);
-                textWatermarkStage.setMinWidth(400);
-                textWatermarkStage.setMinHeight(400);
-                textWatermarkStage.setOnCloseRequest(_ -> textWatermarkStage = null);
-            }
-            
-            if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.TEXT) {
-                textWatermarkController.loadSettings(currentWatermarkSettings);
-            }
-            
-            if (!textWatermarkStage.isShowing()) {
-                textWatermarkStage.show();
+                Stage stage = new Stage();
+                stage.initModality(Modality.NONE);
+                stage.initOwner(ownerButton.getScene().getWindow());
+                stage.setTitle(title);
+                stage.setScene(scene);
+                stage.setMinWidth(400);
+                stage.setMinHeight(400);
+                stage.setOnCloseRequest(_ -> stageHolder[0] = null);
+                stageHolder[0] = stage;
             } else {
-                textWatermarkStage.toFront();
+                controller = null;
             }
+            
+            if (controller != null && currentWatermarkSettings.getType() == expectedType) {
+                settingsLoader.accept(controller);
+            }
+            
+            if (!stageHolder[0].isShowing()) {
+                stageHolder[0].show();
+            } else {
+                stageHolder[0].toFront();
+            }
+            
+            return controller;
         } catch (Exception e) {
-            ErrorLogger.error("Failed to open text watermark window: " + e.getMessage());
+            ErrorLogger.error("Failed to open " + title + ": " + e.getMessage());
+            return null;
         }
     }
 
+    public void handleOpenWindowWatermarkText() {
+        Stage[] holder = {textWatermarkStage};
+        WatermarkTextController ctrl = openWatermarkWindow(
+                holder,
+                "/viewses/watermark-views/window-watermark-text.fxml",
+                "Text Watermark Settings",
+                btnWatermarkText,
+                (WatermarkTextController c) -> {
+                    c.setMainController(this);
+                    textWatermarkController = c;
+                },
+                WatermarkSettings.WatermarkType.TEXT,
+                c -> c.loadSettings(currentWatermarkSettings)
+        );
+        textWatermarkStage = holder[0];
+        if (ctrl != null) textWatermarkController = ctrl;
+    }
+
     public void handleOpenWindowWatermarkPhoto() {
-        try {
-            if (photoWatermarkStage == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewses/watermark-views/window-watermark-photo.fxml"));
-                Scene scene = new Scene(loader.load());
-                
-                photoWatermarkController = loader.getController();
-                photoWatermarkController.setMainController(this);
-                
-                photoWatermarkStage = new Stage();
-                photoWatermarkStage.initModality(Modality.NONE);
-                photoWatermarkStage.initOwner(btnWatermarkPhoto.getScene().getWindow());
-                photoWatermarkStage.setTitle("Photo Watermark Settings");
-                photoWatermarkStage.setScene(scene);
-                photoWatermarkStage.setMinWidth(400);
-                photoWatermarkStage.setMinHeight(400);
-                photoWatermarkStage.setOnCloseRequest(_ -> photoWatermarkStage = null);
-            }
-            
-            if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-                photoWatermarkController.loadSettings(currentWatermarkSettings);
-            }
-            
-            if (!photoWatermarkStage.isShowing()) {
-                photoWatermarkStage.show();
-            } else {
-                photoWatermarkStage.toFront();
-            }
-        } catch (Exception e) {
-            ErrorLogger.error("Failed to open photo watermark window: " + e.getMessage());
-        }
+        Stage[] holder = {photoWatermarkStage};
+        WatermarkPhotoController ctrl = openWatermarkWindow(
+                holder,
+                "/viewses/watermark-views/window-watermark-photo.fxml",
+                "Photo Watermark Settings",
+                btnWatermarkPhoto,
+                (WatermarkPhotoController c) -> {
+                    c.setMainController(this);
+                    photoWatermarkController = c;
+                },
+                WatermarkSettings.WatermarkType.IMAGE,
+                c -> c.loadSettings(currentWatermarkSettings)
+        );
+        photoWatermarkStage = holder[0];
+        if (ctrl != null) photoWatermarkController = ctrl;
     }
 }

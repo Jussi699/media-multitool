@@ -14,9 +14,12 @@ target/
 .idea/compiler.xml
 .idea/libraries/
 .idea/encodings.xml
-.idea/artifacts/Media_Multitool_jar.xml
 .idea/misc.xml
 .idea/vcs.xml
+.idea/artifacts
+.idea/dictionaries
+.idea/workspace.xml
+.ai/
 .idea/inspectionProfiles/Project_Default.xml
 *.iws
 *.iml

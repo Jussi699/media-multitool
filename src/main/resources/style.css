@@ -449,10 +449,10 @@
 }
 
 .drop-zone-filled {
-    -fx-border-color: #32CD32;
-    -fx-border-style: solid;
+    -fx-border-color: #32CD32 !important;
+    -fx-border-style: solid !important;
     -fx-border-radius: 10;
-    -fx-background-color: #445544;
+    -fx-background-color: #445544 !important;
 }
 
 .labelSelect {
@@ -667,7 +667,6 @@
     -fx-font-size: 18px;
 }
 
-/* Home Page Improvements */
 .section-container {
     -fx-background-color: #252525;
     -fx-background-radius: 12;

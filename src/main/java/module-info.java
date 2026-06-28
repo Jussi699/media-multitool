@@ -45,4 +45,6 @@ module media_multitool {
     exports model.checks;
     exports media_multitool.watermarks;
     opens media_multitool.watermarks to javafx.fxml;
+    exports model.helper.watermarks;
+    opens model.helper.watermarks to javafx.fxml;
 }

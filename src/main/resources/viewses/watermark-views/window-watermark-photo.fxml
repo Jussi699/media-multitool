@@ -26,7 +26,7 @@
                 <Label fx:id="labelWatermarkName" text="None selected" style="-fx-text-fill: #cccccc;"/>
             </VBox>
             
-            <StackPane fx:id="watermarkDropZone" minHeight="80.0" 
+            <StackPane fx:id="watermarkDropZone" minHeight="80.0"
                        style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 5;">
                 <Label text="Drag watermark here" style="-fx-text-fill: #888888;"/>
             </StackPane>
@@ -61,7 +61,7 @@
             
             <VBox spacing="8.0">
                 <Label text="Tile Mode" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
-                <HBox alignment="CENTER" spacing="8.0">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <ToggleButton fx:id="tileSingle" text="Single" prefWidth="95.0"/>
                     <ToggleButton fx:id="tileEvenGrid" text="Grid" prefWidth="95.0"/>
                     <ToggleButton fx:id="tileDiamondMesh" text="Diamond" prefWidth="95.0"/>

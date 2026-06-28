@@ -7,35 +7,27 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import model.helper.watermarks.WatermarkSettings;
 import model.logger.ErrorLogger;
 import model.utility.Global;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.function.Consumer;
 
 public class WatermarkPhotoController {
     @FXML private StackPane watermarkDropZone;
-    @FXML private javafx.scene.control.Label labelWatermarkName;
-    @FXML private javafx.scene.control.Label labelSize;
-    @FXML private javafx.scene.control.Label labelOpacity;
-    @FXML private javafx.scene.control.Label labelRotation;
-    @FXML private javafx.scene.control.Label labelSpacingText;
-    @FXML private javafx.scene.control.Label labelSpacingValue;
-    @FXML private javafx.scene.control.Button btnSelectWatermark;
-    @FXML private Slider sliderSize;
-    @FXML private Slider sliderOpacity;
-    @FXML private Slider sliderRotation;
-    @FXML private Slider sliderSpacing;
-    @FXML private ToggleButton tileSingle;
-    @FXML private ToggleButton tileEvenGrid;
-    @FXML private ToggleButton tileDiamondMesh;
+    @FXML private Label labelWatermarkName, labelSize, labelOpacity, labelRotation;
+    @FXML private Label labelSpacingText, labelSpacingValue;
+    @FXML private Button btnSelectWatermark;
+    @FXML private Slider sliderSize, sliderOpacity, sliderRotation, sliderSpacing;
+    @FXML private ToggleButton tileSingle, tileEvenGrid, tileDiamondMesh;
 
     @Getter private WatermarkSettings settings;
     @Setter private WatermarkImageController mainController;
     @Getter private double relativePositionX = 0;
     @Getter private double relativePositionY = 0;
-
 
     @FXML
     public void initialize() {
@@ -65,48 +57,34 @@ public class WatermarkPhotoController {
         sliderRotation.setValue(settings.getRotation());
         sliderSpacing.setValue(settings.getSpacing());
         
-        String pattern = settings.getTilePattern();
-        if      ("single".equals(pattern))  { tileSingle.setSelected(true);     }
-        else if ("grid".equals(pattern))    { tileEvenGrid.setSelected(true);   }
-        else if ("diamond".equals(pattern)) { tileDiamondMesh.setSelected(true);}
+        switch (settings.getTilePattern()) {
+            case "single"  -> tileSingle.setSelected(true);
+            case "grid"    -> tileEvenGrid.setSelected(true);
+            case "diamond" -> tileDiamondMesh.setSelected(true);
+        }
         
         if (settings.getWatermarkImage() != null) {
             labelWatermarkName.setText("Watermark loaded");
         }
     }
 
+    /**
+     * Bind a slider to a label and a settings property, preserving custom position.
+     * Eliminates the repetitive wasCustom save/restore pattern.
+     */
+    private void bindSlider(Slider slider, Label label, String format, Consumer<Double> setter) {
+        slider.valueProperty().addListener((_, _, newVal) -> {
+            label.setText(String.format(format, newVal.doubleValue()));
+            settings.updatePreservingPosition(_ -> setter.accept(newVal.doubleValue()));
+            updatePreview();
+        });
+    }
+
     private void setupSliders() {
-        sliderSize.valueProperty().addListener((_, _, newVal) -> {
-            labelSize.setText(String.format("%.0fpx", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setSize(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
-
-        sliderOpacity.valueProperty().addListener((_, _, newVal) -> {
-            labelOpacity.setText(String.format("%.0f%%", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setOpacity(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
-
-        sliderRotation.valueProperty().addListener((_, _, newVal) -> {
-            labelRotation.setText(String.format("%.0f°", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setRotation(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
-
-        sliderSpacing.valueProperty().addListener((_, _, newVal) -> {
-            labelSpacingValue.setText(String.format("%.0fpx", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setSpacing(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
+        bindSlider(sliderSize, labelSize, "%.0fpx", settings::setSize);
+        bindSlider(sliderOpacity, labelOpacity, "%.0f%%", settings::setOpacity);
+        bindSlider(sliderRotation, labelRotation, "%.0f°", settings::setRotation);
+        bindSlider(sliderSpacing, labelSpacingValue, "%.0fpx", settings::setSpacing);
     }
 
     private void setupTileButtons() {
@@ -123,20 +101,19 @@ public class WatermarkPhotoController {
             labelSpacingText.setDisable(!isTiled);
             labelSpacingValue.setDisable(!isTiled);
             
-            boolean wasCustom = settings.isUseCustomPosition();
+            settings.updatePreservingPosition(s -> {
+                if (newVal == tileSingle) {
+                    s.setTileMode(false);
+                    s.setTilePattern("single");
+                } else if (newVal == tileEvenGrid) {
+                    s.setTileMode(true);
+                    s.setTilePattern("grid");
+                } else if (newVal == tileDiamondMesh) {
+                    s.setTileMode(true);
+                    s.setTilePattern("diamond");
+                }
+            });
             
-            if (newVal == tileSingle) {
-                settings.setTileMode(false);
-                settings.setTilePattern("single");
-            } else if (newVal == tileEvenGrid) {
-                settings.setTileMode(true);
-                settings.setTilePattern("grid");
-            } else if (newVal == tileDiamondMesh) {
-                settings.setTileMode(true);
-                settings.setTilePattern("diamond");
-            }
-            
-            settings.setUseCustomPosition(wasCustom);
             updatePreview();
         });
     }
@@ -225,50 +202,15 @@ public class WatermarkPhotoController {
         }
     }
 
-    @FXML
-    private void handlePositionTopLeft() {
-        setRelativePosition(0, 0);
-    }
-
-    @FXML
-    private void handlePositionTopCenter() {
-        setRelativePosition(0.5, 0);
-    }
-
-    @FXML
-    private void handlePositionTopRight() {
-        setRelativePosition(1.0, 0);
-    }
-
-    @FXML
-    private void handlePositionCenterLeft() {
-        setRelativePosition(0, 0.5);
-    }
-
-    @FXML
-    private void handlePositionCenter() {
-        setRelativePosition(0.5, 0.5);
-    }
-
-    @FXML
-    private void handlePositionCenterRight() {
-        setRelativePosition(1.0, 0.5);
-    }
-
-    @FXML
-    private void handlePositionBottomLeft() {
-        setRelativePosition(0, 1.0);
-    }
-
-    @FXML
-    private void handlePositionBottomCenter() {
-        setRelativePosition(0.5, 1.0);
-    }
-
-    @FXML
-    private void handlePositionBottomRight() {
-        setRelativePosition(1.0, 1.0);
-    }
+    @FXML private void handlePositionTopLeft()      { setRelativePosition(0, 0);     }
+    @FXML private void handlePositionTopCenter()    { setRelativePosition(0.5, 0);   }
+    @FXML private void handlePositionTopRight()     { setRelativePosition(1.0, 0);   }
+    @FXML private void handlePositionCenterLeft()   { setRelativePosition(0, 0.5);   }
+    @FXML private void handlePositionCenter()       { setRelativePosition(0.5, 0.5); }
+    @FXML private void handlePositionCenterRight()  { setRelativePosition(1.0, 0.5); }
+    @FXML private void handlePositionBottomLeft()   { setRelativePosition(0, 1.0);   }
+    @FXML private void handlePositionBottomCenter() { setRelativePosition(0.5, 1.0); }
+    @FXML private void handlePositionBottomRight()  { setRelativePosition(1.0, 1.0); }
 
     private void setRelativePosition(double relX, double relY) {
         this.relativePositionX = relX;

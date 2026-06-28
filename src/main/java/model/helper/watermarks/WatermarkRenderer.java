@@ -1,4 +1,4 @@
-package media_multitool.watermarks;
+package model.helper.watermarks;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -8,8 +8,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class WatermarkRenderer {
-    private static final int BASE_FONT_SIZE = 24;
-    
     /**
      * Apply watermark to base image based on settings
      */
@@ -17,7 +15,6 @@ public class WatermarkRenderer {
         if (settings == null || settings.getType() == WatermarkSettings.WatermarkType.NONE) {
             return baseImage;
         }
-        
         if (baseImage == null) {
             return null;
         }
@@ -42,9 +39,11 @@ public class WatermarkRenderer {
         
         try {
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            
-            int fontSize = (int) (BASE_FONT_SIZE * settings.getFontSize());
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,         RenderingHints.VALUE_RENDER_SPEED);
+
+            int base_font_size = 24;
+            int fontSize = (int) (base_font_size * settings.getFontSize());
             Font font = new Font(settings.getFontName(), Font.BOLD, fontSize);
             g2d.setFont(font);
             
@@ -57,26 +56,41 @@ public class WatermarkRenderer {
             );
             g2d.setColor(colorWithAlpha);
             
-            String text = settings.getText();
             FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(text);
+            int textWidth = fm.stringWidth(settings.getText());
             int textHeight = fm.getHeight();
             
             double rotation = Math.toRadians(settings.getRotation());
             
+            TextEffect effect = resolveEffect(settings.getEffect());
+            
             switch (settings.getTilePattern()) {
-                case "single"  -> applyTextSingleTile(g2d, image, text, textWidth, textHeight, settings, colorWithAlpha, rotation);
-                case "grid"    -> applyTextGridTile(g2d, image, text, textWidth, textHeight, settings, colorWithAlpha, rotation);
-                case "diamond" -> applyTextDiamondTile(g2d, image, text, textWidth, textHeight, settings, colorWithAlpha, rotation);
+                case "single"  -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
+                case "grid"    -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, false);
+                case "diamond" -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, true);
             }
         } finally {
             g2d.dispose();
         }
     }
     
-    private static void applyTextSingleTile(Graphics2D g2d, BufferedImage image, String text, 
-                                           int textWidth, int textHeight, WatermarkSettings settings,
-                                           Color color, double rotation) {
+    /**
+     * Resolved effect type to avoid string comparisons per tile
+     */
+    private enum TextEffect { NONE, SHADOW, OUTLINE, GLOW }
+    
+    private static TextEffect resolveEffect(String effect) {
+        if (effect == null) return TextEffect.NONE;
+        return switch (effect.toLowerCase()) {
+            case "shadow"  -> TextEffect.SHADOW;
+            case "outline" -> TextEffect.OUTLINE;
+            case "glow"    -> TextEffect.GLOW;
+            default        -> TextEffect.NONE;
+        };
+    }
+    
+    private static void renderTextSingle(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
+                                         int textWidth, int textHeight, Color color, double rotation, TextEffect effect) {
         int x, y;
         if (settings.isUseCustomPosition()) {
             x = (int) settings.getPositionX();
@@ -95,62 +109,49 @@ public class WatermarkRenderer {
         transform.translate(-centerX, -centerY);
         
         g2d.setTransform(transform);
-        drawTextWithEffect(g2d, text, x, y, settings, color);
+        drawTextWithEffect(g2d, settings.getText(), x, y, effect, color);
     }
     
-    private static void applyTextGridTile(Graphics2D g2d, BufferedImage image, String text,
-                                         int textWidth, int textHeight, WatermarkSettings settings,
-                                         Color color, double rotation) {
+    /**
+     * Unified grid/diamond tiled text rendering. 
+     * Reuses a single AffineTransform instance to avoid thousands of allocations on large images.
+     */
+    private static void renderTextTiled(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
+                                        int textWidth, int textHeight, Color color, double rotation,
+                                        TextEffect effect, boolean diamond) {
         int spacing = (int) (settings.getSpacing() * 50);
         int stepX = textWidth + spacing;
         int stepY = textHeight + spacing;
         
-        for (int y = textHeight; y < image.getHeight(); y += stepY) {
-            for (int x = 0; x < image.getWidth(); x += stepX) {
-                AffineTransform transform = new AffineTransform();
-                transform.translate(x + textWidth / 2.0, y);
-                transform.rotate(rotation);
-                transform.translate(-textWidth / 2.0, 0);
-                
-                g2d.setTransform(transform);
-                drawTextWithEffect(g2d, text, 0, 0, settings, color);
-            }
-        }
-    }
-    
-    private static void applyTextDiamondTile(Graphics2D g2d, BufferedImage image, String text,
-                                            int textWidth, int textHeight, WatermarkSettings settings,
-                                            Color color, double rotation) {
-        int spacing = (int) (settings.getSpacing() * 50);
-        int stepX = textWidth + spacing;
-        int stepY = textHeight + spacing;
+        String text = settings.getText();
+        AffineTransform transform = new AffineTransform();
         
         boolean offset = false;
         for (int y = textHeight; y < image.getHeight(); y += stepY) {
-            int startX = offset ? stepX / 2 : 0;
+            int startX = (diamond && offset) ? stepX / 2 : 0;
             for (int x = startX; x < image.getWidth(); x += stepX) {
-                AffineTransform transform = new AffineTransform();
+                transform.setToIdentity();
                 transform.translate(x + textWidth / 2.0, y);
                 transform.rotate(rotation);
                 transform.translate(-textWidth / 2.0, 0);
                 
                 g2d.setTransform(transform);
-                drawTextWithEffect(g2d, text, 0, 0, settings, color);
+                drawTextWithEffect(g2d, text, 0, 0, effect, color);
             }
-            offset = !offset;
+            if (diamond) offset = !offset;
         }
     }
     
+    /**
+     * Draw text with pre-resolved effect type (avoids string comparison per tile)
+     */
     private static void drawTextWithEffect(Graphics2D g2d, String text, int x, int y, 
-                                          WatermarkSettings settings, Color color) {
-        String effect = settings.getEffect();
-        if (effect == null) effect = "none";
-
-        switch (effect.toLowerCase()) {
-            case "shadow"  -> drawShadowEffect(g2d, text, x, y, color);
-            case "outline" -> drawOutlineEffect(g2d, text, x, y, color);
-            case "glow"    -> drawGlowEffect(g2d, text, x, y, color);
-            default        -> {
+                                           TextEffect effect, Color color) {
+        switch (effect) {
+            case SHADOW  -> drawShadowEffect(g2d, text, x, y, color);
+            case OUTLINE -> drawOutlineEffect(g2d, text, x, y, color);
+            case GLOW    -> drawGlowEffect(g2d, text, x, y, color);
+            default      -> {
                 g2d.setColor(color);
                 g2d.drawString(text, x, y);
             }
@@ -165,7 +166,8 @@ public class WatermarkRenderer {
     }
     
     private static void drawOutlineEffect(Graphics2D g2d, String text, int x, int y, Color color) {
-        g2d.setColor(new Color(0, 0, 0, color.getAlpha()));
+        Color outlineColor = new Color(0, 0, 0, color.getAlpha());
+        g2d.setColor(outlineColor);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx != 0 || dy != 0) {
@@ -179,7 +181,8 @@ public class WatermarkRenderer {
     
     private static void drawGlowEffect(Graphics2D g2d, String text, int x, int y, Color color) {
         int alphaDiv = Math.max(1, color.getAlpha() / 3);
-        g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), alphaDiv));
+        Color glowColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), alphaDiv);
+        g2d.setColor(glowColor);
         for (int i = 3; i > 0; i--) {
             g2d.drawString(text, x - i, y - i);
             g2d.drawString(text, x + i, y - i);
@@ -198,8 +201,9 @@ public class WatermarkRenderer {
         Graphics2D g2d = image.createGraphics();
         
         try {
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,     RenderingHints.VALUE_RENDER_SPEED);
             
             int size = (int) settings.getSize();
             float opacity = (float) Math.min(1.0, settings.getOpacity() / 100.0);
@@ -207,45 +211,45 @@ public class WatermarkRenderer {
             
             double rotation = Math.toRadians(settings.getRotation());
             
-            if (settings.isTileMode()) { applyImageTile(g2d, image, settings, size, rotation);   }
-            else                       { applyImageSingle(g2d, image, settings, size, rotation); }
+            if (settings.isTileMode()) {
+                renderImageTiled(g2d, image, settings, size, rotation);
+            } else {
+                renderImageSingle(g2d, image, settings, size, rotation);
+            }
         } finally {
             g2d.dispose();
         }
     }
     
-    private static void applyImageTile(Graphics2D g2d, BufferedImage image, WatermarkSettings settings, 
-                                       int size, double rotation) {
-        int spacing = (int) settings.getSpacing();
-        int step = size + spacing;
-        String pattern = settings.getTilePattern();
+    /**
+     * Unified tiled image rendering (grid + diamond).
+     * Reuses AffineTransform instance to avoid excessive allocation.
+     */
+    private static void renderImageTiled(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
+                                         int size, double rotation) {
+        int step = size + (int) settings.getSpacing();
+        boolean diamond = "diamond".equals(settings.getTilePattern());
+        BufferedImage wmImage = settings.getWatermarkImage();
+        AffineTransform transform = new AffineTransform();
         
-        if ("diamond".equals(pattern)) { applyImageDiamondTile(g2d, image, settings, size, rotation, step); }
-        else                           { applyImageGridTile(g2d, image, settings, size, rotation, step);    }
-    }
-    
-    private static void applyImageGridTile(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
-                                          int size, double rotation, int step) {
-        for (int y = 0; y < image.getHeight(); y += step) {
-            for (int x = 0; x < image.getWidth(); x += step) {
-                drawTransformedImage(g2d, settings.getWatermarkImage(), x, y, size, rotation);
-            }
-        }
-    }
-    
-    private static void applyImageDiamondTile(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
-                                             int size, double rotation, int step) {
         boolean offset = false;
         for (int y = 0; y < image.getHeight(); y += step) {
-            int startX = offset ? step / 2 : 0;
+            int startX = (diamond && offset) ? step / 2 : 0;
             for (int x = startX; x < image.getWidth(); x += step) {
-                drawTransformedImage(g2d, settings.getWatermarkImage(), x, y, size, rotation);
+                transform.setToIdentity();
+                transform.translate(x + size / 2.0, y + size / 2.0);
+                transform.rotate(rotation);
+                transform.translate(-size / 2.0, -size / 2.0);
+                
+                g2d.setTransform(transform);
+                g2d.drawImage(wmImage, 0, 0, size, size, null);
             }
-            offset = !offset;
+            if (diamond) offset = !offset;
         }
     }
     
-    private static void applyImageSingle(Graphics2D g2d, BufferedImage image, WatermarkSettings settings, int size, double rotation) {
+    private static void renderImageSingle(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
+                                          int size, double rotation) {
         int x, y;
         if (settings.isUseCustomPosition()) {
             x = (int) settings.getPositionX();
@@ -255,27 +259,32 @@ public class WatermarkRenderer {
             y = (image.getHeight() - size) / 2;
         }
         
-        drawTransformedImage(g2d, settings.getWatermarkImage(), x, y, size, rotation);
-    }
-    
-    private static void drawTransformedImage(Graphics2D g2d, BufferedImage wmImage, int x, int y, int size, double rotation) {
         AffineTransform transform = new AffineTransform();
         transform.translate(x + size / 2.0, y + size / 2.0);
         transform.rotate(rotation);
         transform.translate(-size / 2.0, -size / 2.0);
         
         g2d.setTransform(transform);
-        g2d.drawImage(wmImage, 0, 0, size, size, null);
+        g2d.drawImage(settings.getWatermarkImage(), 0, 0, size, size, null);
     }
     
+    /**
+     * Copy image preserving the source type when possible.
+     * TYPE_INT_ARGB is used only if the source has alpha or is a custom type.
+     * OPTIMIZED: Use TYPE_INT_RGB for faster rendering when no alpha is needed.
+     */
     private static BufferedImage copyImage(BufferedImage source) {
-        BufferedImage copy = new BufferedImage(
-            source.getWidth(),
-            source.getHeight(),
-            BufferedImage.TYPE_INT_ARGB
-        );
+        int type = source.getType();
+        if (type == BufferedImage.TYPE_INT_RGB || type == 0) {
+            type = BufferedImage.TYPE_INT_RGB;
+        } else if (type == BufferedImage.TYPE_INT_ARGB) {
+            type = BufferedImage.TYPE_INT_RGB;
+        }
+        
+        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), type);
         Graphics2D g = copy.createGraphics();
         try {
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
             g.drawImage(source, 0, 0, null);
         } finally {
             g.dispose();
@@ -284,9 +293,9 @@ public class WatermarkRenderer {
     }
     
     public static Image renderPreview(BufferedImage baseImage, WatermarkSettings settings) {
-        if (baseImage == null) { return null; }
+        if (baseImage == null) return null;
         BufferedImage result = applyWatermark(baseImage, settings);
-        if (result == null) { return null; }
+        if (result == null) return null;
         return SwingFXUtils.toFXImage(result, null);
     }
 }

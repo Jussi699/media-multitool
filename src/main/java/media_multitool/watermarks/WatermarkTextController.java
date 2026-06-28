@@ -5,8 +5,10 @@ import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import lombok.Getter;
 import lombok.Setter;
+import model.helper.watermarks.WatermarkSettings;
 
 import java.awt.GraphicsEnvironment;
+import java.util.function.Consumer;
 
 public class WatermarkTextController {
     @FXML private TextField fieldText;
@@ -55,30 +57,30 @@ public class WatermarkTextController {
     }
     
     private void updateColorPicker(java.awt.Color awtColor) {
-        javafx.scene.paint.Color fxColor = javafx.scene.paint.Color.rgb(
+        colorPickerForText.setValue(Color.rgb(
             awtColor.getRed(),
             awtColor.getGreen(),
             awtColor.getBlue()
-        );
-        colorPickerForText.setValue(fxColor);
+        ));
     }
     
     private void updateEffectCombo(String effect) {
         if (effect != null && !effect.isEmpty()) {
-            String capitalizedEffect = effect.substring(0, 1).toUpperCase() + effect.substring(1).toLowerCase();
-            comboBoxEffect.setValue(capitalizedEffect);
+            String capitalized = effect.substring(0, 1).toUpperCase() + effect.substring(1).toLowerCase();
+            comboBoxEffect.setValue(capitalized);
         }
     }
     
     private void updateTilePattern(String pattern) {
-        if      ("single".equals(pattern))  { tileSingle.setSelected(true);      }
-        else if ("grid".equals(pattern))    { tileEvenGrid.setSelected(true);    }
-        else if ("diamond".equals(pattern)) { tileDiamondMesh.setSelected(true); }
+        switch (pattern) {
+            case "single"  -> tileSingle.setSelected(true);
+            case "grid"    -> tileEvenGrid.setSelected(true);
+            case "diamond" -> tileDiamondMesh.setSelected(true);
+        }
     }
 
     private void setupFontComboBox() {
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        String[] fontFamilies = ge.getAvailableFontFamilyNames();
+        String[] fontFamilies = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         comboBoxFont.getItems().addAll(fontFamilies);
         comboBoxFont.setValue("Arial");
     }
@@ -88,38 +90,23 @@ public class WatermarkTextController {
         comboBoxEffect.setValue("None");
     }
 
+    /**
+     * Bind a slider to a label and a settings property, preserving custom position.
+     * Eliminates the repetitive wasCustom save/restore pattern.
+     */
+    private void bindSlider(Slider slider, Label label, String format, Consumer<Double> setter) {
+        slider.valueProperty().addListener((_, _, newVal) -> {
+            label.setText(String.format(format, newVal.doubleValue()));
+            settings.updatePreservingPosition(_ -> setter.accept(newVal.doubleValue()));
+            updatePreview();
+        });
+    }
+
     private void setupSliders() {
-        sliderSizeText.valueProperty().addListener((_, _, newVal) -> {
-            labelSizeX.setText(String.format("%.1fx", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setFontSize(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
-
-        sliderSpacing.valueProperty().addListener((_, _, newVal) -> {
-            labelSpacingX.setText(String.format("%.1fx", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setSpacing(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
-
-        sliderOpacity.valueProperty().addListener((_, _, newVal) -> {
-            labelOpacityPercent.setText(String.format("%.0f%%", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setOpacity(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
-
-        sliderRotation.valueProperty().addListener((_, _, newVal) -> {
-            labelRotationDegree.setText(String.format("%.0f°", newVal.doubleValue()));
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setRotation(newVal.doubleValue());
-            settings.setUseCustomPosition(wasCustom);
-            updatePreview();
-        });
+        bindSlider(sliderSizeText, labelSizeX, "%.1fx", settings::setFontSize);
+        bindSlider(sliderSpacing, labelSpacingX, "%.1fx", settings::setSpacing);
+        bindSlider(sliderOpacity, labelOpacityPercent, "%.0f%%", settings::setOpacity);
+        bindSlider(sliderRotation, labelRotationDegree, "%.0f°", settings::setRotation);
     }
 
     private void setupTileButtons() {
@@ -135,17 +122,12 @@ public class WatermarkTextController {
             sliderSpacing.setDisable(!isTiled);
             labelSpacingX.setDisable(!isTiled);
             
-            boolean wasCustom = settings.isUseCustomPosition();
+            settings.updatePreservingPosition(s -> {
+                if      (newVal == tileSingle)      s.setTilePattern("single");
+                else if (newVal == tileEvenGrid)    s.setTilePattern("grid");
+                else if (newVal == tileDiamondMesh) s.setTilePattern("diamond");
+            });
             
-            if (newVal == tileSingle) {
-                settings.setTilePattern("single");
-            } else if (newVal == tileEvenGrid) {
-                settings.setTilePattern("grid");
-            } else if (newVal == tileDiamondMesh) {
-                settings.setTilePattern("diamond");
-            }
-            
-            settings.setUseCustomPosition(wasCustom);
             updatePreview();
         });
     }
@@ -172,17 +154,13 @@ public class WatermarkTextController {
 
     private void setupLiveUpdate() {
         fieldText.textProperty().addListener((_, _, newVal) -> {
-            boolean wasCustom = settings.isUseCustomPosition();
-            settings.setText(newVal);
-            settings.setUseCustomPosition(wasCustom);
+            settings.updatePreservingPosition(s -> s.setText(newVal));
             updatePreview();
         });
 
         comboBoxFont.valueProperty().addListener((_, _, newVal) -> {
             if (newVal != null) {
-                boolean wasCustom = settings.isUseCustomPosition();
-                settings.setFontName(newVal);
-                settings.setUseCustomPosition(wasCustom);
+                settings.updatePreservingPosition(s -> s.setFontName(newVal));
                 updatePreview();
             }
         });
@@ -194,18 +172,14 @@ public class WatermarkTextController {
                     (float) newVal.getGreen(),
                     (float) newVal.getBlue()
                 );
-                boolean wasCustom = settings.isUseCustomPosition();
-                settings.setTextColor(awtColor);
-                settings.setUseCustomPosition(wasCustom);
+                settings.updatePreservingPosition(s -> s.setTextColor(awtColor));
                 updatePreview();
             }
         });
 
         comboBoxEffect.valueProperty().addListener((_, _, newVal) -> {
             if (newVal != null) {
-                boolean wasCustom = settings.isUseCustomPosition();
-                settings.setEffect(newVal.toLowerCase());
-                settings.setUseCustomPosition(wasCustom);
+                settings.updatePreservingPosition(s -> s.setEffect(newVal.toLowerCase()));
                 updatePreview();
             }
         });

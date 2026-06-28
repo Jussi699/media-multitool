@@ -22,7 +22,7 @@
             
             <VBox spacing="5.0">
                 <Label text="Your Text" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
-                <TextField fx:id="fieldText" promptText="Enter watermark text" maxWidth="350"/>
+                <TextField fx:id="fieldText" promptText="Enter watermark text" maxWidth="310"/>
             </VBox>
 
             <VBox spacing="5.0">
