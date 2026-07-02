@@ -68,10 +68,11 @@ public class CropHelper {
         cropRect.setCursor(Cursor.MOVE);
         cropRect.setManaged(false);
 
-        cropOverlay.setOnMousePressed(this::startNewCrop);
-        cropOverlay.setOnMouseDragged(this::resizeNewCrop);
-        cropOverlay.setOnMouseReleased(this::finishCropDrag);
+        cropOverlay.setOnMousePressed(null);
+        cropOverlay.setOnMouseDragged(null);
+        cropOverlay.setOnMouseReleased(null);
 
+        cropRect.setMouseTransparent(false);
         cropRect.setOnMousePressed(this::startMoveCrop);
         cropRect.setOnMouseDragged(this::moveCrop);
         cropRect.setOnMouseReleased(this::finishCropDrag);
@@ -100,37 +101,6 @@ public class CropHelper {
         handle.setOnMouseReleased(this::finishCropDrag);
 
         return handle;
-    }
-
-    private void startNewCrop(MouseEvent event) {
-        if (!canEditCrop(event) || event.getTarget() != cropOverlay) {
-            return;
-        }
-
-        imagePointFromOverlay(event).ifPresent(point -> {
-            dragMode = DragMode.CREATE;
-            dragStartImagePoint = point;
-            cropArea = new CropArea(point.getX(), point.getY(), MIN_CROP_SIZE, MIN_CROP_SIZE);
-            scrollPanePhoto.setPannable(false);
-            event.consume();
-            updateCropOverlay();
-        });
-    }
-
-    private void resizeNewCrop(MouseEvent event) {
-        if (dragMode != DragMode.CREATE || dragStartImagePoint == null) {
-            return;
-        }
-
-        imagePointFromOverlay(event).ifPresent(point -> {
-            double x = Math.min(dragStartImagePoint.getX(), point.getX());
-            double y = Math.min(dragStartImagePoint.getY(), point.getY());
-            double right = Math.max(dragStartImagePoint.getX(), point.getX());
-            double bottom = Math.max(dragStartImagePoint.getY(), point.getY());
-            cropArea = normalizeCrop(x, y, right - x, bottom - y);
-            updateCropOverlay();
-            event.consume();
-        });
     }
 
     private void startMoveCrop(MouseEvent event) {
@@ -187,18 +157,10 @@ public class CropHelper {
             double right = dragStartCrop.x + dragStartCrop.width;
             double bottom = dragStartCrop.y + dragStartCrop.height;
 
-            if (activeHandle.changesLeft) {
-                left = point.getX();
-            }
-            if (activeHandle.changesRight) {
-                right = point.getX();
-            }
-            if (activeHandle.changesTop) {
-                top = point.getY();
-            }
-            if (activeHandle.changesBottom) {
-                bottom = point.getY();
-            }
+            if (activeHandle.changesLeft)   { left = point.getX();   }
+            if (activeHandle.changesRight)  { right = point.getX();  }
+            if (activeHandle.changesTop)    { top = point.getY();    }
+            if (activeHandle.changesBottom) { bottom = point.getY(); }
 
             double x = Math.min(left, right);
             double y = Math.min(top, bottom);

@@ -87,19 +87,18 @@ public class CropImageController extends AbstractMediaController {
                         How to use:
                         1. Select an image file or drag it into the drop zone.
                         \s
-                        2. Drag over the preview to create a crop area.
+                        2. A crop zone appears automatically on load.
                         \s
-                        3. Info:\s
-                        * The left mouse button allows you to find a pixel.
-                        * The right mouse button moves the crop area or resizes it using the white handles.
+                        3. Controls:
+                        * Drag the crop zone to move it anywhere on the image.
+                        * Drag the white handles (corners / edges) to resize the crop zone.
+                        * Use the aspect-ratio buttons to snap to a fixed ratio.
                         \s
-                        4. Use the slider or mouse wheel to zoom for precision.
+                        4. Use the slider or mouse wheel to zoom in for precision.
                         \s
-                        5. Click crop And Download to save only the selected part of the image.
+                        5. Click "Crop and Download" to save the selected area.
                         \s
-                        This tool will help you crop your image.
-                        \s
-                         If you have any questions or problems, please go to Info and write to me on Discord.
+                        If you have any questions or problems, please go to Info and write to me on Discord.
                         """
         );
     }
