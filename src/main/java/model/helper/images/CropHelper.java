@@ -63,7 +63,7 @@ public class CropHelper {
         cropOverlay.setPickOnBounds(true);
 
         cropRect.setFill(Color.color(0.0, 0.0, 0.0, 0.12));
-        cropRect.setStroke(Color.WHITE);
+        cropRect.setStroke(Color.rgb(215, 200, 210));
         cropRect.setStrokeWidth(2.0);
         cropRect.setCursor(Cursor.MOVE);
         cropRect.setManaged(false);
