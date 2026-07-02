@@ -60,6 +60,16 @@ public class PathWorker {
         return new File(pathForSave, fileName);
     }
 
+    public static File createOutputFile(File image, File pathForSave, String endText ,String extension) {
+        String normalizedExtension = extension.toLowerCase(Locale.ROOT);
+        String shortId = UUID.randomUUID().toString().substring(0, 8);
+        String fileName = getBaseName(image.getName())
+                + "_" + shortId + "_" + endText
+                + "." + normalizedExtension;
+
+        return new File(pathForSave, fileName);
+    }
+
     public static Optional<File> directoryChooser(Stage stage, File currentDirectory, String title) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle(title);
