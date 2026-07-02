@@ -1,10 +1,12 @@
-package media_multitool.watermarks;
+package media_multitool.watermarks.viewController;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import lombok.Getter;
 import lombok.Setter;
+import media_multitool.watermarks.WatermarkImageController;
+import media_multitool.watermarks.WatermarkPdfController;
 import model.helper.watermarks.WatermarkSettings;
 
 import java.awt.GraphicsEnvironment;
@@ -20,6 +22,7 @@ public class WatermarkTextController {
 
     @Getter private WatermarkSettings settings;
     @Setter private WatermarkImageController mainController;
+    @Setter private WatermarkPdfController mainPdfController;
 
     @FXML
     public void initialize() {
@@ -188,6 +191,9 @@ public class WatermarkTextController {
     private void updatePreview() {
         if (mainController != null) {
             mainController.updateWatermarkPreview(settings);
+        }
+        if (mainPdfController != null) {
+            mainPdfController.updateWatermarkPreview(settings);
         }
     }
 

@@ -9,7 +9,7 @@
     <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
           style="-fx-background-color: #4b4b4b;">
 
-        <Label text="Photo Watermark Settings" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
+        <Label text="Photo Watermark Settings (PDF)" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
@@ -53,7 +53,7 @@
                 <Label text="Rotation" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderRotation" max="360" prefWidth="250.0"/>
-                    <Label fx:id="labelRotation" text="0°" minWidth="60.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelRotation" text="0" minWidth="60.0" style="-fx-text-fill: white;"/>
                 </HBox>
             </VBox>
             
@@ -78,17 +78,17 @@
             <VBox spacing="8.0">
                 <Label text="Position Presets" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <GridPane hgap="8.0" vgap="8.0">
-                    <Button text="↖" onAction="#handlePositionTopLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                    <Button text="↑" onAction="#handlePositionTopCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                    <Button text="↗" onAction="#handlePositionTopRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <Button text="&#x2196;" onAction="#handlePositionTopLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Button text="&#x2191;" onAction="#handlePositionTopCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Button text="&#x2197;" onAction="#handlePositionTopRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
                     
-                    <Button text="←" onAction="#handlePositionCenterLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                    <Button text="●" onAction="#handlePositionCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Button text="→" onAction="#handlePositionCenterRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <Button text="&#x2190;" onAction="#handlePositionCenterLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Button text="&#x25CF;" onAction="#handlePositionCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Button text="&#x2192;" onAction="#handlePositionCenterRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
                     
-                    <Button text="↙" onAction="#handlePositionBottomLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                    <Button text="↓" onAction="#handlePositionBottomCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                    <Button text="↘" onAction="#handlePositionBottomRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <Button text="&#x2199;" onAction="#handlePositionBottomLeft" prefWidth="50.0" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <Button text="&#x2193;" onAction="#handlePositionBottomCenter" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <Button text="&#x2198;" onAction="#handlePositionBottomRight" prefWidth="50.0" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
                 </GridPane>
             </VBox>
             

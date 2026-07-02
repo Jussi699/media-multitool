@@ -1,4 +1,4 @@
-package media_multitool.watermarks;
+package media_multitool.watermarks.viewController;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -7,6 +7,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import media_multitool.watermarks.WatermarkImageController;
+import media_multitool.watermarks.WatermarkPdfController;
 import model.helper.watermarks.WatermarkSettings;
 import model.logger.ErrorLogger;
 import model.utility.Global;
@@ -26,6 +28,7 @@ public class WatermarkPhotoController {
 
     @Getter private WatermarkSettings settings;
     @Setter private WatermarkImageController mainController;
+    @Setter private WatermarkPdfController mainPdfController;
     @Getter private double relativePositionX = 0;
     @Getter private double relativePositionY = 0;
 
@@ -200,6 +203,9 @@ public class WatermarkPhotoController {
         if (mainController != null) {
             mainController.updateWatermarkPreview(settings);
         }
+        if (mainPdfController != null) {
+            mainPdfController.updateWatermarkPreview(settings);
+        }
     }
 
     @FXML private void handlePositionTopLeft()      { setRelativePosition(0, 0);     }
@@ -218,6 +224,9 @@ public class WatermarkPhotoController {
         
         if (mainController != null) {
             mainController.updateWatermarkPosition(relX, relY, settings);
+        }
+        if (mainPdfController != null) {
+            mainPdfController.updateWatermarkPosition(relX, relY, settings);
         }
     }
 

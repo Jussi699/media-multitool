@@ -9,7 +9,7 @@
     <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
           style="-fx-background-color: #4b4b4b;">
 
-        <Label text="Text Watermark Settings" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
+        <Label text="Text Watermark Settings (PDF)" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
@@ -78,7 +78,7 @@
                 <Label text="Rotation" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderRotation"  max="360"  prefWidth="250.0"/>
-                    <Label fx:id="labelRotationDegree" text="0°" minWidth="50.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelRotationDegree" text="0" minWidth="50.0" style="-fx-text-fill: white;"/>
                 </HBox>
             </VBox>
 

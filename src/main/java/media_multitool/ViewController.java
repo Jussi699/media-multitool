@@ -19,7 +19,7 @@ public class ViewController {
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane;
+            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane;
 
     @FXML private HomeViewController homeViewController;
 
@@ -54,7 +54,8 @@ public class ViewController {
        */
 
     /* index page watermark
-       1, watermarkImagePane
+       41, watermarkImagePane
+       42, watermarkPdfPane
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -150,9 +151,13 @@ public class ViewController {
         stackPaneMapWatermark.put(
                 41, watermarkImagePane
         );
+        stackPaneMapWatermark.put(
+                42, watermarkPdfPane
+        );
 
         comboBoxChoiceActionWatermark.getItems().addAll(
-                new Item(41, "Watermark Image")
+                new Item(41, "Watermark Image"),
+                new Item(42, "Watermark PDF")
         );
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -301,7 +306,8 @@ public class ViewController {
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
-                removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane
+                removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane,
+                watermarkPdfPane
         };
 
         for (StackPane page : allPages) {

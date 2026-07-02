@@ -152,5 +152,6 @@
         <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>
         <fx:include fx:id="splitPdfPage" source="pdf-views/split-pdf-view.fxml"/>
         <fx:include fx:id="watermarkImagePane" source="watermark-views/watermark-image-view.fxml"/>
+        <fx:include fx:id="watermarkPdfPane" source="watermark-views/watermark-pdf-view.fxml"/>
     </StackPane>
 </HBox>
