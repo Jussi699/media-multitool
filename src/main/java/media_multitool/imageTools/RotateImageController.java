@@ -32,7 +32,7 @@ import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class TurnImageController extends AbstractMediaController {
+public class RotateImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @Override
@@ -43,7 +43,7 @@ public class TurnImageController extends AbstractMediaController {
     private BufferedImage currentBufferedImage;
 
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSave, btnFlipHorizontally, btnFlipVertically, btnTurnImageRight, btnTurnImageLeft, btnSubmit;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSave, btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit;
     @FXML private Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
 
@@ -51,7 +51,7 @@ public class TurnImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnTurnImageRight, btnTurnImageLeft, btnSubmit);
+        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -66,15 +66,15 @@ public class TurnImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Turn",
+                "Rotate",
                 """
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
                         3. Select which direction you want to rotate or flip the image by pressing the corresponding button.
-                        4. Click 'Turn and Download' to apply the effect.
+                        4. Click 'Rotate and Download' to apply the effect.
 
-                        This tool turns or flips your image.
+                        This tool rotate or flips your image.
 
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -120,7 +120,7 @@ public class TurnImageController extends AbstractMediaController {
     }
 
     @FXML
-    private void onActionTurnImage(ActionEvent event) {
+    private void onActionRotateImage(ActionEvent event) {
         if (currentBufferedImage == null) {
             return;
         }
@@ -128,23 +128,23 @@ public class TurnImageController extends AbstractMediaController {
         Button source = (Button) event.getSource();
 
         String side = switch (source.getId()) {
-            case "btnFlipHorizontally" -> "flip_horizontally";
-            case "btnFlipVertically"   -> "flip_vertically";
-            case "btnTurnImageRight"   -> "turn_right";
-            case "btnTurnImageLeft"    -> "turn_left";
+            case "btnFlipHorizontally"   -> "flip_horizontally";
+            case "btnFlipVertically"     -> "flip_vertically";
+            case "btnRotateImageRight"   -> "rotate_right";
+            case "btnRotateImageLeft"    -> "rotate_left";
 
             default -> throw new IllegalStateException("Unexpected value: " + source.getId());
         };
 
 
-        ImagePreprocessing.turnImage(currentBufferedImage, side).ifPresent(rotated -> {
+        ImagePreprocessing.rotateImage(currentBufferedImage, side).ifPresent(rotated -> {
             currentBufferedImage = rotated;
             setPreview(currentBufferedImage);
         });
     }
 
     @FXML
-    public void submitTurnAndDownload() {
+    public void submitRotateAndDownload() {
         if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
             return;
         }
@@ -231,6 +231,7 @@ public class TurnImageController extends AbstractMediaController {
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
+            System.out.println(dropZone.getStyleClass());
         }
     }
 

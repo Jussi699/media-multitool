@@ -59,7 +59,7 @@ public class ImagePreprocessing {
      * @param side the transformation type: "turn_right", "turn_left", "flip_horizontally", or "flip_vertically"
      * @return an Optional containing the processed BufferedImage, or empty if the input image is null
      */
-    public static Optional<BufferedImage> turnImage(BufferedImage image, String side) {
+    public static Optional<BufferedImage> rotateImage(BufferedImage image, String side) {
         if (image == null) {
             return Optional.empty();
         }
@@ -67,8 +67,8 @@ public class ImagePreprocessing {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        int targetWidth = (side.equals("turn_right") || side.equals("turn_left")) ? height : width;
-        int targetHeight = (side.equals("turn_right") || side.equals("turn_left")) ? width : height;
+        int targetWidth = (side.equals("rotate_right") || side.equals("rotate_left")) ? height : width;
+        int targetHeight = (side.equals("rotate_right") || side.equals("rotate_left")) ? width : height;
 
         BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight,
                 image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
@@ -77,13 +77,13 @@ public class ImagePreprocessing {
 
         switch (side) {
             // Right (90 degrees clockwise)
-            case "turn_right" -> {
+            case "rotate_right" -> {
                 g2d.translate(targetWidth, 0);
                 g2d.rotate(Math.toRadians(90));
             }
 
             // Left (90 degrees counter-clockwise)
-            case "turn_left" -> {
+            case "rotate_left" -> {
                 g2d.translate(0, targetHeight);
                 g2d.rotate(Math.toRadians(-90));
             }

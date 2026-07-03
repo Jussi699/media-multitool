@@ -131,7 +131,7 @@
         <fx:include fx:id="compressorImagePage" source="compressor-views/compressor-image-view.fxml"/>
         <fx:include fx:id="compressorVideoPage" source="compressor-views/compressor-video-view.fxml"/>
         <fx:include fx:id="negativeImagePage" source="image-tools-views/negative-image-view.fxml"/>
-        <fx:include fx:id="turnImagePage" source="image-tools-views/turn-image-view.fxml"/>
+        <fx:include fx:id="rotateImagePage" source="image-tools-views/rotate-image-view.fxml"/>
         <fx:include fx:id="infoPage" source="info-view.fxml"/>
         <fx:include fx:id="lightenPage" source="image-tools-views/lighten-image-view.fxml"/>
         <fx:include fx:id="darkenPage" source="image-tools-views/darken-image-view.fxml"/>

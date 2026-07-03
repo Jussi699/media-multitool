@@ -17,7 +17,7 @@ public class ViewController {
 
     @FXML private StackPane audioEditorTagPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
-            negativeImagePage, turnImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
+            negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
             compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane;
 
@@ -30,7 +30,7 @@ public class ViewController {
 
     /* index page image
       1, negativeImagePage,
-      2, turnImagePage,
+      2, rotateImagePage,
       3, lightenPage,
       4, darkenPage,
       5, colorizePage,
@@ -125,7 +125,7 @@ public class ViewController {
 
         stackPaneMapImageTools.putAll(Map.of(
                 1, negativeImagePage,
-                2, turnImagePage,
+                2, rotateImagePage,
                 3, lightenPage,
                 4, darkenPage,
                 5, colorizePage,
@@ -162,7 +162,7 @@ public class ViewController {
 
         comboBoxChoiceActionImage.getItems().addAll(
                 new Item(1, "Negative photo"),
-                new Item(2, "Turn photo"),
+                new Item(2, "Rotate photo"),
                 new Item(3, "Lighten photo"),
                 new Item(4, "Darken photo"),
                 new Item(5, "Colorize photo"),
@@ -302,7 +302,7 @@ public class ViewController {
     private void setActivePage(StackPane pageToShow, Button activeButton) {
         StackPane[] allPages = {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
-                compressorImagePage, compressorVideoPage, negativeImagePage, turnImagePage,
+                compressorImagePage, compressorVideoPage, negativeImagePage, rotateImagePage,
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
