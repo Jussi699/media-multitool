@@ -19,6 +19,7 @@ import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
+import viewHelp.SliderSetup;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -36,7 +37,7 @@ public class DarkenImageController extends AbstractMediaController {
     @FXML private Slider sliderDarken;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
+    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, currentValueSlider;
     @FXML private ImageView imageViewPreview;
 
     private List<Control> listControls;
@@ -58,6 +59,9 @@ public class DarkenImageController extends AbstractMediaController {
         sliderDarken.setMax(255);
         sliderDarken.setValue(0);
         sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
+
+        SliderSetup.setupListenerInSliderForUpdateNewValueInLabel(sliderDarken, currentValueSlider, 255);
+
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -204,6 +208,7 @@ public class DarkenImageController extends AbstractMediaController {
         if (sliderDarken != null) {
             sliderDarken.setValue(0);
         }
+        currentValueSlider.setText("100%");
         disableControls();
     }
 

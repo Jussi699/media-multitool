@@ -19,6 +19,7 @@ import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
+import viewHelp.SliderSetup;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -37,7 +38,7 @@ public class BlurImageController extends AbstractMediaController {
     @FXML private Slider sliderBlurry;
     @FXML private StackPane dropZone;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit, btnCancel;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
+    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, currentValueSlider;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer;
 
@@ -61,6 +62,8 @@ public class BlurImageController extends AbstractMediaController {
         sliderBlurry.setMin(0);
         sliderBlurry.setMax(20);
         sliderBlurry.setValue(0);
+
+        SliderSetup.setupListenerInSliderForUpdateNewValueInLabel(sliderBlurry, currentValueSlider, 20);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -268,6 +271,7 @@ public class BlurImageController extends AbstractMediaController {
         if (sliderBlurry != null) {
             sliderBlurry.setValue(0);
         }
+        currentValueSlider.setText("100%");
         disableControls();
     }
 
