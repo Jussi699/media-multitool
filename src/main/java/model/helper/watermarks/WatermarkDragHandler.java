@@ -101,10 +101,10 @@ public class WatermarkDragHandler {
         double deltaX = (event.getX() - dragStartX) * scale[0];
         double deltaY = (event.getY() - dragStartY) * scale[1];
         
-        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings);
+        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings, image);
         
-        double newPosX = Math.clamp(dragStartPosX + deltaX, 0, image.getWidth() - dims[0]);
-        double newPosY = Math.clamp(dragStartPosY + deltaY, 0, image.getHeight() - dims[1]);
+        double newPosX = Math.clamp(dragStartPosX + deltaX, 0, Math.max(0, image.getWidth() - dims[0]));
+        double newPosY = Math.clamp(dragStartPosY + deltaY, 0, Math.max(0, image.getHeight() - dims[1]));
         
         settings.setPositionX(newPosX);
         settings.setPositionY(newPosY);
@@ -157,10 +157,10 @@ public class WatermarkDragHandler {
         double[] imgCoords = toImageCoords(event);
         if (imgCoords == null) return;
         
-        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings);
+        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings, image);
         
-        double posX = Math.clamp(imgCoords[0] - dims[0] / 2, 0, image.getWidth() - dims[0]);
-        double posY = Math.clamp(imgCoords[1] - dims[1] / 2, 0, image.getHeight() - dims[1]);
+        double posX = Math.clamp(imgCoords[0] - dims[0] / 2, 0, Math.max(0, image.getWidth() - dims[0]));
+        double posY = Math.clamp(imgCoords[1] - dims[1] / 2, 0, Math.max(0, image.getHeight() - dims[1]));
         
         settings.setPositionX(posX);
         settings.setPositionY(posY);

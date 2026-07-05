@@ -46,6 +46,22 @@ public class WatermarkDimensionsHelper {
         FontMetrics fm = getMetrics(settings);
         return new double[]{fm.stringWidth(settings.getText()), fm.getHeight()};
     }
+
+    /**
+     * Calculate watermark dimensions capped to the given image bounds.
+     * For an IMAGE type, the size is capped to the smaller of the image width/height
+     * so the watermark never exceeds the base image dimensions.
+     */
+    public static double[] calculateDimensions(WatermarkSettings settings, BufferedImage image) {
+        double[] dims = calculateDimensions(settings);
+        if (image != null && settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
+            double maxDim = Math.min(image.getWidth(), image.getHeight());
+            if (dims[0] > maxDim) {
+                return new double[]{maxDim, maxDim};
+            }
+        }
+        return dims;
+    }
     
     /**
      * Calculate watermark width based on settings
@@ -86,7 +102,7 @@ public class WatermarkDimensionsHelper {
             return;
         }
         
-        double[] dims = calculateDimensions(settings);
+        double[] dims = calculateDimensions(settings, image);
         double posX = (image.getWidth() - dims[0]) / 2;
         double posY = (image.getHeight() - dims[1]) / 2;
         
@@ -100,7 +116,7 @@ public class WatermarkDimensionsHelper {
      * Single call replaces separate width/height calculations.
      */
     public static double[] getCurrentPosition(WatermarkSettings settings, BufferedImage image) {
-        double[] dims = calculateDimensions(settings);
+        double[] dims = calculateDimensions(settings, image);
         
         double posX, posY;
         if (settings.isUseCustomPosition()) {
@@ -131,12 +147,12 @@ public class WatermarkDimensionsHelper {
             return;
         }
 
-        double[] dims = calculateDimensions(settings);
+        double[] dims = calculateDimensions(settings, image);
         double halfW = dims[0] / 2;
         double halfH = dims[1] / 2;
 
-        double x = Math.clamp(relX * image.getWidth()  - halfW, 0, image.getWidth()  - dims[0]);
-        double y = Math.clamp(relY * image.getHeight() - halfH, 0, image.getHeight() - dims[1]);
+        double x = Math.clamp(relX * image.getWidth()  - halfW, 0, Math.max(0, image.getWidth()  - dims[0]));
+        double y = Math.clamp(relY * image.getHeight() - halfH, 0, Math.max(0, image.getHeight() - dims[1]));
 
         settings.setPositionX(x);
         settings.setPositionY(y);

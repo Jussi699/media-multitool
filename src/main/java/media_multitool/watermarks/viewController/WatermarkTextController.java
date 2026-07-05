@@ -207,4 +207,13 @@ public class WatermarkTextController {
         tileSingle.setSelected(true);
         updatePreview();
     }
+
+    public void resetToDefaults() {
+        settings = new WatermarkSettings();
+        settings.setType(WatermarkSettings.WatermarkType.TEXT);
+        setupDefaults();
+        tileSingle.setSelected(true);
+        comboBoxFont.setValue("Arial");
+        comboBoxEffect.setValue("None");
+    }
 }

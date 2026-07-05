@@ -270,18 +270,10 @@ public class WatermarkRenderer {
     
     /**
      * Copy image preserving the source type when possible.
-     * TYPE_INT_ARGB is used only if the source has alpha or is a custom type.
-     * OPTIMIZED: Use TYPE_INT_RGB for faster rendering when no alpha is needed.
+     * Always uses TYPE_INT_ARGB to preserve transparency (required for ICO and PNG).
      */
     private static BufferedImage copyImage(BufferedImage source) {
-        int type = source.getType();
-        if (type == BufferedImage.TYPE_INT_RGB || type == 0) {
-            type = BufferedImage.TYPE_INT_RGB;
-        } else if (type == BufferedImage.TYPE_INT_ARGB) {
-            type = BufferedImage.TYPE_INT_RGB;
-        }
-        
-        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), type);
+        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = copy.createGraphics();
         try {
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);

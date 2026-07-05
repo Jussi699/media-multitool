@@ -246,6 +246,14 @@ public class WatermarkPhotoController {
         updatePreview();
     }
 
+    public void resetToDefaults() {
+        settings = new WatermarkSettings();
+        settings.setType(WatermarkSettings.WatermarkType.IMAGE);
+        setupDefaults();
+        labelWatermarkName.setText("None selected");
+        tileSingle.setSelected(true);
+    }
+
     private boolean isImageFile(File file) {
         String name = file.getName().toLowerCase();
         return name.endsWith(".png") || name.endsWith(".jpg") || 

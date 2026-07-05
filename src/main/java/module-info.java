@@ -17,6 +17,7 @@ module media_multitool {
     requires static lombok;
     requires ch.qos.logback.classic;
     requires ch.qos.logback.core;
+    requires org.apache.xmlgraphics.batik.transcoder;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;

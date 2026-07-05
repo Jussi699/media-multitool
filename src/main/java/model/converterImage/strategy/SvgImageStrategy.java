@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Base64;
+
+import lombok.NonNull;
 import model.converterImage.UsefulMethods;
 
 import static model.utility.PathWorker.createOutputFile;
@@ -22,7 +24,7 @@ public class SvgImageStrategy implements ImageConversionStrategy {
         return outputImage;
     }
 
-    private void saveAsSvg(BufferedImage image, File outputFile) throws IOException {
+    public void saveAsSvg(@NonNull BufferedImage image, @NonNull File outputFile) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
         String base64 = Base64.getEncoder().encodeToString(baos.toByteArray());

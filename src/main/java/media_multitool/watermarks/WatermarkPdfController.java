@@ -303,6 +303,8 @@ public class WatermarkPdfController extends AbstractMediaController {
         pdfFile = null;
         currentWatermarkSettings = new WatermarkSettings();
 
+        resetSubWindowControllers();
+
         if (watermarkOverlayPane != null) {
             overlayManager.clearOverlay();
         }
@@ -311,6 +313,15 @@ public class WatermarkPdfController extends AbstractMediaController {
             cropHelper.reset();
         }
         disableControls();
+    }
+
+    private void resetSubWindowControllers() {
+        if (textWatermarkController != null) {
+            textWatermarkController.resetToDefaults();
+        }
+        if (photoWatermarkController != null) {
+            photoWatermarkController.resetToDefaults();
+        }
     }
 
     private void loadFile(File selectedFile) {
@@ -409,7 +420,10 @@ public class WatermarkPdfController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         textWatermarkStage = holder[0];
-        if (ctrl != null) textWatermarkController = ctrl;
+        if (ctrl != null) {
+            textWatermarkController = ctrl;
+            updateWatermarkPreview(ctrl.getSettings());
+        }
     }
 
     public void handleOpenWindowWatermarkPhoto() {
@@ -434,6 +448,9 @@ public class WatermarkPdfController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         photoWatermarkStage = holder[0];
-        if (ctrl != null) photoWatermarkController = ctrl;
+        if (ctrl != null) {
+            photoWatermarkController = ctrl;
+            updateWatermarkPreview(ctrl.getSettings());
+        }
     }
 }

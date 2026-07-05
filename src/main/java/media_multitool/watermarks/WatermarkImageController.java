@@ -15,6 +15,7 @@ import media_multitool.AbstractMediaController;
 import media_multitool.watermarks.viewController.WatermarkPhotoController;
 import media_multitool.watermarks.viewController.WatermarkTextController;
 import model.checks.Checking;
+import model.converterImage.strategy.SvgImageStrategy;
 import model.helper.images.CropHelper;
 import model.helper.watermarks.*;
 import model.logger.ErrorLogger;
@@ -26,9 +27,10 @@ import model.utility.*;
 import viewHelp.Alerts;
 import viewHelp.OpenWatermarkWindow;
 
-import javax.imageio.ImageIO;
+import net.ifok.image.image4j.codec.ico.ICOEncoder;
+
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.*;
 import java.util.List;
 
 import static model.utility.PathWorker.createOutputFile;
@@ -195,16 +197,34 @@ public class WatermarkImageController extends AbstractMediaController {
                 protected File call() throws Exception {
                     updateProgress(10, 100);
 
+                    String fmt = imageProperties.getTypeImage();
+
                     File outputFile = createOutputFile(
                             imageProperties.getImage(),
                             imageProperties.getOutput(),
-                            imageProperties.getTypeImage()
+                            fmt
                     );
 
                     updateProgress(50, 100);
 
                     BufferedImage watermarked = WatermarkRenderer.applyWatermark(originalBufferedImage, currentWatermarkSettings.copy());
-                    ImagePreprocessing.downloadImage(watermarked, imageProperties.getTypeImage(), outputFile);
+
+                    if(watermarked == null) {
+                        ErrorLogger.error("Failed to apply watermark to image!");
+                        Alerts.alertDialog(Alert.AlertType.ERROR, "Failed to apply watermark", "Error",
+                                "Failed to apply watermark to image!");
+                        return null;
+                    }
+
+                    if ("ico".equalsIgnoreCase(fmt)) {
+                        ICOEncoder.write(watermarked, outputFile);
+                    } else if ("svg".equalsIgnoreCase(fmt)) {
+                        SvgImageStrategy svg = new SvgImageStrategy();
+                        svg.saveAsSvg(watermarked, outputFile);
+                    } else {
+                        ImagePreprocessing.downloadImage(watermarked, fmt, outputFile);
+                    }
+
                     updateProgress(100, 100);
 
                     return outputFile;
@@ -252,6 +272,8 @@ public class WatermarkImageController extends AbstractMediaController {
         originalBufferedImage = null;
         currentWatermarkSettings = new WatermarkSettings();
 
+        resetSubWindowControllers();
+
         if (watermarkOverlayPane != null) {
             overlayManager.clearOverlay();
         }
@@ -260,6 +282,15 @@ public class WatermarkImageController extends AbstractMediaController {
             cropHelper.reset();
         }
         disableControls();
+    }
+
+    private void resetSubWindowControllers() {
+        if (textWatermarkController != null) {
+            textWatermarkController.resetToDefaults();
+        }
+        if (photoWatermarkController != null) {
+            photoWatermarkController.resetToDefaults();
+        }
     }
 
     private void loadFile(File selectedFile) {
@@ -281,7 +312,8 @@ public class WatermarkImageController extends AbstractMediaController {
 
     private void loadImage(File selectedFile) {
         try {
-            originalBufferedImage = ImageIO.read(selectedFile);
+            originalBufferedImage = WatermarkLoadAndSaveHelper.determinedAndLoadTypeAsBufferedImage(selectedFile);
+
             if (originalBufferedImage == null) {
                 showErrorMessage(labelSuccess, "Unsupported image format.", imageProperties.getHideSuccessMessageTimer());
                 return;
@@ -348,7 +380,10 @@ public class WatermarkImageController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         textWatermarkStage = holder[0];
-        if (ctrl != null) textWatermarkController = ctrl;
+        if (ctrl != null) {
+            textWatermarkController = ctrl;
+            updateWatermarkPreview(ctrl.getSettings());
+        }
     }
 
     public void handleOpenWindowWatermarkPhoto() {
@@ -371,6 +406,9 @@ public class WatermarkImageController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         photoWatermarkStage = holder[0];
-        if (ctrl != null) photoWatermarkController = ctrl;
+        if (ctrl != null) {
+            photoWatermarkController = ctrl;
+            updateWatermarkPreview(ctrl.getSettings());
+        }
     }
 }
