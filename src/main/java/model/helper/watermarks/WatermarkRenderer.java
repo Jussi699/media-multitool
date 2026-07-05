@@ -298,4 +298,47 @@ public class WatermarkRenderer {
         if (result == null) return null;
         return SwingFXUtils.toFXImage(result, null);
     }
+
+    /**
+     * Scale watermark settings from a preview-resolution image to an export-resolution image.
+     *
+     * <p>When a PDF page is rendered at low DPI for preview and then again at high DPI for export,
+     * the absolute pixel positions / sizes stored in the settings need to be scaled accordingly.
+     *
+     * @param previewSettings  Settings based on the preview image coordinates.
+     * @param previewImage     The image that was used when configuring the watermark position.
+     * @param exportPageImage  The high-resolution image that will be watermarked and saved.
+     * @return A scaled copy of {@code previewSettings}, or the original object if {@code previewImage}
+     *         is {@code null}.
+     */
+    public static WatermarkSettings scaleSettingsForExport(
+            WatermarkSettings previewSettings,
+            BufferedImage previewImage,
+            BufferedImage exportPageImage
+    ) {
+        if (previewImage == null) {
+            return previewSettings;
+        }
+
+        WatermarkSettings scaled = previewSettings.copy();
+
+        double scaleX = (double) exportPageImage.getWidth()  / previewImage.getWidth();
+        double scaleY = (double) exportPageImage.getHeight() / previewImage.getHeight();
+        double scale  = Math.min(scaleX, scaleY);
+
+        if (scaled.isUseCustomPosition()) {
+            scaled.setPositionX(scaled.getPositionX() * scaleX);
+            scaled.setPositionY(scaled.getPositionY() * scaleY);
+        }
+
+        if (scaled.getType() == WatermarkSettings.WatermarkType.IMAGE) {
+            scaled.setSize(scaled.getSize() * scale);
+            scaled.setSpacing(scaled.getSpacing() * scale);
+        } else if (scaled.getType() == WatermarkSettings.WatermarkType.TEXT) {
+            scaled.setFontSize(scaled.getFontSize() * scale);
+            scaled.setSpacing(scaled.getSpacing() * scale);
+        }
+
+        return scaled;
+    }
 }

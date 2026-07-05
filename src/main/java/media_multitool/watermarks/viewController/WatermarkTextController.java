@@ -13,6 +13,7 @@ import java.awt.GraphicsEnvironment;
 import java.util.function.Consumer;
 
 public class WatermarkTextController {
+    @FXML private Label labelTitle;
     @FXML private TextField fieldText;
     @FXML private ComboBox<String> comboBoxFont, comboBoxEffect;
     @FXML private ColorPicker colorPickerForText;
@@ -28,13 +29,20 @@ public class WatermarkTextController {
     public void initialize() {
         settings = new WatermarkSettings();
         settings.setType(WatermarkSettings.WatermarkType.TEXT);
-        
+
         setupFontComboBox();
         setupEffectComboBox();
         setupSliders();
         setupTileButtons();
         setupDefaults();
         setupLiveUpdate();
+    }
+
+    /** Sets the title label text inside the window (Variant A shared-FXML approach). */
+    public void setWindowTitle(String title) {
+        if (labelTitle != null) {
+            labelTitle.setText(title);
+        }
     }
 
     public void loadSettings(WatermarkSettings settings) {
@@ -46,19 +54,19 @@ public class WatermarkTextController {
         this.settings.setUseCustomPosition(true);
         this.settings.setPositionX(settings.getPositionX());
         this.settings.setPositionY(settings.getPositionY());
-        
+
         fieldText.setText(settings.getText());
         comboBoxFont.setValue(settings.getFontName());
         sliderSizeText.setValue(settings.getFontSize());
         sliderSpacing.setValue(settings.getSpacing());
         sliderOpacity.setValue(settings.getOpacity());
         sliderRotation.setValue(settings.getRotation());
-        
+
         updateColorPicker(settings.getTextColor());
         updateEffectCombo(settings.getEffect());
         updateTilePattern(settings.getTilePattern());
     }
-    
+
     private void updateColorPicker(java.awt.Color awtColor) {
         colorPickerForText.setValue(Color.rgb(
             awtColor.getRed(),
@@ -66,14 +74,14 @@ public class WatermarkTextController {
             awtColor.getBlue()
         ));
     }
-    
+
     private void updateEffectCombo(String effect) {
         if (effect != null && !effect.isEmpty()) {
             String capitalized = effect.substring(0, 1).toUpperCase() + effect.substring(1).toLowerCase();
             comboBoxEffect.setValue(capitalized);
         }
     }
-    
+
     private void updateTilePattern(String pattern) {
         switch (pattern) {
             case "single"  -> tileSingle.setSelected(true);
@@ -93,10 +101,6 @@ public class WatermarkTextController {
         comboBoxEffect.setValue("None");
     }
 
-    /**
-     * Bind a slider to a label and a settings property, preserving custom position.
-     * Eliminates the repetitive wasCustom save/restore pattern.
-     */
     private void bindSlider(Slider slider, Label label, String format, Consumer<Double> setter) {
         slider.valueProperty().addListener((_, _, newVal) -> {
             label.setText(String.format(format, newVal.doubleValue()));
@@ -117,20 +121,20 @@ public class WatermarkTextController {
         tileSingle.setToggleGroup(tileGroup);
         tileEvenGrid.setToggleGroup(tileGroup);
         tileDiamondMesh.setToggleGroup(tileGroup);
-        
+
         tileSingle.setSelected(true);
-        
+
         tileGroup.selectedToggleProperty().addListener((_, _, newVal) -> {
             boolean isTiled = newVal != tileSingle;
             sliderSpacing.setDisable(!isTiled);
             labelSpacingX.setDisable(!isTiled);
-            
+
             settings.updatePreservingPosition(s -> {
                 if      (newVal == tileSingle)      s.setTilePattern("single");
                 else if (newVal == tileEvenGrid)    s.setTilePattern("grid");
                 else if (newVal == tileDiamondMesh) s.setTilePattern("diamond");
             });
-            
+
             updatePreview();
         });
     }
@@ -143,7 +147,7 @@ public class WatermarkTextController {
         sliderOpacity.setValue(100);
         sliderRotation.setValue(0);
         sliderSpacing.setDisable(true);
-        
+
         settings.setText("Watermark");
         settings.setFontName("Arial");
         settings.setFontSize(2.5);

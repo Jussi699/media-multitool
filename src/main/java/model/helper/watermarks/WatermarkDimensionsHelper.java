@@ -113,4 +113,33 @@ public class WatermarkDimensionsHelper {
         
         return new double[]{posX, posY, dims[0], dims[1]};
     }
+
+    /**
+     * Position the watermark at the given relative image coordinates (0–1 range).
+     *
+     * <p>The watermark is centred on the click point and clamped to stay within the image
+     * boundaries. The updated position is written back into {@code settings} and the custom
+     * position flag is set to {@code true}.
+     *
+     * @param relX     Horizontal click position as a fraction of the image width  (0..1).
+     * @param relY     Vertical   click position as a fraction of the image height (0..1).
+     * @param settings Watermark settings to update in-place.
+     * @param image    Source image used for boundary clamping.
+     */
+    public static void applyRelativePosition(double relX, double relY, WatermarkSettings settings, BufferedImage image) {
+        if (image == null) {
+            return;
+        }
+
+        double[] dims = calculateDimensions(settings);
+        double halfW = dims[0] / 2;
+        double halfH = dims[1] / 2;
+
+        double x = Math.clamp(relX * image.getWidth()  - halfW, 0, image.getWidth()  - dims[0]);
+        double y = Math.clamp(relY * image.getHeight() - halfH, 0, image.getHeight() - dims[1]);
+
+        settings.setPositionX(x);
+        settings.setPositionY(y);
+        settings.setUseCustomPosition(true);
+    }
 }

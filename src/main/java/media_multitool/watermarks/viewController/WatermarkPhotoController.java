@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.function.Consumer;
 
 public class WatermarkPhotoController {
+    @FXML private Label labelTitle;
     @FXML private StackPane watermarkDropZone;
     @FXML private Label labelWatermarkName, labelSize, labelOpacity, labelRotation;
     @FXML private Label labelSpacingText, labelSpacingValue;
@@ -41,6 +42,13 @@ public class WatermarkPhotoController {
         setupTileButtons();
         setupDragAndDrop();
         setupDefaults();
+    }
+
+    /** Sets the title label text inside the window (Variant A shared-FXML approach). */
+    public void setWindowTitle(String title) {
+        if (labelTitle != null) {
+            labelTitle.setText(title);
+        }
     }
 
     public void loadSettings(WatermarkSettings settings) {

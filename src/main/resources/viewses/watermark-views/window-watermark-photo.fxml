@@ -9,7 +9,7 @@
     <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
           style="-fx-background-color: #4b4b4b;">
 
-        <Label text="Photo Watermark Settings" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
+        <Label fx:id="labelTitle" text="Photo Watermark Settings" style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>

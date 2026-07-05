@@ -1,6 +1,7 @@
 package model.helper.watermarks;
 
 import javafx.scene.Cursor;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -103,7 +104,7 @@ public class WatermarkOverlayManager {
     public void updateOverlay(
         WatermarkSettings settings,
         BufferedImage image,
-        javafx.scene.image.ImageView imageView
+        ImageView imageView
     ) {
         if (overlayPane == null || image == null) {
             return;
@@ -124,7 +125,7 @@ public class WatermarkOverlayManager {
     private void updateOverlayPosition(
         WatermarkSettings settings,
         BufferedImage image,
-        javafx.scene.image.ImageView imageView
+        ImageView imageView
     ) {
         double imageViewWidth = imageView.getBoundsInLocal().getWidth();
         double imageViewHeight = imageView.getBoundsInLocal().getHeight();
@@ -174,7 +175,7 @@ public class WatermarkOverlayManager {
         positionHandle(HandlePosition.BL, displayX - hh,                displayY + displayH - hh);
         positionHandle(HandlePosition.BR, displayX + displayW - hh,     displayY + displayH - hh);
     }
-    
+
     private void positionHandle(HandlePosition pos, double x, double y) {
         Rectangle handle = handles.get(pos);
         handle.setX(x);

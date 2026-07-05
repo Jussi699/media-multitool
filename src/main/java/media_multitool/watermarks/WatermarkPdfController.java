@@ -3,8 +3,6 @@ package media_multitool.watermarks;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -12,7 +10,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import media_multitool.watermarks.viewController.WatermarkPhotoController;
@@ -34,6 +31,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import viewHelp.OpenWatermarkWindow;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -64,12 +62,8 @@ public class WatermarkPdfController extends AbstractMediaController {
     private WatermarkTextController textWatermarkController;
     private WatermarkPhotoController photoWatermarkController;
 
-    private WatermarkDragHandler dragHandler;
-    private WatermarkResizeHandler resizeHandler;
     private WatermarkOverlayManager overlayManager;
-
-    private static final float PREVIEW_DPI = 72f;
-    private static final float EXPORT_DPI = 300f;
+    private WatermarkInteractionSetup interactionSetup;
 
     @Override
     protected MediaProperties getProperties() {
@@ -91,123 +85,29 @@ public class WatermarkPdfController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         cropHelper = new CropHelper(cropOverlay, imageViewPreview, new Rectangle(), scrollPaneImage, previewContainer, imageScaleSlider);
 
-        dragHandler = new WatermarkDragHandler(imageViewPreview);
-        resizeHandler = new WatermarkResizeHandler(imageViewPreview);
         overlayManager = new WatermarkOverlayManager(watermarkOverlayPane, previewContainer);
+
+        interactionSetup = new WatermarkInteractionSetup(
+                imageViewPreview,
+                previewContainer,
+                watermarkOverlayPane,
+                new WatermarkDragHandler(imageViewPreview),
+                new WatermarkResizeHandler(imageViewPreview),
+                overlayManager,
+                () -> firstPagePreviewImage,
+                () -> currentWatermarkSettings,
+                this::refreshPreview,
+                this::syncSettingsToSubWindows
+        );
 
         isPressedReset();
         setupDragAndDrop(dropZone, List.of(".pdf"), this::loadFile);
-        setupWatermarkInteraction();
+        interactionSetup.setup();
     }
 
-    private void setupWatermarkInteraction() {
-        if (imageViewPreview == null || previewContainer == null) {
-            return;
-        }
-
-        imageViewPreview.setPickOnBounds(true);
-
-        if (watermarkOverlayPane != null) {
-            overlayManager.buildOverlayElements();
-        }
-
-        initListener();
-        setupHandle();
-        setupMouse();
-    }
-
-    private void setupMouse() {
-        imageViewPreview.setOnMousePressed(event -> {
-            dragHandler.setContext(firstPagePreviewImage, currentWatermarkSettings);
-            dragHandler.handleMousePressed(event);
-        });
-        imageViewPreview.setOnMouseDragged(dragHandler::handleMouseDragged);
-        imageViewPreview.setOnMouseReleased(dragHandler::handleMouseReleased);
-        imageViewPreview.setOnMouseMoved(dragHandler::handleMouseMoved);
-        imageViewPreview.setOnMouseClicked(event -> {
-            dragHandler.setContext(firstPagePreviewImage, currentWatermarkSettings);
-            dragHandler.handleMouseClicked(event);
-        });
-
-        WatermarkOverlayManager.HandlePosition[] cornerHandles = {
-                WatermarkOverlayManager.HandlePosition.TL,
-                WatermarkOverlayManager.HandlePosition.TR,
-                WatermarkOverlayManager.HandlePosition.BL,
-                WatermarkOverlayManager.HandlePosition.BR
-        };
-        for (WatermarkOverlayManager.HandlePosition pos : cornerHandles) {
-            javafx.scene.shape.Rectangle handle = overlayManager.getHandle(pos);
-            if (handle != null) {
-                attachResizeHandler(handle, pos.name());
-            }
-        }
-    }
-
-    private void setupHandle() {
-        dragHandler.setOnUpdate(settings -> {
-            dragHandler.setContext(firstPagePreviewImage, settings);
-            updatePreviewWithWatermark();
-            updateWatermarkOverlay();
-        });
-        dragHandler.setOnDragComplete(this::syncSettingsToSubWindows);
-
-        resizeHandler.setOnUpdate(settings -> {
-            resizeHandler.setContext(firstPagePreviewImage, settings);
-            updatePreviewWithWatermark();
-            updateWatermarkOverlay();
-        });
-        resizeHandler.setOnResizeComplete(this::syncSettingsToSubWindows);
-    }
-
-    private void initListener() {
-        previewContainer.widthProperty().addListener((_, _, _) -> {
-            if (firstPagePreviewImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
-                updateWatermarkOverlay();
-            }
-        });
-        previewContainer.heightProperty().addListener((_, _, _) -> {
-            if (firstPagePreviewImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
-                updateWatermarkOverlay();
-            }
-        });
-
-        imageViewPreview.fitWidthProperty().addListener((_, _, _) -> {
-            if (firstPagePreviewImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
-                updateWatermarkOverlay();
-            }
-        });
-        imageViewPreview.fitHeightProperty().addListener((_, _, _) -> {
-            if (firstPagePreviewImage != null && currentWatermarkSettings.getType() != WatermarkSettings.WatermarkType.NONE) {
-                updateWatermarkOverlay();
-            }
-        });
-    }
-
-    private void attachResizeHandler(javafx.scene.shape.Rectangle handle, String handleId) {
-        handle.setOnMousePressed(event -> {
-            resizeHandler.setContext(firstPagePreviewImage, currentWatermarkSettings);
-            resizeHandler.handleMousePressed(event, handleId);
-        });
-        handle.setOnMouseDragged(event -> {
-            resizeHandler.setContext(firstPagePreviewImage, currentWatermarkSettings);
-            resizeHandler.handleMouseDragged(event);
-        });
-        handle.setOnMouseReleased(resizeHandler::handleMouseReleased);
-    }
-
-    private void attachAllResizeHandlers() {
-        WatermarkOverlayManager.HandlePosition[] cornerHandles = {
-            WatermarkOverlayManager.HandlePosition.TL,
-            WatermarkOverlayManager.HandlePosition.TR,
-            WatermarkOverlayManager.HandlePosition.BL,
-            WatermarkOverlayManager.HandlePosition.BR
-        };
-        for (WatermarkOverlayManager.HandlePosition pos : cornerHandles) {
-            javafx.scene.shape.Rectangle handle = overlayManager.getHandle(pos);
-            if (handle != null) {
-                attachResizeHandler(handle, pos.name());
-            }
-        }
+    private void refreshPreview() {
+        updatePreviewWithWatermark();
+        updateWatermarkOverlay();
     }
 
     private void syncSettingsToSubWindows() {
@@ -281,24 +181,27 @@ public class WatermarkPdfController extends AbstractMediaController {
     }
 
     @FXML
-    public void onChoiceFolderForSaveFile() {
+    private void onChoiceFolderForSaveFile() {
         selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save PDF");
     }
 
-    @FXML
-    public void submitAndDownload() {
+    private boolean checks() {
         if (pdfFile == null || imageProperties.getOutput() == null) {
-            return;
+            return false;
         }
 
         if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.NONE) {
             showErrorMessage(labelSuccess, "Please configure a watermark first.", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
-            return;
+            return false;
         }
 
-        WatermarkSettings settingsToSave = currentWatermarkSettings.copy();
-        File inputFile = pdfFile;
+        return true;
+    }
+
+    @FXML
+    private void submitAndDownload() {
+        if (checks()) {
 
         Task<File> task = new Task<>() {
             @Override
@@ -312,27 +215,32 @@ public class WatermarkPdfController extends AbstractMediaController {
                         "pdf"
                 );
 
-                try (PDDocument sourceDoc = Loader.loadPDF(inputFile)) {
+                try (PDDocument sourceDoc = Loader.loadPDF(pdfFile)) {
                     int pageCount = sourceDoc.getNumberOfPages();
-                    PDFRenderer renderer = new PDFRenderer(sourceDoc);
 
                     PDDocument outputDoc = new PDDocument();
 
                     for (int i = 0; i < pageCount; i++) {
                         updateProgress(5 + (90.0 * i / pageCount), 100);
 
-                        PDPage sourcePage = sourceDoc.getPage(i);
-                        PDRectangle mediaBox = sourcePage.getMediaBox();
+                        PDRectangle mediaBox = sourceDoc.getPage(i).getMediaBox();
 
-                        BufferedImage pageImage = renderer.renderImageWithDPI(i, EXPORT_DPI);
-                        
-                        WatermarkSettings scaledSettings = scaleSettingsForPage(settingsToSave, pageImage);
-                        
+                        PDFRenderer renderer = new PDFRenderer(sourceDoc);
+                        float exportDpi = 300f;
+                        BufferedImage pageImage = renderer.renderImageWithDPI(i, exportDpi);
+
+                        WatermarkSettings scaledSettings =
+                                WatermarkRenderer.scaleSettingsForExport(currentWatermarkSettings.copy(), firstPagePreviewImage, pageImage);
+
                         BufferedImage watermarkedPage = WatermarkRenderer.applyWatermark(pageImage, scaledSettings);
 
                         PDPage newPage = new PDPage(mediaBox);
                         outputDoc.addPage(newPage);
 
+                        if (watermarkedPage == null) {
+                            ErrorLogger.error("Failed to watermark page " + i);
+                            continue;
+                        }
                         PDImageXObject pdImage = LosslessFactory.createFromImage(outputDoc, watermarkedPage);
                         try (PDPageContentStream contentStream = new PDPageContentStream(outputDoc, newPage)) {
                             contentStream.drawImage(pdImage, 0, 0, mediaBox.getWidth(), mediaBox.getHeight());
@@ -355,38 +263,7 @@ public class WatermarkPdfController extends AbstractMediaController {
             progressBar.setManaged(true);
         }
         labelSuccess.setManaged(true);
-    }
-
-    /**
-     * Scale watermark settings from preview image coordinates to export image coordinates.
-     * The preview image was rendered at PREVIEW_DPI, and the export is at EXPORT_DPI.
-     * Position and size need to scale proportionally.
-     */
-    private WatermarkSettings scaleSettingsForPage(WatermarkSettings previewSettings, BufferedImage exportPageImage) {
-        if (firstPagePreviewImage == null) {
-            return previewSettings;
-        }
-
-        WatermarkSettings scaled = previewSettings.copy();
-
-        double scaleX = (double) exportPageImage.getWidth() / firstPagePreviewImage.getWidth();
-        double scaleY = (double) exportPageImage.getHeight() / firstPagePreviewImage.getHeight();
-        double scale = Math.min(scaleX, scaleY);
-
-        if (scaled.isUseCustomPosition()) {
-            scaled.setPositionX(scaled.getPositionX() * scaleX);
-            scaled.setPositionY(scaled.getPositionY() * scaleY);
-        }
-
-        if (scaled.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            scaled.setSize(scaled.getSize() * scale);
-            scaled.setSpacing(scaled.getSpacing() * scale);
-        } else if (scaled.getType() == WatermarkSettings.WatermarkType.TEXT) {
-            scaled.setFontSize(scaled.getFontSize() * scale);
-            scaled.setSpacing(scaled.getSpacing() * scale);
-        }
-
-        return scaled;
+       }
     }
 
     @Override
@@ -415,7 +292,7 @@ public class WatermarkPdfController extends AbstractMediaController {
     }
 
     @FXML
-    public void isPressedReset() {
+    private void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true
@@ -449,19 +326,27 @@ public class WatermarkPdfController extends AbstractMediaController {
         labelSelectImageName.setText("Selected PDF: " + selectedFile.getName());
         textDragZone.setText("Selected PDF: " + selectedFile.getName());
 
+        loadPdf(selectedFile);
+
+        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().add("drop-zone-filled");
+        }
+
+        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+    }
+
+    private void loadPdf(File selectedFile) {
         try (PDDocument doc = Loader.loadPDF(selectedFile)) {
             PDFRenderer renderer = new PDFRenderer(doc);
-            firstPagePreviewImage = renderer.renderImageWithDPI(0, PREVIEW_DPI);
+            float previewDpi = 72f;
+            firstPagePreviewImage = renderer.renderImageWithDPI(0, previewDpi);
 
             if (firstPagePreviewImage == null) {
                 showErrorMessage(labelSuccess, "Failed to render PDF preview.", imageProperties.getHideSuccessMessageTimer());
                 return;
             }
 
-            if (watermarkOverlayPane != null) {
-                overlayManager.buildOverlayElements();
-                attachAllResizeHandlers();
-            }
+            interactionSetup.rebuildOverlay();
 
             updatePreviewWithWatermark();
             updateWatermarkOverlay();
@@ -473,12 +358,6 @@ public class WatermarkPdfController extends AbstractMediaController {
             ErrorLogger.error("Failed to load PDF preview: " + e.getMessage());
             showErrorMessage(labelSuccess, "Failed to load PDF.", imageProperties.getHideSuccessMessageTimer());
         }
-
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
     }
 
     private void updatePreviewWithWatermark() {
@@ -503,79 +382,30 @@ public class WatermarkPdfController extends AbstractMediaController {
     }
 
     public void updateWatermarkPosition(double relX, double relY, WatermarkSettings settings) {
-        if (firstPagePreviewImage == null) {
-            return;
-        }
-
-        int x = (int) (relX * firstPagePreviewImage.getWidth() - settings.getSize() / 2);
-        int y = (int) (relY * firstPagePreviewImage.getHeight() - settings.getSize() / 2);
-
-        x = Math.clamp(x, 0, firstPagePreviewImage.getWidth() - (int) settings.getSize());
-        y = Math.clamp(y, 0, firstPagePreviewImage.getHeight() - (int) settings.getSize());
-
-        settings.setPositionX(x);
-        settings.setPositionY(y);
-        settings.setUseCustomPosition(true);
-
+        WatermarkDimensionsHelper.applyRelativePosition(relX, relY, settings, firstPagePreviewImage);
         updateWatermarkPreview(settings);
-    }
-
-    private <T> T openWatermarkWindow(
-            Stage[] stageHolder, String fxmlPath, String title,
-            Button ownerButton, java.util.function.Consumer<T> controllerSetup,
-            WatermarkSettings.WatermarkType expectedType, java.util.function.Consumer<T> settingsLoader
-    ) {
-        try {
-            T controller;
-            if (stageHolder[0] == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-                Scene scene = new Scene(loader.load());
-
-                controller = loader.getController();
-                controllerSetup.accept(controller);
-
-                Stage stage = new Stage();
-                stage.initModality(Modality.NONE);
-                stage.initOwner(ownerButton.getScene().getWindow());
-                stage.setTitle(title);
-                stage.setScene(scene);
-                stage.setMinWidth(400);
-                stage.setMinHeight(400);
-                stage.setOnCloseRequest(_ -> stageHolder[0] = null);
-                stageHolder[0] = stage;
-            } else {
-                controller = null;
-            }
-
-            if (controller != null && currentWatermarkSettings.getType() == expectedType) {
-                settingsLoader.accept(controller);
-            }
-
-            if (!stageHolder[0].isShowing()) {
-                stageHolder[0].show();
-            } else {
-                stageHolder[0].toFront();
-            }
-
-            return controller;
-        } catch (Exception e) {
-            ErrorLogger.error("Failed to open " + title + ": " + e.getMessage());
-            return null;
-        }
     }
 
     public void handleOpenWindowWatermarkText() {
         Stage[] holder = {textWatermarkStage};
-        WatermarkTextController ctrl = openWatermarkWindow(
+        RecordOpenWatermarkWindow record = new RecordOpenWatermarkWindow(
                 holder,
-                "/viewses/watermark-views/window-watermark-text-pdf.fxml",
+                "/viewses/watermark-views/window-watermark-text.fxml",
                 "Text Watermark Settings",
+                currentWatermarkSettings,
                 btnWatermarkText,
-                (WatermarkTextController c) -> {
-                    c.setMainPdfController(this);
-                    textWatermarkController = c;
-                },
-                WatermarkSettings.WatermarkType.TEXT,
+                WatermarkSettings.WatermarkType.TEXT
+        );
+
+        OpenWatermarkWindow window = new OpenWatermarkWindow();
+
+        WatermarkTextController ctrl = window.openWatermarkWindow(
+                record,
+                 (WatermarkTextController c) -> {
+                     c.setMainPdfController(this);
+                     c.setWindowTitle("Text Watermark Settings (PDF)");
+                     textWatermarkController = c;
+                 },
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         textWatermarkStage = holder[0];
@@ -584,16 +414,23 @@ public class WatermarkPdfController extends AbstractMediaController {
 
     public void handleOpenWindowWatermarkPhoto() {
         Stage[] holder = {photoWatermarkStage};
-        WatermarkPhotoController ctrl = openWatermarkWindow(
+
+        RecordOpenWatermarkWindow record = new RecordOpenWatermarkWindow(
                 holder,
-                "/viewses/watermark-views/window-watermark-photo-pdf.fxml",
+                "/viewses/watermark-views/window-watermark-photo.fxml",
                 "Photo Watermark Settings",
+                currentWatermarkSettings,
                 btnWatermarkPhoto,
+                WatermarkSettings.WatermarkType.IMAGE
+        );
+
+        WatermarkPhotoController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
+                record,
                 (WatermarkPhotoController c) -> {
                     c.setMainPdfController(this);
+                    c.setWindowTitle("Photo Watermark Settings (PDF)");
                     photoWatermarkController = c;
                 },
-                WatermarkSettings.WatermarkType.IMAGE,
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         photoWatermarkStage = holder[0];
