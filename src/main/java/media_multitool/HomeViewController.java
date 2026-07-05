@@ -224,4 +224,19 @@ public class HomeViewController {
         );
     }
     //--------------------------/Info--------------------------//
+
+
+    //--------------------------Watermark--------------------------//
+    public void onOpenWatermarkImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionWatermark(41);
+        }
+    }
+
+    public void onOpenWatermarkPdfPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionWatermark(42);
+        }
+    }
+    //--------------------------/Watermark--------------------------//
 }

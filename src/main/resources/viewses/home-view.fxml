@@ -26,7 +26,9 @@
                    wrapText="true" />
         </VBox>
 
-        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-control-inner-background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 0;" VBox.vgrow="ALWAYS">
+        <ScrollPane fitToWidth="true" fitToHeight="true"
+                    style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-control-inner-background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 0;"
+                    VBox.vgrow="ALWAYS">
             <VBox spacing="20.0" style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 20 40 30 40;">
 
                 <VBox spacing="12.0" styleClass="section-container">
@@ -53,7 +55,7 @@
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="section-container">
-                    <Label text="🗜  Compressors" styleClass="section-title"/>
+                    <Label text="🗜 Compressors" styleClass="section-title"/>
                     <HBox styleClass="hbox-home-page">
                         <Button mnemonicParsing="false"
                                 onAction="#onOpenImageCompressorPressed"
@@ -196,6 +198,23 @@
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Split PDF"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="section-container">
+                    <Label text="🔏Watermark Tools" styleClass="section-title"/>
+                    <HBox styleClass="hbox-home-page">
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenWatermarkImagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Watermark Image"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenWatermarkPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Watermark PDF"/>
                     </HBox>
                 </VBox>
 
