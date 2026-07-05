@@ -88,6 +88,7 @@ public abstract class AbstractMediaController {
             labelSuccess.setVisible(true);
             labelSuccess.setManaged(true);
         }
+        startSuccessTimer();
     }
 
     protected void handleTaskCancelled() {
