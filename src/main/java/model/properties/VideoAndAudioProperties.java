@@ -28,7 +28,7 @@ public class VideoAndAudioProperties implements MediaProperties {
     private String videoCodec;
     private String audioCodec;
     private String ffmpegFormat;
-    private TypeMedia typeConvert;
+    private TypeMedia typeMedia;
     private final PauseTransition hideSuccessMessageTimer = new PauseTransition(Duration.seconds(seconds));
 
     @Override
@@ -50,7 +50,7 @@ public class VideoAndAudioProperties implements MediaProperties {
         this.videoCodec = null;
         this.audioCodec = null;
         this.ffmpegFormat = null;
-        this.typeConvert = null;
+        this.typeMedia = null;
         this.useGPU = false;
     }
 }

@@ -153,5 +153,6 @@
         <fx:include fx:id="splitPdfPage" source="pdf-views/split-pdf-view.fxml"/>
         <fx:include fx:id="watermarkImagePane" source="watermark-views/watermark-image-view.fxml"/>
         <fx:include fx:id="watermarkPdfPane" source="watermark-views/watermark-pdf-view.fxml"/>
+        <fx:include fx:id="watermarkVideoPane" source="watermark-views/watermark-video-view.fxml"/>
     </StackPane>
 </HBox>

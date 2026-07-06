@@ -52,6 +52,11 @@ public class MediaHelper {
     }
 
     public static String getFFmpegFormat(String format) {
+        if(format == null) {
+            ErrorLogger.error("Unexpected format");
+            throw new IllegalArgumentException("Unexpected format");
+        }
+
         return switch (format.toLowerCase(Locale.ROOT)) {
             case "mkv", "matroska" -> "matroska";
             case "avi"                -> "avi";

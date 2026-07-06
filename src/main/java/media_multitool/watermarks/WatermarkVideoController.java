@@ -14,31 +14,34 @@ import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import media_multitool.watermarks.viewController.WatermarkPhotoController;
 import media_multitool.watermarks.viewController.WatermarkTextController;
-import model.checks.Checking;
-import model.converterImage.strategy.SvgImageStrategy;
+import model.helper.MediaHelper;
 import model.helper.images.CropHelper;
 import model.helper.watermarks.*;
 import model.logger.ErrorLogger;
-import model.preprocessing.ImagePreprocessing;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
+import model.properties.VideoAndAudioProperties;
 import model.select.SelectFile;
-import model.utility.*;
+import model.utility.DetermineType;
+import model.utility.Global;
+import model.utility.PathWorker;
+import model.utility.ResetContext;
 import viewHelp.Alerts;
 import viewHelp.OpenWatermarkWindow;
 
-import net.ifok.image.image4j.codec.ico.ICOEncoder;
-
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class WatermarkImageController extends AbstractMediaController {
+public class WatermarkVideoController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+    private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
+    private final AtomicBoolean cancelFlag = new AtomicBoolean(false);
 
     @FXML private Slider imageScaleSlider;
     @FXML private ScrollPane scrollPaneImage;
@@ -46,7 +49,7 @@ public class WatermarkImageController extends AbstractMediaController {
     @FXML private Pane watermarkOverlayPane, cropOverlay;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnWatermarkText, btnWatermarkPhoto, btnSubmit;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnWatermarkText, btnWatermarkPhoto, btnSubmit, btnCancel;
 
     private BufferedImage originalBufferedImage;
     private CropHelper cropHelper;
@@ -62,12 +65,12 @@ public class WatermarkImageController extends AbstractMediaController {
 
     @Override
     protected MediaProperties getProperties() {
-        return imageProperties;
+        return videoProperties;
     }
 
     @FXML
     public void initialize() {
-        if (imageScaleSlider == null) {
+        if(imageScaleSlider == null) {
             return;
         }
 
@@ -75,9 +78,9 @@ public class WatermarkImageController extends AbstractMediaController {
 
         listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto);
 
-        imageProperties.setOutput(getSavedPath());
+        videoProperties.setOutput(getSavedPath());
 
-        setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         cropHelper = new CropHelper(cropOverlay, imageViewPreview, new Rectangle(), scrollPaneImage, previewContainer, imageScaleSlider);
 
         overlayManager = new WatermarkOverlayManager(watermarkOverlayPane, previewContainer);
@@ -96,8 +99,14 @@ public class WatermarkImageController extends AbstractMediaController {
         );
 
         isPressedReset();
-        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
+        setupDragAndDrop(dropZone, Global.getAllSupportedVideoFormats(), this::loadFile);
         interactionSetup.setup();
+
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setManaged(true);
+            progressBar.setProgress(0);
+        }
     }
 
     private void refreshPreview() {
@@ -119,10 +128,10 @@ public class WatermarkImageController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Watermark Image",
+                "Watermark Video",
                 """
                         How to use:
-                        1. Select an image file or drag it into the drop zone.
+                        1. Select an video file or drag it into the drop zone.
                         \s
                         2. Click "Text" or "Photo" to open watermark settings.
                         \s
@@ -145,6 +154,7 @@ public class WatermarkImageController extends AbstractMediaController {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
+        if (btnCancel != null) btnCancel.setDisable(false);
     }
 
     @Override
@@ -152,31 +162,44 @@ public class WatermarkImageController extends AbstractMediaController {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
+        if (btnCancel != null) btnCancel.setDisable(true);
+        cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() { listControls.forEach(c -> c.setDisable(true)); }
 
     @Override
-    protected void enableControls() { listControls.forEach(c -> c.setDisable(false)); }
+    protected void enableControls()  { listControls.forEach(c -> c.setDisable(false)); }
 
     @FXML
     private void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Select image"
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()),
+                "Select video"
         ).ifPresent(this::loadFile);
     }
 
     @FXML
     private void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+        selectOutputDirectory(btnChoiceFolderForSaveFile, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
     }
 
     private boolean checks() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
+        if (originalBufferedImage == null) {
+            ErrorLogger.error("Error extract image from video file!");
+            return false;
+        }
+
+        if(videoProperties.getSrcFile() == null) {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "File missing!", "Select video file!");
+            return false;
+        }
+
+        if(videoProperties.getOutput() == null) {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
             return false;
         }
 
@@ -190,44 +213,48 @@ public class WatermarkImageController extends AbstractMediaController {
     }
 
     @FXML
+    private void cancelProcessing() {
+        cancelFlag.set(true);
+        cancelCurrentTask();
+    }
+
+    @FXML
     private void submitAndDownload() {
         if(checks()) {
+            cancelFlag.set(false);
             Task<File> task = new Task<>() {
                 @Override
-                protected File call() throws Exception {
-                    updateProgress(10, 100);
-
-                    String fmt = imageProperties.getTypeImage();
+                protected File call() {
+                    updateProgress(0, 100);
 
                     File outputFile = createOutputFile(
-                            imageProperties.getImage(),
-                            imageProperties.getOutput(),
+                            videoProperties.getSrcFile(),
+                            videoProperties.getOutput(),
                             "watermarked",
-                            fmt
+                            videoProperties.getTargetFormat()
                     );
 
-                    updateProgress(50, 100);
+                        boolean result = WatermarkVideoHelper.applyWatermark(
+                                videoProperties.getSrcFile(),
+                                outputFile,
+                                currentWatermarkSettings.copy(),
+                                videoProperties.getTargetFormat(),
+                                pct -> updateProgress(pct, 100),
+                                cancelFlag
+                        );
 
-                    BufferedImage watermarked = WatermarkRenderer.applyWatermark(originalBufferedImage, currentWatermarkSettings.copy());
+                        if (isCancelled() || cancelFlag.get()) {
+                            return null;
+                        }
 
-                    if(watermarked == null) {
-                        ErrorLogger.error("Failed to apply watermark to image!");
-                        throw new RuntimeException("Failed to apply watermark to image!");
-                    }
+                        if (!result) {
+                            throw new RuntimeException("Failed to apply watermark to video!");
+                        }
 
-                    if ("ico".equalsIgnoreCase(fmt)) {
-                        ICOEncoder.write(watermarked, outputFile);
-                    } else if ("svg".equalsIgnoreCase(fmt)) {
-                        SvgImageStrategy svg = new SvgImageStrategy();
-                        svg.saveAsSvg(watermarked, outputFile);
-                    } else {
-                        ImagePreprocessing.downloadImage(watermarked, fmt, outputFile);
-                    }
-
-                    updateProgress(100, 100);
-
-                    return outputFile;
+                        updateProgress(100, 100);
+                        return outputFile;
                 }
+
             };
 
             executeMediaTask(task);
@@ -238,15 +265,15 @@ public class WatermarkImageController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result)) {
+        if (result == null || Boolean.FALSE.equals(result)) {
             return;
         }
 
         File outputFile = (File) result;
-        ErrorLogger.info("Image with watermark saved successfully to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info("Video with watermark saved successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Watermarked image saved!", imageProperties.getHideSuccessMessageTimer());
+            showSuccessText(labelSuccess, "Watermarked video saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
     }
@@ -266,39 +293,32 @@ public class WatermarkImageController extends AbstractMediaController {
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, null, true
         );
-        reset(imageProperties, ctx, "Selected image file: none");
+        reset(imageProperties, ctx, "Selected video file: none");
 
         originalBufferedImage = null;
         currentWatermarkSettings = new WatermarkSettings();
 
         resetSubWindowControllers();
 
-        if (watermarkOverlayPane != null) {
-            overlayManager.clearOverlay();
-        }
-
-        if (cropHelper != null) {
-            cropHelper.reset();
-        }
+        if (watermarkOverlayPane != null) { overlayManager.clearOverlay(); }
+        if (cropHelper != null)           { cropHelper.reset(); }
         disableControls();
     }
 
     private void resetSubWindowControllers() {
-        if (textWatermarkController != null) {
-            textWatermarkController.resetToDefaults();
-        }
-        if (photoWatermarkController != null) {
-            photoWatermarkController.resetToDefaults();
-        }
+        if (textWatermarkController != null)  { textWatermarkController.resetToDefaults();  }
+        if (photoWatermarkController != null) { photoWatermarkController.resetToDefaults(); }
     }
 
     private void loadFile(File selectedFile) {
         enableControls();
+        videoProperties.setSrcFile(selectedFile);
         imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
 
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
-        textDragZone.setText("Select image: " + selectedFile.getName());
+        videoProperties.setTargetFormat(MediaHelper.getFFmpegFormat(DetermineType.determineFormat(selectedFile).orElse(null)));
+
+        labelSelectImageName.setText("Select video: " + selectedFile.getName());
+        textDragZone.setText("Select video: " + selectedFile.getName());
 
         loadImage(selectedFile);
 
@@ -310,26 +330,47 @@ public class WatermarkImageController extends AbstractMediaController {
     }
 
     private void loadImage(File selectedFile) {
-        try {
-            originalBufferedImage = WatermarkLoadAndSaveHelper.determinedAndLoadTypeAsBufferedImage(selectedFile);
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setManaged(true);
+            progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+        }
+
+        Task<BufferedImage> loadTask = new Task<>() {
+            @Override
+            protected BufferedImage call() {
+                return WatermarkVideoHelper.getRandomImageFromVideo(selectedFile).orElse(null);
+            }
+        };
+
+        loadTask.setOnSucceeded(_ -> {
+            originalBufferedImage = loadTask.getValue();
+
+            if (progressBar != null) {
+                progressBar.setProgress(0);
+            }
 
             if (originalBufferedImage == null) {
-                showErrorMessage(labelSuccess, "Unsupported image format.", imageProperties.getHideSuccessMessageTimer());
+                showErrorMessage(labelSuccess, "Unsupported video format.", videoProperties.getHideSuccessMessageTimer());
                 return;
             }
 
             interactionSetup.rebuildOverlay();
-
             updatePreviewWithWatermark();
             updateWatermarkOverlay();
 
             if (labelPreviewPlaceholder != null) {
                 labelPreviewPlaceholder.setVisible(false);
             }
-        } catch (Exception e) {
-            ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            showErrorMessage(labelSuccess, "Failed to load image.", imageProperties.getHideSuccessMessageTimer());
-        }
+        });
+
+        loadTask.setOnFailed(_ -> {
+            if (progressBar != null) progressBar.setProgress(0);
+            ErrorLogger.error("Failed to load preview: " + loadTask.getException().getMessage());
+            showErrorMessage(labelSuccess, "Failed to load video.", imageProperties.getHideSuccessMessageTimer());
+        });
+
+        PathWorker.IO_EXECUTOR.execute(loadTask);
     }
 
     private void updatePreviewWithWatermark() {
@@ -372,7 +413,7 @@ public class WatermarkImageController extends AbstractMediaController {
         WatermarkTextController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
                 record,
                 (WatermarkTextController c) -> {
-                    c.setMainImageController(this);
+                    c.setMainVideoController(this);
                     c.setWindowTitle("Text Watermark Settings");
                     textWatermarkController = c;
                 },
@@ -398,7 +439,7 @@ public class WatermarkImageController extends AbstractMediaController {
         WatermarkPhotoController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
                 record,
                 (WatermarkPhotoController c) -> {
-                    c.setMainImageController(this);
+                    c.setMainVideoController(this);
                     c.setWindowTitle("Photo Watermark Settings");
                     photoWatermarkController = c;
                 },

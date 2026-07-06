@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import lombok.NonNull;
 import media_multitool.AbstractMediaController;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.converterVideo.ConvertVideoAudioTask;
@@ -206,7 +207,7 @@ public class ConverterAudioController extends AbstractMediaController {
         return true;
     }
 
-    private boolean checks(VideoAndAudioProperties audioProperties) {
+    private boolean checks(@NonNull VideoAndAudioProperties audioProperties) {
         if(audioProperties.getOutput() == null){
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
             return false;
@@ -288,7 +289,7 @@ public class ConverterAudioController extends AbstractMediaController {
         boolean useLossy = checkBoxLossyCompression.isSelected();
         audioProperties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, useLossy));
         audioProperties.setFfmpegFormat(MediaHelper.getFFmpegFormat(targetFormat));
-        audioProperties.setTypeConvert(TypeMedia.AUDIO);
+        audioProperties.setTypeMedia(TypeMedia.AUDIO);
 
         ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
         currentTask = new ConvertVideoAudioTask(converter, audioProperties, TypeMedia.AUDIO);

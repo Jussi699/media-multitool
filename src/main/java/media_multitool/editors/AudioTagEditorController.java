@@ -14,6 +14,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import lombok.NonNull;
 import media_multitool.AbstractMediaController;
 import model.preprocessing.AudioPreprocessing;
 import model.logger.ErrorLogger;
@@ -130,7 +131,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         });
     }
 
-    private Timeline createSearchDebounce() {
+    private @NonNull Timeline createSearchDebounce() {
         Timeline searchDebounce = new Timeline(new KeyFrame(Duration.millis(300), _ -> {
             String query = textFieldFindFile.getText().toLowerCase();
             filteredFile.setPredicate(file -> {
@@ -144,7 +145,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         return searchDebounce;
     }
 
-    private void initTableViewAndScrollPane(List<TableColumn<DetailsAudioFile, ?>> allTableCol, List<String> property) {
+    private void initTableViewAndScrollPane(@NonNull List<TableColumn<DetailsAudioFile, ?>> allTableCol, List<String> property) {
         tableViewAudio.setTableMenuButtonVisible(false);
         tableViewAudio.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         allTableCol.forEach(column -> {
@@ -251,7 +252,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         labelSuccess.setManaged(true);
     }
 
-    private Map<FieldKey, String> collectTags() {
+    private @NonNull Map<FieldKey, String> collectTags() {
         Map<FieldKey, String> tags = new EnumMap<>(FieldKey.class);
         tags.put(FieldKey.TITLE, titleField.getText());
         tags.put(FieldKey.ARTIST, artistField.getText());
@@ -368,7 +369,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         }
     }
 
-    private void populateFields(Map<FieldKey, String> tags) {
+    private void populateFields(@NonNull Map<FieldKey, String> tags) {
         titleField.setText(tags.getOrDefault(FieldKey.TITLE, ""));
         artistField.setText(tags.getOrDefault(FieldKey.ARTIST, ""));
         albumField.setText(tags.getOrDefault(FieldKey.ALBUM, ""));

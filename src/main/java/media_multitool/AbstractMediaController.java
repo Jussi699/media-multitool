@@ -29,13 +29,28 @@ public abstract class AbstractMediaController {
     @FXML protected Label labelSuccess;
     @FXML protected Button btnReset;
 
+    /** Currently running media task — used for cancellation. */
+    private volatile Task<?> currentTask;
+
     protected abstract void lockUI();
     protected abstract void unlockUI();
     protected abstract void disableControls();
     protected abstract void enableControls();
     protected abstract MediaProperties getProperties();
 
+    /**
+     * Cancel the currently running media task (if any).
+     * Subclasses may call this from a "Cancel" button action.
+     */
+    protected void cancelCurrentTask() {
+        Task<?> t = currentTask;
+        if (t != null && t.isRunning()) {
+            t.cancel(true);
+        }
+    }
+
     protected <T> void executeMediaTask(Task<T> task) {
+        currentTask = task;
         lockUI();
         
         if (progressBar != null) {
@@ -45,18 +60,21 @@ public abstract class AbstractMediaController {
         }
 
         task.setOnSucceeded(_ -> {
+            currentTask = null;
             unbindProgress();
             unlockUI();
             handleTaskSuccess(task.getValue());
         });
 
         task.setOnCancelled(_ -> {
+            currentTask = null;
             unbindProgress();
             unlockUI();
             handleTaskCancelled();
         });
 
         task.setOnFailed(_ -> {
+            currentTask = null;
             unbindProgress();
             unlockUI();
             Throwable exception = task.getException();
@@ -104,7 +122,7 @@ public abstract class AbstractMediaController {
         startSuccessTimer();
     }
 
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", exception.getMessage());
         if (labelSuccess != null) {
             labelSuccess.setStyle("-fx-text-fill: RED;");
@@ -142,7 +160,7 @@ public abstract class AbstractMediaController {
         Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
     }
 
-    protected void selectFormat(String format ,Consumer<String> propertySetter) {
+    protected void selectFormat(String format , @NonNull Consumer<String> propertySetter) {
         propertySetter.accept(format);
 
         Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
@@ -176,12 +194,12 @@ public abstract class AbstractMediaController {
         if (timer != null) timer.playFromStart();
     }
 
-    public static Stage getStage(Control control) {
+    public static Stage getStage(@NonNull Control control) {
         return (Stage) control.getScene().getWindow();
     }
 
 
-    public static void reset(MediaProperties properties, ResetContext ctx, String defaultText) {
+    public static void reset(@NonNull MediaProperties properties, @NonNull ResetContext ctx, String defaultText) {
         properties.reset();
 
         if (ctx.labelSelectFileName() != null) {
@@ -206,7 +224,7 @@ public abstract class AbstractMediaController {
     }
 
 
-    public static void resetDropZone(Label textDragZone, StackPane dropZone) {
+    public static void resetDropZone(@NonNull Label textDragZone, @NonNull StackPane dropZone) {
         textDragZone.setText("Drag files here");
 
         dropZone.getStyleClass().removeAll(java.util.Collections.singleton("drop-zone-filled"));

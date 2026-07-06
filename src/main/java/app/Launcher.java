@@ -6,6 +6,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import javafx.application.Application;
 import model.logger.ErrorLogger;
 import model.utility.OS;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -18,6 +19,9 @@ public class Launcher {
         Logger jaudiotaggerLogger = Logger.getLogger("org.jaudiotagger");
         jaudiotaggerLogger.setLevel(Level.OFF);
         jaudiotaggerLogger.setUseParentHandlers(false);
+
+        // Suppress FFmpeg native log output (Input #0, Output #0, avformat_open_input info, etc.)
+        avutil.av_log_set_level(avutil.AV_LOG_ERROR);
 
         String logDir = OS.getAppConfigDir() + File.separator + "logs";
         File logDirFile = new File(logDir);

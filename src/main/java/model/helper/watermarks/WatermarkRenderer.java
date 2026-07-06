@@ -33,6 +33,25 @@ public class WatermarkRenderer {
         
         return result;
     }
+
+    /**
+     * Draw watermark directly onto the provided image without copying it.
+     * Used for video processing to avoid pixel-format conversion.
+     */
+    static void applyWatermarkInPlace(BufferedImage target, WatermarkSettings settings) {
+        if (settings == null || settings.getType() == WatermarkSettings.WatermarkType.NONE || target == null) {
+            return;
+        }
+        try {
+            if (settings.getType() == WatermarkSettings.WatermarkType.TEXT) {
+                applyTextWatermark(target, settings);
+            } else if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
+                applyImageWatermark(target, settings);
+            }
+        } catch (Exception e) {
+            System.err.println("Error applying watermark in-place: " + e.getMessage());
+        }
+    }
     
     private static void applyTextWatermark(BufferedImage image, WatermarkSettings settings) {
         Graphics2D g2d = image.createGraphics();

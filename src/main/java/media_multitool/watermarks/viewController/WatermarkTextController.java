@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import media_multitool.watermarks.WatermarkImageController;
 import media_multitool.watermarks.WatermarkPdfController;
+import media_multitool.watermarks.WatermarkVideoController;
 import model.helper.watermarks.WatermarkSettings;
 
 import java.awt.GraphicsEnvironment;
@@ -22,8 +23,9 @@ public class WatermarkTextController {
     @FXML private ToggleButton tileSingle, tileEvenGrid, tileDiamondMesh;
 
     @Getter private WatermarkSettings settings;
-    @Setter private WatermarkImageController mainController;
+    @Setter private WatermarkImageController mainImageController;
     @Setter private WatermarkPdfController mainPdfController;
+    @Setter private WatermarkVideoController mainVideoController;
 
     @FXML
     public void initialize() {
@@ -193,11 +195,14 @@ public class WatermarkTextController {
     }
 
     private void updatePreview() {
-        if (mainController != null) {
-            mainController.updateWatermarkPreview(settings);
+        if (mainImageController != null) {
+            mainImageController.updateWatermarkPreview(settings);
         }
         if (mainPdfController != null) {
             mainPdfController.updateWatermarkPreview(settings);
+        }
+        if (mainVideoController != null) {
+            mainVideoController.updateWatermarkPreview(settings);
         }
     }
 

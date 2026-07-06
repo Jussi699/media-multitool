@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import media_multitool.watermarks.WatermarkImageController;
 import media_multitool.watermarks.WatermarkPdfController;
+import media_multitool.watermarks.WatermarkVideoController;
 import model.helper.watermarks.WatermarkSettings;
 import model.logger.ErrorLogger;
 import model.utility.Global;
@@ -28,8 +29,9 @@ public class WatermarkPhotoController {
     @FXML private ToggleButton tileSingle, tileEvenGrid, tileDiamondMesh;
 
     @Getter private WatermarkSettings settings;
-    @Setter private WatermarkImageController mainController;
+    @Setter private WatermarkImageController mainImageController;
     @Setter private WatermarkPdfController mainPdfController;
+    @Setter private WatermarkVideoController mainVideoController;
     @Getter private double relativePositionX = 0;
     @Getter private double relativePositionY = 0;
 
@@ -208,11 +210,14 @@ public class WatermarkPhotoController {
     }
 
     private void updatePreview() {
-        if (mainController != null) {
-            mainController.updateWatermarkPreview(settings);
+        if (mainImageController != null) {
+            mainImageController.updateWatermarkPreview(settings);
         }
         if (mainPdfController != null) {
             mainPdfController.updateWatermarkPreview(settings);
+        }
+        if (mainVideoController != null) {
+            mainVideoController.updateWatermarkPreview(settings);
         }
     }
 
@@ -230,11 +235,14 @@ public class WatermarkPhotoController {
         this.relativePositionX = relX;
         this.relativePositionY = relY;
         
-        if (mainController != null) {
-            mainController.updateWatermarkPosition(relX, relY, settings);
+        if (mainImageController != null) {
+            mainImageController.updateWatermarkPosition(relX, relY, settings);
         }
         if (mainPdfController != null) {
             mainPdfController.updateWatermarkPosition(relX, relY, settings);
+        }
+        if (mainVideoController != null) {
+            mainVideoController.updateWatermarkPosition(relX, relY, settings);
         }
     }
 

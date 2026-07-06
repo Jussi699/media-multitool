@@ -18,6 +18,8 @@ module media_multitool {
     requires ch.qos.logback.classic;
     requires ch.qos.logback.core;
     requires org.apache.xmlgraphics.batik.transcoder;
+    requires org.bytedeco.javacv;
+    requires org.bytedeco.ffmpeg;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;

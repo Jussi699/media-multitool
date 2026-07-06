@@ -404,7 +404,7 @@ public class ConverterVideoController extends AbstractMediaController {
         videoProperties.setVideoCodec(MediaHelper.getVideoCodec(format, useGPU));
         videoProperties.setAudioCodec(MediaHelper.getAudioCodec(format, true));
         videoProperties.setFfmpegFormat(MediaHelper.getFFmpegFormat(format));
-        videoProperties.setTypeConvert(TypeMedia.VIDEO);
+        videoProperties.setTypeMedia(TypeMedia.VIDEO);
 
         ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
         currentTask = new ConvertVideoAudioTask(converter, videoProperties, TypeMedia.VIDEO);

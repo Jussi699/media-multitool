@@ -47,16 +47,25 @@ public class DetermineType {
             if (type != null && type.contains("/")) {
                 String format = type.split("/")[1].toLowerCase();
                 return switch (format) {
-                    case "svg+xml"                      -> Optional.of("svg");
-                    case "quicktime"                    -> Optional.of("mov");
-                    case "x-msvideo", "avi"             -> Optional.of("avi");
-                    case "webm"                         -> Optional.of("webm");
-                    case "x-matroska", "matroska"       -> Optional.of("mkv");
-                    case "x-flv", "flv"                 -> Optional.of("flv");
-                    case "x-ms-wmv", "wmv"              -> Optional.of("wmv");
-                    case "3gpp", "3gpp2"                -> Optional.of("3gp");
-                    case "jpg", "jpeg"                  -> Optional.of("jpg");
-                    case "x-icon", "vnd.microsoft.icon" -> Optional.of("ico");
+                    case "svg+xml"                              -> Optional.of("svg");
+                    case "quicktime", "mov"                     -> Optional.of("mov");
+                    case "x-msvideo", "avi"                     -> Optional.of("avi");
+                    case "webm"                                 -> Optional.of("webm");
+                    case "x-matroska", "matroska"               -> Optional.of("mkv");
+                    case "x-flv", "flv"                         -> Optional.of("flv");
+                    case "x-ms-wmv", "wmv"                      -> Optional.of("wmv");
+                    case "3gpp", "3gpp2"                        -> Optional.of("3gp");
+                    case "mp4", "m4v"                           -> Optional.of("mp4");
+                    case "mpeg", "x-mpeg", "mpg"                -> Optional.of("mpeg");
+                    case "mp2t", "x-mp2t", "vnd.dlna.mpeg-tts"  -> Optional.of("ts");
+                    case "ogg", "x-ogg", "x-ogv"                -> Optional.of("ogv");
+                    case "x-ms-asf", "asf"                      -> Optional.of("asf");
+                    case "x-ms-vob", "dvd"                      -> Optional.of("vob");
+                    case "x-mxf"                                -> Optional.of("mxf");
+                    case "x-f4v"                                -> Optional.of("f4v");
+                    case "x-divx", "divx"                       -> Optional.of("divx");
+                    case "jpg", "jpeg"                          -> Optional.of("jpg");
+                    case "x-icon", "vnd.microsoft.icon"         -> Optional.of("ico");
                     default -> Optional.of(format);
                 };
             }

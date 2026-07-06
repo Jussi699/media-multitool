@@ -204,7 +204,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <argLine>--enable-native-access=javafx.graphics,ALL-UNNAMED</argLine>
+                    <argLine>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -239,7 +239,7 @@
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
                             <options>
-                                <option>--enable-native-access=javafx.graphics,ALL-UNNAMED</option>
+                                <option>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED</option>
                             </options>
                         </configuration>
                     </execution>

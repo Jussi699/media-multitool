@@ -227,15 +227,24 @@ public class HomeViewController {
 
 
     //--------------------------Watermark--------------------------//
-    public void onOpenWatermarkImagePressed() {
+    @FXML
+    private void onOpenWatermarkImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionWatermark(41);
         }
     }
 
-    public void onOpenWatermarkPdfPressed() {
+    @FXML
+    private void onOpenWatermarkPdfPressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionWatermark(42);
+        }
+    }
+
+    @FXML
+    private void onOpenWatermarkVideoPressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionWatermark(43);
         }
     }
     //--------------------------/Watermark--------------------------//

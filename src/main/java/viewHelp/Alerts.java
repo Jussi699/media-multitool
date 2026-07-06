@@ -20,6 +20,10 @@ import model.logger.ErrorLogger;
 
 public class Alerts {
     public static void alertDialog(Alert.AlertType type, String title, String headerText, String message) {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(() -> alertDialog(type, title, headerText, message));
+            return;
+        }
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(headerText);

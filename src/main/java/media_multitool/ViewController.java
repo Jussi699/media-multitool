@@ -19,7 +19,7 @@ public class ViewController {
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane;
+            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane;
 
     @FXML private HomeViewController homeViewController;
 
@@ -54,8 +54,9 @@ public class ViewController {
        */
 
     /* index page watermark
-       41, watermarkImagePane
-       42, watermarkPdfPane
+       41, watermarkImagePane,
+       42, watermarkPdfPane,
+       43, watermarkVideoPane
      */
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
@@ -148,16 +149,16 @@ public class ViewController {
                 29, splitPdfPage
         ));
 
-        stackPaneMapWatermark.put(
-                41, watermarkImagePane
-        );
-        stackPaneMapWatermark.put(
-                42, watermarkPdfPane
-        );
+        stackPaneMapWatermark.putAll(Map.of(
+                41, watermarkImagePane,
+                42, watermarkPdfPane,
+                43, watermarkVideoPane
+        ));
 
         comboBoxChoiceActionWatermark.getItems().addAll(
                 new Item(41, "Watermark Image"),
-                new Item(42, "Watermark PDF")
+                new Item(42, "Watermark PDF"),
+                new Item(43, "Watermark Video")
         );
 
         comboBoxChoiceActionImage.getItems().addAll(
@@ -307,7 +308,7 @@ public class ViewController {
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
                 removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane,
-                watermarkPdfPane
+                watermarkPdfPane, watermarkVideoPane
         };
 
         for (StackPane page : allPages) {
