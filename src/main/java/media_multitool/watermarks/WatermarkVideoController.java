@@ -244,6 +244,7 @@ public class WatermarkVideoController extends AbstractMediaController {
                         );
 
                         if (isCancelled() || cancelFlag.get()) {
+                            WatermarkVideoHelper.deleteFile(outputFile);
                             return null;
                         }
 

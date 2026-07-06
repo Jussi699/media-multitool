@@ -3,11 +3,13 @@ package model.converterImage;
 import model.converterImage.strategy.ImageConversionStrategy;
 import model.converterImage.strategy.ImageStrategyFactory;
 import model.compressorImage.Compressor;
+import model.preprocessing.ImagePreprocessing;
 import model.properties.ImageProperties;
 import model.compressorImage.CompressionResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -76,28 +78,24 @@ public class ImageOperationsTest {
     public void testTurnImage() {
         int width = 100;
         int height = 50;
-        java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         
-        // Test horizontal flip
-        java.util.Optional<java.awt.image.BufferedImage> flippedH = model.preprocessing.ImagePreprocessing.turnImage(image, "flip_horizontally");
+        Optional<BufferedImage> flippedH = ImagePreprocessing.rotateImage(image, "flip_horizontally");
         assertTrue(flippedH.isPresent());
         assertEquals(width, flippedH.get().getWidth());
         assertEquals(height, flippedH.get().getHeight());
 
-        // Test vertical flip
-        java.util.Optional<java.awt.image.BufferedImage> flippedV = model.preprocessing.ImagePreprocessing.turnImage(image, "flip_vertically");
+        Optional<BufferedImage> flippedV = ImagePreprocessing.rotateImage(image, "flip_vertically");
         assertTrue(flippedV.isPresent());
         assertEquals(width, flippedV.get().getWidth());
         assertEquals(height, flippedV.get().getHeight());
 
-        // Test rotate right
-        java.util.Optional<java.awt.image.BufferedImage> rotatedR = model.preprocessing.ImagePreprocessing.turnImage(image, "turn_right");
+        Optional<BufferedImage> rotatedR = ImagePreprocessing.rotateImage(image, "turn_right");
         assertTrue(rotatedR.isPresent());
         assertEquals(height, rotatedR.get().getWidth());
         assertEquals(width, rotatedR.get().getHeight());
 
-        // Test rotate left
-        java.util.Optional<java.awt.image.BufferedImage> rotatedL = model.preprocessing.ImagePreprocessing.turnImage(image, "turn_left");
+        Optional<BufferedImage> rotatedL = ImagePreprocessing.rotateImage(image, "turn_left");
         assertTrue(rotatedL.isPresent());
         assertEquals(height, rotatedL.get().getWidth());
         assertEquals(width, rotatedL.get().getHeight());

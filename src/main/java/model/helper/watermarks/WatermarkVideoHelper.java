@@ -200,6 +200,27 @@ public class WatermarkVideoHelper {
             g2d.dispose();
         }
     }
+
+    public static void deleteFile(File path) {
+        if (path == null) return;
+
+        Thread.ofVirtual().start(() -> {
+            for (int i = 0; i < 5; i++) {
+                if (!path.exists()) return;
+                path.delete();
+                if (!path.exists()) return;
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+            if (path.exists()) {
+                ErrorLogger.error("Could not delete partial file after 5 attempts: " + path.getAbsolutePath());
+            }
+        });
+    }
 }
 
 
