@@ -42,11 +42,11 @@
         <HBox alignment="CENTER" spacing="20.0">
             <ComboBox fx:id="comboBoxScaleImage"
                       onAction="#onChoiceScaleImage"
-                      prefWidth="140.0"/>
+                      prefWidth="140.0" styleClass="combo-box-140-width"/>
 
             <ComboBox fx:id="comboBoxOutputQuality"
                       onAction="#onChoiceOutputQuality"
-                      prefWidth="140.0"/>
+                      prefWidth="140.0" styleClass="combo-box-140-width"/>
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">

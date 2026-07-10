@@ -94,15 +94,15 @@
             <HBox alignment="CENTER" spacing="16.0">
                 <ComboBox fx:id="comboBoxChoiceVideoBitRate"
                           onAction="#onChoiceParameters"
-                          prefWidth="150.0" />
+                          prefWidth="150.0" styleClass="combo-box-150-width" />
 
                 <ComboBox fx:id="comboBoxChoiceAudioBitRate"
                           onAction="#onChoiceParameters"
-                          prefWidth="150.0" />
+                          prefWidth="150.0" styleClass="combo-box-150-width" />
 
                 <ComboBox fx:id="comboBoxChoiceFPS"
                           onAction="#onChoiceParameters"
-                          prefWidth="140.0" />
+                          prefWidth="150.0" styleClass="combo-box-150-width"/>
             </HBox>
 
             <HBox alignment="CENTER" spacing="16.0">

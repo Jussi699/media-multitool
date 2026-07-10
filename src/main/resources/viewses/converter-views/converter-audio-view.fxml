@@ -77,9 +77,9 @@
         </HBox>
 
         <HBox alignment="CENTER" spacing="16.0">
-            <ComboBox fx:id="comboBoxChoiceBitRate" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="comboBoxMP3"/>
-            <ComboBox fx:id="comboBoxChoiceChannels" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="comboBoxMP3"/>
-            <ComboBox fx:id="comboBoxChoiceSamplingRate" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="comboBoxMP3" />
+            <ComboBox fx:id="comboBoxChoiceBitRate" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="combo-box-140-width"/>
+            <ComboBox fx:id="comboBoxChoiceChannels" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="combo-box-140-width"/>
+            <ComboBox fx:id="comboBoxChoiceSamplingRate" onAction="#onChoiceComboBox" prefWidth="140.0" styleClass="combo-box-140-width" />
         </HBox>
 
         <HBox alignment="CENTER" spacing="10.0">

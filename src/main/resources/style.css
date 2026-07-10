@@ -86,10 +86,6 @@
     -fx-background-color: black;
 }
 
-#comboBoxChoiceBitRate .list-view{
-    -fx-pref-width: 155px;
-}
-
 .progress-bar {
     -fx-min-height: 20px;
     -fx-pref-height: 20px;
@@ -267,6 +263,15 @@
 
 #genreComboBox:hover > .arrow-button {
     -fx-background-radius: 0 0 0 0;
+}
+
+#genreComboBox .list-view {
+    -fx-min-width: 75px;
+}
+
+#genreComboBox .list-view .scroll-bar:vertical {
+    -fx-pref-width: 0;
+    -fx-opacity: 0;
 }
 
 #yearPicker {
@@ -737,4 +742,18 @@
 .info-tool-button:pressed {
     -fx-scale-x: 0.95;
     -fx-scale-y: 0.95;
+}
+
+.combo-box-140-width .list-view {
+    -fx-pref-width: 140px;
+}
+
+.combo-box-150-width .list-view {
+    -fx-pref-width: 150px;
+}
+
+#comboBoxScaleImage .list-view .scroll-bar:vertical,
+#comboBoxOutputQuality .list-view .scroll-bar:vertical {
+    -fx-pref-width: 0;
+    -fx-opacity: 0;
 }

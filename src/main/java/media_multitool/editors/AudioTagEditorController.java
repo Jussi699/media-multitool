@@ -80,6 +80,15 @@ public class AudioTagEditorController extends AbstractMediaController {
         initTextFieldFind();
         initComboBoxes();
 
+        genreComboBox.showingProperty().addListener((_, _, isShowing) -> {
+            if (isShowing) {
+                var popupListView = (ListView<?>) genreComboBox.getSkin().getNode().lookup(".list-view");
+                if (popupListView != null) {
+                    popupListView.prefWidthProperty().bind(genreComboBox.widthProperty());
+                }
+            }
+        });
+
         audioProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
