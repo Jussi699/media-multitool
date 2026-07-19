@@ -13,7 +13,7 @@
            fx:controller="media_multitool.HomeViewController">
 
     <VBox alignment="TOP_CENTER"
-          style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d);">
+          styleClass="gradient-background">
 
         <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 30 40 20 40; -fx-background-color: linear-gradient(to bottom, #2d2d2d, #1a1a1a);">
             <Label alignment="CENTER"
@@ -27,9 +27,9 @@
         </VBox>
 
         <ScrollPane fitToWidth="true" fitToHeight="true"
-                    style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-control-inner-background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 0;"
+                    styleClass="gradient-background"
                     VBox.vgrow="ALWAYS">
-            <VBox spacing="20.0" style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d); -fx-padding: 20 40 30 40;">
+            <VBox spacing="20.0" styleClass="gradient-background" style="-fx-padding: 20 40 30 40;">
 
                 <VBox spacing="12.0" styleClass="section-container">
                     <Label text="🎬 Converter" styleClass="section-title"/>

@@ -493,7 +493,7 @@
 .main-label-name-page {
     -fx-font-size: 22px;
     -fx-font-weight: bold;
-    -fx-text-fill: RED;
+    -fx-text-fill: linear-gradient(to right, #32CD32, #00FF00);
     -fx-pref-width: 320px;
     -fx-alignment: CENTER;
 }
@@ -756,4 +756,8 @@
 #comboBoxOutputQuality .list-view .scroll-bar:vertical {
     -fx-pref-width: 0;
     -fx-opacity: 0;
+}
+
+.gradient-background {
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #2d2d2d);
 }

@@ -16,11 +16,11 @@
 <StackPane xmlns="http://javafx.com/javafx/17.0.12"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.converters.ConverterVideoController">
-    <VBox alignment="TOP_CENTER"
-          maxWidth="Infinity"
-          maxHeight="Infinity"
-          spacing="14.0"
-          style="-fx-background-color: #4b4b4b;">
+     <VBox alignment="TOP_CENTER"
+            maxWidth="Infinity"
+            maxHeight="Infinity"
+            spacing="14.0"
+            styleClass="gradient-background">
 
         <Label alignment="CENTER"
                text="Converter Video"

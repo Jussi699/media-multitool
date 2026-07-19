@@ -12,7 +12,7 @@
           prefHeight="820.0"
           prefWidth="630.0"
           spacing="12.0"
-          style="-fx-background-color: #4b4b4b;">
+          styleClass="gradient-background">
 
         <Label styleClass="main-label-name-page"
                text="Rotate Image">
@@ -125,3 +125,4 @@
         </StackPane.margin>
     </Button>
 </StackPane>
+

@@ -7,11 +7,11 @@
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.compressors.CompressorVideoController">
-    <VBox alignment="TOP_CENTER"
-          maxWidth="Infinity"
-          maxHeight="Infinity"
-          spacing="12.0"
-          style="-fx-background-color: #4b4b4b;">
+     <VBox alignment="TOP_CENTER"
+            maxWidth="Infinity"
+            maxHeight="Infinity"
+            spacing="12.0"
+            styleClass="gradient-background">
 
         <Label styleClass="main-label-name-page"
                text="Compressor Video">
