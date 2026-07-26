@@ -61,7 +61,7 @@ public class LightenImageController extends AbstractMediaController {
         sliderLighten.setValue(0);
         sliderLighten.valueProperty().addListener((_, _, newValue) -> updatePreview(newValue.intValue()));
 
-        SliderSetup.setupListenerInSliderForUpdateNewValueInLabel(sliderLighten, currentValueSlider, 255);
+        SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderLighten, currentValueSlider, 255);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);

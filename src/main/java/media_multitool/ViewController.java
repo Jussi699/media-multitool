@@ -19,7 +19,7 @@ public class ViewController {
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane;
+            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage;
 
     @FXML private HomeViewController homeViewController;
 
@@ -39,6 +39,7 @@ public class ViewController {
       8  findPixelPage
       8  cropPage,
       10 colorReplaceInImagePage,
+      11 spotBlurPage
       */
 
     /* index page pdf
@@ -124,17 +125,18 @@ public class ViewController {
             }
         }, comboBoxChoiceActionWatermark.getSelectionModel().selectedItemProperty()));
 
-        stackPaneMapImageTools.putAll(Map.of(
-                1, negativeImagePage,
-                2, rotateImagePage,
-                3, lightenPage,
-                4, darkenPage,
-                5, colorizePage,
-                6, blackAndWhitePage,
-                7, blurPage,
-                8, findPixelPage,
-                9, cropPage,
-                10, colorReplaceInImagePage
+        stackPaneMapImageTools.putAll(Map.ofEntries(
+                Map.entry(1, negativeImagePage),
+                Map.entry(2, rotateImagePage),
+                Map.entry(3, lightenPage),
+                Map.entry(4, darkenPage),
+                Map.entry(5, colorizePage),
+                Map.entry(6, blackAndWhitePage),
+                Map.entry(7, blurPage),
+                Map.entry(8, findPixelPage),
+                Map.entry(9, cropPage),
+                Map.entry(10, colorReplaceInImagePage),
+                Map.entry(11, spotBlurPage)
         ));
 
         stackPaneMapPdfTools.putAll(Map.of(
@@ -171,7 +173,8 @@ public class ViewController {
                 new Item(7, "Blurry photo"),
                 new Item(8, "Find Pixel"),
                 new Item(9, "Crop Image"),
-                new Item(10, "Color Replace")
+                new Item(10, "Color Replace"),
+                new Item(11, "Spot Blur")
         );
 
         comboBoxChoiceActionPdf.getItems().addAll(
@@ -308,7 +311,7 @@ public class ViewController {
                 audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
                 removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane,
-                watermarkPdfPane, watermarkVideoPane
+                watermarkPdfPane, watermarkVideoPane, spotBlurPage
         };
 
         for (StackPane page : allPages) {

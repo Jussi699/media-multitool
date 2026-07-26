@@ -78,8 +78,9 @@
               stroke="red" strokeWidth="2.0" />
 
 
-        <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="140.0"
-                  onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"/>
+        <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="140.0" prefHeight="50.0"
+                   onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"
+                   style="-fx-cell-size: 30;"/>
 
         <Line startX="85.0"
               endX="85.0" endY="5.0"
@@ -145,8 +146,9 @@
         <fx:include fx:id="pdfToImagePage" source="pdf-views/converter-pdf-to-image-view.fxml"/>
         <fx:include fx:id="imagesToPdfPage" source="pdf-views/images-to-pdf-view.fxml"/>
         <fx:include fx:id="protectPdfPage" source="pdf-views/protect-pdf-view.fxml"/>
-        <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
-        <fx:include fx:id="unlockPdfPage" source="pdf-views/unlock-pdf-view.fxml"/>
+         <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
+         <fx:include fx:id="spotBlurPage" source="image-tools-views/spot-blur-image-view.fxml"/>
+         <fx:include fx:id="unlockPdfPage" source="pdf-views/unlock-pdf-view.fxml"/>
         <fx:include fx:id="removePagesPdfPage" source="pdf-views/remove-pages-pdf-view.fxml"/>
         <fx:include fx:id="compressPdfPage" source="pdf-views/compressor-pdf-view.fxml"/>
         <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>

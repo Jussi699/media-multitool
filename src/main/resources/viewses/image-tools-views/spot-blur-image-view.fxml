@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.imageTools.SpotBlurImageController">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="12.0"
+          styleClass="gradient-background">
+
+        <Label styleClass="main-label-name-page"
+               text="Spot Blur">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionBtnSelectFile"
+                    prefWidth="180.0"
+                    text="Select image file"/>
+
+            <Button fx:id="btnChoiceFolderForSaveFile"
+                    mnemonicParsing="false"
+                    onAction="#onChoiceFolderForSaveFile"
+                    prefWidth="180.0"
+                    text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop" />
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <GridPane alignment="CENTER" hgap="10.0">
+            <columnConstraints>
+                <ColumnConstraints minWidth="60.0" prefWidth="60.0" maxWidth="60.0" halignment="RIGHT" />
+                <ColumnConstraints maxWidth="400" hgrow="ALWAYS" halignment="CENTER" />
+                <ColumnConstraints minWidth="60.0" prefWidth="60.0" maxWidth="60.0" halignment="LEFT" />
+            </columnConstraints>
+
+            <Label style="-fx-text-fill: red; -fx-font-size: 12" GridPane.columnIndex="0">0</Label>
+            <Slider fx:id="sliderBlurIntensity" onMouseReleased="#handleBlurIntensityChange" prefWidth="400" GridPane.columnIndex="1" max="20" value="5"/>
+            <Label fx:id="labelBlurIntensity" style="-fx-text-fill: red; -fx-font-size: 12" GridPane.columnIndex="2">20</Label>
+        </GridPane>
+
+        <Label style="-fx-text-fill: white; -fx-font-size: 11" text="Blur Intensity"/>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccess" styleClass="labelSuccess"
+                   visible="false"
+                   text="Spot blur status: success"/>
+
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="240.0"
+                         progress="0.0"
+                         visible="false"
+                         managed="false"/>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <Button fx:id="btnSubmit" mnemonicParsing="false"
+                        onAction="#submitAndDownload"
+                        prefWidth="110.0"
+                        text="Download" />
+                <Button fx:id="btnCancel" mnemonicParsing="false"
+                        onAction="#cancelTask"
+                        prefWidth="110.0"
+                        text="Cancel"
+                        visible="false"
+                        managed="false"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="12.0" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="4.0" right="4.0" />
+            </padding>
+            <VBox.margin>
+                <Insets top="2.0" />
+            </VBox.margin>
+
+            <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" pannable="true" styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
+                <StackPane fx:id="previewContainer" minHeight="200.0">
+                    <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                    <Pane fx:id="blurOverlay" />
+                    <Label fx:id="labelPreviewPlaceholder" style="-fx-font-size: 16px;" text="Preview" textFill="WHITE" />
+                </StackPane>
+            </ScrollPane>
+
+            <HBox spacing="12.0">
+                <StackPane maxHeight="120.0" minHeight="120.0" prefHeight="120.0"
+                           style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER" spacing="12.0">
+                        <padding>
+                            <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+                        </padding>
+
+                        <VBox alignment="CENTER" spacing="8.0">
+                            <Label style="-fx-text-fill: white; -fx-font-size: 11" text="Add Blur Shape"/>
+                            <HBox alignment="CENTER" spacing="12.0">
+                                <Button fx:id="btnAddRect" mnemonicParsing="false" onAction="#onActionAddRectBlur" prefWidth="80.0" text="Rectangle" />
+                                <Button fx:id="btnAddOval" mnemonicParsing="false" onAction="#onActionAddOvalBlur" prefWidth="80.0" text="Ellipse" />
+                                <Button fx:id="btnUndo" mnemonicParsing="false" onAction="#onActionUndo" prefWidth="80.0" text="Undo" />
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </StackPane>
+                <StackPane fx:id="dropZone" maxHeight="120.0" minHeight="120.0" prefHeight="120.0" HBox.hgrow="ALWAYS" styleClass="drop-zone-find-pixel">
+                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here" textFill="WHITE" />
+                </StackPane>
+            </HBox>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <HBox alignment="CENTER" spacing="10.0">
+                <Label text="-" textFill="RED" />
+                <Slider fx:id="imageScaleSlider" max="3.0" min="1.0" prefWidth="300.0" value="1.0" />
+                <Label text="+" textFill="RED" />
+            </HBox>
+
+            <Label fx:id="labelSelectImageName" styleClass="labelSelect" text="Selected image file: none"/>
+
+            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0" />
+        </padding>
+    </VBox>
+
+    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets left="10.0" top="10.0" />
+        </StackPane.margin>
+    </Button>
+</StackPane>

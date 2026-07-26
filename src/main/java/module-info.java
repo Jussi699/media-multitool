@@ -52,4 +52,6 @@ module media_multitool {
     opens model.helper.watermarks to javafx.fxml;
     exports media_multitool.watermarks.viewController;
     opens media_multitool.watermarks.viewController to javafx.fxml;
+    exports model.helper.images;
+    opens model.helper.images to javafx.fxml;
 }

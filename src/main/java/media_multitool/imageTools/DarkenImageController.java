@@ -60,7 +60,7 @@ public class DarkenImageController extends AbstractMediaController {
         sliderDarken.setValue(0);
         sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
 
-        SliderSetup.setupListenerInSliderForUpdateNewValueInLabel(sliderDarken, currentValueSlider, 255);
+        SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderDarken, currentValueSlider, 255);
 
 
         isPressedReset();
