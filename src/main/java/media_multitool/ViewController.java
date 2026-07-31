@@ -35,11 +35,11 @@ public class ViewController {
       4, darkenPage,
       5, colorizePage,
       6, blackAndWhitePage,
-      7, blurPage
-      8  findPixelPage
-      8  cropPage,
+      7, blurPage,
+      8 spotBlurPage,
+      9  findPixelPage,
       10 colorReplaceInImagePage,
-      11 spotBlurPage
+      11  cropPage,
       */
 
     /* index page pdf
@@ -92,6 +92,7 @@ public class ViewController {
                 }
             }
         }, comboBoxChoiceActionImage.getSelectionModel().selectedItemProperty()));
+        comboBoxChoiceActionImage.setVisibleRowCount(10);
 
         // PDF
         comboBoxChoiceActionPdf.setPromptText("PDF tools");
@@ -126,17 +127,18 @@ public class ViewController {
         }, comboBoxChoiceActionWatermark.getSelectionModel().selectedItemProperty()));
 
         stackPaneMapImageTools.putAll(Map.ofEntries(
-                Map.entry(1, negativeImagePage),
-                Map.entry(2, rotateImagePage),
-                Map.entry(3, lightenPage),
-                Map.entry(4, darkenPage),
-                Map.entry(5, colorizePage),
-                Map.entry(6, blackAndWhitePage),
-                Map.entry(7, blurPage),
-                Map.entry(8, findPixelPage),
-                Map.entry(9, cropPage),
+                Map.entry(1,  negativeImagePage),
+                Map.entry(2,  rotateImagePage),
+                Map.entry(3,  lightenPage),
+                Map.entry(4,  darkenPage),
+                Map.entry(5,  colorizePage),
+                Map.entry(6,  blackAndWhitePage),
+                Map.entry(7,  blurPage),
+                Map.entry(8,  spotBlurPage),
+                Map.entry(9,  findPixelPage),
                 Map.entry(10, colorReplaceInImagePage),
-                Map.entry(11, spotBlurPage)
+                Map.entry(11, cropPage)
+
         ));
 
         stackPaneMapPdfTools.putAll(Map.of(
@@ -171,10 +173,10 @@ public class ViewController {
                 new Item(5, "Colorize photo"),
                 new Item(6, "Black-White photo"),
                 new Item(7, "Blurry photo"),
-                new Item(8, "Find Pixel"),
-                new Item(9, "Crop Image"),
+                new Item(8, "Spot Blur"),
+                new Item(9, "Find Pixel"),
                 new Item(10, "Color Replace"),
-                new Item(11, "Spot Blur")
+                new Item(11, "Crop Image")
         );
 
         comboBoxChoiceActionPdf.getItems().addAll(

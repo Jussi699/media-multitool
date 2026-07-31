@@ -235,6 +235,34 @@
     -fx-background-color: WHITE;
 }
 
+.combo-box-choice-action .list-view {
+    -fx-padding: 0;
+}
+
+.combo-box-choice-action .list-view .scroll-bar:vertical {
+    -fx-pref-width: 10px;
+    -fx-background-radius: 10px;
+}
+
+.combo-box-choice-action .list-view .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10px;
+}
+
+.combo-box-choice-action .list-view .scroll-bar:vertical .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10px;
+}
+
+.combo-box-choice-action .list-view .scroll-bar:vertical .increment-button,
+.combo-box-choice-action .list-view .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+
 #comboBoxIcoSize .list-view {
     -fx-pref-width: 100px;
     -fx-min-width: 100px;

@@ -62,7 +62,7 @@
             <Button fx:id="btnCompress" mnemonicParsing="false"
                     onAction="#submitAndDownload"
                     prefWidth="240.0"
-                    text="Convert and Download" >
+                    text="Compress and Download" >
                 <tooltip>
                     <Tooltip text="Compression may take a long time, especially for large files." />
                 </tooltip>

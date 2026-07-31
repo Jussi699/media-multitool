@@ -2,8 +2,8 @@ package model.compressorVideo;
 
 import javafx.concurrent.Task;
 import java.io.File;
-import java.util.UUID;
 import model.utility.DetermineType;
+import model.utility.PathWorker;
 
 public class CompressVideoTask extends Task<Boolean> {
     private final Compressor compressor;
@@ -20,8 +20,8 @@ public class CompressVideoTask extends Task<Boolean> {
 
     @Override
     protected Boolean call() throws Exception {
-        File finalFileOutput = new File(outputDir, srcFile.getName() + UUID.randomUUID().toString().replace("-", "") +
-                "." + DetermineType.determineFormat(srcFile).orElse("mp4"));
+        String format = DetermineType.determineFormat(srcFile).orElse("mp4");
+        File finalFileOutput = PathWorker.createOutputFile(srcFile, outputDir, format);
 
         compressor.compress(srcFile, finalFileOutput,
                 selectedPreset.video(), selectedPreset.audio(), p -> updateProgress(p, 1.0));

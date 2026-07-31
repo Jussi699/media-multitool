@@ -108,14 +108,14 @@ public class HomeViewController {
     @FXML
     private void onOpenFindPixelPressed() {
         if (mainController != null) {
-            mainController.onActionChoiceActionImage(8);
+            mainController.onActionChoiceActionImage(9);
         }
     }
 
     @FXML
     private void onOpenCropImagePressed() {
         if (mainController != null) {
-            mainController.onActionChoiceActionImage(9);
+            mainController.onActionChoiceActionImage(11);
         }
     }
 
@@ -123,6 +123,13 @@ public class HomeViewController {
     private void onOpenColorReplaceInImagePressed() {
         if (mainController != null) {
             mainController.onActionChoiceActionImage(10);
+        }
+    }
+
+    @FXML
+    private void onOpenSpotBlurImagePressed() {
+        if (mainController != null) {
+            mainController.onActionChoiceActionImage(8);
         }
     }
     //--------------------------/Image Tools--------------------------//

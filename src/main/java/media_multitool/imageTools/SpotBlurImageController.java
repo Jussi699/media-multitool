@@ -530,7 +530,7 @@ public class SpotBlurImageController extends AbstractMediaController {
                         10. Click 'Download' to save the final image.
                         
                         Tips:
-                        - Yellow outline shows the shape being drawn
+                        - RED outline shows the shape being drawn
                         - Cyan outline shows already added shapes
                         - White squares are resize handles
                         
@@ -723,6 +723,15 @@ public class SpotBlurImageController extends AbstractMediaController {
 
     private void loadFile(File selectedFile) {
         enableControls();
+
+        blurShapes.clear();
+        currentShape = null;
+        selectedShape = null;
+        resizeHandle = null;
+        blurOverlay.getChildren().clear();
+        currentBufferedImage = null;
+        originalBufferedImage = null;
+
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());

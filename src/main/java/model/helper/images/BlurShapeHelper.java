@@ -120,7 +120,7 @@ public class BlurShapeHelper {
 
         Color strokeColor;
         if (isCurrent) {
-            strokeColor = Color.YELLOW;
+            strokeColor = Color.RED;
         } else if (shape.isSelected) {
             strokeColor = Color.LIME;
         } else {

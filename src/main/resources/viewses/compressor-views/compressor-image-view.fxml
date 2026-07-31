@@ -58,7 +58,7 @@
             <Button fx:id="btnSubmit" mnemonicParsing="false"
                     onAction="#submitCompressAndDownload"
                     prefWidth="240.0"
-                    text="Convert and Download" />
+                    text="Compress and Download" />
         </VBox>
 
         <VBox spacing="12.0" VBox.vgrow="ALWAYS">

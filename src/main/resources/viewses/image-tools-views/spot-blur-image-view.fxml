@@ -48,10 +48,10 @@
 
             <Label style="-fx-text-fill: red; -fx-font-size: 12" GridPane.columnIndex="0">0</Label>
             <Slider fx:id="sliderBlurIntensity" onMouseReleased="#handleBlurIntensityChange" prefWidth="400" GridPane.columnIndex="1" max="20" value="5"/>
-            <Label fx:id="labelBlurIntensity" style="-fx-text-fill: red; -fx-font-size: 12" GridPane.columnIndex="2">20</Label>
+            <Label fx:id="labelBlurIntensity" style="-fx-text-fill: RED; -fx-font-size: 12" GridPane.columnIndex="2">20</Label>
         </GridPane>
 
-        <Label style="-fx-text-fill: white; -fx-font-size: 11" text="Blur Intensity"/>
+        <Label style="-fx-text-fill: RED; -fx-font-size: 11" text="Blur Intensity"/>
 
         <VBox alignment="CENTER" spacing="8.0">
             <Label fx:id="labelSuccess" styleClass="labelSuccess"
@@ -112,7 +112,7 @@
                         </VBox>
                     </HBox>
                 </StackPane>
-                <StackPane fx:id="dropZone" maxHeight="120.0" minHeight="120.0" prefHeight="120.0" HBox.hgrow="ALWAYS" styleClass="drop-zone-find-pixel">
+                <StackPane fx:id="dropZone" maxHeight="120.0" minHeight="120.0" prefHeight="120.0" HBox.hgrow="ALWAYS" styleClass="drop-zone-crop">
                     <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here" textFill="WHITE" />
                 </StackPane>
             </HBox>
