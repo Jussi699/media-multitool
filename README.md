@@ -47,6 +47,7 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 ### 🎨 Image Tools
 - **Black & White:** Convert images to grayscale
 - **Blur:** Apply gaussian blur with adjustable intensity
+- **Spot Blur:** Apply Gaussian blur with adjustable intensity and the ability to select your own custom blur zones
 - **Colorize:** Apply color tint with custom color picker
 - **Color Replace:** Replace specific colors or all colors with smoothing/enhancement
 - **Crop:** Interactive cropping with 14 aspect ratio presets (1:1, 16:9, 9:16, 4:5, 3:4, etc.)
