@@ -421,7 +421,7 @@ public class SpotBlurImageController extends AbstractMediaController {
           currentTask = new Task<BufferedImage>() {
               @Override
               protected BufferedImage call() {
-                  updateProgress(0, 100);
+                  updateProgress(0, 1.0);
                   updateMessage("Applying blur effect...");
                   
                   int blurIntensity = (int) sliderBlurIntensity.getValue();
@@ -456,28 +456,17 @@ public class SpotBlurImageController extends AbstractMediaController {
 
                           if (processedPixels % 1000 == 0 || x == width - 1) {
                               double progress = (double) processedPixels / totalPixels;
-                              updateProgress((long)(progress * 100), 100L);
+                              updateProgress(progress, 1.0);
                           }
                       }
                   }
 
-                  updateProgress(100L, 100L);
+                  updateProgress(1.0, 1.0);
                   return result;
               }
           };
 
-          currentTask.setOnSucceeded(_ -> {
-              BufferedImage result = (BufferedImage) currentTask.getValue();
-              if (result != null) {
-                  currentBufferedImage = result;
-                  setPreview(result);
-                  progressBar.setStyle("-fx-accent: #4CAF50;");
-              }
-          });
-
-          currentTask.setOnFailed(_ -> progressBar.setStyle("-fx-accent: #F44336;"));
-
-          new Thread(currentTask).start();
+          executeMediaTask(currentTask);
       }
 
     @FXML
@@ -597,7 +586,7 @@ public class SpotBlurImageController extends AbstractMediaController {
          currentTask = new Task<File>() {
              @Override
              protected File call() throws Exception {
-                 updateProgress(10, 100);
+                 updateProgress(0, 1.0);
                  updateMessage("Applying final blur...");
 
                  BufferedImage finalBlur = applyBlurShapes(originalBufferedImage);
@@ -605,7 +594,7 @@ public class SpotBlurImageController extends AbstractMediaController {
                      return null;
                  }
 
-                 updateProgress(90, 100);
+                 updateProgress(0.9, 1.0);
                  updateMessage("Saving image...");
 
                  File outputFile = createOutputFile(
@@ -615,7 +604,7 @@ public class SpotBlurImageController extends AbstractMediaController {
                  );
 
                  ImagePreprocessing.downloadImage(finalBlur, imageProperties.getTypeImage(), outputFile);
-                 updateProgress(100, 100);
+                 updateProgress(1.0, 1.0);
                  updateMessage("Download complete!");
 
                  return outputFile;
@@ -670,6 +659,22 @@ public class SpotBlurImageController extends AbstractMediaController {
 
     @Override
     protected void handleTaskSuccess(Object result) {
+        if (result instanceof BufferedImage bi) {
+            currentBufferedImage = bi;
+            setPreview(currentBufferedImage);
+            Platform.runLater(() -> {
+                if (progressBar != null) {
+                    progressBar.setVisible(true);
+                    progressBar.setManaged(true);
+                }
+                if (labelSuccess != null) {
+                    labelSuccess.setVisible(true);
+                    labelSuccess.setManaged(true);
+                }
+            });
+            return;
+        }
+
         super.handleTaskSuccess(result);
 
         if (Boolean.FALSE.equals(result)) {
