@@ -54,7 +54,7 @@
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <StackPane fx:id="previewContainer" minWidth="200" styleClass="preview-container" VBox.vgrow="ALWAYS">
+            <StackPane fx:id="previewContainer" minWidth="200" VBox.vgrow="ALWAYS">
                 <Label fx:id="labelPreviewPlaceholder" text="Preview" />
                 <ImageView fx:id="imageViewPdf" pickOnBounds="true" preserveRatio="true" />
             </StackPane>

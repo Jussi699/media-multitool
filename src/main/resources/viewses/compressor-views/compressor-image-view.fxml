@@ -69,7 +69,7 @@
                 <Insets top="2.0" />
             </VBox.margin>
 
-            <StackPane fx:id="previewContainer" styleClass="preview-container" VBox.vgrow="ALWAYS" minWidth="200">
+            <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
                 <ImageView fx:id="imageViewPreview" preserveRatio="true" />
                 <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>

@@ -38,12 +38,9 @@
             </VBox.margin>
             
             <Label text="Pages preview (remove to delete from PDF):" styleClass="label-h"/>
-            
-            <ScrollPane fx:id="scrollPanePreview" fitToWidth="true" VBox.vgrow="ALWAYS" 
-                        style="-fx-background: #3a3a3a; -fx-background-color: #3a3a3a; -fx-border-color: WHITE; -fx-border-radius: 5px; -fx-border-width: 2px">
-                <FlowPane fx:id="imagesFlowPane" hgap="10.0" vgap="10.0" 
-                          style="-fx-background-color: #3a3a3a; -fx-padding: 10;">
-                </FlowPane>
+
+            <ScrollPane fx:id="scrollPanePreview" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="scroll-pane-preview">
+                <FlowPane fx:id="imagesFlowPane" hgap="10.0" vgap="10.0" minHeight="200.0"/>
             </ScrollPane>
 
             <StackPane fx:id="dropZone" styleClass="drop-zone" minHeight="80.0">

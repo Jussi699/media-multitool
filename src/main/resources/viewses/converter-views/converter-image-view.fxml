@@ -33,19 +33,19 @@
             <Button fx:id="btnSelectFile"
                     mnemonicParsing="false"
                     onAction="#onActionBtnSelectFile"
-                    prefWidth="180.0"
+                    prefWidth="180.0" styleClass="button-default"
                     text="Select image"/>
 
             <Button fx:id="btnSelectBatchFileProcessing"
                     mnemonicParsing="false"
                     onAction="#onActionBtnBatchFileProcessing"
-                    prefWidth="180.0"
+                    prefWidth="180.0" styleClass="button-default"
                     text="Batch file processing"/>
 
             <Button fx:id="btnChoiceFolderForSaveFile"
                     mnemonicParsing="false"
                     onAction="#onChoiceFolderForSaveFile"
-                    prefWidth="180.0"
+                    prefWidth="180.0" styleClass="button-default"
                     text="Directory for save">
                 <tooltip>
                     <Tooltip text="Default directory: Desktop" />
@@ -57,24 +57,24 @@
                 <ToggleButton fx:id="btnToPNG"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to PNG"/>
 
                 <ToggleButton fx:id="btnToJPEG"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to JPEG"/>
 
                 <ToggleButton fx:id="btnToWEBP"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to WEBP"/>
 
 
                 <ComboBox fx:id="comboBoxIcoSize"
-                          onAction="#onActionChoiceIcoSize"
+                          onAction="#onActionChoiceIcoSize" styleClass="combo-box-with-colors"
                           prefWidth="100.0"/>
             </HBox>
 
@@ -82,37 +82,37 @@
                 <ToggleButton fx:id="btnToTIFF"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to TIFF"/>
 
                 <ToggleButton fx:id="btnToBMP"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to BMP"/>
 
                 <ToggleButton fx:id="btnToPPM"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to PPM"/>
 
                 <ToggleButton fx:id="btnToPGM"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to PGM"/>
 
                 <ToggleButton fx:id="btnToPAM"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to PAM"/>
 
                 <ToggleButton fx:id="btnToSVG"
                               mnemonicParsing="false"
                               onAction="#onActionClickToggleBtnFormat"
-                              prefWidth="85.0"
+                              prefWidth="85.0" styleClass="button-default"
                               text="to SVG"/>
             </HBox>
 
@@ -125,7 +125,7 @@
             <VBox alignment="CENTER" spacing="10.0">
                 <Button fx:id="btnSubmit" mnemonicParsing="false"
                         onAction="#submitAndDownload"
-                        prefWidth="240.0"
+                        prefWidth="240.0" styleClass="button-default"
                         text="Convert and Download"/>
             </VBox>
         </VBox>
@@ -137,7 +137,7 @@
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <StackPane fx:id="previewContainer" styleClass="preview-container" VBox.vgrow="ALWAYS" minWidth="200">
+            <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
                 <ImageView fx:id="imageViewPreview" preserveRatio="true" />
                 <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>

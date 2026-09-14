@@ -17,9 +17,7 @@
             <Insets top="30.0" left="40.0" right="40.0" bottom="30.0"/>
         </padding>
 
-    <Label text="Application Info"
-           textFill="#32CD32"
-           style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-font-family: 'Cascadia Code';"/>
+    <Label text="Application Info" styleClass="main-label-name-page"/>
 
     <VBox spacing="15.0" styleClass="info-card">
         <Label text="Log Files Location" styleClass="section-header"/>
