@@ -63,15 +63,13 @@
                 <RowConstraints vgrow="ALWAYS"/>
             </rowConstraints>
             <StackPane alignment="TOP_LEFT" minHeight="200.0" maxWidth="Infinity"
-                       prefHeight="300.0"
-                       style="-fx-border-color: white; -fx-border-style: solid; -fx-border-width: 2; -fx-border-radius: 10;"
+                       prefHeight="300.0" style=" -fx-border-color: -main-color-with-gradient; -fx-border-style: solid; -fx-border-width: 2;-fx-border-radius: 10;"
                        GridPane.columnIndex="0">
                 <padding>
                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
                 </padding>
                 <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
-                            style="-fx-background-color: transparent; -fx-background: transparent;
-                            -fx-border-color: transparent; -fx-padding: 0;">
+                            style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent; -fx-padding: 0;">
                     <VBox spacing="10.0">
                         <VBox spacing="2.0">
                             <Label styleClass="labelTag" text="Title:" textFill="WHITE"/>
@@ -137,11 +135,10 @@
             </StackPane>
 
             <VBox spacing="10.0" GridPane.columnIndex="1" maxWidth="Infinity" minWidth="0">
-                <TextField fx:id="textFieldFindFile" promptText="Search"/>
+                <TextField fx:id="textFieldFindFile" promptText="Search" style="-fx-border-color: -main-color-with-gradient; -fx-border-width: 2"/>
                 <HBox VBox.vgrow="ALWAYS">
                     <ScrollPane fx:id="tableScrollPane" fitToHeight="true" maxWidth="Infinity" minWidth="0"
-                                vbarPolicy="NEVER" HBox.hgrow="ALWAYS"
-                                style="-fx-padding: 0;">
+                                vbarPolicy="NEVER" HBox.hgrow="ALWAYS" style="-fx-padding: 0; -fx-border-radius: 0; -fx-border-color: -main-color-with-gradient">
                         <TableView fx:id="tableViewAudio" prefHeight="500.0" tableMenuButtonVisible="true">
                             <columns>
                                 <TableColumn fx:id="colFileName" prefWidth="150" text="Filename"/>
@@ -152,7 +149,7 @@
                                 <TableColumn fx:id="colAlbumArtist" prefWidth="100" text="AlbumArtist"/>
                                 <TableColumn fx:id="colAlbum" prefWidth="100" text="Album"/>
                                 <TableColumn fx:id="colTrack" prefWidth="50" text="Track"/>
-                                <TableColumn fx:id="colDiscnumber" prefWidth="50" text="Discnumber"/>
+                                <TableColumn fx:id="colDiscnumber" prefWidth="50" text="Disc number"/>
                                 <TableColumn fx:id="colYear" prefWidth="50" text="Year"/>
                                 <TableColumn fx:id="colGenre" prefWidth="70" text="Genre"/>
                                 <TableColumn fx:id="colComment" prefWidth="100" text="Comment"/>

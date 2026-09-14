@@ -12,15 +12,10 @@ public class Cells {
 
                 if (empty || item == null || text.equals(item)) {
                     setText(text);
-                    setStyle("-fx-background-color: LightGrey;-fx-background-radius: 10;" +
-                            "-fx-border-radius: 10;-fx-alignment: center;-fx-text-fill: black;"
-                    );
                 } else {
                     setText(item);
-                    setStyle("-fx-background-color: #32CD32;-fx-background-radius: 10;" +
-                            "-fx-border-radius: 10;-fx-alignment: center;-fx-text-fill: black;"
-                    );
                 }
+                setStyle("-fx-background-color: transparent; -fx-alignment: center; -fx-text-fill: white;");
             }
         });
     }
@@ -38,7 +33,7 @@ public class Cells {
                 } else {
                     setText(item);
                     setGraphic(null);
-                    setStyle("-fx-alignment: center; -fx-text-fill: black;");
+                    setStyle("-fx-alignment: center; -fx-text-fill: white;");
                 }
             }
         });
