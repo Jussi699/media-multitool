@@ -5,156 +5,182 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.geometry.Insets?>
 
-<?import javafx.scene.shape.Line?>
-<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import java.lang.String?>
+
 <HBox prefHeight="820.0" prefWidth="800.0"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="media_multitool.ViewController">
 
+    <fx:define>
+        <String fx:id="SVG_Folder" fx:value="M13.9438 11.9423C13.6938 12.1923 13.3546 12.3328 13.001 12.3328H2.33344C1.97979 12.3328 1.64062 12.1923 1.39056 11.9423C1.14049 11.6923 1 11.3531 1 10.9995V2.33327C1 1.97967 1.14049 1.64054 1.39056 1.39051C1.64062 1.14047 1.97979 1 2.33344 1H4.95365C5.17441 1.00004 5.3917 1.05487 5.58603 1.15959C5.78037 1.26431 5.94566 1.41563 6.06707 1.59997L6.60712 2.39993C6.72977 2.58618 6.89718 2.73868 7.09402 2.8435C7.29087 2.94832 7.51086 3.00209 7.73387 2.99991H13.001C13.3546 2.99991 13.6938 3.14038 13.9438 3.39041C14.1939 3.64045 14.3344 3.97957 14.3344 4.33318V10.9995C14.3344 11.3531 14.1939 11.6923 13.9438 11.9423Z"/>
+    </fx:define>
+
     <VBox alignment="TOP_CENTER"
-          prefHeight="820.0"
-          prefWidth="170.0"
-          spacing="16.0"
-          style="-fx-background-color: #1f1f1f;">
+          prefHeight="820.0" prefWidth="220.0"
+          minWidth="220.0" maxWidth="220.0"
+          spacing="8.0" style="-fx-background-color: #232323;" styleClass="sidebar-vbox">
+
         <Label alignment="CENTER"
-               prefWidth="140.0"
-               style="-fx-font-size: 22px; -fx-font-weight: bold;"
-               text="Multitool"
-               textFill="WHITE">
+               prefWidth="200.0"
+               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -main-color-with-gradient"
+               text="Multitool">
             <VBox.margin>
-                <Insets top="20.0"/>
+                <Insets top="20.0" bottom="10.0"/>
             </VBox.margin>
         </Label>
 
-        <Button fx:id="navHomeButton"
-                mnemonicParsing="false"
-                onAction="#showHomePage"
-                prefWidth="140.0"
-                text="Home"/>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    styleClass="sidebar-scroll-pane" VBox.vgrow="ALWAYS">
+            <VBox alignment="CENTER_LEFT" prefWidth="200.0">
+                <padding>
+                    <Insets left="15.0" right="15.0" bottom="20.0"/>
+                </padding>
+                <Label text="AVAILABLE MODULE"
+                       style="-fx-text-fill: #666666; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 0 10 5;"/>
 
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
+                <fx:define>
+                    <ToggleGroup fx:id="folderGroup"/>
+                </fx:define>
 
-        <Button fx:id="navConverterImageButton"
-                mnemonicParsing="false"
-                onAction="#showConverterImagePage"
-                prefWidth="140.0"
-                text="Converter Image"/>
+                <Button fx:id="navHomeButton" mnemonicParsing="false" onAction="#showHomePage" prefWidth="190.0" text="Home"
+                        alignment="BASELINE_LEFT" styleClass="standalone-btn">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath content="M 10 20 v -6 h 4 v 6 h 5 v -8 h 3 L 12 3 L 2 12 h 3 v 8 z"
+                                     styleClass="other-icon"/>
+                        </StackPane>
+                    </graphic>
+                </Button>
 
-        <Button fx:id="navConverterVideoButton"
-                mnemonicParsing="false"
-                onAction="#showConverterVideoPage"
-                prefWidth="140.0"
-                text="Converter Video"/>
+                <ToggleButton fx:id="btnConverters" text="Converters" styleClass="folder-btn" toggleGroup="$folderGroup"
+                              prefWidth="190.0" alignment="BASELINE_LEFT">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath content="$SVG_Folder" styleClass="folder-icon"/>
+                        </StackPane>
+                    </graphic>
+                </ToggleButton>
+                <VBox visible="${btnConverters.selected}" managed="${btnConverters.selected}" styleClass="folder-content">
+                    <Button fx:id="navConverterImageButton" mnemonicParsing="false" onAction="#showConverterImagePage"
+                            prefWidth="150.0" text="Converter Image" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                    <Button fx:id="navConverterVideoButton" mnemonicParsing="false" onAction="#showConverterVideoPage"
+                            prefWidth="150.0" text="Converter Video" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                    <Button fx:id="navConverterAudioButton" mnemonicParsing="false" onAction="#showConverterAudioPage"
+                            prefWidth="150.0" text="Converter Audio" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                </VBox>
 
-        <Button fx:id="navConverterAudioButton"
-                mnemonicParsing="false"
-                onAction="#showConverterAudioPage"
-                prefWidth="140.0"
-                text="Converter Audio"/>
+                <ToggleButton fx:id="btnCompressors" text="Compressors" styleClass="folder-btn" toggleGroup="$folderGroup"
+                              prefWidth="190.0" alignment="BASELINE_LEFT">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath content="$SVG_Folder" styleClass="folder-icon"/>
+                        </StackPane>
+                    </graphic>
+                </ToggleButton>
+                <VBox visible="${btnCompressors.selected}" managed="${btnCompressors.selected}" styleClass="folder-content">
+                    <Button fx:id="navCompressorImage" mnemonicParsing="false" onAction="#showCompressorImagePage"
+                            prefWidth="150.0" text="Compressor Image" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                    <Button fx:id="navCompressorVideo" mnemonicParsing="false" onAction="#showCompressorVideoPage"
+                            prefWidth="150.0" text="Compressor Video" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                </VBox>
 
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
+                <ToggleButton fx:id="btnImageTools" text="Image Tools" styleClass="folder-btn" toggleGroup="$folderGroup"
+                              prefWidth="190.0" alignment="BASELINE_LEFT">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath content="$SVG_Folder" styleClass="folder-icon"/>
+                        </StackPane>
+                    </graphic>
+                </ToggleButton>
+                <VBox fx:id="imageToolsContent" visible="${btnImageTools.selected}" managed="${btnImageTools.selected}" styleClass="folder-content">
+                </VBox>
 
-        <Button fx:id="navCompressorImage"
-                mnemonicParsing="false"
-                onAction="#showCompressorImagePage"
-                prefWidth="140.0"
-                text="Compressor Image"/>
+                <ToggleButton fx:id="btnWatermark" text="Watermark" styleClass="folder-btn" toggleGroup="$folderGroup"
+                              prefWidth="190.0" alignment="BASELINE_LEFT">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath content="$SVG_Folder" styleClass="folder-icon"/>
+                        </StackPane>
+                    </graphic>
+                </ToggleButton>
+                <VBox fx:id="watermarkContent" visible="${btnWatermark.selected}" managed="${btnWatermark.selected}" styleClass="folder-content">
+                </VBox>
 
-        <Button fx:id="navCompressorVideo"
-                mnemonicParsing="false"
-                onAction="#showCompressorVideoPage"
-                prefWidth="140.0"
-                text="Compressor Video"/>
+                <ToggleButton fx:id="btnPdfTools" text="PDF Tools" styleClass="folder-btn"
+                              toggleGroup="$folderGroup" prefWidth="190.0" alignment="BASELINE_LEFT">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath content="$SVG_Folder" styleClass="folder-icon"/>
+                        </StackPane>
+                    </graphic>
+                </ToggleButton>
+                <VBox fx:id="pdfToolsContent" visible="${btnPdfTools.selected}" managed="${btnPdfTools.selected}" styleClass="folder-content">
+                </VBox>
 
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
+                <Button fx:id="navEditorAudioTag" mnemonicParsing="false" onAction="#showEditorAudioTagPage"
+                        prefWidth="190.0" text="Audio Tag Editor" alignment="BASELINE_LEFT" styleClass="standalone-btn">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath
+                                    content="M 12 3 v 10.55 c -0.59 -0.34 -1.27 -0.55 -2 -0.55 c -2.21 0 -4 1.79 -4 4 s 1.79 4 4 4 s 4 -1.79 4 -4 V 7 h 4 V 3 h -6 z"
+                                    styleClass="other-icon"/>
+                        </StackPane>
+                    </graphic>
+                </Button>
 
+                <Button fx:id="navInfo" mnemonicParsing="false" onAction="#showInfoPage" prefWidth="190.0" text="Info"
+                        alignment="BASELINE_LEFT" styleClass="standalone-btn">
+                    <graphic>
+                        <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
+                            <SVGPath
+                                    content="M 11 7 h 2 v 2 h -2 z M 11 11 h 2 v 6 h -2 z M 12 2 C 6.48 2 2 6.48 2 12 s 4.48 10 10 10 s 10 -4.48 10 -10 S 17.52 2 12 2 z M 12 20 c -4.41 0 -8 -3.59 -8 -8 s 3.59 -8 8 -8 s 8 3.59 8 8 s -3.59 8 -8 8 z"
+                                    styleClass="other-icon"/>
+                        </StackPane>
+                    </graphic>
+                </Button>
 
-        <ComboBox fx:id="comboBoxChoiceActionImage" prefWidth="140.0" prefHeight="50.0"
-                   onAction="#onActionChoiceActionImage" styleClass="combo-box-choice-action"
-                   style="-fx-cell-size: 30;"/>
-
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
-
-        <ComboBox fx:id="comboBoxChoiceActionPdf" prefWidth="140.0"
-                  onAction="#onActionChoiceActionPdf" styleClass="combo-box-choice-action"/>
-
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
-
-        <ComboBox fx:id="comboBoxChoiceActionWatermark" prefWidth="140.0"
-                  onAction="#onActionChoiceActionWatermark" styleClass="combo-box-choice-action"/>
-
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
-
-        <Button fx:id="navEditorAudioTag"
-                mnemonicParsing="false"
-                onAction="#showEditorAudioTagPage"
-                prefWidth="140.0"
-                text="Editor audio tag"/>
-
-        <Line startX="85.0"
-              endX="85.0" endY="5.0"
-              stroke="red" strokeWidth="2.0" />
-
-        <Button fx:id="navInfo"
-                mnemonicParsing="false"
-                onAction="#showInfoPage"
-                prefWidth="140.0"
-                text="Info"/>
-
-        <padding>
-            <Insets top="8.0" left="14.0" right="14.0" bottom="8.0"/>
-        </padding>
+            </VBox>
+        </ScrollPane>
     </VBox>
 
-    <StackPane prefHeight="820.0"
-               prefWidth="630.0"
-               style="-fx-background-color: #2b2b2b;"
-               HBox.hgrow="ALWAYS">
-        <fx:include fx:id="homeView" source="home-view.fxml"/>
-        <fx:include fx:id="converterImagePage" source="converter-views/converter-image-view.fxml"/>
-        <fx:include fx:id="converterVideoPage" source="converter-views/converter-video-view.fxml"/>
-        <fx:include fx:id="converterMP3Page" source="converter-views/converter-audio-view.fxml"/>
-        <fx:include fx:id="compressorImagePage" source="compressor-views/compressor-image-view.fxml"/>
-        <fx:include fx:id="compressorVideoPage" source="compressor-views/compressor-video-view.fxml"/>
-        <fx:include fx:id="negativeImagePage" source="image-tools-views/negative-image-view.fxml"/>
-        <fx:include fx:id="rotateImagePage" source="image-tools-views/rotate-image-view.fxml"/>
-        <fx:include fx:id="infoPage" source="info-view.fxml"/>
-        <fx:include fx:id="lightenPage" source="image-tools-views/lighten-image-view.fxml"/>
-        <fx:include fx:id="darkenPage" source="image-tools-views/darken-image-view.fxml"/>
-        <fx:include fx:id="colorizePage" source="image-tools-views/colorize-image-view.fxml"/>
-        <fx:include fx:id="blackAndWhitePage" source="image-tools-views/black-white-image-view.fxml"/>
-        <fx:include fx:id="blurPage" source="image-tools-views/blur-image-view.fxml"/>
-        <fx:include fx:id="audioEditorTagPage" source="editors-views/editor-audio-tag-view.fxml"/>
-        <fx:include fx:id="findPixelPage" source="image-tools-views/find-color-pixel-image-view.fxml"/>
-        <fx:include fx:id="cropPage" source="image-tools-views/crop-image-view.fxml"/>
-        <fx:include fx:id="imageToPdfPage" source="pdf-views/converter-image-to-pdf-view.fxml"/>
-        <fx:include fx:id="pdfToImagePage" source="pdf-views/converter-pdf-to-image-view.fxml"/>
-        <fx:include fx:id="imagesToPdfPage" source="pdf-views/images-to-pdf-view.fxml"/>
-        <fx:include fx:id="protectPdfPage" source="pdf-views/protect-pdf-view.fxml"/>
-         <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
-         <fx:include fx:id="spotBlurPage" source="image-tools-views/spot-blur-image-view.fxml"/>
-         <fx:include fx:id="unlockPdfPage" source="pdf-views/unlock-pdf-view.fxml"/>
-        <fx:include fx:id="removePagesPdfPage" source="pdf-views/remove-pages-pdf-view.fxml"/>
-        <fx:include fx:id="compressPdfPage" source="pdf-views/compressor-pdf-view.fxml"/>
-        <fx:include fx:id="mergePdfPage" source="pdf-views/merge-pdf-view.fxml"/>
-        <fx:include fx:id="splitPdfPage" source="pdf-views/split-pdf-view.fxml"/>
-        <fx:include fx:id="watermarkImagePane" source="watermark-views/watermark-image-view.fxml"/>
-        <fx:include fx:id="watermarkPdfPane" source="watermark-views/watermark-pdf-view.fxml"/>
-        <fx:include fx:id="watermarkVideoPane" source="watermark-views/watermark-video-view.fxml"/>
+    <StackPane prefHeight="820.0" prefWidth="630.0" style="-fx-background-color: #2b2b2b;" HBox.hgrow="ALWAYS">
+        <fx:include fx:id="homeView"                source="home-view.fxml"/>
+        <fx:include fx:id="converterImagePage"      source="converter-views/converter-image-view.fxml"/>
+        <fx:include fx:id="converterVideoPage"      source="converter-views/converter-video-view.fxml"/>
+        <fx:include fx:id="converterMP3Page"        source="converter-views/converter-audio-view.fxml"/>
+        <fx:include fx:id="compressorImagePage"     source="compressor-views/compressor-image-view.fxml"/>
+        <fx:include fx:id="compressorVideoPage"     source="compressor-views/compressor-video-view.fxml"/>
+        <fx:include fx:id="negativeImagePage"       source="image-tools-views/negative-image-view.fxml"/>
+        <fx:include fx:id="rotateImagePage"         source="image-tools-views/rotate-image-view.fxml"/>
+        <fx:include fx:id="infoPage"                source="info-view.fxml"/>
+        <fx:include fx:id="lightenPage"             source="image-tools-views/lighten-image-view.fxml"/>
+        <fx:include fx:id="darkenPage"              source="image-tools-views/darken-image-view.fxml"/>
+        <fx:include fx:id="colorizePage"            source="image-tools-views/colorize-image-view.fxml"/>
+        <fx:include fx:id="blackAndWhitePage"       source="image-tools-views/black-white-image-view.fxml"/>
+        <fx:include fx:id="blurPage"                source="image-tools-views/blur-image-view.fxml"/>
+        <fx:include fx:id="audioEditorTagPage"      source="editors-views/editor-audio-tag-view.fxml"/>
+        <fx:include fx:id="findPixelPage"           source="image-tools-views/find-color-pixel-image-view.fxml"/>
+        <fx:include fx:id="cropPage"                source="image-tools-views/crop-image-view.fxml"/>
+        <fx:include fx:id="imageToPdfPage"          source="pdf-views/converter-image-to-pdf-view.fxml"/>
+        <fx:include fx:id="pdfToImagePage"          source="pdf-views/converter-pdf-to-image-view.fxml"/>
+        <fx:include fx:id="imagesToPdfPage"         source="pdf-views/images-to-pdf-view.fxml"/>
+        <fx:include fx:id="protectPdfPage"          source="pdf-views/protect-pdf-view.fxml"/>
+        <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
+        <fx:include fx:id="spotBlurPage"            source="image-tools-views/spot-blur-image-view.fxml"/>
+        <fx:include fx:id="unlockPdfPage"           source="pdf-views/unlock-pdf-view.fxml"/>
+        <fx:include fx:id="removePagesPdfPage"      source="pdf-views/remove-pages-pdf-view.fxml"/>
+        <fx:include fx:id="compressPdfPage"         source="pdf-views/compressor-pdf-view.fxml"/>
+        <fx:include fx:id="mergePdfPage"            source="pdf-views/merge-pdf-view.fxml"/>
+        <fx:include fx:id="splitPdfPage"            source="pdf-views/split-pdf-view.fxml"/>
+        <fx:include fx:id="watermarkImagePane"      source="watermark-views/watermark-image-view.fxml"/>
+        <fx:include fx:id="watermarkPdfPane"        source="watermark-views/watermark-pdf-view.fxml"/>
+        <fx:include fx:id="watermarkVideoPane"      source="watermark-views/watermark-video-view.fxml"/>
     </StackPane>
 </HBox>
