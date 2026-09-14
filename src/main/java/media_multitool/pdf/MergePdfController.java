@@ -134,9 +134,7 @@ public class MergePdfController extends AbstractMediaController {
         if (imageProperties.getImage() == null) {
             imageProperties.setImage(file);
         }
-        labelSelectFileName.setText("Selected PDFs: " + (!selectedPages.isEmpty() ? "Multiple files" : file.getName()));
-        textDragZone.setText("Files added");
-        
+
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
@@ -167,7 +165,10 @@ public class MergePdfController extends AbstractMediaController {
             updateUIState();
             
             PauseTransition hideBar = new PauseTransition(Duration.seconds(5));
-            hideBar.setOnFinished(_ -> progressBar.setProgress(0));
+            hideBar.setOnFinished(_ -> {
+                progressBar.progressProperty().unbind();
+                progressBar.setProgress(0);
+            });
             hideBar.playFromStart();
         });
 
@@ -219,13 +220,18 @@ public class MergePdfController extends AbstractMediaController {
     }
 
     private void updateUIState() {
-        labelSelectFileName.setText(imageProperties.getImage() == null
-                ? "Selected PDF file: none" : "Selected PDF: " + imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
-        
+        labelSelectFileName.setText(selectedPages.isEmpty()
+                ? "Selected PDF file: none" : "Last uploaded PDF: " + selectedPages.getLast().sourceFile.getName());
+
+        textDragZone.setText("PDF selected: " + selectedPages.size());
+
+
         if (!selectedPages.isEmpty()) {
             enableControls();
         } else {
             disableControls();
+            textDragZone.setText("Drag PDF here");
+            dropZone.getStyleClass().remove("drop-zone-filled");
         }
     }
 
@@ -297,6 +303,7 @@ public class MergePdfController extends AbstractMediaController {
                 PauseTransition hideBar = new PauseTransition(Duration.seconds(5));
                 hideBar.setOnFinished(_ -> {
                     labelSuccess.setVisible(false);
+                    progressBar.progressProperty().unbind();
                     progressBar.setProgress(0);
                 });
                 hideBar.play();
@@ -318,7 +325,7 @@ public class MergePdfController extends AbstractMediaController {
         if (progressBar != null) {
             progressBar.progressProperty().unbind();
         }
-        reset(imageProperties, ctx, "Selected PDF file: none");
+        reset(imageProperties, ctx, "Last uploaded PDF: none");
 
         disableControls();
         textDragZone.setText("Drag PDF here");

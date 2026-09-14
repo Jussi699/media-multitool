@@ -165,12 +165,15 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
     }
 
     private void updateUIState() {
-        labelSelectFileName.setText("Selected images: " + selectedImages.size());
-        textDragZone.setText(selectedImages.isEmpty() ? 
-            "Drag images here or click 'Select images'" : 
+        textDragZone.setText(selectedImages.isEmpty() ?
+            "Drag images here or click 'Select images'" :
             "Selected: " + selectedImages.size() + " image(s)");
-        
+
+
+
         if (!selectedImages.isEmpty()) {
+            labelSelectFileName.setText("Last uploaded image: " + selectedImages.getLast().file.getName());
+
             enableControls();
             if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");
@@ -298,7 +301,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             labelSelectFileName, labelSuccess, textDragZone, null,
             dropZone, null, progressBar, true
         );
-        reset(imageProperties, ctx, "Selected images: 0");
+        reset(imageProperties, ctx, "Last uploaded image: none");
 
         disableControls();
 
