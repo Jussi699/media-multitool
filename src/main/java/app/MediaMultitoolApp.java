@@ -14,7 +14,7 @@ public class MediaMultitoolApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 900);
+        Scene scene = new Scene(fxmlLoader.load(), 1040, 900);
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
 
         try {stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));}
