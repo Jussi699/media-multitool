@@ -78,7 +78,7 @@ public class WatermarkPdfController extends AbstractMediaController {
 
         currentWatermarkSettings = new WatermarkSettings();
 
-        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto);
+        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset);
 
         imageProperties.setOutput(getSavedPath());
 

@@ -52,7 +52,7 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderBlurry, btnSubmit);
+        listControls = List.of(sliderBlurry, btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);

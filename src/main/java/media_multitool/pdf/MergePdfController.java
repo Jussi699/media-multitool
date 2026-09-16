@@ -4,10 +4,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
@@ -66,8 +63,12 @@ public class MergePdfController extends AbstractMediaController {
     @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private Label labelSelectFileName, textDragZone;
 
+    private List<Control> listControls;
+
     @FXML
     public void initialize() {
+        listControls = List.of(btnSubmit, btnReset);
+
         imageProperties.setOutput(getSavedPath());
         setupDragAndDropMultiple();
         isPressedReset();
@@ -99,24 +100,24 @@ public class MergePdfController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFiles.setDisable(true);
         btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFiles.setDisable(false);
         btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @Override
     protected void disableControls() {
-        btnSubmit.setDisable(true);
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        btnSubmit.setDisable(false);
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML

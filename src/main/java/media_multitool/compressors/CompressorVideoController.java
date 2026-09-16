@@ -53,7 +53,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnBasicCompress, btnStrongCompress, btnSuperCompress, chkUseGPU, chkCompressAudio, btnCompress, btnCancelConversion);
+        listControls = List.of(btnBasicCompress, btnStrongCompress, btnSuperCompress, chkUseGPU, chkCompressAudio, btnCompress, btnCancelConversion, btnReset);
 
         videoProperties.setOutput(getSavedPath());
 

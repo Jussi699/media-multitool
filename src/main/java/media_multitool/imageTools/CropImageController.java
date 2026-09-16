@@ -64,7 +64,7 @@ public class CropImageController extends AbstractMediaController {
                 btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9, btnAspectRatio4x5,
                 btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3, btnAspectRatio2x3,
                 btnAspectRatio3x2, btnAspectRatio5x7, btnAspectRatio7x5, btnAspectRatio1x2,
-                btnAspectRatio2x1, imageScaleSlider, btnSubmit
+                btnAspectRatio2x1, imageScaleSlider, btnSubmit, btnReset
         );
 
         imageProperties.setOutput(getSavedPath());

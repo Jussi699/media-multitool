@@ -60,8 +60,12 @@ public class RemovePagesPdfController extends AbstractMediaController {
     @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private Label labelSelectFileName, textDragZone;
 
+    private List<Control> listControls;
+
+
     @FXML
     public void initialize() {
+        listControls = List.of(btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
         setupDragAndDropMultiple();
         isPressedReset();
@@ -94,24 +98,24 @@ public class RemovePagesPdfController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFiles.setDisable(true);
         btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFiles.setDisable(false);
         btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @Override
     protected void disableControls() {
-        btnSubmit.setDisable(true);
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        btnSubmit.setDisable(false);
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML

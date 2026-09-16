@@ -64,7 +64,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit);
+        listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit, btnReset);
 
         imageProperties.setOutput(getSavedPath());
 

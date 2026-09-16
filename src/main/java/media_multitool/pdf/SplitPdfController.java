@@ -49,7 +49,7 @@ public class SplitPdfController extends AbstractMediaController {
     private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
     private final Set<Integer> selectedPageIndices = new HashSet<>();
 
-    private List<Control> controls;
+    private List<Control> listControls;
 
     private static class PageEntry {
         final int originalPageIndex;
@@ -68,7 +68,7 @@ public class SplitPdfController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        controls = List.of(btnSubmit, btnReset, rbRange, rbPages, rbCustomRange, rbFixedRange, tfFromPage, tfToPage);
+        listControls = List.of(btnSubmit, btnReset, rbRange, rbPages, rbCustomRange, rbFixedRange, tfFromPage, tfToPage, btnReset);
 
         setupDragAndDropMultiple();
         disableControls();
@@ -147,12 +147,12 @@ public class SplitPdfController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        controls.forEach(control -> control.setDisable(true));
+        listControls.forEach(control -> control.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        controls.forEach(control -> control.setDisable(false));
+        listControls.forEach(control -> control.setDisable(false));
     }
 
     @FXML

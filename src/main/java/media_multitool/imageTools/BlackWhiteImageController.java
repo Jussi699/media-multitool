@@ -48,7 +48,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit);
+        listControls = List.of(btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);

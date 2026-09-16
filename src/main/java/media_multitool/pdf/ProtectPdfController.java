@@ -49,14 +49,12 @@ public class ProtectPdfController extends AbstractMediaController {
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder, labelPasswordMatch;
 
     private PDDocument currentDoc;
-    private List<Control> listControls;
-
     private String typePassword, repeatPassword;
+    private List<Control> listControls;
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit);
-
+        listControls = List.of(btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         if (progressBar != null) {
@@ -128,46 +126,41 @@ public class ProtectPdfController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFile.setDisable(true);
         btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
-        btnSubmit.setDisable(true);
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
         btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
-        btnSubmit.setDisable(false);
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(c -> c.setDisable(true));
+
         typePasswordField.setDisable(true);
         repeatPasswordField.setDisable(true);
-        if (typePasswordTextField != null) {
-            typePasswordTextField.setDisable(true);
-        }
-        if (repeatPasswordTextField != null) {
-            repeatPasswordTextField.setDisable(true);
-        }
         btnShowTypePassword.setDisable(true);
         btnShowRepeatPassword.setDisable(true);
+
+        if (typePasswordTextField   != null)  { typePasswordTextField.setDisable(true);   }
+        if (repeatPasswordTextField != null)  { repeatPasswordTextField.setDisable(true); }
+
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
+
         typePasswordField.setDisable(false);
         repeatPasswordField.setDisable(false);
-        if (typePasswordTextField != null) {
-            typePasswordTextField.setDisable(false);
-        }
-        if (repeatPasswordTextField != null) {
-            repeatPasswordTextField.setDisable(false);
-        }
         btnShowTypePassword.setDisable(false);
         btnShowRepeatPassword.setDisable(false);
+
+        if (typePasswordTextField   != null)  { typePasswordTextField.setDisable(false);   }
+        if (repeatPasswordTextField != null)  { repeatPasswordTextField.setDisable(false); }
     }
 
     private void turnTypePassword(boolean isSelected) {
@@ -210,7 +203,7 @@ public class ProtectPdfController extends AbstractMediaController {
         ToggleButton source = (ToggleButton) actionEvent.getSource();
 
         switch (source.getId()) {
-            case "btnShowTypePassword" -> turnTypePassword(source.isSelected());
+            case "btnShowTypePassword"   -> turnTypePassword(source.isSelected());
             case "btnShowRepeatPassword" -> turnRepeatPassword(source.isSelected());
         }
     }

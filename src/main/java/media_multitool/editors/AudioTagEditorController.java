@@ -101,11 +101,12 @@ public class AudioTagEditorController extends AbstractMediaController {
         textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField,
                 trackField, discNumberField, commentField, yearField, textFieldFindFile);
 
+
         listControls = new ArrayList<>();
         listControls.addAll(textFields);
-        listControls.add(genreComboBox);
-        listControls.add(btnSaveTag);
-        listControls.add(btnChangeIcon);
+        List<Control> tempListControl = List.of(genreComboBox, btnSaveTag, btnChangeIcon, btnReset);
+
+        listControls.addAll(tempListControl);
 
         List<TableColumn<DetailsAudioFile, ?>> allTableCol = List.of(colFileName, colPath, colTag, colTitle, colArtist, colAlbumArtist, colAlbum, colTrack,
                 colDiscnumber, colYear, colGenre, colComment, colCodec, colBitrate, colFrequency, colModified, colLength);

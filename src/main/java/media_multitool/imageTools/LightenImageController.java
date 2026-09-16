@@ -49,7 +49,7 @@ public class LightenImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderLighten, btnSubmit);
+        listControls = List.of(sliderLighten, btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);

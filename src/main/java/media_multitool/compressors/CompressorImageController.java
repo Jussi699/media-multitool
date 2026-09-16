@@ -46,7 +46,7 @@ public class CompressorImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(comboBoxOutputQuality, comboBoxScaleImage, btnSubmit);
+        listControls = List.of(comboBoxOutputQuality, comboBoxScaleImage, btnSubmit, btnReset);
 
         imageProperties.setOutput(getSavedPath());
 

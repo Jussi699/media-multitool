@@ -59,7 +59,7 @@ public class UnlockPdfController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit);
+        listControls = List.of(btnSubmit, btnReset);
 
         imageProperties.setOutput(getSavedPath());
 
@@ -99,16 +99,14 @@ public class UnlockPdfController extends AbstractMediaController {
     protected void lockUI() {
         btnSelectFile.setDisable(true);
         btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
-        btnSubmit.setDisable(true);
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
         btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
-        btnSubmit.setDisable(false);
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @Override
@@ -379,7 +377,7 @@ public class UnlockPdfController extends AbstractMediaController {
                 typePasswordTextField.setDisable(false);
                 typePasswordField.setDisable(false);
                 btnShowTypePassword.setDisable(false);
-                btnSubmit.setDisable(false);
+                enableControls();
             }
             else {
                 isFileEncrypted = false;
@@ -387,7 +385,7 @@ public class UnlockPdfController extends AbstractMediaController {
                 typePasswordTextField.setDisable(true);
                 typePasswordField.setDisable(true);
                 btnShowTypePassword.setDisable(true);
-                btnSubmit.setDisable(false);
+                enableControls();
                 updatePreview(false);
             }
 
@@ -401,7 +399,7 @@ public class UnlockPdfController extends AbstractMediaController {
                 typePasswordTextField.setDisable(false);
                 typePasswordField.setDisable(false);
                 btnShowTypePassword.setDisable(false);
-                btnSubmit.setDisable(false);
+                enableControls();
                 ErrorLogger.info("Encrypted PDF detected: " + selectedFile.getName());
             } else {
                 ErrorLogger.error("Error loading PDF: " + e.getMessage());

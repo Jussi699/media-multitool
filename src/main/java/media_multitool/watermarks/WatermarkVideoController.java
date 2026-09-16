@@ -76,7 +76,7 @@ public class WatermarkVideoController extends AbstractMediaController {
 
         currentWatermarkSettings = new WatermarkSettings();
 
-        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto);
+        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset);
 
         videoProperties.setOutput(getSavedPath());
 

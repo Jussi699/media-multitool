@@ -80,7 +80,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
         listControls = new ArrayList<>(listToggleBtn);
         listControls.addAll(List.of(comboBoxChoiceVideoBitRate, comboBoxChoiceAudioBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate,
-                comboBoxChoiceFPS, comboBoxChoiceResolution, checkBoxGPU, btnSubmitAndDownload, btnCancelConversion));
+                comboBoxChoiceFPS, comboBoxChoiceResolution, checkBoxGPU, btnSubmitAndDownload, btnCancelConversion, btnReset));
     }
 
     private void initComboBoxes() {

@@ -59,7 +59,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
         listControls = List.of(
             comboSourceColor, comboTargetColor, textSourceColorHex, textTargetColorHex,
             spinnerIntensity, spinnerSmoothing, spinnerEnhancement, 
-            toggleJPEG, togglePNG, checkBoxReplaceAllColors, btnSubmit
+            toggleJPEG, togglePNG, checkBoxReplaceAllColors, btnSubmit, btnReset
         );
         
         btnChoiceFolderForSaveFile.setTooltip(new Tooltip("Default directory: Desktop"));

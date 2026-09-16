@@ -53,7 +53,7 @@ public class CompressPdfController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnLowCompression, btnMediumCompression, btnHighCompression, btnReset, btnSubmit, btnChoiceDirForSaveFile);
+        listControls = List.of(btnLowCompression, btnMediumCompression, btnHighCompression, btnReset, btnSubmit, btnChoiceDirForSaveFile, btnReset);
 
         imageProperties.setOutput(getSavedPath());
 

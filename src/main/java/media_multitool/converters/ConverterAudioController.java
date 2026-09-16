@@ -79,7 +79,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
         listControls = new ArrayList<>(listToggleBtn);
         listControls.addAll(listComboBox);
-        listControls.addAll(List.of(btnSubmitAndDownload, btnCancelConversion));
+        listControls.addAll(List.of(btnSubmitAndDownload, btnCancelConversion, btnReset));
 
         listModifiableControls = new ArrayList<>(listToggleBtn);
         listModifiableControls.addAll(listComboBox);

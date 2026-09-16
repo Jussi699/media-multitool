@@ -71,7 +71,7 @@ public class ConverterImageController extends AbstractMediaController {
         );
 
         listControls = new ArrayList<>(listToggleBtn);
-        listControls.addAll(List.of(comboBoxIcoSize, btnSubmit));
+        listControls.addAll(List.of(comboBoxIcoSize, btnSubmit, btnReset));
 
         listToggleBtn.forEach(btn -> btn.setToggleGroup(toggleGroup));
     }

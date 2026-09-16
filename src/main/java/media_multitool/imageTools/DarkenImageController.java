@@ -49,7 +49,7 @@ public class DarkenImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderDarken, btnSubmit);
+        listControls = List.of(sliderDarken, btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);

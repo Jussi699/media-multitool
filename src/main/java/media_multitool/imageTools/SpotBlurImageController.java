@@ -84,7 +84,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderBlurIntensity, btnSubmit, btnAddRect, btnAddOval, btnUndo);
+        listControls = List.of(sliderBlurIntensity, btnSubmit, btnAddRect, btnAddOval, btnUndo, btnReset, imageScaleSlider);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);

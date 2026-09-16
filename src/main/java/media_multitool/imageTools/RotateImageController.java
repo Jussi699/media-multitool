@@ -51,7 +51,7 @@ public class RotateImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit);
+        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);

@@ -53,7 +53,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnColorPicker, btnSubmit);
+        listControls = List.of(btnColorPicker, btnSubmit, btnReset);
         btnChoiceFolderForSaveFile.setTooltip(new Tooltip("Default directory: Desktop"));
 
         imageProperties.setOutput(getSavedPath());

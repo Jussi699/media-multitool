@@ -61,7 +61,7 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex);
+        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
