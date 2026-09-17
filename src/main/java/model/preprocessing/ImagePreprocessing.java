@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.DoubleConsumer;
 
@@ -263,66 +264,90 @@ public class ImagePreprocessing {
         return Optional.of(gray);
     }
 
+    /**
+     * Applies a Gaussian-approximated blur using three consecutive box-blur passes via SAT.
+     * By the Central Limit Theorem, three box blurs converge to a Gaussian with
+     * sigma ≈ radius * sqrt(1/3), producing a soft photographic-quality blur comparable
+     * to CSS filter:blur() or Photoshop Gaussian blur.
+     * <p>
+     * Complexity: O(W*H) — identical to a single SAT box blur pass, radius-independent.
+     */
     public static Optional<BufferedImage> blurryImage(BufferedImage image, int radius, DoubleConsumer progressConsumer) {
         if (image == null) {
             return Optional.empty();
         }
 
         if (radius <= 0) {
-            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), image.getType() == BufferedImage.TYPE_CUSTOM
-                    ? BufferedImage.TYPE_INT_ARGB : image.getType());
+            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(),
+                    image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
             Graphics2D g2d = copy.createGraphics();
             g2d.drawImage(image, 0, 0, null);
             g2d.dispose();
             return Optional.of(copy);
         }
 
-        int width = image.getWidth();
+        int width  = image.getWidth();
         int height = image.getHeight();
 
-        BufferedImage dest = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // Normalize to TYPE_INT_ARGB so DataBufferInt is always available
+        BufferedImage src = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        {
+            Graphics2D g = src.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            g.dispose();
+        }
+        int[] pixels = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
 
-        for (int y = 0; y < height; y++) {
-            if (Thread.interrupted()) {
-                return Optional.empty();
-            }
-            if (progressConsumer != null) {
-                progressConsumer.accept((double) y / height);
-            }
-            for (int x = 0; x < width; x++) {
+        // Three box-blur passes (SAT-based, O(W*H) each) → Gaussian approximation
+        int stride = width + 1;
+        for (int pass = 0; pass < 3; pass++) {
+            if (Thread.interrupted()) return Optional.empty();
+            if (progressConsumer != null) progressConsumer.accept((double) pass / 3.0);
 
-                long sumR = 0, sumG = 0, sumB = 0, sumA = 0;
-                int count = 0;
+            // Build SAT for this pass
+            long[] satA = new long[stride * (height + 1)];
+            long[] satR = new long[stride * (height + 1)];
+            long[] satG = new long[stride * (height + 1)];
+            long[] satB = new long[stride * (height + 1)];
 
-                for (int ky = -radius; ky <= radius; ky++) {
-                    for (int kx = -radius; kx <= radius; kx++) {
-                        int pixelX = Math.clamp(x + kx, 0, width - 1);
-                        int pixelY = Math.clamp(y + ky, 0, height - 1);
-                        
-                        int rgb = image.getRGB(pixelX, pixelY);
-
-                        sumA += (rgb >> 24) & 0xFF;
-                        sumR += (rgb >> 16) & 0xFF;
-                        sumG += (rgb >> 8) & 0xFF;
-                        sumB += rgb & 0xFF;
-                        count++;
-                    }
+            for (int y = 0; y < height; y++) {
+                long rowA = 0, rowR = 0, rowG = 0, rowB = 0;
+                for (int x = 0; x < width; x++) {
+                    int argb = pixels[y * width + x];
+                    rowA += (argb >> 24) & 0xFF;
+                    rowR += (argb >> 16) & 0xFF;
+                    rowG += (argb >>  8) & 0xFF;
+                    rowB +=  argb        & 0xFF;
+                    int idx = (y + 1) * stride + (x + 1);
+                    int above = y * stride + (x + 1);
+                    satA[idx] = rowA + satA[above];
+                    satR[idx] = rowR + satR[above];
+                    satG[idx] = rowG + satG[above];
+                    satB[idx] = rowB + satB[above];
                 }
-
-                int avgA = (int) (sumA / count);
-                int avgR = (int) (sumR / count);
-                int avgG = (int) (sumG / count);
-                int avgB = (int) (sumB / count);
-
-                int blurredRGB = (avgA << 24) | (avgR << 16) | (avgG << 8) | avgB;
-                dest.setRGB(x, y, blurredRGB);
             }
+
+            // Write blurred pixels back into the same array
+            int[] tmp = Arrays.copyOf(pixels, pixels.length);
+            for (int y = 0; y < height; y++) {
+                int y1 = Math.max(0, y - radius);
+                int y2 = Math.min(height, y + radius + 1);
+                for (int x = 0; x < width; x++) {
+                    int x1 = Math.max(0, x - radius);
+                    int x2 = Math.min(width, x + radius + 1);
+                    long area = (long)(x2 - x1) * (y2 - y1);
+                    long sumA = satA[y2 * stride + x2] - satA[y1 * stride + x2] - satA[y2 * stride + x1] + satA[y1 * stride + x1];
+                    long sumR = satR[y2 * stride + x2] - satR[y1 * stride + x2] - satR[y2 * stride + x1] + satR[y1 * stride + x1];
+                    long sumG = satG[y2 * stride + x2] - satG[y1 * stride + x2] - satG[y2 * stride + x1] + satG[y1 * stride + x1];
+                    long sumB = satB[y2 * stride + x2] - satB[y1 * stride + x2] - satB[y2 * stride + x1] + satB[y1 * stride + x1];
+                    tmp[y * width + x] = ((int)(sumA / area) << 24) | ((int)(sumR / area) << 16) | ((int)(sumG / area) << 8) | (int)(sumB / area);
+                }
+            }
+            System.arraycopy(tmp, 0, pixels, 0, pixels.length);
         }
 
-        if (progressConsumer != null) {
-            progressConsumer.accept(1.0);
-        }
+        if (progressConsumer != null) progressConsumer.accept(1.0);
 
-        return Optional.of(dest);
+        return Optional.of(src);
     }
 }

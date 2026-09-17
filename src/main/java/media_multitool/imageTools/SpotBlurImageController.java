@@ -40,6 +40,7 @@ import viewHelp.ZoomControlHelper;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.util.*;
 import java.util.List;
@@ -427,40 +428,40 @@ public class SpotBlurImageController extends AbstractMediaController {
               protected BufferedImage call() {
                   updateProgress(0, 1.0);
                   updateMessage("Applying blur effect...");
-                  
+
                   int blurIntensity = (int) sliderBlurIntensity.getValue();
-                  BufferedImage result = new BufferedImage(
-                          originalBufferedImage.getWidth(),
-                          originalBufferedImage.getHeight(),
-                          BufferedImage.TYPE_INT_ARGB
-                  );
-
-                  Graphics2D g2d = result.createGraphics();
-                  g2d.drawImage(originalBufferedImage, 0, 0, null);
-                  g2d.dispose();
-
-                  int width = originalBufferedImage.getWidth();
+                  int width  = originalBufferedImage.getWidth();
                   int height = originalBufferedImage.getHeight();
-                  long totalPixels = (long) width * height;
-                  long processedPixels = 0;
+
+                  // Normalize source to TYPE_INT_ARGB for direct DataBufferInt access
+                  BufferedImage src = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                  {
+                      Graphics2D g = src.createGraphics();
+                      g.drawImage(originalBufferedImage, 0, 0, null);
+                      g.dispose();
+                  }
+                  int[] srcPixels = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
+
+                  updateProgress(0.05, 1.0);
+
+                  int[] blurredPixels = Arrays.copyOf(srcPixels, srcPixels.length);
+                  BlurShapeHelper.applyGaussianBlur(blurredPixels, width, height, blurIntensity);
+
+                  if (isCancelled()) return null;
+                  updateProgress(0.85, 1.0);
+
+                  BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                  int[] dstPixels = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+                  System.arraycopy(srcPixels, 0, dstPixels, 0, srcPixels.length);
 
                   for (int y = 0; y < height; y++) {
-                      if (isCancelled()) {
-                          return null;
-                      }
+                      if (isCancelled()) return null;
                       for (int x = 0; x < width; x++) {
                           for (BlurShapeVisual shape : blurShapes) {
                               if (BlurShapeHelper.isPointInShapeImage(x, y, shape, imageViewPreview)) {
-                                  int blurredRGB = BlurShapeHelper.getBlurredPixel(originalBufferedImage, x, y, blurIntensity);
-                                  result.setRGB(x, y, blurredRGB);
+                                  dstPixels[y * width + x] = blurredPixels[y * width + x];
                                   break;
                               }
-                          }
-                          processedPixels++;
-
-                          if (processedPixels % 1000 == 0 || x == width - 1) {
-                              double progress = (double) processedPixels / totalPixels;
-                              updateProgress(progress, 1.0);
                           }
                       }
                   }
@@ -622,19 +623,29 @@ public class SpotBlurImageController extends AbstractMediaController {
      }
 
      private BufferedImage applyBlurShapes(BufferedImage sourceImage) {
-           BufferedImage result = new BufferedImage(
-                   sourceImage.getWidth(),
-                   sourceImage.getHeight(),
-                   BufferedImage.TYPE_INT_ARGB
-           );
+           int width  = sourceImage.getWidth();
+           int height = sourceImage.getHeight();
 
-           Graphics2D g2d = result.createGraphics();
-           g2d.drawImage(sourceImage, 0, 0, null);
-           g2d.dispose();
+           // Normalize to TYPE_INT_ARGB for direct DataBufferInt access
+           BufferedImage src = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+           {
+               Graphics2D g = src.createGraphics();
+               g.drawImage(sourceImage, 0, 0, null);
+               g.dispose();
+           }
+           int[] srcPixels = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
 
            int blurIntensity = (int) sliderBlurIntensity.getValue();
-           int width = sourceImage.getWidth();
-           int height = sourceImage.getHeight();
+
+           // Apply Gaussian blur (3-pass box blur) to the full image
+           int[] blurredPixels = Arrays.copyOf(srcPixels, srcPixels.length);
+           BlurShapeHelper.applyGaussianBlur(blurredPixels, width, height, blurIntensity);
+
+           if (Thread.interrupted()) return null;
+
+           BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+           int[] dstPixels = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+           System.arraycopy(srcPixels, 0, dstPixels, 0, srcPixels.length);
 
            for (int y = 0; y < height; y++) {
                if (Thread.interrupted()) {
@@ -643,8 +654,7 @@ public class SpotBlurImageController extends AbstractMediaController {
                for (int x = 0; x < width; x++) {
                    for (BlurShapeVisual shape : blurShapes) {
                        if (BlurShapeHelper.isPointInShapeImage(x, y, shape, imageViewPreview)) {
-                           int blurredRGB = BlurShapeHelper.getBlurredPixel(sourceImage, x, y, blurIntensity);
-                           result.setRGB(x, y, blurredRGB);
+                           dstPixels[y * width + x] = blurredPixels[y * width + x];
                            break;
                        }
                    }
@@ -790,5 +800,4 @@ public class SpotBlurImageController extends AbstractMediaController {
     }
 
 }
-
 

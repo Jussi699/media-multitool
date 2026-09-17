@@ -8,8 +8,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.paint.Color;
-
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -246,33 +244,92 @@ public class BlurShapeHelper {
         }
     }
 
-    public static int getBlurredPixel(BufferedImage image, int x, int y, int radius) {
-        long sumR = 0, sumG = 0, sumB = 0, sumA = 0;
-        int count = 0;
+    /**
+     * Builds four Summed Area Tables (one per channel A/R/G/B) from the given int[] pixel array.
+     * Each SAT is a (width+1) x (height+1) long array with a 1-pixel border of zeros.
+     * O(W*H) time and space.
+     *
+     * @param pixels flat ARGB pixel array (row-major, from DataBufferInt)
+     * @param width  image width
+     * @param height image height
+     * @return long[4][] — indices 0=A, 1=R, 2=G, 3=B
+     */
+    public static long[][] buildSAT(int[] pixels, int width, int height) {
+        int stride = width + 1;
+        long[] satA = new long[stride * (height + 1)];
+        long[] satR = new long[stride * (height + 1)];
+        long[] satG = new long[stride * (height + 1)];
+        long[] satB = new long[stride * (height + 1)];
 
-        int width = image.getWidth();
-        int height = image.getHeight();
+        for (int y = 0; y < height; y++) {
+            long rowA = 0, rowR = 0, rowG = 0, rowB = 0;
+            for (int x = 0; x < width; x++) {
+                int argb = pixels[y * width + x];
+                rowA += (argb >> 24) & 0xFF;
+                rowR += (argb >> 16) & 0xFF;
+                rowG += (argb >>  8) & 0xFF;
+                rowB +=  argb        & 0xFF;
 
-        for (int ky = -radius; ky <= radius; ky++) {
-            for (int kx = -radius; kx <= radius; kx++) {
-                int pixelX = Math.clamp(x + kx, 0, width - 1);
-                int pixelY = Math.clamp(y + ky, 0, height - 1);
+                int idx = (y + 1) * stride + (x + 1);
+                int idxAbove = y * stride + (x + 1);
 
-                int rgb = image.getRGB(pixelX, pixelY);
-
-                sumA += (rgb >> 24) & 0xFF;
-                sumR += (rgb >> 16) & 0xFF;
-                sumG += (rgb >> 8) & 0xFF;
-                sumB += rgb & 0xFF;
-                count++;
+                satA[idx] = rowA + satA[idxAbove];
+                satR[idx] = rowR + satR[idxAbove];
+                satG[idx] = rowG + satG[idxAbove];
+                satB[idx] = rowB + satB[idxAbove];
             }
         }
 
-        int avgA = (int) (sumA / count);
-        int avgR = (int) (sumR / count);
-        int avgG = (int) (sumG / count);
-        int avgB = (int) (sumB / count);
+        return new long[][]{satA, satR, satG, satB};
+    }
 
-        return (avgA << 24) | (avgR << 16) | (avgG << 8) | avgB;
+    /**
+     * Queries the SAT for a rectangle sum in O(1) using the inclusion-exclusion formula.
+     * x1, y1 are inclusive; x2, y2 are exclusive.
+     */
+    private static long queryRect(long[] sat, int stride, int x1, int y1, int x2, int y2) {
+        return sat[y2 * stride + x2]
+             - sat[y1 * stride + x2]
+             - sat[y2 * stride + x1]
+             + sat[y1 * stride + x1];
+    }
+
+    /**
+     * Applies a Gaussian-approximated blur to the given pixel array in-place using three consecutive
+     * box-blur passes via SAT. By the Central Limit Theorem, three box blurs converge to a
+     * Gaussian with sigma ≈ radius * sqrt(1/3), producing the same soft, photographic quality
+     * as CSS filter:blur() or Photoshop Gaussian blur.
+     * <p>
+     * All three passes are O(W*H) each (SAT build and pixel write), so the total cost is still O(W*H)
+     * regardless of radius — identical speed to a single box blur pass.
+     *
+     * @param pixels flat ARGB int[] from DataBufferInt (modified in-place)
+     * @param width  image width
+     * @param height image height
+     * @param radius blur radius per box-blur pass; effective Gaussian sigma ≈ radius * 0.577
+     */
+    public static void applyGaussianBlur(int[] pixels, int width, int height, int radius) {
+        if (radius <= 0) return;
+        // Three box-blur passes via SAT, each O(W*H)
+        for (int pass = 0; pass < 3; pass++) {
+            long[][] sat = buildSAT(pixels, width, height);
+            int stride = width + 1;
+            for (int y = 0; y < height; y++) {
+                int y1 = Math.max(0, y - radius);
+                int y2 = Math.min(height, y + radius + 1);
+                for (int x = 0; x < width; x++) {
+                    int x1 = Math.max(0, x - radius);
+                    int x2 = Math.min(width, x + radius + 1);
+                    long area = (long)(x2 - x1) * (y2 - y1);
+                    if (area == 0) continue;
+
+                    int avgA = (int)(queryRect(sat[0], stride, x1, y1, x2, y2) / area);
+                    int avgR = (int)(queryRect(sat[1], stride, x1, y1, x2, y2) / area);
+                    int avgG = (int)(queryRect(sat[2], stride, x1, y1, x2, y2) / area);
+                    int avgB = (int)(queryRect(sat[3], stride, x1, y1, x2, y2) / area);
+                    pixels[y * width + x] = (avgA << 24) | (avgR << 16) | (avgG << 8) | avgB;
+                }
+            }
+        }
     }
 }
