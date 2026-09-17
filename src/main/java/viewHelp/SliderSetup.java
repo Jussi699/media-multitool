@@ -14,6 +14,6 @@ public class SliderSetup {
 
     public static void setupListenerInSliderForUpdateNewValueInLabelInTheFromNumbers(Slider slider, Label label ) {
         slider.valueProperty().addListener((_, _, newValue) ->
-                label.setText(String.valueOf(newValue.intValue())));
+                label.setText(newValue.intValue() + "%"));
     }
 }

@@ -87,6 +87,10 @@ public class SpotBlurImageController extends AbstractMediaController {
         listControls = List.of(sliderBlurIntensity, btnSubmit, btnAddRect, btnAddOval, btnUndo, btnReset, imageScaleSlider);
         imageProperties.setOutput(getSavedPath());
 
+        sliderBlurIntensity.setMin(0);
+        sliderBlurIntensity.setValue(5);
+        sliderBlurIntensity.setMax(100);
+
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
@@ -715,7 +719,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
         if (sliderBlurIntensity != null) {
             sliderBlurIntensity.setValue(5);
-            labelBlurIntensity.setText("5");
+            labelBlurIntensity.setText("5%");
         }
 
         selectedShapeType = ShapeType.RECTANGLE;
