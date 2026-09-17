@@ -261,13 +261,13 @@ public class ConverterImageController extends AbstractMediaController {
         }
 
         if(imageProperties.getOutput() == null) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Output missing!",
                     "Select output directory!.");
             return false;
         }
 
         if (imageProperties.getTypeImage() == null) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Format missing!",
                     "Select photo format!");
             return false;
         }
