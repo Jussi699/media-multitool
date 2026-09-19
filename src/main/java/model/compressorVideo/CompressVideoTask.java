@@ -24,7 +24,7 @@ public class CompressVideoTask extends Task<Boolean> {
         File finalFileOutput = PathWorker.createOutputFile(srcFile, outputDir, format);
 
         compressor.compress(srcFile, finalFileOutput,
-                selectedPreset.video(), selectedPreset.audio(), p -> updateProgress(p, 1.0));
+                selectedPreset.video(), selectedPreset.audio(), selectedPreset.crf(), p -> updateProgress(p, 1.0));
 
         return finalFileOutput.exists() && finalFileOutput.length() > 0;
     }

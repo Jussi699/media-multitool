@@ -27,7 +27,8 @@ public class Compressor {
     @Setter private boolean compressAudio = true;
 
     public void compress(File videoFile, File output,
-                                VideoAttributes video, AudioAttributes audio, Consumer<Double> progressConsumer) throws EncoderException {
+                                VideoAttributes video, AudioAttributes audio,
+                                int crf, Consumer<Double> progressConsumer) throws EncoderException {
         currentTarget = output;
 
         try {
@@ -37,7 +38,16 @@ public class Compressor {
             getCodec(videoFile);
 
             video.setCodec(videoCodec);
-            
+
+            if ("libx264".equals(videoCodec) && crf >= 0) {
+                video.setBitRate(null);
+                video.setCrf(crf);
+                video.setPreset("medium");
+                ErrorLogger.info("Using CRF mode: crf=" + crf + ", preset=medium, codec=" + videoCodec);
+            } else {
+                ErrorLogger.info("Using ABR mode: bitRate=" + video.getBitRate().orElse(-1) + " bps, codec=" + videoCodec);
+            }
+
             EncodingAttributes attrs = new EncodingAttributes();
             attrs.setOutputFormat(ffmpegFormat);
             attrs.setVideoAttributes(video);
@@ -47,7 +57,6 @@ public class Compressor {
                     audio.setCodec(audioCodec);
                     attrs.setAudioAttributes(audio);
                 } else {
-                    // Use "copy" codec to preserve original audio without re-encoding
                     AudioAttributes copyAudio = new AudioAttributes();
                     copyAudio.setCodec("copy");
                     attrs.setAudioAttributes(copyAudio);

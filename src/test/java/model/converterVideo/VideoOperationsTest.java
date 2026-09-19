@@ -62,7 +62,7 @@ public class VideoOperationsTest {
         VideoPresets.Preset[] presets = VideoPresets.createAdaptivePresets(source).orElseThrow();
         VideoPresets.Preset selectedPreset = presets[0]; // Use Basic preset
         
-        compressor.compress(source, output, selectedPreset.video(), selectedPreset.audio(), _ -> {});
+        compressor.compress(source, output, selectedPreset.video(), selectedPreset.audio(), selectedPreset.crf(), _ -> {});
 
         assertTrue(output.exists());
         assertTrue(output.length() > 0);

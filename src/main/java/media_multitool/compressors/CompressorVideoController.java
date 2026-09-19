@@ -120,6 +120,19 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML
     private void onGPUSelected() {
         videoProperties.setUseGPU(chkUseGPU.isSelected());
+
+        // WebM (libvpx) does not support GPU acceleration — NVENC cannot encode VP8/VP9.
+        // Notify the user so the checkbox is not misleading.
+        if (chkUseGPU.isSelected() && videoProperties.getSrcFile() != null) {
+            String fmt = model.utility.DetermineType.determineFormat(videoProperties.getSrcFile()).orElse("");
+            if ("webm".equals(fmt)) {
+                Alerts.alertDialog(Alert.AlertType.INFORMATION,
+                        "GPU not supported for WebM",
+                        "GPU acceleration ignored",
+                        "The WebM format uses libvpx which does not support NVENC GPU acceleration. " +
+                        "Encoding will proceed using the CPU (libvpx).");
+            }
+        }
     }
 
     @FXML
@@ -346,6 +359,15 @@ public class CompressorVideoController extends AbstractMediaController {
                 videoProperties.getSrcFile().getName(),
                 res,
                 f, vbr, abr);
+
+        // Warn the user if video bitrate could not be read from the file.
+        // In this case presets fall back to a 5000 kbps baseline, which may produce
+        // a larger output than the original for low-bitrate sources.
+        if (vbr <= 0) {
+            infoText += " [!] Video bitrate unknown — fallback 5000 kbps used for presets.";
+            ErrorLogger.warn("Could not read video bitrate for: " + videoProperties.getSrcFile().getName()
+                    + ". Presets will use 5000 kbps fallback — output may be larger than source.");
+        }
 
         labelSelectFile.setText(infoText);
         updateEstimatedSize();
