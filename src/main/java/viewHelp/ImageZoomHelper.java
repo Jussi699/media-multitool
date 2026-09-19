@@ -1,37 +1,32 @@
 package viewHelp;
 
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class ImageZoomHelper {
-    private static final double ZOOM_FACTOR = 8.0;
-    private static final double MAGNIFIER_RADIUS = 70.0;
+    private static final double ZOOM_FACTOR = 16.0;
+    private static final double MAGNIFIER_RADIUS = 86.0;
 
     public static void applyZoomEffect(ImageView imageView, StackPane container) {
         if (imageView == null || container == null) return;
 
         imageView.setCursor(Cursor.CROSSHAIR);
 
-        ImageView magnifier = new ImageView();
-        magnifier.setFitWidth(MAGNIFIER_RADIUS * 2);
-        magnifier.setFitHeight(MAGNIFIER_RADIUS * 2);
-        magnifier.setPreserveRatio(true);
-        magnifier.setSmooth(false);
-        magnifier.setCache(false);
-        magnifier.setMouseTransparent(true);
-
-        Circle clip = new Circle(MAGNIFIER_RADIUS, MAGNIFIER_RADIUS, MAGNIFIER_RADIUS);
-        magnifier.setClip(clip);
+        Canvas magnifierCanvas = new Canvas(MAGNIFIER_RADIUS * 2, MAGNIFIER_RADIUS * 2);
+        magnifierCanvas.setMouseTransparent(true);
 
         Circle border = new Circle(MAGNIFIER_RADIUS, MAGNIFIER_RADIUS, MAGNIFIER_RADIUS);
         border.setFill(null);
-        border.setStroke(Color.color(1, 0, 0, 0.8));
+        border.setStroke(Color.color(0, 0.8, 0, 0.8));
         border.setStrokeWidth(2);
         border.setMouseTransparent(true);
 
@@ -39,7 +34,7 @@ public class ImageZoomHelper {
         centerDot.setFill(Color.color(0, 0, 0, 0.5));
         centerDot.setMouseTransparent(true);
 
-        StackPane magnifierWrapper = new StackPane(magnifier, border, centerDot);
+        StackPane magnifierWrapper = new StackPane(magnifierCanvas, border, centerDot);
         magnifierWrapper.setPickOnBounds(false);
         magnifierWrapper.setMouseTransparent(true);
         magnifierWrapper.setVisible(false);
@@ -49,9 +44,8 @@ public class ImageZoomHelper {
 
         imageView.setOnMouseEntered(event -> {
             if (imageView.getImage() != null) {
-                magnifier.setImage(imageView.getImage());
                 magnifierWrapper.setVisible(true);
-                updateMagnifier(event, imageView, magnifier, magnifierWrapper, container);
+                updateMagnifier(event, imageView, magnifierCanvas, magnifierWrapper, container);
             }
         });
 
@@ -60,23 +54,25 @@ public class ImageZoomHelper {
         imageView.setOnMouseMoved(event -> {
             if (imageView.getImage() != null) {
                 if (!magnifierWrapper.isVisible()) {
-                    magnifier.setImage(imageView.getImage());
                     magnifierWrapper.setVisible(true);
                 }
-                updateMagnifier(event, imageView, magnifier, magnifierWrapper, container);
+                updateMagnifier(event, imageView, magnifierCanvas, magnifierWrapper, container);
             } else {
                 magnifierWrapper.setVisible(false);
             }
         });
     }
 
-    private static void updateMagnifier(MouseEvent event, ImageView imageView, ImageView magnifier, StackPane magnifierWrapper, StackPane container) {
+    private static void updateMagnifier(MouseEvent event, ImageView imageView, Canvas magnifierCanvas, StackPane magnifierWrapper, StackPane container) {
         double x = event.getX();
         double y = event.getY();
 
-        double imageWidth = imageView.getImage().getWidth();
-        double imageHeight = imageView.getImage().getHeight();
-        
+        Image originalImage = imageView.getImage();
+        if (originalImage == null) return;
+
+        double imageWidth = originalImage.getWidth();
+        double imageHeight = originalImage.getHeight();
+
         double displayedWidth = imageView.getBoundsInLocal().getWidth();
         double displayedHeight = imageView.getBoundsInLocal().getHeight();
 
@@ -99,23 +95,50 @@ public class ImageZoomHelper {
             magnifierWrapper.setVisible(true);
         }
 
-        double sourceX = Math.floor(relativeX * imageWidth);
-        double sourceY = Math.floor(relativeY * imageHeight);
+        double sourceX = Math.round(relativeX * imageWidth);
+        double sourceY = Math.round(relativeY * imageHeight);
 
-        double viewWidth = (MAGNIFIER_RADIUS * 2) / ZOOM_FACTOR;
-        double viewHeight = (MAGNIFIER_RADIUS * 2) / ZOOM_FACTOR;
+        double viewWidth = Math.round((MAGNIFIER_RADIUS * 2) / ZOOM_FACTOR);
+        double viewHeight = Math.round((MAGNIFIER_RADIUS * 2) / ZOOM_FACTOR);
 
-        magnifier.setViewport(new Rectangle2D(
-                sourceX - Math.floor(viewWidth / 2),
-                sourceY - Math.floor(viewHeight / 2),
-                viewWidth,
-                viewHeight
-        ));
+        int startX = (int) Math.round(sourceX - viewWidth / 2);
+        int startY = (int) Math.round(sourceY - viewHeight / 2);
+        int w = (int) viewWidth;
+        int h = (int) viewHeight;
+
+        int imgW = (int) imageWidth;
+        int imgH = (int) imageHeight;
+
+        PixelReader reader = originalImage.getPixelReader();
+        if (reader != null) {
+            GraphicsContext gc = magnifierCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, MAGNIFIER_RADIUS * 2, MAGNIFIER_RADIUS * 2);
+
+            gc.save();
+            gc.beginPath();
+            gc.arc(MAGNIFIER_RADIUS, MAGNIFIER_RADIUS, MAGNIFIER_RADIUS, MAGNIFIER_RADIUS, 0, 360);
+            gc.closePath();
+            gc.clip();
+
+            for (int dy = 0; dy < h; dy++) {
+                int srcY = startY + dy;
+                for (int dx = 0; dx < w; dx++) {
+                    int srcX = startX + dx;
+                    Color color = Color.TRANSPARENT;
+                    if (srcX >= 0 && srcX < imgW && srcY >= 0 && srcY < imgH) {
+                        color = reader.getColor(srcX, srcY);
+                    }
+                    gc.setFill(color);
+                    gc.fillRect(dx * ZOOM_FACTOR, dy * ZOOM_FACTOR, ZOOM_FACTOR, ZOOM_FACTOR);
+                }
+            }
+            gc.restore();
+        }
 
         Point2D scenePt = imageView.localToScene(x, y);
         Point2D containerPt = container.sceneToLocal(scenePt);
 
-        magnifierWrapper.setLayoutX(containerPt.getX() - MAGNIFIER_RADIUS);
-        magnifierWrapper.setLayoutY(containerPt.getY() - MAGNIFIER_RADIUS);
+        magnifierWrapper.setLayoutX(Math.round(containerPt.getX() - MAGNIFIER_RADIUS));
+        magnifierWrapper.setLayoutY(Math.round(containerPt.getY() - MAGNIFIER_RADIUS));
     }
 }
