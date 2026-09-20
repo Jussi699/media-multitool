@@ -61,8 +61,9 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,         RenderingHints.VALUE_RENDER_SPEED);
 
-            int base_font_size = 24;
-            int fontSize = (int) (base_font_size * settings.getFontSize());
+            double scale = (image != null) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
+            int base_font_size = Math.max(10, (int) Math.round(24 * scale));
+            int fontSize = Math.max(8, (int) Math.round(base_font_size * settings.getFontSize()));
             Font font = new Font(settings.getFontName(), Font.BOLD, fontSize);
             g2d.setFont(font);
             
@@ -85,8 +86,8 @@ public class WatermarkRenderer {
             
             switch (settings.getTilePattern()) {
                 case "single"  -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
-                case "grid"    -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, false);
-                case "diamond" -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, true);
+                case "grid"    -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, false, scale);
+                case "diamond" -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, true, scale);
                 default -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
             }
         } finally {
@@ -135,12 +136,11 @@ public class WatermarkRenderer {
     
     /**
      * Unified grid/diamond tiled text rendering. 
-     * Reuses a single AffineTransform instance to avoid thousands of allocations on large images.
      */
     private static void renderTextTiled(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
                                         int textWidth, int textHeight, Color color, double rotation,
-                                        TextEffect effect, boolean diamond) {
-        int spacing = (int) (settings.getSpacing() * 50);
+                                        TextEffect effect, boolean diamond, double scale) {
+        int spacing = (int) (settings.getSpacing() * 50 * scale);
         int stepX = textWidth + spacing;
         int stepY = textHeight + spacing;
         
@@ -226,14 +226,15 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,     RenderingHints.VALUE_RENDER_SPEED);
             
-            int size = (int) settings.getSize();
+            double scale = (image != null) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
+            int size = (int) Math.round(settings.getSize() * scale);
             float opacity = (float) Math.min(1.0, settings.getOpacity() / 100.0);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
             
             double rotation = Math.toRadians(settings.getRotation());
             
             if (settings.isTileMode()) {
-                renderImageTiled(g2d, image, settings, size, rotation);
+                renderImageTiled(g2d, image, settings, size, rotation, scale);
             } else {
                 renderImageSingle(g2d, image, settings, size, rotation);
             }
@@ -243,12 +244,11 @@ public class WatermarkRenderer {
     }
     
     /**
-     * Unified tiled image rendering (grid + diamond).
-     * Reuses AffineTransform instance to avoid excessive allocation.
+     * Unified tiled image rendering (grid and diamond).
      */
     private static void renderImageTiled(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
-                                         int size, double rotation) {
-        int step = size + (int) settings.getSpacing();
+                                         int size, double rotation, double scale) {
+        int step = size + (int) (settings.getSpacing() * scale);
         boolean diamond = "diamond".equals(settings.getTilePattern());
         BufferedImage wmImage = settings.getWatermarkImage();
         AffineTransform transform = new AffineTransform();
@@ -314,15 +314,6 @@ public class WatermarkRenderer {
 
     /**
      * Scale watermark settings from a preview-resolution image to an export-resolution image.
-     *
-     * <p>When a PDF page is rendered at low DPI for preview and then again at high DPI for export,
-     * the absolute pixel positions / sizes stored in the settings need to be scaled accordingly.
-     *
-     * @param previewSettings  Settings based on the preview image coordinates.
-     * @param previewImage     The image that was used when configuring the watermark position.
-     * @param exportPageImage  The high-resolution image that will be watermarked and saved.
-     * @return A scaled copy of {@code previewSettings}, or the original object if {@code previewImage}
-     *         is {@code null}.
      */
     public static WatermarkSettings scaleSettingsForExport(
             WatermarkSettings previewSettings,
@@ -337,19 +328,10 @@ public class WatermarkRenderer {
 
         double scaleX = (double) exportPageImage.getWidth()  / previewImage.getWidth();
         double scaleY = (double) exportPageImage.getHeight() / previewImage.getHeight();
-        double scale  = Math.min(scaleX, scaleY);
 
         if (scaled.isUseCustomPosition()) {
             scaled.setPositionX(scaled.getPositionX() * scaleX);
             scaled.setPositionY(scaled.getPositionY() * scaleY);
-        }
-
-        if (scaled.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            scaled.setSize(scaled.getSize() * scale);
-            scaled.setSpacing(scaled.getSpacing() * scale);
-        } else if (scaled.getType() == WatermarkSettings.WatermarkType.TEXT) {
-            scaled.setFontSize(scaled.getFontSize() * scale);
-            scaled.setSpacing(scaled.getSpacing() * scale);
         }
 
         return scaled;

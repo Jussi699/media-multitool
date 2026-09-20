@@ -1,5 +1,6 @@
 package media_multitool.watermarks.viewController;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
@@ -9,7 +10,9 @@ import media_multitool.watermarks.WatermarkImageController;
 import media_multitool.watermarks.WatermarkPdfController;
 import media_multitool.watermarks.WatermarkVideoController;
 import model.helper.watermarks.WatermarkSettings;
+import viewHelp.WorkColors;
 
+import javax.swing.*;
 import java.awt.GraphicsEnvironment;
 import java.util.function.DoubleConsumer;
 
@@ -17,10 +20,10 @@ public class WatermarkTextController {
     @FXML private Label labelTitle;
     @FXML private TextField fieldText;
     @FXML private ComboBox<String> comboBoxFont, comboBoxEffect;
-    @FXML private ColorPicker colorPickerForText;
     @FXML private Slider sliderSizeText, sliderSpacing, sliderOpacity, sliderRotation;
     @FXML private Label labelSizeX, labelSpacingX, labelOpacityPercent, labelRotationDegree;
     @FXML private ToggleButton tileSingle, tileEvenGrid, tileDiamondMesh;
+    @FXML private Button btnColorPicker;
 
     @Getter private WatermarkSettings settings;
     @Setter private WatermarkImageController mainImageController;
@@ -30,10 +33,18 @@ public class WatermarkTextController {
     private static final String DEFAULT_FONT = "Arial";
     private static final String DEFAULT_PATTERN = "single";
 
+    private Color selectedColorFX = Color.WHITE;
+    private JDialog swingDialog;
+    private com.bric.colorpicker.ColorPicker swingColorPicker;
+
     @FXML
     public void initialize() {
         settings = new WatermarkSettings();
         settings.setType(WatermarkSettings.WatermarkType.TEXT);
+
+        sliderSizeText.setMin(0.5);
+        sliderSizeText.setValue(2.5);
+        sliderSizeText.setMax(10);
 
         setupFontComboBox();
         setupEffectComboBox();
@@ -56,9 +67,6 @@ public class WatermarkTextController {
         }
 
         this.settings = settings.copy();
-        this.settings.setUseCustomPosition(true);
-        this.settings.setPositionX(settings.getPositionX());
-        this.settings.setPositionY(settings.getPositionY());
 
         fieldText.setText(settings.getText());
         comboBoxFont.setValue(settings.getFontName());
@@ -67,17 +75,17 @@ public class WatermarkTextController {
         sliderOpacity.setValue(settings.getOpacity());
         sliderRotation.setValue(settings.getRotation());
 
-        updateColorPicker(settings.getTextColor());
+        java.awt.Color awtColor = settings.getTextColor();
+        if (awtColor != null) {
+            this.selectedColorFX = WorkColors.toFxColor(awtColor);
+            WorkColors.updateColorView(awtColor, btnColorPicker);
+            if (swingColorPicker != null) {
+                swingColorPicker.setColor(awtColor);
+            }
+        }
+
         updateEffectCombo(settings.getEffect());
         updateTilePattern(settings.getTilePattern());
-    }
-
-    private void updateColorPicker(java.awt.Color awtColor) {
-        colorPickerForText.setValue(Color.rgb(
-            awtColor.getRed(),
-            awtColor.getGreen(),
-            awtColor.getBlue()
-        ));
     }
 
     private void updateEffectCombo(String effect) {
@@ -116,10 +124,10 @@ public class WatermarkTextController {
     }
 
     private void setupSliders() {
-        bindSlider(sliderSizeText, labelSizeX, "%.1fx", settings::setFontSize);
-        bindSlider(sliderSpacing, labelSpacingX, "%.1fx", settings::setSpacing);
-        bindSlider(sliderOpacity, labelOpacityPercent, "%.0f%%", settings::setOpacity);
-        bindSlider(sliderRotation, labelRotationDegree, "%.0f°", settings::setRotation);
+        bindSlider(sliderSizeText, labelSizeX, "%.1fx", val -> settings.setFontSize(val));
+        bindSlider(sliderSpacing, labelSpacingX, "%.1fx", val -> settings.setSpacing(val));
+        bindSlider(sliderOpacity, labelOpacityPercent, "%.0f%%", val -> settings.setOpacity(val));
+        bindSlider(sliderRotation, labelRotationDegree, "%.0f°", val -> settings.setRotation(val));
     }
 
     private void setupTileButtons() {
@@ -147,12 +155,17 @@ public class WatermarkTextController {
 
     private void setupDefaults() {
         fieldText.setText("Watermark");
-        colorPickerForText.setValue(Color.WHITE);
         sliderSizeText.setValue(2.5);
         sliderSpacing.setValue(0);
         sliderOpacity.setValue(100);
         sliderRotation.setValue(0);
         sliderSpacing.setDisable(true);
+
+        selectedColorFX = Color.WHITE;
+        WorkColors.updateColorView(java.awt.Color.WHITE, btnColorPicker);
+        if (swingColorPicker != null) {
+            swingColorPicker.setColor(java.awt.Color.WHITE);
+        }
 
         settings.setText("Watermark");
         settings.setFontName(DEFAULT_FONT);
@@ -174,18 +187,6 @@ public class WatermarkTextController {
         comboBoxFont.valueProperty().addListener((_, _, newVal) -> {
             if (newVal != null) {
                 settings.updatePreservingPosition(s -> s.setFontName(newVal));
-                updatePreview();
-            }
-        });
-
-        colorPickerForText.valueProperty().addListener((_, _, newVal) -> {
-            if (newVal != null) {
-                java.awt.Color awtColor = new java.awt.Color(
-                    (float) newVal.getRed(),
-                    (float) newVal.getGreen(),
-                    (float) newVal.getBlue()
-                );
-                settings.updatePreservingPosition(s -> s.setTextColor(awtColor));
                 updatePreview();
             }
         });
@@ -224,5 +225,62 @@ public class WatermarkTextController {
         tileSingle.setSelected(true);
         comboBoxFont.setValue(DEFAULT_FONT);
         comboBoxEffect.setValue("None");
+    }
+
+    @FXML
+    private void handleColorChange() {
+        if (swingDialog == null) {
+            initSwingColorPicker();
+            bindSwingDialogToStage();
+        }
+        if (swingColorPicker != null) {
+            swingColorPicker.setColor(WorkColors.toAwtColor(selectedColorFX));
+        }
+        if (!swingDialog.isVisible()) {
+            swingDialog.setVisible(true);
+        } else {
+            swingDialog.toFront();
+        }
+    }
+
+    private void initSwingColorPicker() {
+        swingDialog = new JDialog();
+        swingDialog.setTitle("Select Color");
+        swingDialog.setModal(false);
+        swingDialog.setAlwaysOnTop(true);
+        swingDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        swingColorPicker = new com.bric.colorpicker.ColorPicker(true, true);
+        swingColorPicker.setColor(WorkColors.toAwtColor(selectedColorFX));
+
+        swingColorPicker.addColorListener(colorModel -> {
+            java.awt.Color newColor = colorModel.getColor();
+            Platform.runLater(() -> {
+                updateColorModel(newColor);
+                WorkColors.updateColorView(newColor, btnColorPicker);
+            });
+        });
+
+        swingDialog.add(swingColorPicker);
+        swingDialog.pack();
+    }
+
+    private void bindSwingDialogToStage() {
+        Platform.runLater(() -> {
+            if (btnColorPicker.getScene() != null && btnColorPicker.getScene().getWindow() != null) {
+                btnColorPicker.getScene().getWindow().addEventHandler(
+                        javafx.stage.WindowEvent.WINDOW_HIDING,
+                        _ -> {
+                            if (swingDialog != null) swingDialog.dispose();
+                        }
+                );
+            }
+        });
+    }
+
+    private void updateColorModel(java.awt.Color awtColor) {
+        this.selectedColorFX = WorkColors.toFxColor(awtColor);
+        settings.updatePreservingPosition(s -> s.setTextColor(awtColor));
+        updatePreview();
     }
 }

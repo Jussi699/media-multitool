@@ -56,7 +56,7 @@ public class WatermarkResizeHandler {
         resizeStartMouseX = event.getScreenX();
         resizeStartMouseY = event.getScreenY();
         
-        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings);
+        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings, image);
         resizeStartWidth = dims[0];
         resizeStartHeight = dims[1];
         
@@ -70,7 +70,7 @@ public class WatermarkResizeHandler {
     }
     
     /**
-     * Handle mouse drag on resize handle
+     * Handle mouse drag on a resize handle
      */
     public void handleMouseDragged(MouseEvent event) {
         if (activeHandle == null || image == null) return;
@@ -145,13 +145,14 @@ public class WatermarkResizeHandler {
         }
         
         if (isImage && changeWidth) {
-            settings.setSize(newWidth);
+            double imgScale = WatermarkDimensionsHelper.getScale(image);
+            settings.setSize(newWidth / (imgScale > 0 ? imgScale : 1.0));
         } else if (!isImage && changeHeight) {
             double ratio = newHeight / resizeStartHeight;
             double newFontSize = Math.clamp(settings.getFontSize() * ratio, 0.5, 10.0);
             settings.setFontSize(newFontSize);
             
-            resizeStartHeight = WatermarkDimensionsHelper.calculateHeight(settings);
+            resizeStartHeight = WatermarkDimensionsHelper.calculateHeight(settings, image);
             resizeStartMouseY = event.getScreenY();
         }
         
@@ -184,7 +185,7 @@ public class WatermarkResizeHandler {
     }
     
     private static double clampSize(double value) {
-        int min_size = 10;
-        return Math.max(min_size, value);
+        int minSize = 10;
+        return Math.max(minSize, value);
     }
 }

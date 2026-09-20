@@ -61,9 +61,6 @@ public class WatermarkPhotoController {
         }
 
         this.settings = settings.copy();
-        this.settings.setUseCustomPosition(true);
-        this.settings.setPositionX(settings.getPositionX());
-        this.settings.setPositionY(settings.getPositionY());
         this.relativePositionX = settings.getPositionX();
         this.relativePositionY = settings.getPositionY();
         
