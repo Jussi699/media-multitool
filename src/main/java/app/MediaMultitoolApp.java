@@ -16,9 +16,15 @@ public class MediaMultitoolApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1040, 900);
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/home_page&control_panel.css")));
 
-        try {stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));}
-        catch (NullPointerException e){ErrorLogger.warn("The icon for the application is missing or damaged.");}
+        try {
+            stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));
+        }
+        catch (NullPointerException _){
+            ErrorLogger.warn("The icon for the application is missing or damaged.");
+        }
 
         stage.setResizable(true);
         stage.setMinHeight(600);

@@ -11,7 +11,7 @@ import media_multitool.watermarks.WatermarkVideoController;
 import model.helper.watermarks.WatermarkSettings;
 
 import java.awt.GraphicsEnvironment;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 public class WatermarkTextController {
     @FXML private Label labelTitle;
@@ -26,6 +26,9 @@ public class WatermarkTextController {
     @Setter private WatermarkImageController mainImageController;
     @Setter private WatermarkPdfController mainPdfController;
     @Setter private WatermarkVideoController mainVideoController;
+
+    private static final String DEFAULT_FONT = "Arial";
+    private static final String DEFAULT_PATTERN = "single";
 
     @FXML
     public void initialize() {
@@ -86,16 +89,17 @@ public class WatermarkTextController {
 
     private void updateTilePattern(String pattern) {
         switch (pattern) {
-            case "single"  -> tileSingle.setSelected(true);
+            case DEFAULT_PATTERN  -> tileSingle.setSelected(true);
             case "grid"    -> tileEvenGrid.setSelected(true);
             case "diamond" -> tileDiamondMesh.setSelected(true);
+            default -> tileSingle.setSelected(true);
         }
     }
 
     private void setupFontComboBox() {
         String[] fontFamilies = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         comboBoxFont.getItems().addAll(fontFamilies);
-        comboBoxFont.setValue("Arial");
+        comboBoxFont.setValue(DEFAULT_FONT);
     }
 
     private void setupEffectComboBox() {
@@ -103,7 +107,7 @@ public class WatermarkTextController {
         comboBoxEffect.setValue("None");
     }
 
-    private void bindSlider(Slider slider, Label label, String format, Consumer<Double> setter) {
+    private void bindSlider(Slider slider, Label label, String format, DoubleConsumer setter) {
         slider.valueProperty().addListener((_, _, newVal) -> {
             label.setText(String.format(format, newVal.doubleValue()));
             settings.updatePreservingPosition(_ -> setter.accept(newVal.doubleValue()));
@@ -132,7 +136,7 @@ public class WatermarkTextController {
             labelSpacingX.setDisable(!isTiled);
 
             settings.updatePreservingPosition(s -> {
-                if      (newVal == tileSingle)      s.setTilePattern("single");
+                if      (newVal == tileSingle)      s.setTilePattern(DEFAULT_PATTERN);
                 else if (newVal == tileEvenGrid)    s.setTilePattern("grid");
                 else if (newVal == tileDiamondMesh) s.setTilePattern("diamond");
             });
@@ -151,13 +155,13 @@ public class WatermarkTextController {
         sliderSpacing.setDisable(true);
 
         settings.setText("Watermark");
-        settings.setFontName("Arial");
+        settings.setFontName(DEFAULT_FONT);
         settings.setFontSize(2.5);
         settings.setTextColor(java.awt.Color.WHITE);
         settings.setOpacity(100);
         settings.setRotation(0);
         settings.setSpacing(0);
-        settings.setTilePattern("single");
+        settings.setTilePattern(DEFAULT_PATTERN);
         settings.setEffect("none");
     }
 
@@ -218,7 +222,7 @@ public class WatermarkTextController {
         settings.setType(WatermarkSettings.WatermarkType.TEXT);
         setupDefaults();
         tileSingle.setSelected(true);
-        comboBoxFont.setValue("Arial");
+        comboBoxFont.setValue(DEFAULT_FONT);
         comboBoxEffect.setValue("None");
     }
 }
