@@ -77,7 +77,7 @@ public class WatermarkRenderer {
             
             FontMetrics fm = g2d.getFontMetrics();
             int textWidth = fm.stringWidth(settings.getText());
-            int textHeight = fm.getHeight();
+            int textHeight = fm.getAscent() + fm.getDescent();
             
             double rotation = Math.toRadians(settings.getRotation());
             
@@ -87,6 +87,7 @@ public class WatermarkRenderer {
                 case "single"  -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
                 case "grid"    -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, false);
                 case "diamond" -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, true);
+                default -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
             }
         } finally {
             g2d.dispose();
@@ -111,16 +112,17 @@ public class WatermarkRenderer {
     private static void renderTextSingle(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
                                          int textWidth, int textHeight, Color color, double rotation, TextEffect effect) {
         int x, y;
+        FontMetrics fm = g2d.getFontMetrics();
         if (settings.isUseCustomPosition()) {
             x = (int) settings.getPositionX();
-            y = (int) settings.getPositionY() + textHeight;
+            y = (int) settings.getPositionY() + fm.getAscent();
         } else {
             x = (image.getWidth() - textWidth) / 2;
-            y = (image.getHeight() + textHeight) / 2;
+            y = (image.getHeight() - textHeight) / 2 + fm.getAscent();
         }
         
         double centerX = settings.isUseCustomPosition() ? x + textWidth / 2.0 : image.getWidth() / 2.0;
-        double centerY = settings.isUseCustomPosition() ? y - textHeight / 2.0 : image.getHeight() / 2.0;
+        double centerY = settings.isUseCustomPosition() ? y - fm.getAscent() + textHeight / 2.0 : image.getHeight() / 2.0;
         
         AffineTransform transform = new AffineTransform();
         transform.translate(centerX, centerY);

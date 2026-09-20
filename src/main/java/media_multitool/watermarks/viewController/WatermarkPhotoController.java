@@ -17,7 +17,7 @@ import model.utility.Global;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 public class WatermarkPhotoController {
     @FXML private Label labelTitle;
@@ -34,6 +34,8 @@ public class WatermarkPhotoController {
     @Setter private WatermarkVideoController mainVideoController;
     @Getter private double relativePositionX = 0;
     @Getter private double relativePositionY = 0;
+
+    private static final String DEFAULT_PATTERN = "single";
 
     @FXML
     public void initialize() {
@@ -71,9 +73,10 @@ public class WatermarkPhotoController {
         sliderSpacing.setValue(settings.getSpacing());
         
         switch (settings.getTilePattern()) {
-            case "single"  -> tileSingle.setSelected(true);
+            case DEFAULT_PATTERN  -> tileSingle.setSelected(true);
             case "grid"    -> tileEvenGrid.setSelected(true);
             case "diamond" -> tileDiamondMesh.setSelected(true);
+            default -> tileSingle.setSelected(true);
         }
         
         if (settings.getWatermarkImage() != null) {
@@ -82,10 +85,10 @@ public class WatermarkPhotoController {
     }
 
     /**
-     * Bind a slider to a label and a settings property, preserving custom position.
+     * Bind a slider to a label and a settings property, preserving a custom position.
      * Eliminates the repetitive wasCustom save/restore pattern.
      */
-    private void bindSlider(Slider slider, Label label, String format, Consumer<Double> setter) {
+    private void bindSlider(Slider slider, Label label, String format, DoubleConsumer setter) {
         slider.valueProperty().addListener((_, _, newVal) -> {
             label.setText(String.format(format, newVal.doubleValue()));
             settings.updatePreservingPosition(_ -> setter.accept(newVal.doubleValue()));
@@ -94,10 +97,10 @@ public class WatermarkPhotoController {
     }
 
     private void setupSliders() {
-        bindSlider(sliderSize, labelSize, "%.0fpx", settings::setSize);
-        bindSlider(sliderOpacity, labelOpacity, "%.0f%%", settings::setOpacity);
-        bindSlider(sliderRotation, labelRotation, "%.0f°", settings::setRotation);
-        bindSlider(sliderSpacing, labelSpacingValue, "%.0fpx", settings::setSpacing);
+        bindSlider(sliderSize, labelSize, "%.0fpx", val -> settings.setSize(val));
+        bindSlider(sliderOpacity, labelOpacity, "%.0f%%", val -> settings.setOpacity(val));
+        bindSlider(sliderRotation, labelRotation, "%.0f°", val -> settings.setRotation(val));
+        bindSlider(sliderSpacing, labelSpacingValue, "%.0fpx", val -> settings.setSpacing(val));
     }
 
     private void setupTileButtons() {
@@ -117,7 +120,7 @@ public class WatermarkPhotoController {
             settings.updatePreservingPosition(s -> {
                 if (newVal == tileSingle) {
                     s.setTileMode(false);
-                    s.setTilePattern("single");
+                    s.setTilePattern(DEFAULT_PATTERN);
                 } else if (newVal == tileEvenGrid) {
                     s.setTileMode(true);
                     s.setTilePattern("grid");
@@ -171,7 +174,7 @@ public class WatermarkPhotoController {
         settings.setRotation(0);
         settings.setSpacing(50);
         settings.setTileMode(false);
-        settings.setTilePattern("single");
+        settings.setTilePattern(DEFAULT_PATTERN);
         settings.setPositionX(0);
         settings.setPositionY(0);
     }

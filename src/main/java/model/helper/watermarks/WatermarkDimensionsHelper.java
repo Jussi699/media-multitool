@@ -10,15 +10,17 @@ public class WatermarkDimensionsHelper {
     private static int cachedFontSize;
     private static Font cachedFont;
     private static FontMetrics cachedMetrics;
-    
+
+    private WatermarkDimensionsHelper() {}
+
     /**
      * Get or create cached FontMetrics for the given settings.
      * This is the single most impactful optimization: Font/FontMetrics creation
      * was happening on every mouse move event during drag operations.
      */
     private static FontMetrics getMetrics(WatermarkSettings settings) {
-        int base_font_size = 24;
-        int fontSize = (int) (base_font_size * settings.getFontSize());
+        int baseFontSize = 24;
+        int fontSize = (int) (baseFontSize * settings.getFontSize());
         String fontName = settings.getFontName();
         
         if (cachedFont == null || cachedFontSize != fontSize || !fontName.equals(cachedFontName)) {
@@ -26,8 +28,8 @@ public class WatermarkDimensionsHelper {
             cachedFontSize = fontSize;
             cachedFont = new Font(fontName, Font.BOLD, fontSize);
 
-            Canvas SHARED_CANVAS = new Canvas();
-            cachedMetrics = SHARED_CANVAS.getFontMetrics(cachedFont);
+            Canvas sharedCanvas = new Canvas();
+            cachedMetrics = sharedCanvas.getFontMetrics(cachedFont);
         }
         
         return cachedMetrics;
@@ -44,7 +46,7 @@ public class WatermarkDimensionsHelper {
         }
         
         FontMetrics fm = getMetrics(settings);
-        return new double[]{fm.stringWidth(settings.getText()), fm.getHeight()};
+        return new double[]{fm.stringWidth(settings.getText()), fm.getAscent() + fm.getDescent()};
     }
 
     /**
@@ -80,7 +82,8 @@ public class WatermarkDimensionsHelper {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
             return settings.getSize();
         }
-        return getMetrics(settings).getHeight();
+        FontMetrics fm = getMetrics(settings);
+        return fm.getAscent() + fm.getDescent();
     }
     
     /**
