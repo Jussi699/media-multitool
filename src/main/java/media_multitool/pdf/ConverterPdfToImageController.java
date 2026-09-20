@@ -345,7 +345,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPdf, progressBar, true
+                dropZone, imageViewPdf, progressBar, true, "PDF"
         );
         reset(imageProperties, ctx, "Selected PDF file: none");
 

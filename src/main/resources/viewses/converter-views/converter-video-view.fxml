@@ -167,8 +167,8 @@
             <VBox.margin>
                 <Insets top="2.0" />
             </VBox.margin>
-            <StackPane fx:id="dropZone" styleClass="drop-zone-solo" HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+            <StackPane fx:id="dropZone" styleClass="drop-zone, drop-zone-solo" HBox.hgrow="ALWAYS">
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag video here"  />
             </StackPane>
         </HBox>
 

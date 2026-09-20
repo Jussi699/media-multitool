@@ -57,7 +57,7 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML private TableColumn<DetailsAudioFile, LocalDate> colModified;
     @FXML private TableColumn<DetailsAudioFile, LocalTime> colLength;
 
-    @FXML private Button btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag;
+    @FXML private Button btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveChanges;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane dropZone;
     @FXML private Label labelSelectImageName, textDragZone;
@@ -104,7 +104,7 @@ public class AudioTagEditorController extends AbstractMediaController {
 
         listControls = new ArrayList<>();
         listControls.addAll(textFields);
-        List<Control> tempListControl = List.of(genreComboBox, btnSaveTag, btnChangeIcon, btnReset);
+        List<Control> tempListControl = List.of(genreComboBox, btnSaveChanges, btnChangeIcon, btnReset);
 
         listControls.addAll(tempListControl);
 
@@ -116,7 +116,7 @@ public class AudioTagEditorController extends AbstractMediaController {
                 "discNumber", "year", "genre", "comment", "codec", "bitrate", "frequency", "modified", "length"
         );
 
-        listBtn = List.of(btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveTag);
+        listBtn = List.of(btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveChanges);
 
         initTableViewAndScrollPane(allTableCol, property);
     }
@@ -338,7 +338,7 @@ public class AudioTagEditorController extends AbstractMediaController {
     public void onResetPressed() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, null,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "audio"
         );
         reset(audioProperties, ctx, "Selected audio file: none");
         AudioEditor.loadDefaultPreview(imageViewPreview);

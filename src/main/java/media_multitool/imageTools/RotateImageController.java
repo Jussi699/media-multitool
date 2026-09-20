@@ -201,7 +201,7 @@ public class RotateImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -231,7 +231,6 @@ public class RotateImageController extends AbstractMediaController {
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
-            System.out.println(dropZone.getStyleClass());
         }
     }
 

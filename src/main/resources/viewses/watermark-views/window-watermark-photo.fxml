@@ -9,29 +9,22 @@
     <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
           styleClass="gradient-background">
 
-        <Label fx:id="labelTitle" text="Photo Watermark Settings"
-               style="-fx-text-fill: RED; -fx-font-size: 14px; -fx-font-weight: bold;">
+        <Label fx:id="labelTitle" text="Photo Watermark Settings" styleClass="main-label-name-page">
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
         </Label>
 
-        <VBox spacing="12.0" style="-fx-background-color: #3b3b3b; -fx-padding: 12;" VBox.vgrow="ALWAYS">
-            <Label text="Watermark Settings" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-
-            <Separator/>
-
+        <VBox spacing="12.0" style="-fx-background-color: -dark-gradient-background; -fx-padding: 12;" VBox.vgrow="ALWAYS">
             <VBox spacing="8.0">
-                <Label text="Watermark Image"
-                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <Button fx:id="btnSelectWatermark" text="Select Image" onAction="#handleSelectWatermark"
                         prefWidth="310.0"/>
-                <Label fx:id="labelWatermarkName" text="None selected" style="-fx-text-fill: #cccccc;"/>
+                <Label fx:id="labelWatermarkName" text="None selected" styleClass="label-h"/>
             </VBox>
 
             <StackPane fx:id="watermarkDropZone" minHeight="80.0"
-                       style="-fx-border-color: white; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 5;">
-                <Label text="Drag watermark here" style="-fx-text-fill: #888888;"/>
+                      styleClass="drop-zone" style="-fx-pref-height: 80px; -fx-max-height: 80px; -fx-min-height: 80px">
+                <Label fx:id="textDragZone" text="Drag watermark here" styleClass="label-drag-zone"/>
             </StackPane>
 
             <Separator/>
@@ -40,7 +33,7 @@
                 <Label text="Size" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderSize" min="10" max="2000" value="100" prefWidth="250.0"/>
-                    <Label fx:id="labelSize" text="100px" minWidth="60.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelSize" text="100px" minWidth="60.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
@@ -48,7 +41,7 @@
                 <Label text="Opacity" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderOpacity" value="100" prefWidth="250.0"/>
-                    <Label fx:id="labelOpacity" text="100%" minWidth="60.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelOpacity" text="100%" minWidth="60.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
@@ -56,7 +49,7 @@
                 <Label text="Rotation" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderRotation" max="360" prefWidth="250.0"/>
-                    <Label fx:id="labelRotation" text="0°" minWidth="60.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelRotation" text="0°" minWidth="60.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
@@ -73,15 +66,15 @@
                     <Label text="Spacing" fx:id="labelSpacingText"
                            style="-fx-font-size: 11px; -fx-text-fill: #e0e0e0;"/>
                     <Slider fx:id="sliderSpacing" min="10" max="200" value="50" prefWidth="170.0"/>
-                    <Label fx:id="labelSpacingValue" text="50px" minWidth="60.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelSpacingValue" text="50px" minWidth="60.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
             <Separator/>
 
-            <VBox spacing="8.0">
+            <VBox spacing="8.0" alignment="CENTER">
                 <Label text="Position Presets"
-                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e0e0e0;"/>
+                       styleClass="label-h"/>
                 <GridPane hgap="8.0" vgap="8.0">
                     <Button text="↖" onAction="#handlePositionTopLeft" prefWidth="50.0" GridPane.columnIndex="0"
                             GridPane.rowIndex="0"/>

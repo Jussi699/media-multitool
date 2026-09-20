@@ -23,7 +23,7 @@ public class WatermarkPhotoController {
     @FXML private Label labelTitle;
     @FXML private StackPane watermarkDropZone;
     @FXML private Label labelWatermarkName, labelSize, labelOpacity, labelRotation;
-    @FXML private Label labelSpacingText, labelSpacingValue;
+    @FXML private Label labelSpacingText, labelSpacingValue, textDragZone;
     @FXML private Button btnSelectWatermark;
     @FXML private Slider sliderSize, sliderOpacity, sliderRotation, sliderSpacing;
     @FXML private ToggleButton tileSingle, tileEvenGrid, tileDiamondMesh;
@@ -78,6 +78,12 @@ public class WatermarkPhotoController {
         
         if (settings.getWatermarkImage() != null) {
             labelWatermarkName.setText("Watermark loaded");
+            if (textDragZone != null) {
+                textDragZone.setText("Watermark loaded");
+            }
+            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains("drop-zone-filled")) {
+                watermarkDropZone.getStyleClass().add("drop-zone-filled");
+            }
         }
     }
 
@@ -201,6 +207,13 @@ public class WatermarkPhotoController {
             }
 
             labelWatermarkName.setText(file.getName());
+            if (textDragZone != null) {
+                textDragZone.setText("Selected: " + file.getName());
+            }
+            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains("drop-zone-filled")) {
+                watermarkDropZone.getStyleClass().add("drop-zone-filled");
+            }
+
             settings.setWatermarkImage(watermarkImage);
             updatePreview();
             
@@ -250,6 +263,12 @@ public class WatermarkPhotoController {
     private void handleResetSettings() {
         setupDefaults();
         labelWatermarkName.setText("None selected");
+        if (textDragZone != null) {
+            textDragZone.setText("Drag watermark here");
+        }
+        if (watermarkDropZone != null) {
+            watermarkDropZone.getStyleClass().remove("drop-zone-filled");
+        }
         settings.setWatermarkImage(null);
         updatePreview();
     }
@@ -259,6 +278,12 @@ public class WatermarkPhotoController {
         settings.setType(WatermarkSettings.WatermarkType.IMAGE);
         setupDefaults();
         labelWatermarkName.setText("None selected");
+        if (textDragZone != null) {
+            textDragZone.setText("Drag watermark here");
+        }
+        if (watermarkDropZone != null) {
+            watermarkDropZone.getStyleClass().remove("drop-zone-filled");
+        }
         tileSingle.setSelected(true);
     }
 

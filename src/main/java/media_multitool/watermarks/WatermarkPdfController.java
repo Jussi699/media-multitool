@@ -295,7 +295,7 @@ public class WatermarkPdfController extends AbstractMediaController {
     private void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "PDF"
         );
         reset(imageProperties, ctx, "Selected PDF file: none");
 

@@ -188,7 +188,7 @@ public class ConverterImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
 
         reset(imageProperties, ctx, "Selected image file: none");

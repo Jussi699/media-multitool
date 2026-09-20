@@ -321,7 +321,7 @@ public class MergePdfController extends AbstractMediaController {
         
         ResetContext ctx = new ResetContext(
             labelSelectFileName, labelSuccess, textDragZone, null,
-            dropZone, null, progressBar, true
+            dropZone, null, progressBar, true, "PDF(s)"
         );
         if (progressBar != null) {
             progressBar.progressProperty().unbind();

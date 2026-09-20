@@ -32,9 +32,9 @@
                     mnemonicParsing="false"
                     onAction="#onActionChoiceDirForSaveFile"
                     prefWidth="180.0"
-                    text="Directory for save" >
+                    text="Directory for save">
                 <tooltip>
-                    <Tooltip text="Default directory: Desktop" />
+                    <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
             </Button>
         </HBox>
@@ -47,23 +47,23 @@
             <Button fx:id="btnSubmit" mnemonicParsing="false"
                     onAction="#submitNegativeAndDownload"
                     prefWidth="240.0"
-                    text="Download" />
+                    text="Download"/>
         </VBox>
 
-        <VBox spacing="10.0" VBox.vgrow="ALWAYS" >
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets left="4.0" right="4.0" />
+                <Insets left="4.0" right="4.0"/>
             </padding>
             <VBox.margin>
-                <Insets top="2.0" />
+                <Insets top="2.0"/>
             </VBox.margin>
             <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
-                <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                <ImageView fx:id="imageViewPreview" preserveRatio="true"/>
                 <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>
 
             <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image here"/>
             </StackPane>
         </VBox>
 

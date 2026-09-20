@@ -185,14 +185,14 @@ public class ColorizeImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
         currentBufferedImage = null;
         originalBufferedImage = null;
         selectedColorFX = Color.WHITE;
-        WorkColors.updateColorView(java.awt.Color.WHITE, btnColorPicker);
+        WorkColors.updateColorView(new java.awt.Color(64, 64, 64), btnColorPicker);
         previewContainer.setEffect(null);
         disableControls();
     }

@@ -13,14 +13,22 @@ public class WatermarkDimensionsHelper {
 
     private WatermarkDimensionsHelper() {}
 
+    public static double getScale(BufferedImage image) {
+        if (image == null) return 1.0;
+        return Math.min(image.getWidth(), image.getHeight()) / 1000.0;
+    }
+
+    public static int computeFontSize(WatermarkSettings settings, BufferedImage image) {
+        double scale = getScale(image);
+        int baseFontSize = Math.max(10, (int) Math.round(24 * scale));
+        return Math.max(8, (int) Math.round(baseFontSize * settings.getFontSize()));
+    }
+
     /**
-     * Get or create cached FontMetrics for the given settings.
-     * This is the single most impactful optimization: Font/FontMetrics creation
-     * was happening on every mouse move event during drag operations.
+     * Get or create cached FontMetrics for the given settings and image scale.
      */
-    private static FontMetrics getMetrics(WatermarkSettings settings) {
-        int baseFontSize = 24;
-        int fontSize = (int) (baseFontSize * settings.getFontSize());
+    private static FontMetrics getMetrics(WatermarkSettings settings, BufferedImage image) {
+        int fontSize = computeFontSize(settings, image);
         String fontName = settings.getFontName();
         
         if (cachedFont == null || cachedFontSize != fontSize || !fontName.equals(cachedFontName)) {
@@ -37,52 +45,57 @@ public class WatermarkDimensionsHelper {
     
     /**
      * Calculate watermark dimensions (width and height) in a single call.
-     * Avoids the overhead of computing Font/FontMetrics twice when both are needed.
      */
     public static double[] calculateDimensions(WatermarkSettings settings) {
-        if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            double size = settings.getSize();
-            return new double[]{size, size};
-        }
-        
-        FontMetrics fm = getMetrics(settings);
-        return new double[]{fm.stringWidth(settings.getText()), fm.getAscent() + fm.getDescent()};
+        return calculateDimensions(settings, null);
     }
 
     /**
      * Calculate watermark dimensions capped to the given image bounds.
-     * For an IMAGE type, the size is capped to the smaller of the image width/height
-     * so the watermark never exceeds the base image dimensions.
      */
     public static double[] calculateDimensions(WatermarkSettings settings, BufferedImage image) {
-        double[] dims = calculateDimensions(settings);
-        if (image != null && settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            double maxDim = Math.min(image.getWidth(), image.getHeight());
-            if (dims[0] > maxDim) {
-                return new double[]{maxDim, maxDim};
+        if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
+            double scale = getScale(image);
+            double size = settings.getSize() * scale;
+            if (image != null) {
+                double maxDim = Math.min(image.getWidth(), image.getHeight());
+                if (size > maxDim) {
+                    return new double[]{maxDim, maxDim};
+                }
             }
+            return new double[]{size, size};
         }
-        return dims;
+        
+        FontMetrics fm = getMetrics(settings, image);
+        return new double[]{fm.stringWidth(settings.getText()), fm.getAscent() + fm.getDescent()};
     }
     
     /**
      * Calculate watermark width based on settings
      */
     public static double calculateWidth(WatermarkSettings settings) {
+        return calculateWidth(settings, null);
+    }
+
+    public static double calculateWidth(WatermarkSettings settings, BufferedImage image) {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            return settings.getSize();
+            return settings.getSize() * getScale(image);
         }
-        return getMetrics(settings).stringWidth(settings.getText());
+        return getMetrics(settings, image).stringWidth(settings.getText());
     }
     
     /**
      * Calculate watermark height based on settings
      */
     public static double calculateHeight(WatermarkSettings settings) {
+        return calculateHeight(settings, null);
+    }
+
+    public static double calculateHeight(WatermarkSettings settings, BufferedImage image) {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            return settings.getSize();
+            return settings.getSize() * getScale(image);
         }
-        FontMetrics fm = getMetrics(settings);
+        FontMetrics fm = getMetrics(settings, image);
         return fm.getAscent() + fm.getDescent();
     }
     
@@ -116,7 +129,6 @@ public class WatermarkDimensionsHelper {
     
     /**
      * Get current watermark position and dimensions as [posX, posY, width, height].
-     * Single call replaces separate width/height calculations.
      */
     public static double[] getCurrentPosition(WatermarkSettings settings, BufferedImage image) {
         double[] dims = calculateDimensions(settings, image);
@@ -135,15 +147,6 @@ public class WatermarkDimensionsHelper {
 
     /**
      * Position the watermark at the given relative image coordinates (0–1 range).
-     *
-     * <p>The watermark is centred on the click point and clamped to stay within the image
-     * boundaries. The updated position is written back into {@code settings} and the custom
-     * position flag is set to {@code true}.
-     *
-     * @param relX     Horizontal click position as a fraction of the image width  (0..1).
-     * @param relY     Vertical   click position as a fraction of the image height (0..1).
-     * @param settings Watermark settings to update in-place.
-     * @param image    Source image used for boundary clamping.
      */
     public static void applyRelativePosition(double relX, double relY, WatermarkSettings settings, BufferedImage image) {
         if (image == null) {

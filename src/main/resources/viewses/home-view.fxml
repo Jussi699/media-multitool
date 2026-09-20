@@ -15,15 +15,16 @@
     <VBox alignment="TOP_CENTER"
           styleClass="gradient-background">
 
-        <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 30 40 20 40; -fx-background-color: linear-gradient(to bottom, #2d2d2d, #1a1a1a);">
+        <VBox alignment="CENTER" spacing="8.0"
+              style="-fx-padding: 30 40 20 40; -fx-background-color: linear-gradient(to bottom, #2d2d2d, #1a1a1a);">
             <Label alignment="CENTER"
-                   style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: linear-gradient(to right, #32CD32, #00FF00);"
-                   text="Media Multitool" />
+                   styleClass="main-label-name-page" style="-fx-font-size: 36"
+                   text="Media Multitool"/>
 
             <Label alignment="CENTER"
                    style="-fx-font-size: 14px; -fx-text-fill: #b0b0b0;"
                    text="Professional media conversion and editing tools"
-                   wrapText="true" />
+                   wrapText="true"/>
         </VBox>
 
         <ScrollPane fitToWidth="true" fitToHeight="true"

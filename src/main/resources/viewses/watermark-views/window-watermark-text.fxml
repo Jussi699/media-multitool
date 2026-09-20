@@ -23,21 +23,21 @@
 
             <VBox spacing="5.0">
                 <Label text="Font" styleClass="label-h"/>
-                <ComboBox fx:id="comboBoxFont" prefWidth="310.0"/>
+                <ComboBox fx:id="comboBoxFont" styleClass="combo-box-310-width" prefWidth="310.0"/>
             </VBox>
 
             <VBox spacing="5.0">
                 <Label text="Size" styleClass="label-h"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderSizeText" prefWidth="250.0"/>
-                    <Label fx:id="labelSizeX" text="2.5x" minWidth="50.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelSizeX" text="2.5x" minWidth="50.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
             <VBox spacing="5.0">
                 <Label text="Color" styleClass="label-h"/>
-                <HBox prefHeight="40.0" alignment="CENTER_LEFT">
-                    <Button fx:id="btnColorPicker" mnemonicParsing="false" onAction="#handleColorChange" text="Select Color"/>
+                <HBox prefHeight="40.0" alignment="CENTER_LEFT" maxWidth="Infinity">
+                    <Button fx:id="btnColorPicker" maxWidth="Infinity" prefWidth="310" mnemonicParsing="false" onAction="#handleColorChange" text="Select Color"/>
                 </HBox>
             </VBox>
 
@@ -56,7 +56,7 @@
                 <Label text="Spacing" styleClass="label-h"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderSpacing" max="5.0" prefWidth="250.0"/>
-                    <Label fx:id="labelSpacingX" text="0x" minWidth="50.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelSpacingX" text="0x" minWidth="50.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
@@ -66,7 +66,7 @@
                 <Label text="Opacity" styleClass="label-h"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderOpacity" value="100" prefWidth="250.0"/>
-                    <Label fx:id="labelOpacityPercent" text="100%" minWidth="50.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelOpacityPercent" text="100%" minWidth="50.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
@@ -74,7 +74,7 @@
                 <Label text="Rotation" styleClass="label-h"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Slider fx:id="sliderRotation" max="360" prefWidth="250.0"/>
-                    <Label fx:id="labelRotationDegree" text="0°" minWidth="50.0" style="-fx-text-fill: white;"/>
+                    <Label fx:id="labelRotationDegree" text="0°" minWidth="50.0" styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
@@ -82,7 +82,7 @@
 
             <VBox spacing="8.0">
                 <Label text="Effect" styleClass="label-h"/>
-                <ComboBox fx:id="comboBoxEffect" prefWidth="310.0"/>
+                <ComboBox fx:id="comboBoxEffect" styleClass="combo-box-310-width" prefWidth="310.0"/>
             </VBox>
 
             <Button text="Reset Settings" onAction="#handleResetSettings" prefWidth="310.0"/>

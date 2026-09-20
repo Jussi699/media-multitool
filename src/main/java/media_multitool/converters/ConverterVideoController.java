@@ -131,7 +131,7 @@ public class ConverterVideoController extends AbstractMediaController {
     private void resetToDefaults() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, null,
-                dropZone, null, progressBar, true
+                dropZone, null, progressBar, true, "video"
         );
         reset(videoProperties, ctx, "Selected video file: none");
 

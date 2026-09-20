@@ -213,7 +213,7 @@ public abstract class AbstractMediaController {
             ctx.labelSuccess().setManaged(ctx.managed());
         }
 
-        resetDropZone(ctx.textDragZone(), ctx.dropZone());
+        resetDropZone(ctx.textDragZone(), ctx.dropZone(), ctx.textForDragZone());
 
         if (ctx.imageViewPreview() != null) {
             ctx.imageViewPreview().setImage(null);
@@ -224,8 +224,8 @@ public abstract class AbstractMediaController {
     }
 
 
-    public static void resetDropZone(@NonNull Label textDragZone, @NonNull StackPane dropZone) {
-        textDragZone.setText("Drag files here");
+    public static void resetDropZone(@NonNull Label textDragZone, @NonNull StackPane dropZone, String text) {
+        textDragZone.setText("Drag " +  text + " here");
 
         dropZone.getStyleClass().removeAll(java.util.Collections.singleton("drop-zone-filled"));
     }

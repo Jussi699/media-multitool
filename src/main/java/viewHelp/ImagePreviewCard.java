@@ -39,7 +39,7 @@ public class ImagePreviewCard {
      * 
      * @param imageFile the image file to display
      * @param imageId unique identifier for this image
-     * @param onDelete callback when delete button is clicked
+     * @param onDelete callback when the delete button is clicked
      * @param onDragDropped callback when an item is dropped on this card (receives dragged image ID)
      */
     public ImagePreviewCard(

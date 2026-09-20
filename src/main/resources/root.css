@@ -1,0 +1,22 @@
+.labelJust {
+    -fx-font-size: 10;
+}
+
+.root {
+    /* Focus outline reset */
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+
+    /*color*/
+    -main-color: #00FF00;
+    -main-color-label: #cccccc;
+    -main-backgroung-color-drag-drop: #3d3d3d;
+    -color-for-active-button-comboBox: #2ba82b;
+
+    /*color+gradient*/
+    -main-effect: dropshadow(three-pass-box, #00FF00, 4, 0.1, 0, 0);
+    -main-gradient-color: linear-gradient(to right, #32CD32, #00FF00);
+    -main-gradient-color-button: linear-gradient(to bottom, #404040, #2d2d2d);
+    -dark-gradient-background: linear-gradient(to bottom, #1a1a1a, #2d2d2d);
+    -gradient-color-for-button-comboBox: linear-gradient(to bottom, #32CD32, #2ba82b);
+}

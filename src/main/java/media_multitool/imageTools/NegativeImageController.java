@@ -152,7 +152,7 @@ public class NegativeImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
         originalBufferedImage = null;

@@ -12,18 +12,39 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.logger.ErrorLogger;
 
+import java.io.InputStream;
+import java.util.Optional;
+
 public class Alerts {
+    private static final ImageView INFO_ICON = loadIcon("/img/info.png", 48);
+    private static final ImageView QUESTION_ICON = loadIcon("/img/question.png", 48);
+
+    private static ImageView loadIcon(String path, double size) {
+        InputStream stream = Alerts.class.getResourceAsStream(path);
+        if (stream == null) {
+            ErrorLogger.error("File " + path + " not found");
+            return null;
+        }
+
+        Image image = new Image(stream, size, size, true, false);
+        return new ImageView(image);
+    }
+
     public static void alertDialog(Alert.AlertType type, String title, String headerText, String message) {
         if (!Platform.isFxApplicationThread()) {
             Platform.runLater(() -> alertDialog(type, title, headerText, message));
             return;
         }
+
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(headerText);
@@ -31,6 +52,7 @@ public class Alerts {
         alert.initModality(Modality.NONE);
         alert.setResizable(true);
         alert.setWidth(600);
+        Optional.ofNullable(INFO_ICON).ifPresent(alert::setGraphic);
         applyDialogStyles(alert, type);
         alert.showAndWait();
     }
@@ -45,6 +67,7 @@ public class Alerts {
         alert.setHeaderText(headerText);
 
         Label messageLabel = new Label("Files is loading: ");
+        messageLabel.setTextFill(Color.web("#cccccc"));
         ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(320);
         progressBar.progressProperty().bind(task.progressProperty());
@@ -94,6 +117,10 @@ public class Alerts {
 
     private static void applyDialogStyles(Alert alert, Alert.AlertType type) {
         var pane = alert.getDialogPane();
+        var rootRes = ErrorLogger.class.getResource("/root.css");
+        if (rootRes != null) {
+            pane.getStylesheets().add(rootRes.toExternalForm());
+        }
         var res = ErrorLogger.class.getResource("/style.css");
         if (res != null) {
             pane.getStylesheets().add(res.toExternalForm());
@@ -113,8 +140,9 @@ public class Alerts {
         alert.initModality(Modality.APPLICATION_MODAL);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
-        
-        alert.getButtonTypes().setAll(javafx.scene.control.ButtonType.YES, javafx.scene.control.ButtonType.NO);
+        Optional.ofNullable(QUESTION_ICON).ifPresent(alert::setGraphic);
+
+        alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
 
         applyDialogStyles(alert, Alert.AlertType.CONFIRMATION);
 

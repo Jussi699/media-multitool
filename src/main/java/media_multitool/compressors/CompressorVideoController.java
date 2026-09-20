@@ -207,7 +207,7 @@ public class CompressorVideoController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, null,
-                dropZone, null, progressBar, true
+                dropZone, null, progressBar, true, "video"
         );
         reset(videoProperties, ctx, "Select video file: none");
 

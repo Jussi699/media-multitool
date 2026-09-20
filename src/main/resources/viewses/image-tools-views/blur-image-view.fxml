@@ -34,21 +34,22 @@
                     prefWidth="180.0"
                     text="Directory for save">
                 <tooltip>
-                    <Tooltip text="Default directory: Desktop" />
+                    <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
             </Button>
         </HBox>
 
         <GridPane alignment="CENTER" hgap="10.0">
             <columnConstraints>
-                <ColumnConstraints minWidth="60.0" prefWidth="60.0" maxWidth="60.0" halignment="RIGHT" />
-                <ColumnConstraints maxWidth="400" hgrow="ALWAYS" halignment="CENTER" />
-                <ColumnConstraints minWidth="60.0" prefWidth="60.0" maxWidth="60.0" halignment="LEFT" />
+                <ColumnConstraints minWidth="60.0" prefWidth="60.0" maxWidth="60.0" halignment="RIGHT"/>
+                <ColumnConstraints maxWidth="400" hgrow="ALWAYS" halignment="CENTER"/>
+                <ColumnConstraints minWidth="60.0" prefWidth="60.0" maxWidth="60.0" halignment="LEFT"/>
             </columnConstraints>
 
-                <Label style="-fx-text-fill: red; -fx-font-size: 12" GridPane.columnIndex="0">0%</Label>
-                <Slider fx:id="sliderBlurry" onMouseReleased="#handleSliderRelease" prefWidth="400" GridPane.columnIndex="1"/>
-                <Label fx:id="currentValueSlider" style="-fx-text-fill: red; -fx-font-size: 12" GridPane.columnIndex="2">100%</Label>
+            <Label style="-fx-font-size: 14" styleClass="labelSuccess" GridPane.columnIndex="0">0%</Label>
+            <Slider fx:id="sliderBlurry" onMouseReleased="#handleSliderRelease" prefWidth="400"
+                    GridPane.columnIndex="1"/>
+            <Label fx:id="currentValueSlider" style="-fx-font-size: 14" styleClass="labelSuccess" GridPane.columnIndex="2">100%</Label>
         </GridPane>
 
         <VBox alignment="CENTER" spacing="8.0">
@@ -66,7 +67,7 @@
                 <Button fx:id="btnSubmit" mnemonicParsing="false"
                         onAction="#submitAndDownload"
                         prefWidth="120.0"
-                        text="Download" />
+                        text="Download"/>
                 <Button fx:id="btnCancel" mnemonicParsing="false"
                         onAction="#cancelTask"
                         prefWidth="120.0"
@@ -76,20 +77,20 @@
             </HBox>
         </VBox>
 
-        <VBox spacing="10.0" VBox.vgrow="ALWAYS" >
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets left="4.0" right="4.0" />
+                <Insets left="4.0" right="4.0"/>
             </padding>
             <VBox.margin>
-                <Insets top="2.0" />
+                <Insets top="2.0"/>
             </VBox.margin>
             <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
-                <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                <ImageView fx:id="imageViewPreview" preserveRatio="true"/>
                 <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>
 
             <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image here"/>
             </StackPane>
         </VBox>
 
@@ -97,11 +98,8 @@
             <Label fx:id="labelSelectImageName" styleClass="labelSelect"
                    text="Selected image file: none"/>
 
-            <Button fx:id="btnReset"
-                    mnemonicParsing="false"
-                    onAction="#isPressedReset"
-                    prefWidth="240.0"
-                    text="Reset"/>
+            <Button fx:id="btnReset" mnemonicParsing="false"
+                    onAction="#isPressedReset" prefWidth="240.0" text="Reset"/>
         </VBox>
 
         <padding>

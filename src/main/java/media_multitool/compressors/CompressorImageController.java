@@ -202,10 +202,12 @@ public class CompressorImageController extends AbstractMediaController {
     @FXML
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                labelSelectFile, null, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
+
+        labelSuccess.setText("Estimated size: Waiting load image");
 
         comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
         comboBoxScaleImage.setValue(new Item(-1, "Scale"));

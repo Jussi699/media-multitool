@@ -512,7 +512,7 @@ public class SpotBlurImageController extends AbstractMediaController {
                         How to use:
                         1. Select an image file using 'Select image' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
-                        3. Adjust the blur intensity (0-20) using the slider.
+                        3. Adjust the blur intensity (0-100%) using the slider.
                         4. Click 'Rectangle' or 'Ellipse' to select shape type.
                         5. Click and drag on the image to add blur areas.
                         6. After adding a shape:
@@ -716,7 +716,7 @@ public class SpotBlurImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 

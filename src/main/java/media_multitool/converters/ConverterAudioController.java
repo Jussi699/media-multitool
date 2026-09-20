@@ -101,7 +101,7 @@ public class ConverterAudioController extends AbstractMediaController {
     private void resetToDefaults() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, null,
-                dropZone, null, progressBar, true
+                dropZone, null, progressBar, true, "audio"
         );
         reset(audioProperties, ctx, "Selected media file: none");
 

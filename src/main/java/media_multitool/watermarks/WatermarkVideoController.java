@@ -292,7 +292,7 @@ public class WatermarkVideoController extends AbstractMediaController {
     private void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, null, true
+                dropZone, imageViewPreview, null, true, "video"
         );
         reset(imageProperties, ctx, "Selected video file: none");
 

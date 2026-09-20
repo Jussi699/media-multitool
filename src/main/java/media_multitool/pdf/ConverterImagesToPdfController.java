@@ -166,8 +166,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
     private void updateUIState() {
         textDragZone.setText(selectedImages.isEmpty() ?
-            "Drag images here or click 'Select images'" :
-            "Selected: " + selectedImages.size() + " image(s)");
+            "Drag image(s) here" : "Selected: " + selectedImages.size() + " image(s)");
 
 
 
@@ -299,7 +298,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         
         ResetContext ctx = new ResetContext(
             labelSelectFileName, labelSuccess, textDragZone, null,
-            dropZone, null, progressBar, true
+            dropZone, null, progressBar, true, "image(s)"
         );
         reset(imageProperties, ctx, "Last uploaded image: none");
 
@@ -309,7 +308,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         comboOrientation.setValue("Portrait");
         comboPageSize.setValue("Fix (image size)");
         
-        textDragZone.setText("Drag images here or click 'Select images'");
+        textDragZone.setText("Drag image(s) here");
         updateUIState();
     }
 

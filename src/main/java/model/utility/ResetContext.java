@@ -13,5 +13,6 @@ public record ResetContext(
     StackPane dropZone,
     ImageView imageViewPreview,
     ProgressBar progressBar,
-    boolean managed
+    boolean managed,
+    String textForDragZone
 ) {}

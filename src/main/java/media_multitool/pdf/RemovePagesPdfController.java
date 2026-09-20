@@ -299,7 +299,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
         
         ResetContext ctx = new ResetContext(
             labelSelectFileName, labelSuccess, textDragZone, null,
-            dropZone, null, progressBar, true
+            dropZone, null, progressBar, true, "PDF"
         );
         if (progressBar != null) {
             progressBar.progressProperty().unbind();

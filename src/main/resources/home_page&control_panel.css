@@ -1,0 +1,234 @@
+.tool-button {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-color: linear-gradient(to bottom, #404040, #2d2d2d);
+    -fx-text-fill: -main-color-label;
+    -fx-background-radius: 8;
+    -fx-border-color: #505050;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 10 12 10 12;
+    -fx-cursor: hand;
+}
+
+.tool-button:hover {
+    -fx-background-color: -color-for-active-button-comboBox;
+    -fx-text-fill: WHITE;
+    -fx-border-color: -color-for-active-button-comboBox;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(50, 205, 50, 0.5), 10, 0, 0, 0);
+}
+
+.hbox-home-page {
+    -fx-alignment: top-left;
+    -fx-spacing: 14;
+    -fx-padding: 0;
+}
+
+.section-container {
+    -fx-background-color: #252525;
+    -fx-background-radius: 12;
+    -fx-padding: 16 20 16 20;
+    -fx-border-color: #404040;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0, 0, 2);
+}
+
+.section-title {
+    -fx-text-fill: -main-color;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 8 0;
+}
+
+.info-tool-button {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-color: linear-gradient(to bottom, #1f871f, -color-for-active-button-comboBox);
+    -fx-text-fill: WHITE;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-padding: 12 30 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(50, 205, 50, 0.4), 10, 0, 0, 2);
+}
+
+.info-tool-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #1f871f, -color-for-active-button-comboBox);
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+    -fx-effect: dropshadow(three-pass-box, rgba(50, 205, 50, 0.7), 15, 0, 0, 3);
+}
+
+.sidebar-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background:       transparent;
+    -fx-border-color:     transparent;
+    -fx-padding: 0;
+}
+
+.sidebar-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical {
+    -fx-pref-width: 6px;
+    -fx-background-color: transparent;
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color:     transparent;
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #444444;
+    -fx-background-radius: 4;
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #666666;
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical .thumb:pressed {
+    -fx-background-color: -main-color;
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical .increment-button,
+.sidebar-scroll-pane .scroll-bar:vertical .decrement-button {
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+    -fx-shape: "";
+}
+
+.sidebar-scroll-pane .scroll-bar:vertical .increment-arrow,
+.sidebar-scroll-pane .scroll-bar:vertical .decrement-arrow {
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+    -fx-shape: "";
+}
+
+.folder-icon {
+    -fx-fill: transparent;
+    -fx-stroke: #a0a0a0;
+    -fx-stroke-width: 1.5;
+    -fx-scale-x: 1.5;
+    -fx-scale-y: 1.5;
+}
+
+.folder-btn {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #a0a0a0;
+    -fx-font-size: 14px;
+    -fx-padding: 12 15 12 15;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 12px;
+}
+
+.standalone-btn {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #a0a0a0;
+    -fx-font-size: 14px;
+    -fx-padding: 12 15 12 15;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 12px;
+}
+
+.folder-btn:hover {
+    -fx-background-color: #2b2b2b;
+    -fx-text-fill: #d0d0d0;
+}
+
+.folder-btn:selected {
+    -fx-border-color: -color-for-active-button-comboBox;
+    -fx-text-fill: WHITE;
+    -fx-background-color: #2b2b2b;
+}
+
+.folder-btn:selected .folder-icon,
+.standalone-btn-active .folder-icon,
+.standalone-btn-active .other-icon {
+    -fx-stroke: -color-for-active-button-comboBox;
+}
+
+.standalone-btn:hover {
+    -fx-background-color: #2b2b2b;
+    -fx-text-fill: #d0d0d0;
+}
+
+.standalone-btn-active {
+    -fx-border-color: -color-for-active-button-comboBox;
+    -fx-text-fill: #ffffff;
+    -fx-background-color: #2b2b2b;
+}
+
+.folder-content {
+    -fx-padding: 5 0 10 30;
+    -fx-spacing: 5;
+}
+
+.sub-btn {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #808080;
+    -fx-font-size: 13px;
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+}
+
+.sub-btn:hover {
+    -fx-background-color: #333333;
+    -fx-text-fill: #d0d0d0;
+}
+
+.sub-btn-active {
+    -fx-text-fill: -color-for-active-button-comboBox;
+    -fx-font-weight: bold;
+    -fx-border-color: -color-for-active-button-comboBox;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+}
+
+/* Отключение дефолтных слоев и рамок фокуса Modena */
+.folder-btn:focused,
+.standalone-btn:focused,
+.sub-btn:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.folder-btn:selected:focused,
+.standalone-btn-active:focused {
+    -fx-background-color: #2b2b2b;
+    -fx-background-insets: 0;
+}
+
+.folder-btn:hover:focused,
+.standalone-btn:hover:focused {
+    -fx-background-color: #2b2b2b;
+    -fx-background-insets: 0;
+}
+
+.sub-btn:hover:focused {
+    -fx-background-color: #333333;
+    -fx-background-insets: 0;
+}

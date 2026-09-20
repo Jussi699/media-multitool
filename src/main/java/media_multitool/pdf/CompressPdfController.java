@@ -43,10 +43,8 @@ public class CompressPdfController extends AbstractMediaController {
     @FXML private ImageView imageViewPdf;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnReset;
-    @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
-
+    @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder, labelEstimatedSize;
     @FXML private ToggleButton btnLowCompression, btnMediumCompression, btnHighCompression;
-    @FXML private Label labelEstimatedSize;
 
     private PDDocument currentDoc;
     private List<Control> listControls;
@@ -172,7 +170,7 @@ public class CompressPdfController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPdf, progressBar, true
+                dropZone, imageViewPdf, progressBar, true, "PDF"
         );
         reset(imageProperties, ctx, "Selected PDF file: none");
 
@@ -189,7 +187,7 @@ public class CompressPdfController extends AbstractMediaController {
         }
 
         labelPreviewPlaceholder.setVisible(true);
-        labelEstimatedSize.setText("Estimated size: --");
+        labelEstimatedSize.setText("Estimated size: Waiting load PDF");
         btnLowCompression.setSelected(true);
     }
 
@@ -200,7 +198,7 @@ public class CompressPdfController extends AbstractMediaController {
 
     private void updateEstimatedSize() {
         if (imageProperties.getImage() == null) {
-            labelEstimatedSize.setText("Estimated size: --");
+            labelEstimatedSize.setText("Estimated size: Waiting load PDF");
             return;
         }
 

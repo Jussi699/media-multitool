@@ -61,13 +61,12 @@
             </ScrollPane>
 
             <StackPane fx:id="dropZone" styleClass="drop-zone" minHeight="80.0">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag images here'" />
+                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image(s) here" />
             </StackPane>
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
             <Label fx:id="labelSelectFileName" styleClass="labelSelect" text="Selected images: 0" />
-
             <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
         </VBox>
 

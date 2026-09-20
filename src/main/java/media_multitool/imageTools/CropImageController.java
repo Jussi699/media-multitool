@@ -215,7 +215,7 @@ public class CropImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, null, true
+                dropZone, imageViewPreview, null, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 

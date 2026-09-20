@@ -8,11 +8,11 @@
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.compressors.CompressorImageController">
-     <VBox alignment="TOP_CENTER"
-            maxWidth="Infinity"
-            maxHeight="Infinity"
-            spacing="12.0"
-            styleClass="gradient-background">
+    <VBox alignment="TOP_CENTER"
+          maxWidth="Infinity"
+          maxHeight="Infinity"
+          spacing="12.0"
+          styleClass="gradient-background">
 
         <Label styleClass="main-label-name-page"
                text="Compressor Image">
@@ -34,7 +34,7 @@
                     prefWidth="180.0"
                     text="Directory for save">
                 <tooltip>
-                    <Tooltip text="Default directory: Desktop" />
+                    <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
             </Button>
         </HBox>
@@ -51,44 +51,42 @@
 
         <VBox alignment="CENTER" spacing="8.0">
             <Label fx:id="labelSuccess" styleClass="labelSuccess"
-                   visible="false"
                    text="Compression status"
                    wrapText="true"/>
 
             <Button fx:id="btnSubmit" mnemonicParsing="false"
                     onAction="#submitCompressAndDownload"
                     prefWidth="240.0"
-                    text="Compress and Download" />
+                    text="Compress and Download"/>
         </VBox>
 
         <VBox spacing="12.0" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets left="4.0" right="4.0" />
+                <Insets left="4.0" right="4.0"/>
             </padding>
             <VBox.margin>
-                <Insets top="2.0" />
+                <Insets top="2.0"/>
             </VBox.margin>
 
             <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
-                <ImageView fx:id="imageViewPreview" preserveRatio="true" />
+                <ImageView fx:id="imageViewPreview" preserveRatio="true"/>
                 <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>
 
             <HBox spacing="5.0" VBox.vgrow="ALWAYS">
                 <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS" maxHeight="Infinity">
-                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here"  />
+                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image here"/>
                 </StackPane>
             </HBox>
         </VBox>
 
         <VBox alignment="CENTER" spacing="6.0">
             <Label fx:id="labelSelectFile" styleClass="labelSelect"
-                   text="Selected file: none" />
+                   text="Selected file: none"/>
 
             <Button fx:id="btnReset" styleClass="btn-reset"
                     mnemonicParsing="false"
-                    onAction="#isPressedReset"
-                    text="Reset"/>
+                    onAction="#isPressedReset" text="Reset"/>
         </VBox>
 
         <padding>
