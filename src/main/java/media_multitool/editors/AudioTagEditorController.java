@@ -81,7 +81,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         initComboBoxes();
 
         genreComboBox.showingProperty().addListener((_, _, isShowing) -> {
-            if (isShowing) {
+            if (Boolean.TRUE.equals(isShowing)) {
                 var popupListView = (ListView<?>) genreComboBox.getSkin().getNode().lookup(".list-view");
                 if (popupListView != null) {
                     popupListView.prefWidthProperty().bind(genreComboBox.widthProperty());

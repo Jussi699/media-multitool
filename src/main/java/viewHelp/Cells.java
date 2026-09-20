@@ -4,6 +4,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 
 public class Cells {
+    private Cells() {}
+
     public static void comboBoxIcoSizeButtonCell(ComboBox<String> comboBoxIcoSize, String text) {
         comboBoxIcoSize.setButtonCell(new ListCell<>() {
             @Override

@@ -185,7 +185,7 @@ public class BlurImageController extends AbstractMediaController {
                 }
 
                 if (blurred.isEmpty()) {
-                    throw new Exception("Blurring failed");
+                    throw new IllegalStateException("Blurring failed: processed image is empty");
                 }
 
                 currentBufferedImage = blurred.get();

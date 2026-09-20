@@ -36,6 +36,7 @@ public class WatermarkPhotoController {
     @Getter private double relativePositionY = 0;
 
     private static final String DEFAULT_PATTERN = "single";
+    private static final String DROP_ZONE_FILLED = "drop-zone-filled";
 
     @FXML
     public void initialize() {
@@ -81,8 +82,8 @@ public class WatermarkPhotoController {
             if (textDragZone != null) {
                 textDragZone.setText("Watermark loaded");
             }
-            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains("drop-zone-filled")) {
-                watermarkDropZone.getStyleClass().add("drop-zone-filled");
+            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
+                watermarkDropZone.getStyleClass().add(DROP_ZONE_FILLED);
             }
         }
     }
@@ -210,8 +211,8 @@ public class WatermarkPhotoController {
             if (textDragZone != null) {
                 textDragZone.setText("Selected: " + file.getName());
             }
-            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains("drop-zone-filled")) {
-                watermarkDropZone.getStyleClass().add("drop-zone-filled");
+            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
+                watermarkDropZone.getStyleClass().add(DROP_ZONE_FILLED);
             }
 
             settings.setWatermarkImage(watermarkImage);
@@ -267,7 +268,7 @@ public class WatermarkPhotoController {
             textDragZone.setText("Drag watermark here");
         }
         if (watermarkDropZone != null) {
-            watermarkDropZone.getStyleClass().remove("drop-zone-filled");
+            watermarkDropZone.getStyleClass().remove(DROP_ZONE_FILLED);
         }
         settings.setWatermarkImage(null);
         updatePreview();
@@ -282,7 +283,7 @@ public class WatermarkPhotoController {
             textDragZone.setText("Drag watermark here");
         }
         if (watermarkDropZone != null) {
-            watermarkDropZone.getStyleClass().remove("drop-zone-filled");
+            watermarkDropZone.getStyleClass().remove(DROP_ZONE_FILLED);
         }
         tileSingle.setSelected(true);
     }

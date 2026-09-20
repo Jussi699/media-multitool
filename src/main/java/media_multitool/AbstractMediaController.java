@@ -18,6 +18,7 @@ import viewHelp.Message;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static model.utility.PathWorker.*;
@@ -29,8 +30,8 @@ public abstract class AbstractMediaController {
     @FXML protected Label labelSuccess;
     @FXML protected Button btnReset;
 
-    /** Currently running media task — used for cancellation. */
-    private volatile Task<?> currentTask;
+    /** Currently running a media task — used for cancellation. */
+    private final AtomicReference<Task<?>> currentTask = new AtomicReference<>();
 
     protected abstract void lockUI();
     protected abstract void unlockUI();
@@ -43,14 +44,14 @@ public abstract class AbstractMediaController {
      * Subclasses may call this from a "Cancel" button action.
      */
     protected void cancelCurrentTask() {
-        Task<?> t = currentTask;
+        Task<?> t = currentTask.get();
         if (t != null && t.isRunning()) {
             t.cancel(true);
         }
     }
 
     protected <T> void executeMediaTask(Task<T> task) {
-        currentTask = task;
+        currentTask.set(task);
         lockUI();
         
         if (progressBar != null) {
@@ -60,21 +61,21 @@ public abstract class AbstractMediaController {
         }
 
         task.setOnSucceeded(_ -> {
-            currentTask = null;
+            currentTask.set(null);
             unbindProgress();
             unlockUI();
             handleTaskSuccess(task.getValue());
         });
 
         task.setOnCancelled(_ -> {
-            currentTask = null;
+            currentTask.set(null);
             unbindProgress();
             unlockUI();
             handleTaskCancelled();
         });
 
         task.setOnFailed(_ -> {
-            currentTask = null;
+            currentTask.set(null);
             unbindProgress();
             unlockUI();
             Throwable exception = task.getException();

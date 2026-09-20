@@ -31,9 +31,8 @@ import java.util.function.BiConsumer;
 import static model.helper.pdf.SplitPdfHelper.*;
 
 public class SplitPdfController extends AbstractMediaController {
-    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit, btnReset;
-    @FXML private ProgressBar progressBar;
-    @FXML private Label labelSuccess, textDragZone, labelSelectFileName;
+    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
+    @FXML private Label textDragZone, labelSelectFileName;
     @FXML private FlowPane imagesFlowPane;
     @FXML private ScrollPane scrollPanePreview;
     @FXML private StackPane dropZone;
@@ -256,7 +255,7 @@ public class SplitPdfController extends AbstractMediaController {
                         togglePageSelection(entry.originalPageIndex, card);
                     }
                 }
-            } catch (IndexOutOfBoundsException e) {
+            } catch (IndexOutOfBoundsException _) {
                 // Silently ignore bounds exceptions during page selection
             }
         });
@@ -290,7 +289,7 @@ public class SplitPdfController extends AbstractMediaController {
         try {
             if (!tfFromPage.getText().isEmpty()) from = Integer.parseInt(tfFromPage.getText());
             if (!tfToPage.getText().isEmpty()) to = Integer.parseInt(tfToPage.getText());
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException _) {}
 
         if (rbFixedRange.isSelected()) {
             from = 1;
@@ -379,7 +378,7 @@ public class SplitPdfController extends AbstractMediaController {
     private int parsePageField(String text) {
         try {
             return text.isEmpty() ? 1 : Integer.parseInt(text);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException _) {
             return 1;
         }
     }

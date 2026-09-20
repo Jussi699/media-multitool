@@ -42,7 +42,6 @@ public class ProtectPdfController extends AbstractMediaController {
     @FXML private PasswordField typePasswordField, repeatPasswordField;
     @FXML private TextField typePasswordTextField, repeatPasswordTextField;
     @FXML private ImageView imageViewPdf;
-    @FXML private ProgressBar progressBar;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private ToggleButton btnShowTypePassword, btnShowRepeatPassword;
@@ -164,6 +163,8 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void turnTypePassword(boolean isSelected) {
+        if (typePasswordTextField == null) return;
+
        if(isSelected) {
            typePasswordTextField.setText(typePassword);
            typePasswordTextField.setVisible(true);
@@ -181,6 +182,8 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void turnRepeatPassword(boolean isSelected) {
+        if (repeatPasswordTextField == null) return;
+
         if(isSelected) {
             repeatPasswordTextField.setText(repeatPassword);
             repeatPasswordTextField.setVisible(true);
@@ -388,16 +391,20 @@ public class ProtectPdfController extends AbstractMediaController {
             btnShowTypePassword.setSelected(false);
             typePasswordField.setVisible(true);
             typePasswordField.setManaged(true);
-            typePasswordTextField.setVisible(false);
-            typePasswordTextField.setManaged(false);
+            if (typePasswordTextField != null) {
+                typePasswordTextField.setVisible(false);
+                typePasswordTextField.setManaged(false);
+            }
         }
-        
+
         if (btnShowRepeatPassword.isSelected()) {
             btnShowRepeatPassword.setSelected(false);
             repeatPasswordField.setVisible(true);
             repeatPasswordField.setManaged(true);
-            repeatPasswordTextField.setVisible(false);
-            repeatPasswordTextField.setManaged(false);
+            if (repeatPasswordTextField != null) {
+                repeatPasswordTextField.setVisible(false);
+                repeatPasswordTextField.setManaged(false);
+            }
         }
     }
 

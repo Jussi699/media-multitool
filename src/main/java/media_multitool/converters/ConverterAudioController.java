@@ -332,18 +332,20 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private static String getString(ToggleButton tb) {
-        String selectedFormat = null;
-        switch (tb.getId()) {
-            case "btnToMP3"       -> selectedFormat = "mp3";
-            case "btnToAAC"       -> selectedFormat = "aac";
-            case "btnToOggVorbis" -> selectedFormat = "ogg";
-            case "btnToOPUS"      -> selectedFormat = "opus";
-            case "btnToFLAC"      -> selectedFormat = "flac";
-            case "btnToALAC"      -> selectedFormat = "m4a";
-            case "btnToWAV"       -> selectedFormat = "wav";
-            case "btnToAIFF"      -> selectedFormat = "aiff";
+        if (tb == null || tb.getId() == null) {
+            return null;
         }
-        return selectedFormat;
+        return switch (tb.getId()) {
+            case "btnToMP3"       -> "mp3";
+            case "btnToAAC"       -> "aac";
+            case "btnToOggVorbis" -> "ogg";
+            case "btnToOPUS"      -> "opus";
+            case "btnToFLAC"      -> "flac";
+            case "btnToALAC"      -> "m4a";
+            case "btnToWAV"       -> "wav";
+            case "btnToAIFF"      -> "aiff";
+            default               -> null;
+        };
     }
 
     @FXML

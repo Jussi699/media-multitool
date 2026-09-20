@@ -140,13 +140,16 @@ public class CompressorVideoController extends AbstractMediaController {
         // Recreate presets when audio compression setting changes
         if (videoProperties.getSrcFile() != null && adaptivePresets != null) {
             adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
-            
-            if (selectedPreset != null) {
+
+            if (adaptivePresets != null && adaptivePresets.length >= 3 && selectedPreset != null) {
                 ToggleButton selected = (ToggleButton) toggleGroup.getSelectedToggle();
                 if      (selected == btnBasicCompress)   {selectedPreset = adaptivePresets[0];}
                 else if (selected == btnStrongCompress)  {selectedPreset = adaptivePresets[1];}
                 else if (selected == btnSuperCompress)   {selectedPreset = adaptivePresets[2];}
 
+                updateEstimatedSize();
+            } else if (adaptivePresets == null) {
+                selectedPreset = null;
                 updateEstimatedSize();
             }
         }
@@ -239,17 +242,19 @@ public class CompressorVideoController extends AbstractMediaController {
             return;
         }
 
+        String selectPreset = "Selected preset: ";
+
         if (!tb.isSelected()) {
             selectedPreset = null;
         } else if (source == btnBasicCompress) {
             selectedPreset = adaptivePresets[0];
-            ErrorLogger.info("Selected preset: " + selectedPreset.name());
+            ErrorLogger.info(selectPreset + selectedPreset.name());
         } else if (source == btnStrongCompress) {
             selectedPreset = adaptivePresets[1];
-            ErrorLogger.info("Selected preset: " + selectedPreset.name());
+            ErrorLogger.info(selectPreset + selectedPreset.name());
         } else if (source == btnSuperCompress) {
             selectedPreset = adaptivePresets[2];
-            ErrorLogger.info("Selected preset: " + selectedPreset.name());
+            ErrorLogger.info(selectPreset + selectedPreset.name());
         }
         updateEstimatedSize();
     }
@@ -264,7 +269,7 @@ public class CompressorVideoController extends AbstractMediaController {
             if (videoProperties.getHideSuccessMessageTimer() != null) {
                 videoProperties.getHideSuccessMessageTimer().stop();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception _) {}
 
         double estimatedMB = calculateEstimatedSizeMB();
         if (estimatedMB <= 0) return;

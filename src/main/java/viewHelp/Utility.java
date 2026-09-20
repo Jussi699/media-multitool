@@ -5,9 +5,14 @@ import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 public class Utility {
+    private Utility() {}
+
     public static Optional<MultimediaInfo> getMetadata(File file) {
         if (file == null || !file.exists()) return Optional.empty();
         try {
@@ -23,5 +28,9 @@ public class Utility {
         final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return String.format("%.1f %s", size / Math.pow(1024, digitGroups), units[digitGroups]);
+    }
+
+    public static void cleanUp(Path path) throws IOException {
+        Files.delete(path);
     }
 }

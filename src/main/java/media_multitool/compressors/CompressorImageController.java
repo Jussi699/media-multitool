@@ -304,7 +304,7 @@ public class CompressorImageController extends AbstractMediaController {
             if (imageProperties.getHideSuccessMessageTimer() != null) {
                 imageProperties.getHideSuccessMessageTimer().stop();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception _) {}
 
         double estimatedMB = calculateEstimatedSizeMB();
         if (estimatedMB <= 0) return;

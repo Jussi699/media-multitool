@@ -20,6 +20,7 @@ import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
+import viewHelp.Utility;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -46,7 +47,6 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     }
 
     @FXML private ImageView imageViewPdf;
-    @FXML private ProgressBar progressBar;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnAllImageToPng, btnAllImageToJpeg;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
@@ -109,6 +109,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         switch (selectedBtn.getId()) {
             case "btnAllImageToPng"  -> imageProperties.setTypeImage("png");
             case "btnAllImageToJpeg" -> imageProperties.setTypeImage("jpeg");
+            default -> {}
         }
 
         isExtract = true;
@@ -231,19 +232,17 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 int totalPages = currentDoc.getNumberOfPages();
                 List<File> tempFiles = new ArrayList<>();
 
+                String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
+                String targetFormat = imageProperties.getTypeImage();
+                String format = (targetFormat.equalsIgnoreCase("JPEG") || targetFormat.equalsIgnoreCase("JPG")) ? "jpg" : targetFormat;
+
                 try {
                     for (int i = 0; i < totalPages; i++) {
                         updateProgress(i * 50L / totalPages, 100);
 
                         BufferedImage image = renderer.renderImageWithDPI(i, 300);
 
-                        String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                        File tempFile = new File(imageProperties.getOutput(), baseName + "_page_" + (i + 1) + "." + imageProperties.getTypeImage());
-
-                        String format = imageProperties.getTypeImage().toUpperCase();
-                        if (format.equals("JPEG") || format.equals("JPG")) {
-                            format = "jpg";
-                        }
+                        File tempFile = new File(imageProperties.getOutput(), baseName + "_page_" + (i + 1) + "." + targetFormat);
 
                         ImageIO.write(image, format, tempFile);
                         tempFiles.add(tempFile);
@@ -251,7 +250,6 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
                     updateProgress(60, 100);
 
-                    String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
                     File zipFile = new File(imageProperties.getOutput(), baseName + "_" + UUID.randomUUID().toString().substring(0, 3) + "_images.zip");
 
                     try (FileOutputStream fos = new FileOutputStream(zipFile);
@@ -274,8 +272,11 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                                 zos.closeEntry();
                             }
 
-                            if (file.delete()) {
-                                ErrorLogger.info("Temp files has been deleted.");
+                            try {
+                                Utility.cleanUp(file.toPath());
+                                ErrorLogger.info("Temp file has been deleted: " + file.getName());
+                            } catch (IOException e) {
+                                ErrorLogger.error("Failed to delete temp file: " + file.getAbsolutePath() + " - " + e.getMessage());
                             }
                         }
                     }
@@ -287,8 +288,11 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 } catch (Exception e) {
                     for (File tempFile : tempFiles) {
                         if (tempFile.exists()) {
-                            if(tempFile.delete()) {
+                            try {
+                                Utility.cleanUp(tempFile.toPath());
                                 ErrorLogger.info(tempFile.getAbsolutePath() + " has been deleted.");
+                            } catch (IOException ex) {
+                                ErrorLogger.error("Failed to delete temp file on cleanup: " + tempFile.getAbsolutePath() + " - " + ex.getMessage());
                             }
                         }
                     }

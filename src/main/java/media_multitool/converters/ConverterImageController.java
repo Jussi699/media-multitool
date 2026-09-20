@@ -45,6 +45,7 @@ public class ConverterImageController extends AbstractMediaController {
     @FXML private StackPane dropZone, previewContainer;
 
     private List<Control> listControls;
+    private static final String TO_ICO = "to ICO";
 
     @Override
     protected MediaProperties getProperties() {
@@ -78,13 +79,13 @@ public class ConverterImageController extends AbstractMediaController {
 
     private void initComboBoxes() {
         comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256", "512", "768");
-        comboBoxIcoSize.setValue("to ICO");
+        comboBoxIcoSize.setValue(TO_ICO);
 
-        Cells.comboBoxIcoSizeButtonCell(comboBoxIcoSize, "to ICO");
-        Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, "to ICO");
+        Cells.comboBoxIcoSizeButtonCell(comboBoxIcoSize, TO_ICO);
+        Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, TO_ICO);
 
         comboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
-            if (newVal != null && !newVal.equals("to ICO") && imageViewPreview.getImage() != null) {
+            if (newVal != null && !newVal.equals(TO_ICO) && imageViewPreview.getImage() != null) {
                 if (imageProperties.getImage() != null && imageProperties.getImage().getName().toLowerCase().endsWith(".ico")) {
                     try {
                         double size = Double.parseDouble(newVal);
@@ -92,7 +93,7 @@ public class ConverterImageController extends AbstractMediaController {
                         imageViewPreview.fitWidthProperty().unbind();
                         imageViewPreview.setFitHeight(size);
                         imageViewPreview.setFitWidth(size);
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException _) {
                         Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Invalid size value!");
                     }
                 }
@@ -200,7 +201,7 @@ public class ConverterImageController extends AbstractMediaController {
 
         toggleGroup.selectToggle(null);
 
-        comboBoxIcoSize.setValue("to ICO");
+        comboBoxIcoSize.setValue(TO_ICO);
         disableControls();
     }
 
@@ -297,7 +298,7 @@ public class ConverterImageController extends AbstractMediaController {
 
     @FXML
     private void onActionClickToggleBtnFormat(ActionEvent e) {
-        comboBoxIcoSize.setValue("to ICO");
+        comboBoxIcoSize.setValue(TO_ICO);
         viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
 
         ToggleButton tb = (ToggleButton) e.getSource();
@@ -325,7 +326,7 @@ public class ConverterImageController extends AbstractMediaController {
         viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
         String selected = comboBoxIcoSize.getValue();
 
-        if (selected == null || selected.equals("to ICO")) {
+        if (selected == null || selected.equals(TO_ICO)) {
             if ("ico".equals(imageProperties.getTypeImage())) {
                 imageProperties.setTypeImage(null);
             }

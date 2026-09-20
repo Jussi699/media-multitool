@@ -215,10 +215,8 @@ public class WatermarkPdfController extends AbstractMediaController {
                         "pdf"
                 );
 
-                try (PDDocument sourceDoc = Loader.loadPDF(pdfFile)) {
+                try (PDDocument sourceDoc = Loader.loadPDF(pdfFile); PDDocument outputDoc = new PDDocument()) {
                     int pageCount = sourceDoc.getNumberOfPages();
-
-                    PDDocument outputDoc = new PDDocument();
 
                     for (int i = 0; i < pageCount; i++) {
                         updateProgress(5 + (90.0 * i / pageCount), 100);
@@ -249,7 +247,6 @@ public class WatermarkPdfController extends AbstractMediaController {
 
                     updateProgress(95, 100);
                     outputDoc.save(outputFile);
-                    outputDoc.close();
                 }
 
                 updateProgress(100, 100);

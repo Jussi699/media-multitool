@@ -28,6 +28,8 @@ public class Alerts {
     private static final ImageView INFO_ICON = loadIcon("/img/info.png", 48);
     private static final ImageView QUESTION_ICON = loadIcon("/img/question.png", 48);
 
+    private Alerts() {}
+
     private static ImageView loadIcon(String path, double size) {
         InputStream stream = Alerts.class.getResourceAsStream(path);
         if (stream == null) {
@@ -130,7 +132,8 @@ public class Alerts {
         switch (type) {
             case WARNING           -> pane.getStyleClass().add("warning");
             case ERROR             -> pane.getStyleClass().add("danger");
-            case INFORMATION, NONE -> pane.getStyleClass().add("info");
+            case INFORMATION       -> pane.getStyleClass().add("info");
+            default                -> pane.getStyleClass().add("info");
         }
     }
 

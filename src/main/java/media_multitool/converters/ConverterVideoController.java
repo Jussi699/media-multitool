@@ -379,13 +379,12 @@ public class ConverterVideoController extends AbstractMediaController {
                 + ", A-BR=" + finalAudioBitrate + ", CH=" + finalChannels 
                 + ", SR=" + finalSamplingRate + ", FPS=" + finalFps);
 
-        if ("webm".equalsIgnoreCase(videoProperties.getTargetFormat())) {
-            if (finalSamplingRate == 11025 || finalSamplingRate == 22050 ||
+        if ("webm".equalsIgnoreCase(videoProperties.getTargetFormat()) &&
+                finalSamplingRate == 11025 || finalSamplingRate == 22050 ||
                 finalSamplingRate == 32000 || finalSamplingRate == 44100) {
                 Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Sampling rate not supported",
                         "The sampling rate (" + finalSamplingRate + " Hz) is not supported for WEBM video format. Please choose another rate or format.");
                 return;
-            }
         }
 
         String finalResolution = ("Match source".equalsIgnoreCase(videoProperties.getResolution())) ? parseResolution(sourceInfo).orElse(null) : videoProperties.getResolution();

@@ -16,6 +16,7 @@ import media_multitool.watermarks.viewController.WatermarkPhotoController;
 import media_multitool.watermarks.viewController.WatermarkTextController;
 import model.checks.Checking;
 import model.converterImage.strategy.SvgImageStrategy;
+import model.exceptions.ImageProcessingException;
 import model.helper.images.CropHelper;
 import model.helper.watermarks.*;
 import model.logger.ErrorLogger;
@@ -212,7 +213,7 @@ public class WatermarkImageController extends AbstractMediaController {
 
                     if(watermarked == null) {
                         ErrorLogger.error("Failed to apply watermark to image!");
-                        throw new RuntimeException("Failed to apply watermark to image!");
+                        throw new ImageProcessingException("Failed to apply watermark to image!");
                     }
 
                     if ("ico".equalsIgnoreCase(fmt)) {

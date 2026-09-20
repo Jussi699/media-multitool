@@ -45,7 +45,6 @@ public class UnlockPdfController extends AbstractMediaController {
     @FXML private PasswordField typePasswordField;
     @FXML private TextField typePasswordTextField;
     @FXML private ImageView imageViewPdf;
-    @FXML private ProgressBar progressBar;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private ToggleButton btnShowTypePassword;
@@ -324,8 +323,10 @@ public class UnlockPdfController extends AbstractMediaController {
             btnShowTypePassword.setSelected(false);
             typePasswordField.setVisible(true);
             typePasswordField.setManaged(true);
-            typePasswordTextField.setVisible(false);
-            typePasswordTextField.setManaged(false);
+            if (typePasswordTextField != null) {
+                typePasswordTextField.setVisible(false);
+                typePasswordTextField.setManaged(false);
+            }
         }
     }
 

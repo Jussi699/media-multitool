@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import media_multitool.watermarks.viewController.WatermarkPhotoController;
 import media_multitool.watermarks.viewController.WatermarkTextController;
+import model.exceptions.ImageProcessingException;
 import model.helper.MediaHelper;
 import model.helper.images.CropHelper;
 import model.helper.watermarks.*;
@@ -249,7 +250,8 @@ public class WatermarkVideoController extends AbstractMediaController {
                         }
 
                         if (!result) {
-                            throw new RuntimeException("Failed to apply watermark to video!");
+                            ErrorLogger.error("Failed to apply watermark to image!");
+                            throw new ImageProcessingException("Failed to apply watermark to video!");
                         }
 
                         updateProgress(100, 100);
@@ -334,7 +336,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         if (progressBar != null) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
-            progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+            progressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         }
 
         Task<BufferedImage> loadTask = new Task<>() {

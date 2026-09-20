@@ -201,10 +201,8 @@ public class BlackWhiteImageController extends AbstractMediaController {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
                 updatePreview();
-                if (currentBufferedImage != null) {
-                    if (labelPreviewPlaceholder != null) {
-                        labelPreviewPlaceholder.setVisible(false);
-                    }
+                if (currentBufferedImage != null && labelPreviewPlaceholder != null) {
+                    labelPreviewPlaceholder.setVisible(false);
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
