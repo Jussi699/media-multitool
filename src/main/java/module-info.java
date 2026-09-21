@@ -20,6 +20,9 @@ module media_multitool {
     requires org.apache.xmlgraphics.batik.transcoder;
     requires org.bytedeco.javacv;
     requires org.bytedeco.ffmpeg;
+    requires com.sun.jna;
+    requires com.sun.jna.platform;
+    requires org.junit.jupiter.api;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;
@@ -54,4 +57,6 @@ module media_multitool {
     opens media_multitool.watermarks.viewController to javafx.fxml;
     exports model.helper.images;
     opens model.helper.images to javafx.fxml;
+    opens model.converterVideo;
+    opens model.converterImage;
 }

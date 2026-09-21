@@ -2,7 +2,7 @@
   <configuration default="false" name="Launcher" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="app.Launcher" />
     <module name="Media-Multitool" />
-    <option name="VM_PARAMETERS" value="--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED -ea" />
+    <option name="VM_PARAMETERS" value="--enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=org.bytedeco.javacpp --enable-native-access=org.bytedeco.ffmpeg --enable-native-access=ALL-UNNAMED -ea" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

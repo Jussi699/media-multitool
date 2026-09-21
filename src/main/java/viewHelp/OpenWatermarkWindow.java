@@ -41,6 +41,8 @@ public class OpenWatermarkWindow {
 
                 stage.setUserData(controller);
                 stageHolder[0] = stage;
+
+                WindowsDwmUtils.enableDarkMode(stage);
             } else {
                 @SuppressWarnings("unchecked")
                 T existing = (T) stage.getUserData();

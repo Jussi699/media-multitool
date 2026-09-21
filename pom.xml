@@ -13,10 +13,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
         <javafx.version>25.0.2</javafx.version>
+        <jna.version>5.14.0</jna.version>
         <maven.compiler.release>25</maven.compiler.release>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${jna.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>${jna.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
@@ -180,6 +191,12 @@
             <artifactId>colorpicker</artifactId>
             <version>2.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>6.1.3</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -204,7 +221,13 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <argLine>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED</argLine>
+                    <argLine>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,ALL-UNNAMED</argLine>
+                    <argLine>
+                        --enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,ALL-UNNAMED
+                        --add-reads media_multitool=org.junit.jupiter.api
+                        --add-opens media_multitool/model.converterVideo=org.junit.platform.commons
+                        --add-opens media_multitool/model.converterImage=org.junit.platform.commons
+                    </argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -218,7 +241,7 @@
                         </manifest>
                         <manifestEntries>
                             <Add-Opens>javafx.graphics/javafx.application javafx.graphics/com.sun.javafx.application</Add-Opens>
-                            <Enable-Native-Access>javafx.graphics,ALL-UNNAMED</Enable-Native-Access>
+                            <Enable-Native-Access>javafx.graphics,com.sun.jna,ALL-UNNAMED</Enable-Native-Access>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -239,8 +262,7 @@
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
                             <options>
-                                <option>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED</option>
-                            </options>
+                                <option>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED</option>                            </options>
                         </configuration>
                     </execution>
                 </executions>

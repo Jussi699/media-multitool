@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.logger.ErrorLogger;
+import viewHelp.WindowsDwmUtils;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -37,14 +38,14 @@ public class MediaMultitoolApp extends Application {
             System.exit(0);
         });
 
+        WindowsDwmUtils.enableDarkMode(loadingStage);
         loadingStage.show();
-
 
         Task<Scene> loadAppTask = new Task<>() {
             @Override
             protected Scene call() throws Exception {
                 FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
-                Scene scene = new Scene(fxmlLoader.load(), 1040, 900);
+                Scene scene = new Scene(fxmlLoader.load(), 1040, 860);
                 scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
                 scene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
                 scene.getStylesheets().add(String.valueOf(getClass().getResource("/home_page&control_panel.css")));
@@ -72,6 +73,8 @@ public class MediaMultitoolApp extends Application {
 
             mainStage.setTitle("Media multitool!");
             mainStage.setScene(mainScene);
+
+            WindowsDwmUtils.enableDarkMode(mainStage);
 
             loadingStage.close();
             mainStage.show();

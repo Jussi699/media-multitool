@@ -135,6 +135,17 @@ public class Alerts {
             case INFORMATION       -> pane.getStyleClass().add("info");
             default                -> pane.getStyleClass().add("info");
         }
+
+        alert.showingProperty().addListener((_, _, isShowing) -> {
+            if (Boolean.TRUE.equals(isShowing)) {
+                Platform.runLater(() -> {
+                    var scene = alert.getDialogPane().getScene();
+                    if (scene != null && scene.getWindow() != null) {
+                        WindowsDwmUtils.applyDarkMode(scene.getWindow());
+                    }
+                });
+            }
+        });
     }
 
     public static boolean confirmationDialog(String title, String headerText, String message) {
