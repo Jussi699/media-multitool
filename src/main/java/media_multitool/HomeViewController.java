@@ -147,14 +147,14 @@ public class HomeViewController {
     @FXML
     private void onOpenPdfToImagePressed() {
         if (mainController != null) {
-            mainController.onActionChoiceActionPdf(22);
+            mainController.onActionChoiceActionPdf(23);
         }
     }
 
     @FXML
     private void onOpenImagesToPdfPressed() {
         if (mainController != null) {
-            mainController.onActionChoiceActionPdf(23);
+            mainController.onActionChoiceActionPdf(22);
         }
     }
 

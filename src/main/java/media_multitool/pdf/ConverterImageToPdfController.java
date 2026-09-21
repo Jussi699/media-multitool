@@ -21,6 +21,7 @@ import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
+import viewHelp.Utility;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -155,16 +156,21 @@ public class ConverterImageToPdfController extends AbstractMediaController {
 
                 updateProgress(50, 100);
                 if (isCancelled() || cancelFlag.get()) {
-                    if (outputFile.exists()) outputFile.delete();
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");
                 }
 
                 if (currentDoc != null) {
-                    currentDoc.save(outputFile);
+                    try {
+                        currentDoc.save(outputFile);
+                    } catch (Exception e) {
+                        Utility.cleanupFile(outputFile);
+                        throw e;
+                    }
                 }
 
                 if (isCancelled() || cancelFlag.get()) {
-                    if (outputFile.exists()) outputFile.delete();
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");
                 }
 

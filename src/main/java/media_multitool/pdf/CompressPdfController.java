@@ -22,6 +22,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
+import viewHelp.Utility;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -44,7 +45,7 @@ public class CompressPdfController extends AbstractMediaController {
 
     @FXML private ImageView imageViewPdf;
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnReset, btnCancel;
+    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnCancel;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder, labelEstimatedSize;
     @FXML private ToggleButton btnLowCompression, btnMediumCompression, btnHighCompression;
 
@@ -136,21 +137,19 @@ public class CompressPdfController extends AbstractMediaController {
 
                 updateProgress(30, 100);
                 if (isCancelled() || cancelFlag.get()) {
-                    if (outputFile.exists()) outputFile.delete();
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Compression cancelled");
                 }
 
                 try {
                     CompressPdfHelper.compressPdf(imageProperties.getImage(), outputFile, selectedLevel);
                 } catch (Exception e) {
-                    if (outputFile.exists()) {
-                        outputFile.delete();
-                    }
+                    Utility.cleanupFile(outputFile);
                     throw e;
                 }
 
                 if (isCancelled() || cancelFlag.get()) {
-                    if (outputFile.exists()) outputFile.delete();
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Compression cancelled");
                 }
 
@@ -228,7 +227,7 @@ public class CompressPdfController extends AbstractMediaController {
         } catch (IOException e) {
             ErrorLogger.error("Error closing document during reset: " + e.getMessage());
         }
-        
+
         if (imageViewPdf != null) {
             imageViewPdf.setImage(null);
         }

@@ -1,6 +1,5 @@
 package media_multitool.pdf;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -10,7 +9,6 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import media_multitool.AbstractMediaController;
 import model.helper.pdf.ConvertImagesToPdfHelper;
 import model.logger.ErrorLogger;
@@ -22,6 +20,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import viewHelp.Alerts;
 import viewHelp.ImagePreviewCard;
 import viewHelp.Message;
+import viewHelp.Utility;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
+import static viewHelp.Message.setupClearMessageTimer;
 
 public class ConverterImagesToPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -69,6 +69,8 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit, btnReset);
 
         imageProperties.setOutput(getSavedPath());
+
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         initComboBoxes();
         setupDragAndDropMultiple();
@@ -234,6 +236,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
                 updateProgress(30, 100);
                 if (isCancelled() || cancelFlag.get()) {
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");
                 }
 
@@ -254,24 +257,21 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
                 if (isCancelled() || cancelFlag.get()) {
                     if (finalDoc != null) {
-                        try { finalDoc.close(); } catch (Exception ignored) {}
+                        try { finalDoc.close(); } catch (Exception _) {}
                     }
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");
                 }
 
                 try {
                     helper.savePdfDocument(finalDoc, outputFile);
                 } catch (Exception e) {
-                    if (outputFile.exists()) {
-                        outputFile.delete();
-                    }
+                    Utility.cleanupFile(outputFile);
                     throw e;
                 }
 
                 if (isCancelled() || cancelFlag.get()) {
-                    if (outputFile.exists()) {
-                        outputFile.delete();
-                    }
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");
                 }
 
@@ -303,14 +303,6 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         Platform.runLater(() -> {
             Message.showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
-            labelSuccess.setVisible(true);
-            
-            PauseTransition hideTransition = new PauseTransition(Duration.seconds(5));
-            hideTransition.setOnFinished(_ -> {
-                labelSuccess.setVisible(false);
-                progressBar.setProgress(0);
-            });
-            hideTransition.play();
         });
     }
 
@@ -325,14 +317,6 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             Message.showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), 
                 imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
-            labelSuccess.setVisible(true);
-            
-            PauseTransition hideTransition = new PauseTransition(Duration.seconds(5));
-            hideTransition.setOnFinished(_ -> {
-                labelSuccess.setVisible(false);
-                progressBar.setProgress(0);
-            });
-            hideTransition.play();
         });
     }
 

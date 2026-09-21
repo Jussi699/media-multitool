@@ -1,5 +1,7 @@
 package viewHelp;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import model.logger.ErrorLogger;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
@@ -32,5 +34,19 @@ public class Utility {
 
     public static void cleanUp(Path path) throws IOException {
         Files.delete(path);
+    }
+
+    public static void cleanupFile(File file) {
+        if (file != null && file.exists()) {
+            try {
+                cleanUp(file.toPath());
+                ErrorLogger.info("File deleted: " + file.getName());
+            } catch (IOException e) {
+                ErrorLogger.error("Failed to delete file: " + file.getAbsolutePath() + " - " + e.getMessage());
+                Platform.runLater(() ->
+                        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to delete file", "Could not delete temporary file. Check logs for details.")
+                );
+            }
+        }
     }
 }

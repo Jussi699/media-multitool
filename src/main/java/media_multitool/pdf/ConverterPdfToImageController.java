@@ -111,7 +111,6 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         switch (selectedBtn.getId()) {
             case "btnAllImageToPng"  -> imageProperties.setTypeImage("png");
             case "btnAllImageToJpeg" -> imageProperties.setTypeImage("jpeg");
-            default -> {}
         }
 
         cancelFlag.set(false);
@@ -232,9 +231,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 ImageIO.write(image, format, outputFile);
 
                 if (isCancelled() || cancelFlag.get()) {
-                    if (outputFile.exists()) {
-                        outputFile.delete();
-                    }
+                    Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");
                 }
 
@@ -310,12 +307,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                                 zos.closeEntry();
                             }
 
-                            try {
-                                Utility.cleanUp(file.toPath());
-                                ErrorLogger.info("Temp file has been deleted: " + file.getName());
-                            } catch (IOException e) {
-                                ErrorLogger.error("Failed to delete temp file: " + file.getAbsolutePath() + " - " + e.getMessage());
-                            }
+                            Utility.cleanupFile(file);
                         }
                     }
 
@@ -329,23 +321,9 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
                 } catch (Exception e) {
                     for (File tempFile : tempFiles) {
-                        if (tempFile.exists()) {
-                            try {
-                                Utility.cleanUp(tempFile.toPath());
-                                ErrorLogger.info(tempFile.getAbsolutePath() + " has been deleted.");
-                            } catch (IOException ex) {
-                                ErrorLogger.error("Failed to delete temp file on cleanup: " + tempFile.getAbsolutePath() + " - " + ex.getMessage());
-                            }
-                        }
+                        Utility.cleanupFile(tempFile);
                     }
-                    if (zipFile != null && zipFile.exists()) {
-                        try {
-                            Utility.cleanUp(zipFile.toPath());
-                            ErrorLogger.info(zipFile.getAbsolutePath() + " has been deleted.");
-                        } catch (IOException ex) {
-                            ErrorLogger.error("Failed to delete zip file on cleanup: " + zipFile.getAbsolutePath() + " - " + ex.getMessage());
-                        }
-                    }
+                    Utility.cleanupFile(zipFile);
                     throw e;
                 }
             }

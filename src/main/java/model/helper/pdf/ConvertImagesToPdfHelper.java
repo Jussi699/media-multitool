@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public class ConvertImagesToPdfHelper {
 
@@ -90,7 +91,7 @@ public class ConvertImagesToPdfHelper {
             String margin,
             String pageSize,
             String orientation,
-            Consumer<Integer> progressCallback
+            IntConsumer progressCallback
     ) {
         
         if (imageFiles == null || imageFiles.isEmpty()) {
@@ -152,11 +153,11 @@ public class ConvertImagesToPdfHelper {
             for (PDDocument d : tempDocuments) {
                 try {
                     d.close();
-                } catch (Exception ignored) {}
+                } catch (Exception _) {}
             }
             try {
                 finalDoc.close();
-            } catch (Exception ignored) {}
+            } catch (Exception _) {}
             throw e;
         }
         
