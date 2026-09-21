@@ -21,24 +21,40 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.logger.ErrorLogger;
 
-import java.io.InputStream;
-import java.util.Optional;
+import java.net.URL;
 
 public class Alerts {
-    private static final ImageView INFO_ICON = loadIcon("/img/info.png", 48);
-    private static final ImageView QUESTION_ICON = loadIcon("/img/question.png", 48);
+    private static final String INFO_ICON_PATH = "/img/info.png";
+    private static final String QUESTION_ICON_PATH = "/img/question.png";
 
     private Alerts() {}
 
-    private static ImageView loadIcon(String path, double size) {
-        InputStream stream = Alerts.class.getResourceAsStream(path);
-        if (stream == null) {
+    private static String getIconPath(Alert.AlertType type) {
+        if (type == Alert.AlertType.CONFIRMATION) {
+            return QUESTION_ICON_PATH;
+        }
+        return INFO_ICON_PATH;
+    }
+
+    private static ImageView createGraphic(Alert.AlertType type) {
+        String path = getIconPath(type);
+        URL resource = Alerts.class.getResource(path);
+        if (resource == null) {
             ErrorLogger.error("File " + path + " not found");
             return null;
         }
 
-        Image image = new Image(stream, size, size, true, false);
+        Image image = new Image(resource.toExternalForm(), 48, 48, true, true);
         return new ImageView(image);
+    }
+
+    private static Image createStageIcon(Alert.AlertType type) {
+        String path = getIconPath(type);
+        URL resource = Alerts.class.getResource(path);
+        if (resource == null) {
+            return null;
+        }
+        return new Image(resource.toExternalForm());
     }
 
     public static void alertDialog(Alert.AlertType type, String title, String headerText, String message) {
@@ -54,7 +70,12 @@ public class Alerts {
         alert.initModality(Modality.NONE);
         alert.setResizable(true);
         alert.setWidth(600);
-        Optional.ofNullable(INFO_ICON).ifPresent(alert::setGraphic);
+
+        ImageView graphic = createGraphic(type);
+        if (graphic != null) {
+            alert.setGraphic(graphic);
+        }
+
         applyDialogStyles(alert, type);
         alert.showAndWait();
     }
@@ -129,6 +150,13 @@ public class Alerts {
         }
         pane.getStyleClass().add("dialog-pane");
 
+        if (pane.getScene() != null && pane.getScene().getWindow() instanceof Stage stage) {
+            Image stageIcon = createStageIcon(type);
+            if (stageIcon != null) {
+                stage.getIcons().setAll(stageIcon);
+            }
+        }
+
         switch (type) {
             case WARNING           -> pane.getStyleClass().add("warning");
             case ERROR             -> pane.getStyleClass().add("danger");
@@ -141,6 +169,12 @@ public class Alerts {
                 Platform.runLater(() -> {
                     var scene = alert.getDialogPane().getScene();
                     if (scene != null && scene.getWindow() != null) {
+                        if (scene.getWindow() instanceof Stage stage) {
+                            Image stageIcon = createStageIcon(type);
+                            if (stageIcon != null) {
+                                stage.getIcons().setAll(stageIcon);
+                            }
+                        }
                         WindowsDwmUtils.applyDarkMode(scene.getWindow());
                     }
                 });
@@ -154,10 +188,13 @@ public class Alerts {
         alert.initModality(Modality.APPLICATION_MODAL);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
-        Optional.ofNullable(QUESTION_ICON).ifPresent(alert::setGraphic);
+
+        ImageView graphic = createGraphic(Alert.AlertType.CONFIRMATION);
+        if (graphic != null) {
+            alert.setGraphic(graphic);
+        }
 
         alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
         applyDialogStyles(alert, Alert.AlertType.CONFIRMATION);
 
         var result = alert.showAndWait();

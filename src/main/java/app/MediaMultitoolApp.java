@@ -68,8 +68,6 @@ public class MediaMultitoolApp extends Application {
             }
 
             mainStage.setResizable(true);
-            mainStage.setMinHeight(600);
-            mainStage.setMinWidth(700);
 
             mainStage.setTitle("Media multitool!");
             mainStage.setScene(mainScene);
