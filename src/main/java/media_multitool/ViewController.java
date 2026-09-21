@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public class ViewController {
 
@@ -61,8 +61,8 @@ public class ViewController {
 
         stackPaneMapPdfTools.putAll(Map.of(
                 21, imageToPdfPage,
-                22, pdfToImagePage,
-                23, imagesToPdfPage,
+                22, imagesToPdfPage,
+                23, pdfToImagePage,
                 24, removePagesPdfPage,
                 25, protectPdfPage,
                 26, unlockPdfPage,
@@ -93,8 +93,8 @@ public class ViewController {
 
         populateVBox(pdfToolsContent, List.of(
                 new Item(21, "Image To PDF"),
-                new Item(22, "PDF To Image"),
-                new Item(23, "Image(s) To PDF"),
+                new Item(22, "Image(s) To PDF"),
+                new Item(23, "PDF To Image"),
                 new Item(24, "Remove Pages PDF"),
                 new Item(25, "Protect PDF"),
                 new Item(26, "Unlock PDF"),
@@ -112,7 +112,7 @@ public class ViewController {
         showHomePage();
     }
 
-    private void populateVBox(VBox box, List<Item> items, Consumer<Integer> action) {
+    private void populateVBox(VBox box, List<Item> items, IntConsumer action) {
         for (Item item : items) {
             Button btn = new Button(item.title());
             btn.getStyleClass().add("sub-btn");

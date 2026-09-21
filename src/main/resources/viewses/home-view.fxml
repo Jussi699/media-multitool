@@ -126,18 +126,18 @@
                                 text="Blur"/>
 
                         <Button mnemonicParsing="false"
-                                onAction="#onOpenFindPixelPressed"
+                                onAction="#onOpenSpotBlurImagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
-                                text="Find Pixel"/>
+                                text="Spot Blur"/>
                     </HBox>
 
                     <HBox styleClass="hbox-home-page">
                         <Button mnemonicParsing="false"
-                                onAction="#onOpenCropImagePressed"
+                                onAction="#onOpenFindPixelPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
-                                text="Crop"/>
+                                text="Find Pixel"/>
 
                         <Button mnemonicParsing="false"
                                 onAction="#onOpenColorReplaceInImagePressed"
@@ -146,10 +146,10 @@
                                 text="Color Replace"/>
 
                         <Button mnemonicParsing="false"
-                                onAction="#onOpenSpotBlurImagePressed"
+                                onAction="#onOpenCropImagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
-                                text="Spot Blur"/>
+                                text="Crop"/>
                     </HBox>
                 </VBox>
 
@@ -163,25 +163,31 @@
                                 text="Image to PDF"/>
 
                         <Button mnemonicParsing="false"
+                                onAction="#onOpenImagesToPdfPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Image(s) to PDF"/>
+
+                        <Button mnemonicParsing="false"
                                 onAction="#onOpenPdfToImagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="PDF to Image"/>
 
                         <Button mnemonicParsing="false"
-                                onAction="#onOpenImagesToPdfPressed"
+                                onAction="#onOpenRemovePagesPdfPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
-                                text="Merge Images"/>
+                                text="Remove Pages"/>
+                    </HBox>
 
+                    <HBox styleClass="hbox-home-page">
                         <Button mnemonicParsing="false"
                                 onAction="#onOpenProtectPdfPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Protect PDF"/>
-                    </HBox>
 
-                    <HBox styleClass="hbox-home-page">
                         <Button mnemonicParsing="false"
                                 onAction="#onOpenUnlockPdfPressed"
                                 prefWidth="160.0"
@@ -189,23 +195,26 @@
                                 text="Unlock PDF"/>
 
                         <Button mnemonicParsing="false"
-                                onAction="#onOpenRemovePagesPdfPressed"
+                                onAction="#onOpenCompressorPdfPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
-                                text="Remove Pages"/>
+                                text="Compress PDF"/>
 
                         <Button mnemonicParsing="false"
                                 onAction="#onOpenMergePdfPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Merge PDF"/>
+                    </HBox>
 
+                    <HBox styleClass="hbox-home-page">
                         <Button mnemonicParsing="false"
                                 onAction="#onOpenSplitPdfPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Split PDF"/>
                     </HBox>
+
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="section-container">
