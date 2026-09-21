@@ -103,41 +103,61 @@ public class ConvertImagesToPdfHelper {
         int totalImages = imageFiles.size();
         List<PDDocument> tempDocuments = new ArrayList<>();
         
-        for (int i = 0; i < totalImages; i++) {
-            File imageFile = imageFiles.get(i);
-            
-            if (!isImageFile(imageFile)) {
-                ErrorLogger.warn("Skipping non-image file: " + imageFile.getName());
-                continue;
-            }
-            
-            pdfHelper.getDocumentFromImage(
-                imageFile.getAbsolutePath(),
-                margin,
-                pageSize,
-                orientation
-            ).ifPresent(tempDocuments::add);
-            
-            if (progressCallback != null) {
-                int progress = 30 + (50 * (i + 1) / totalImages);
-                progressCallback.accept(progress);
-            }
-        }
-        
-        for (int i = 0; i < tempDocuments.size(); i++) {
-            PDDocument tempDoc = tempDocuments.get(i);
-            try {
-                for (int pageIndex = 0; pageIndex < tempDoc.getNumberOfPages(); pageIndex++) {
-                    finalDoc.addPage(tempDoc.getPage(pageIndex));
+        try {
+            for (int i = 0; i < totalImages; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new RuntimeException(new InterruptedException("Conversion cancelled"));
                 }
-            } catch (Exception e) {
-                ErrorLogger.error("Error adding page from document " + i + ": " + e.getMessage());
+
+                File imageFile = imageFiles.get(i);
+                
+                if (!isImageFile(imageFile)) {
+                    ErrorLogger.warn("Skipping non-image file: " + imageFile.getName());
+                    continue;
+                }
+                
+                pdfHelper.getDocumentFromImage(
+                    imageFile.getAbsolutePath(),
+                    margin,
+                    pageSize,
+                    orientation
+                ).ifPresent(tempDocuments::add);
+                
+                if (progressCallback != null) {
+                    int progress = 30 + (50 * (i + 1) / totalImages);
+                    progressCallback.accept(progress);
+                }
             }
             
-            if (progressCallback != null) {
-                int progress = 80 + (10 * (i + 1) / tempDocuments.size());
-                progressCallback.accept(progress);
+            for (int i = 0; i < tempDocuments.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new RuntimeException(new InterruptedException("Conversion cancelled"));
+                }
+
+                PDDocument tempDoc = tempDocuments.get(i);
+                try {
+                    for (int pageIndex = 0; pageIndex < tempDoc.getNumberOfPages(); pageIndex++) {
+                        finalDoc.addPage(tempDoc.getPage(pageIndex));
+                    }
+                } catch (Exception e) {
+                    ErrorLogger.error("Error adding page from document " + i + ": " + e.getMessage());
+                }
+                
+                if (progressCallback != null) {
+                    int progress = 80 + (10 * (i + 1) / tempDocuments.size());
+                    progressCallback.accept(progress);
+                }
             }
+        } catch (Exception e) {
+            for (PDDocument d : tempDocuments) {
+                try {
+                    d.close();
+                } catch (Exception ignored) {}
+            }
+            try {
+                finalDoc.close();
+            } catch (Exception ignored) {}
+            throw e;
         }
         
         return finalDoc;
@@ -159,7 +179,10 @@ public class ConvertImagesToPdfHelper {
             throw new IllegalArgumentException("Output file is null");
         }
         
-        document.save(outputFile);
-        document.close();
+        try {
+            document.save(outputFile);
+        } finally {
+            document.close();
+        }
     }
 }

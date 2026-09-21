@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
@@ -34,6 +35,7 @@ import static viewHelp.Utility.formatFileSize;
 
 public class CompressPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+    private final AtomicBoolean cancelFlag = new AtomicBoolean(false);
 
     @Override
     protected MediaProperties getProperties() {
@@ -42,7 +44,7 @@ public class CompressPdfController extends AbstractMediaController {
 
     @FXML private ImageView imageViewPdf;
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnReset;
+    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnReset, btnCancel;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder, labelEstimatedSize;
     @FXML private ToggleButton btnLowCompression, btnMediumCompression, btnHighCompression;
 
@@ -51,7 +53,7 @@ public class CompressPdfController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnLowCompression, btnMediumCompression, btnHighCompression, btnReset, btnSubmit, btnChoiceDirForSaveFile, btnReset);
+        listControls = List.of(btnLowCompression, btnMediumCompression, btnHighCompression, btnSubmit, btnChoiceDirForSaveFile, btnReset);
 
         imageProperties.setOutput(getSavedPath());
 
@@ -64,21 +66,34 @@ public class CompressPdfController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         listControls.forEach(lc -> lc.setDisable(true));
+        btnSelectFile.setDisable(true);
+        btnChoiceDirForSaveFile.setDisable(true);
+        btnReset.setDisable(true);
+        btnSubmit.setDisable(true);
+        if (btnCancel != null) btnCancel.setDisable(false);
     }
 
     @Override
     protected void unlockUI() {
         listControls.forEach(lc -> lc.setDisable(false));
+        btnSelectFile.setDisable(false);
+        btnChoiceDirForSaveFile.setDisable(false);
+        btnReset.setDisable(false);
+        btnSubmit.setDisable(false);
+        if (btnCancel != null) btnCancel.setDisable(true);
+        cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(lc -> lc.setDisable(true));
+        if (btnCancel != null) btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(lc -> lc.setDisable(false));
+        if (btnCancel != null) btnCancel.setDisable(true);
     }
 
     @FXML
@@ -103,11 +118,15 @@ public class CompressPdfController extends AbstractMediaController {
         }
 
         CompressPdfHelper.CompressionLevel selectedLevel = getSelectedCompressionLevel();
+        cancelFlag.set(false);
 
         Task<File> task = new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
+                if (isCancelled() || cancelFlag.get()) {
+                    throw new InterruptedException("Compression cancelled");
+                }
 
                 File outputFile = createOutputFile(
                         imageProperties.getImage(),
@@ -116,8 +135,24 @@ public class CompressPdfController extends AbstractMediaController {
                 );
 
                 updateProgress(30, 100);
+                if (isCancelled() || cancelFlag.get()) {
+                    if (outputFile.exists()) outputFile.delete();
+                    throw new InterruptedException("Compression cancelled");
+                }
 
-                CompressPdfHelper.compressPdf(imageProperties.getImage(), outputFile, selectedLevel);
+                try {
+                    CompressPdfHelper.compressPdf(imageProperties.getImage(), outputFile, selectedLevel);
+                } catch (Exception e) {
+                    if (outputFile.exists()) {
+                        outputFile.delete();
+                    }
+                    throw e;
+                }
+
+                if (isCancelled() || cancelFlag.get()) {
+                    if (outputFile.exists()) outputFile.delete();
+                    throw new InterruptedException("Compression cancelled");
+                }
 
                 updateProgress(100, 100);
 
@@ -127,6 +162,12 @@ public class CompressPdfController extends AbstractMediaController {
 
         executeMediaTask(task);
         labelSuccess.setManaged(true);
+    }
+
+    @FXML
+    public void cancelProcessing() {
+        cancelFlag.set(true);
+        cancelCurrentTask();
     }
 
     private void updatePreview() {
@@ -145,7 +186,7 @@ public class CompressPdfController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result)) {
+        if (result == null || Boolean.FALSE.equals(result)) {
             return;
         }
         File outputFile = (File) result;
@@ -159,6 +200,10 @@ public class CompressPdfController extends AbstractMediaController {
 
     @Override
     protected void handleTaskFailure(Throwable exception) {
+        if (exception instanceof InterruptedException || (exception.getMessage() != null && exception.getMessage().contains("cancelled")) || cancelFlag.get()) {
+            handleTaskCancelled();
+            return;
+        }
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
@@ -168,6 +213,8 @@ public class CompressPdfController extends AbstractMediaController {
 
     @FXML
     public void isPressedReset() {
+        cancelProcessing();
+
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true, "PDF"
@@ -221,8 +268,6 @@ public class CompressPdfController extends AbstractMediaController {
         return CompressPdfHelper.CompressionLevel.LOW;
     }
 
-
-
     @FXML
     private void showInfo() {
         Alerts.alertDialog(
@@ -233,7 +278,8 @@ public class CompressPdfController extends AbstractMediaController {
                         How to use:
                         1. Select a PDF file using 'Select PDF' or drag and drop.
                         2. Select the desired compression preset.
-                        3. Click 'Submit and Download' to save the compressed PDF.
+                        3. Click 'Compress and Download' to save the compressed PDF.
+                        4. You can cancel the compression at any time using the 'Cancel Compression' button.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );

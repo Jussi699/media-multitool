@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,6 +41,7 @@ import static viewHelp.Message.*;
 
 public class ConverterPdfToImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+    private final AtomicBoolean cancelFlag = new AtomicBoolean(false);
 
     @Override
     protected MediaProperties getProperties() {
@@ -48,7 +50,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
     @FXML private ImageView imageViewPdf;
     @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnAllImageToPng, btnAllImageToJpeg;
+    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnAllImageToPng, btnAllImageToJpeg, btnCancel;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
     @FXML private ToggleButton btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM;
 
@@ -112,6 +114,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
             default -> {}
         }
 
+        cancelFlag.set(false);
         isExtract = true;
         executeMediaTask(taskConvertAllToZip());
         labelSuccess.setManaged(true);
@@ -125,6 +128,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         btnAllImageToJpeg.setDisable(true);
         btnAllImageToPng.setDisable(true);
         btnSubmit.setDisable(true);
+        if (btnCancel != null) btnCancel.setDisable(false);
         listToggleBtn.forEach(tb -> tb.setDisable(true));
     }
 
@@ -136,17 +140,21 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         btnAllImageToJpeg.setDisable(false);
         btnAllImageToPng.setDisable(false);
         btnSubmit.setDisable(false);
+        if (btnCancel != null) btnCancel.setDisable(true);
         listToggleBtn.forEach(tb -> tb.setDisable(false));
+        cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(c -> c.setDisable(true));
+        if (btnCancel != null) btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
+        if (btnCancel != null) btnCancel.setDisable(true);
     }
 
     @FXML
@@ -178,6 +186,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
             return;
         }
 
+        cancelFlag.set(false);
         executeMediaTask(taskConvert());
         labelSuccess.setManaged(true);
     }
@@ -191,14 +200,23 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 if (currentDoc == null) {
                     throw new IOException("PDF document not loaded");
                 }
+                if (isCancelled() || cancelFlag.get()) {
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 PDFRenderer renderer = new PDFRenderer(currentDoc);
 
                 updateProgress(30, 100);
+                if (isCancelled() || cancelFlag.get()) {
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 BufferedImage image = renderer.renderImageWithDPI(0, 300);
 
                 updateProgress(60, 100);
+                if (isCancelled() || cancelFlag.get()) {
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 File outputFile = createOutputFile(
                         imageProperties.getImage(),
@@ -212,6 +230,13 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 }
 
                 ImageIO.write(image, format, outputFile);
+
+                if (isCancelled() || cancelFlag.get()) {
+                    if (outputFile.exists()) {
+                        outputFile.delete();
+                    }
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 updateProgress(100, 100);
 
@@ -231,6 +256,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 PDFRenderer renderer = new PDFRenderer(currentDoc);
                 int totalPages = currentDoc.getNumberOfPages();
                 List<File> tempFiles = new ArrayList<>();
+                File zipFile = null;
 
                 String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
                 String targetFormat = imageProperties.getTypeImage();
@@ -238,6 +264,10 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
                 try {
                     for (int i = 0; i < totalPages; i++) {
+                        if (isCancelled() || cancelFlag.get()) {
+                            throw new InterruptedException("Conversion cancelled");
+                        }
+
                         updateProgress(i * 50L / totalPages, 100);
 
                         BufferedImage image = renderer.renderImageWithDPI(i, 300);
@@ -248,14 +278,22 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                         tempFiles.add(tempFile);
                     }
 
+                    if (isCancelled() || cancelFlag.get()) {
+                        throw new InterruptedException("Conversion cancelled");
+                    }
+
                     updateProgress(60, 100);
 
-                    File zipFile = new File(imageProperties.getOutput(), baseName + "_" + UUID.randomUUID().toString().substring(0, 3) + "_images.zip");
+                    zipFile = new File(imageProperties.getOutput(), baseName + "_" + UUID.randomUUID().toString().substring(0, 3) + "_images.zip");
 
                     try (FileOutputStream fos = new FileOutputStream(zipFile);
                          ZipOutputStream zos = new ZipOutputStream(fos)) {
 
                         for (int i = 0; i < tempFiles.size(); i++) {
+                            if (isCancelled() || cancelFlag.get()) {
+                                throw new InterruptedException("Conversion cancelled");
+                            }
+
                             File file = tempFiles.get(i);
                             updateProgress(60 + (i * 35L / tempFiles.size()), 100);
 
@@ -281,6 +319,10 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                         }
                     }
 
+                    if (isCancelled() || cancelFlag.get()) {
+                        throw new InterruptedException("Conversion cancelled");
+                    }
+
                     updateProgress(100, 100);
 
                     return zipFile;
@@ -294,6 +336,14 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                             } catch (IOException ex) {
                                 ErrorLogger.error("Failed to delete temp file on cleanup: " + tempFile.getAbsolutePath() + " - " + ex.getMessage());
                             }
+                        }
+                    }
+                    if (zipFile != null && zipFile.exists()) {
+                        try {
+                            Utility.cleanUp(zipFile.toPath());
+                            ErrorLogger.info(zipFile.getAbsolutePath() + " has been deleted.");
+                        } catch (IOException ex) {
+                            ErrorLogger.error("Failed to delete zip file on cleanup: " + zipFile.getAbsolutePath() + " - " + ex.getMessage());
                         }
                     }
                     throw e;
@@ -318,7 +368,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result)) {
+        if (result == null || Boolean.FALSE.equals(result)) {
             return;
         }
         File outputFile = (File) result;
@@ -337,6 +387,10 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
     @Override
     protected void handleTaskFailure(Throwable exception) {
+        if (exception instanceof InterruptedException || cancelFlag.get()) {
+            handleTaskCancelled();
+            return;
+        }
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, progressBar,"Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
@@ -345,8 +399,16 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         });
     }
 
+    @Override
+    protected void handleTaskCancelled() {
+        super.handleTaskCancelled();
+        isExtract = false;
+    }
+
     @FXML
     public void isPressedReset() {
+        cancelProcessing();
+
         ResetContext ctx = new ResetContext(
                 labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPdf, progressBar, true, "PDF"
@@ -391,9 +453,10 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                         How to use:
                         1. Select a PDF file using 'Select PDF file' or drag and drop.
                         2. Choose output format (PNG, JPEG, WEBP, TIFF, BMP, PPM, PGM, PAM).
-                        3. Click 'Convert and Download' to save the image.
+                        3. Click 'Convert and Download' to save the image, or 'Extract Jpeg/Png And Download' to extract all pages into a ZIP archive.
+                        4. You can cancel the conversion at any time using the 'Cancel Conversion' button.
                         
-                        Note: Only the first page of the PDF will be converted.
+                        Note: 'Convert and Download' converts only the first page of the PDF.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -425,5 +488,11 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 labelSuccess.setManaged(true);
             });
         }
+    }
+
+    @FXML
+    public void cancelProcessing() {
+        cancelFlag.set(true);
+        cancelCurrentTask();
     }
 }

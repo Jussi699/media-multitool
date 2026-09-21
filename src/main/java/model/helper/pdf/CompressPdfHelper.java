@@ -40,8 +40,15 @@ public class CompressPdfHelper {
             
             if (level != CompressionLevel.LOW) {
                 for (PDPage page : document.getPages()) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new IOException("Compression cancelled");
+                    }
                     optimizeResources(page.getResources(), document, level);
                 }
+            }
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new IOException("Compression cancelled");
             }
 
             document.setAllSecurityToBeRemoved(true);
@@ -58,6 +65,9 @@ public class CompressPdfHelper {
         if (resources == null) return;
 
         for (COSName name : resources.getXObjectNames()) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new IOException("Compression cancelled");
+            }
             PDXObject xobject = resources.getXObject(name);
             if (xobject instanceof PDImageXObject image) {
                 BufferedImage bufferedImage = image.getImage();

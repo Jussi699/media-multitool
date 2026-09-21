@@ -27,12 +27,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 
 public class ConverterImagesToPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+    private final AtomicBoolean cancelFlag = new AtomicBoolean(false);
     private final List<ImageEntry> selectedImages = new ArrayList<>();
     private final List<ImagePreviewCard> imageCards = new ArrayList<>();
     private final ConvertImagesToPdfHelper helper = new ConvertImagesToPdfHelper();
@@ -55,7 +57,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
     @FXML private FlowPane imagesFlowPane;
     @FXML private ScrollPane scrollPanePreview;
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
+    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit, btnCancel;
     @FXML private Label labelSelectFileName, textDragZone;
     
     @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;
@@ -116,6 +118,8 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         btnSelectFiles.setDisable(true);
         btnChoiceDirForSaveFile.setDisable(true);
         btnReset.setDisable(true);
+        btnSubmit.setDisable(true);
+        if (btnCancel != null) btnCancel.setDisable(false);
     }
 
     @Override
@@ -123,16 +127,21 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         btnSelectFiles.setDisable(false);
         btnChoiceDirForSaveFile.setDisable(false);
         btnReset.setDisable(false);
+        btnSubmit.setDisable(false);
+        if (btnCancel != null) btnCancel.setDisable(true);
+        cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(c -> c.setDisable(true));
+        if (btnCancel != null) btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
+        if (btnCancel != null) btnCancel.setDisable(true);
     }
 
     @FXML
@@ -167,8 +176,6 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
     private void updateUIState() {
         textDragZone.setText(selectedImages.isEmpty() ?
             "Drag image(s) here" : "Selected: " + selectedImages.size() + " image(s)");
-
-
 
         if (!selectedImages.isEmpty()) {
             labelSelectFileName.setText("Last uploaded image: " + selectedImages.getLast().file.getName());
@@ -205,10 +212,15 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             imageProperties.setOutput(getSavedPath());
         }
 
+        cancelFlag.set(false);
+
         Task<File> task = new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
+                if (isCancelled() || cancelFlag.get()) {
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 File outputDirFile = imageProperties.getOutput() != null ?
                     imageProperties.getOutput() : 
@@ -221,6 +233,9 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
                 );
 
                 updateProgress(30, 100);
+                if (isCancelled() || cancelFlag.get()) {
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 String marginVal = helper.parseMarginValue(comboMargin.getValue());
                 String orientationVal = helper.parseOrientationValue(comboOrientation.getValue());
@@ -237,7 +252,28 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
                     progress -> updateProgress(progress, 100)
                 );
 
-                helper.savePdfDocument(finalDoc, outputFile);
+                if (isCancelled() || cancelFlag.get()) {
+                    if (finalDoc != null) {
+                        try { finalDoc.close(); } catch (Exception ignored) {}
+                    }
+                    throw new InterruptedException("Conversion cancelled");
+                }
+
+                try {
+                    helper.savePdfDocument(finalDoc, outputFile);
+                } catch (Exception e) {
+                    if (outputFile.exists()) {
+                        outputFile.delete();
+                    }
+                    throw e;
+                }
+
+                if (isCancelled() || cancelFlag.get()) {
+                    if (outputFile.exists()) {
+                        outputFile.delete();
+                    }
+                    throw new InterruptedException("Conversion cancelled");
+                }
 
                 updateProgress(100, 100);
 
@@ -249,10 +285,16 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         labelSuccess.setManaged(true);
     }
 
+    @FXML
+    public void cancelProcessing() {
+        cancelFlag.set(true);
+        cancelCurrentTask();
+    }
+
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result)) {
+        if (result == null || Boolean.FALSE.equals(result)) {
             return;
         }
         File outputFile = (File) result;
@@ -274,6 +316,10 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
     @Override
     protected void handleTaskFailure(Throwable exception) {
+        if (exception instanceof InterruptedException || (exception.getCause() instanceof InterruptedException) || cancelFlag.get()) {
+            handleTaskCancelled();
+            return;
+        }
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             Message.showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), 
@@ -292,6 +338,8 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
     @FXML
     public void isPressedReset() {
+        cancelProcessing();
+
         selectedImages.clear();
         imageCards.clear();
         imagesFlowPane.getChildren().clear();
@@ -325,6 +373,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
                 3. Click the X button on any thumbnail to remove it.
                 4. Choose Margin, Orientation and Page Size.
                 5. Click 'Submit and Download' to save the PDF.
+                6. You can cancel the conversion at any time using the 'Cancel Conversion' button.
                 
                 If you have any questions or problems, please go to Info and write to me on Discord."""
         );
