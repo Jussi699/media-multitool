@@ -22,10 +22,8 @@ public class InfoController {
         File dirLog = new File(logPath);
 
         try {
-            if (!dirLog.exists()) {
-                if(!dirLog.mkdirs()) {
-                    ErrorLogger.error("Error create directory!");
-                }
+            if (!dirLog.exists() && !dirLog.mkdirs()) {
+                ErrorLogger.error("Error create directory!");
             }
 
             if (Desktop.isDesktopSupported()) {
@@ -33,6 +31,7 @@ public class InfoController {
             }
         } catch (IOException e) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Error opening directory", "IO Error", "Could not open logs directory!");
+            ErrorLogger.error("IO Error, Could not open logs directory! | " + e.getMessage());
         }
     }
 

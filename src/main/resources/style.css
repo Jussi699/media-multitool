@@ -794,3 +794,7 @@
     -fx-pref-width: 310px;
     -fx-max-width: 310px;
 }
+
+.progress-indicator {
+    -fx-progress-color: #2ba82b;
+}
