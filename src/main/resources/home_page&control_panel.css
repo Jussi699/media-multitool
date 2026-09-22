@@ -117,8 +117,8 @@
     -fx-fill: transparent;
     -fx-stroke: #a0a0a0;
     -fx-stroke-width: 1.5;
-    -fx-scale-x: 1.5;
-    -fx-scale-y: 1.5;
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
 }
 
 .folder-btn {
@@ -234,4 +234,10 @@
 .sub-btn:hover:focused {
     -fx-background-color: #333333;
     -fx-background-insets: 0;
+}
+
+.section-icon {
+    -fx-stroke: -main-color;
+    -fx-scaleX: 1;
+    -fx-scaleY: 1;
 }
