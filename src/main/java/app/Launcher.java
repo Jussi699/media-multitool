@@ -9,6 +9,7 @@ import model.utility.OS;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -19,6 +20,8 @@ public class Launcher {
         Logger jaudiotaggerLogger = Logger.getLogger("org.jaudiotagger");
         jaudiotaggerLogger.setLevel(Level.OFF);
         jaudiotaggerLogger.setUseParentHandlers(false);
+
+        ImageIO.setUseCache(false);
 
         // Suppress FFmpeg native log output (Input #0, Output #0, avformat_open_input info, etc.)
         avutil.av_log_set_level(avutil.AV_LOG_ERROR);

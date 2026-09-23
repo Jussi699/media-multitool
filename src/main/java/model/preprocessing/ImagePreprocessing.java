@@ -18,49 +18,14 @@ import java.util.Optional;
 import java.util.function.DoubleConsumer;
 
 public class ImagePreprocessing {
-    public static Optional<BufferedImage> toNegative(File file) {
-        try {
-            BufferedImage image = ImageIO.read(file);
-
-            if (image == null) {
-                ErrorLogger.error("Unsupported image format or file is not an image: " + file.getName());
-                return Optional.empty();
-            }
-
-            int width = image.getWidth();
-            int height = image.getHeight();
-
-            BufferedImage negative = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    int rgba = image.getRGB(x, y);
-
-                    int alpha = (rgba >> 24) & 0xff;
-                    int r = 255 - ((rgba >> 16) & 0xff);
-                    int g = 255 - ((rgba >> 8) & 0xff);
-                    int b = 255 - (rgba & 0xff);
-
-                    int invertedRgba = (alpha << 24) | (r << 16) | (g << 8) | b;
-                    negative.setRGB(x, y, invertedRgba);
-                }
-            }
-
-            return Optional.of(negative);
-        } catch (IOException e) {
-            ErrorLogger.error("There was an error converting the image to negative: " + e.getMessage());
-            return Optional.empty();
-        }
+    public enum RotateSide {
+        RIGHT,
+        LEFT,
+        HORIZONTALLY,
+        VERTICALLY
     }
 
-    /**
-     * Rotates or flips the image based on the specified side.
-     *
-     * @param image the image to be processed
-     * @param side the transformation type: "turn_right", "turn_left", "flip_horizontally", or "flip_vertically"
-     * @return an Optional containing the processed BufferedImage, or empty if the input image is null
-     */
-    public static Optional<BufferedImage> rotateImage(BufferedImage image, String side) {
+    public static Optional<BufferedImage> toNegative(BufferedImage image) {
         if (image == null) {
             return Optional.empty();
         }
@@ -68,8 +33,36 @@ public class ImagePreprocessing {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        int targetWidth = (side.equals("rotate_right") || side.equals("rotate_left")) ? height : width;
-        int targetHeight = (side.equals("rotate_right") || side.equals("rotate_left")) ? width : height;
+        BufferedImage negative = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = negative.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+
+        int[] pixels = ((DataBufferInt) negative.getRaster().getDataBuffer()).getData();
+        for (int i = 0; i < pixels.length; i++) {
+            pixels[i] ^= 0x00FFFFFF;
+        }
+
+        return Optional.of(negative);
+    }
+
+    /**
+     * Rotates or flips the image based on the specified side.
+     *
+     * @param image the image to be processed
+     * @param side the transformation type: "RIGHT", "LEFT", "HORIZONTALLY", or "VERTICALLY"
+     * @return an Optional containing the processed BufferedImage, or empty if the input image is null
+     */
+    public static Optional<BufferedImage> rotateImage(BufferedImage image, RotateSide side) {
+        if (image == null) {
+            return Optional.empty();
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int targetWidth  = (side == RotateSide.RIGHT || side == RotateSide.LEFT) ? height : width;
+        int targetHeight = (side == RotateSide.RIGHT || side == RotateSide.LEFT) ? width : height;
 
         BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight,
                 image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
@@ -78,23 +71,23 @@ public class ImagePreprocessing {
 
         switch (side) {
             // Right (90 degrees clockwise)
-            case "rotate_right" -> {
+            case RotateSide.RIGHT -> {
                 g2d.translate(targetWidth, 0);
                 g2d.rotate(Math.toRadians(90));
             }
 
             // Left (90 degrees counter-clockwise)
-            case "rotate_left" -> {
+            case RotateSide.LEFT -> {
                 g2d.translate(0, targetHeight);
                 g2d.rotate(Math.toRadians(-90));
             }
 
-            case "flip_horizontally" -> {
+            case RotateSide.HORIZONTALLY -> {
                 g2d.translate(width, 0);
                 g2d.scale(-1, 1);
             }
 
-            case "flip_vertically" -> {
+            case RotateSide.VERTICALLY -> {
                 g2d.translate(0, height);
                 g2d.scale(1, -1);
             }
@@ -150,21 +143,21 @@ public class ImagePreprocessing {
         g2d.drawImage(image, 0, 0, null);
         g2d.dispose();
 
+        int[] lut = new int[256];
+        for (int v = 0; v < 256; v++) {
+            lut[v] = Math.clamp((long) v + offset, 0, 255);
+        }
+
         int[] pixels = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
 
         for (int i = 0; i < pixels.length; i++) {
             int argb = pixels[i];
-
-            int a = (argb >> 24) & 0xFF;
+            int a = argb & 0xFF000000;
             int r = (argb >> 16) & 0xFF;
             int g = (argb >> 8) & 0xFF;
             int b = argb & 0xFF;
 
-            r = Math.clamp(r + offset, 0, 255);
-            g = Math.clamp(g + offset, 0, 255);
-            b = Math.clamp(b + offset, 0, 255);
-
-            pixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
+            pixels[i] = a | (lut[r] << 16) | (lut[g] << 8) | lut[b];
         }
 
         return Optional.of(result);
@@ -198,6 +191,9 @@ public class ImagePreprocessing {
         int height = image.getHeight();
 
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = result.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
 
         double targetR = fxColor.getRed();
         double targetG = fxColor.getGreen();
@@ -209,28 +205,26 @@ public class ImagePreprocessing {
         double diffuseConstant = 1.0;
         double specularConstant = 0.3;
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int argb = image.getRGB(x, y);
-                int a = (argb >> 24) & 0xFF;
-                int r = (argb >> 16) & 0xFF;
-                int g = (argb >> 8) & 0xFF;
-                int b = argb & 0xFF;
+        int[] lutR = new int[256];
+        int[] lutG = new int[256];
+        int[] lutB = new int[256];
+        for (int v = 0; v < 256; v++) {
+            double norm = v / 255.0;
+            lutR[v] = Math.min(255, (int) Math.round(targetR * (diffuseConstant * norm + specularConstant) * 255.0));
+            lutG[v] = Math.min(255, (int) Math.round(targetG * (diffuseConstant * norm + specularConstant) * 255.0));
+            lutB[v] = Math.min(255, (int) Math.round(targetB * (diffuseConstant * norm + specularConstant) * 255.0));
+        }
 
-                double normR = r / 255.0;
-                double normG = g / 255.0;
-                double normB = b / 255.0;
+        int[] pixels = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
 
-                double resR = targetR * (diffuseConstant * normR + specularConstant);
-                double resG = targetG * (diffuseConstant * normG + specularConstant);
-                double resB = targetB * (diffuseConstant * normB + specularConstant);
+        for (int i = 0; i < pixels.length; i++) {
+            int argb = pixels[i];
+            int a = argb & 0xFF000000;
+            int r = (argb >> 16) & 0xFF;
+            int g = (argb >> 8) & 0xFF;
+            int b = argb & 0xFF;
 
-                int finalR = (int) Math.min(255, resR * 255);
-                int finalG = (int) Math.min(255, resG * 255);
-                int finalB = (int) Math.min(255, resB * 255);
-
-                result.setRGB(x, y, (a << 24) | (finalR << 16) | (finalG << 8) | finalB);
-            }
+            pixels[i] = a | (lutR[r] << 16) | (lutG[g] << 8) | lutB[b];
         }
         return result;
     }
@@ -244,21 +238,23 @@ public class ImagePreprocessing {
         int height = image.getHeight();
 
         BufferedImage gray = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = gray.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int rgba = image.getRGB(x, y);
+        int[] pixels = ((DataBufferInt) gray.getRaster().getDataBuffer()).getData();
 
-                int a = (rgba >> 24) & 0xFF;
-                int r = (rgba >> 16) & 0xFF;
-                int g = (rgba >> 8) & 0xFF;
-                int b = rgba & 0xFF;
+        for (int i = 0; i < pixels.length; i++) {
+            int rgba = pixels[i];
 
-                int grayValue = (int) (0.299 * r + 0.587 * g + 0.114 * b);
+            int a = rgba & 0xFF000000;
+            int r = (rgba >> 16) & 0xFF;
+            int g = (rgba >> 8) & 0xFF;
+            int b = rgba & 0xFF;
 
-                int grayRgba = (a << 24) | (grayValue << 16) | (grayValue << 8) | grayValue;
-                gray.setRGB(x, y, grayRgba);
-            }
+            int grayValue = (299 * r + 587 * g + 114 * b) / 1000;
+
+            pixels[i] = a | (grayValue << 16) | (grayValue << 8) | grayValue;
         }
 
         return Optional.of(gray);

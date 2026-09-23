@@ -127,11 +127,11 @@ public class RotateImageController extends AbstractMediaController {
 
         Button source = (Button) event.getSource();
 
-        String side = switch (source.getId()) {
-            case "btnFlipHorizontally"   -> "flip_horizontally";
-            case "btnFlipVertically"     -> "flip_vertically";
-            case "btnRotateImageRight"   -> "rotate_right";
-            case "btnRotateImageLeft"    -> "rotate_left";
+        ImagePreprocessing.RotateSide side = switch (source.getId()) {
+            case "btnFlipHorizontally" -> ImagePreprocessing.RotateSide.HORIZONTALLY;
+            case "btnFlipVertically"   -> ImagePreprocessing.RotateSide.VERTICALLY;
+            case "btnRotateImageRight" -> ImagePreprocessing.RotateSide.RIGHT;
+            case "btnRotateImageLeft"  -> ImagePreprocessing.RotateSide.LEFT;
 
             default -> throw new IllegalStateException("Unexpected value: " + source.getId());
         };

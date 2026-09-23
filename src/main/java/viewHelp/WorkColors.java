@@ -2,6 +2,7 @@ package viewHelp;
 
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
+import model.helper.images.ColorReplaceHelper;
 
 public class WorkColors {
 
@@ -9,7 +10,7 @@ public class WorkColors {
      * Opening the graphical interface (View) button selects the color.
      */
     public static void updateColorView(java.awt.Color awtColor, Button btnColorPicker) {
-        String hexColor = String.format("#%02x%02x%02x", awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+        String hexColor = ColorReplaceHelper.rgbToHex(awtColor);
         boolean darkBackground = isDark(awtColor);
 
         btnColorPicker.setStyle(String.format(

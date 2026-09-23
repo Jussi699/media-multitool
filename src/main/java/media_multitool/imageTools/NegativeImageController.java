@@ -17,6 +17,7 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 
 import java.awt.image.BufferedImage;
@@ -140,7 +141,7 @@ public class NegativeImageController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
@@ -183,7 +184,7 @@ public class NegativeImageController extends AbstractMediaController {
             return;
         }
 
-        ImagePreprocessing.toNegative(imageProperties.getImage()).ifPresent(negative -> {
+        ImagePreprocessing.toNegative(originalBufferedImage).ifPresent(negative -> {
             currentBufferedImage = negative;
             setPreview(currentBufferedImage);
         });
