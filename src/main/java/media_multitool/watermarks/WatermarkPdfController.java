@@ -175,9 +175,7 @@ public class WatermarkPdfController extends AbstractMediaController {
         SelectFile selectFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
-                "Select PDF file"
-        ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")).ifPresent(this::loadFile);
     }
 
     @FXML

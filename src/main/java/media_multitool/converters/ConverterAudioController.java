@@ -169,9 +169,7 @@ public class ConverterAudioController extends AbstractMediaController {
         allFilters.addAll(Global.getSupportedVideoFormatsForFileChooser());
 
         selectAudioVideoFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("All Media Files", allFilters),
-                    "Choice video/audio file"
-                ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("All Media Files", allFilters)).ifPresent(this::loadFile);
     }
 
     private void loadFile(File selectedFile) {

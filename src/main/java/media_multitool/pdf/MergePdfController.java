@@ -126,9 +126,7 @@ public class MergePdfController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
 
         selectPdf.showOpenMultipleDialog(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf"),
-                "Select PDF"
-        ).ifPresent(page -> page.forEach(this::loadPdfFile));
+                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(page -> page.forEach(this::loadPdfFile));
     }
 
     private void loadPdfFile(File file) {

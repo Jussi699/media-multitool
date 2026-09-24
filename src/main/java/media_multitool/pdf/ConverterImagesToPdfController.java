@@ -152,9 +152,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
 
         selectPdf.showOpenMultipleDialog(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg", "*.bmp"),
-                "Select images"
-        ).ifPresent(f -> f.forEach(this::addImageToList));
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg", "*.bmp")).ifPresent(f -> f.forEach(this::addImageToList));
     }
 
     private void addImageToList(File file) {

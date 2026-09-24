@@ -228,9 +228,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         SelectFile selectAudioFile = new SelectFile();
         Stage stage = (Stage) btnSelectImage.getScene().getWindow();
         selectAudioFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Audio Files", Global.getSupportedAudioFormatsForFileChooser()),
-                "Choice audio"
-        ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("Audio Files", Global.getSupportedAudioFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 
     @FXML
@@ -401,9 +399,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnChangeIcon.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Image Files", Global.getSupportedImageFormatsForFileChooser()),
-                "Select image"
-        ).ifPresent(file -> {
+                new FileChooser.ExtensionFilter("Image Files", Global.getSupportedImageFormatsForFileChooser())).ifPresent(file -> {
             audioProperties.setPathToImage(file);
             AudioEditor.updatePreviewWithPath(audioProperties, imageViewPreview);
         });

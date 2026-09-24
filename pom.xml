@@ -14,6 +14,7 @@
         <junit.version>5.12.1</junit.version>
         <javafx.version>25.0.2</javafx.version>
         <jna.version>5.14.0</jna.version>
+        <lwjgl.version>3.3.6</lwjgl.version>
         <maven.compiler.release>25</maven.compiler.release>
     </properties>
 
@@ -27,6 +28,30 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
             <version>${jna.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl</artifactId>
+            <version>${lwjgl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-nfd</artifactId>
+            <version>${lwjgl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl</artifactId>
+            <version>${lwjgl.version}</version>
+            <classifier>natives-windows</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-nfd</artifactId>
+            <version>${lwjgl.version}</version>
+            <classifier>natives-windows</classifier>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
@@ -231,9 +256,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <argLine>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,ALL-UNNAMED</argLine>
                     <argLine>
-                        --enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,ALL-UNNAMED
+                        --enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,org.lwjgl,org.lwjgl.nfd,ALL-UNNAMED
+                        --sun-misc-unsafe-memory-access=allow
                         --add-reads media_multitool=org.junit.jupiter.api
                         --add-opens media_multitool/model.converterVideo=org.junit.platform.commons
                         --add-opens media_multitool/model.converterImage=org.junit.platform.commons
@@ -251,7 +276,7 @@
                         </manifest>
                         <manifestEntries>
                             <Add-Opens>javafx.graphics/javafx.application javafx.graphics/com.sun.javafx.application</Add-Opens>
-                            <Enable-Native-Access>javafx.graphics,com.sun.jna,ALL-UNNAMED</Enable-Native-Access>
+                            <Enable-Native-Access>javafx.graphics,com.sun.jna,org.lwjgl,org.lwjgl.nfd,ALL-UNNAMED</Enable-Native-Access>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -272,7 +297,8 @@
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
                             <options>
-                                <option>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,ALL-UNNAMED</option>
+                                <option>--enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,org.lwjgl,org.lwjgl.nfd,ALL-UNNAMED</option>
+                                <option>--sun-misc-unsafe-memory-access=allow</option>
                             </options>
                         </configuration>
                     </execution>

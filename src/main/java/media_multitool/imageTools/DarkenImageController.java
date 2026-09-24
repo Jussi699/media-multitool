@@ -126,9 +126,7 @@ public class DarkenImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Select image"
-        ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 
     @FXML

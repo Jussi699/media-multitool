@@ -102,9 +102,7 @@ public class CompressPdfController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf"),
-                "Select PDF"
-        ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(this::loadFile);
     }
 
     @FXML

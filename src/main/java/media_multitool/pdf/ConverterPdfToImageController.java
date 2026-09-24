@@ -161,9 +161,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         SelectFile selectPdfFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectPdfFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
-                "Select PDF"
-        ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")).ifPresent(this::loadFile);
     }
 
     @FXML

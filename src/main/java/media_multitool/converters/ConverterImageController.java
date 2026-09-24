@@ -210,9 +210,7 @@ public class ConverterImageController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()),
-                "Choice image"
-        ).ifPresent(this::loadImage);
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadImage);
     }
 
     private void loadImage(File file) {

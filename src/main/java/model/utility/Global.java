@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Global {
-    private final static List<String> allSupportedVideoFormat = List.of(
+    private static final List<String> allSupportedVideoFormat = List.of(
             ".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".3gp"
     );
 
-    private final static List<String> allSupportedImageFormat = List.of(
+    private static final List<String> allSupportedImageFormat = List.of(
             ".png", ".jpg", ".jpeg", ".ico", ".webp",
             ".tiff", ".tif", ".bmp", ".ppm", ".pgm", ".pam", ".jpe", ".svg"
     );
 
-    private final static List<String> allSupportedAudioFormat = List.of(
+    private static final List<String> allSupportedAudioFormat = List.of(
             ".mp3", ".wav", ".ogg", ".flac", ".m4a", ".m4b", ".aac", ".wma",
             ".alac", ".aif", ".aifc", ".aiff", ".dsf", ".mka", ".mpc", ".ofr", ".ofs",
             ".ape", ".wv", ".tak"

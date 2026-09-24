@@ -159,9 +159,7 @@ public class SplitPdfController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf"),
-                "Select PDF"
-        ).ifPresent(this::loadPdfFile);
+                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(this::loadPdfFile);
     }
 
     private void loadPdfFile(File file) {

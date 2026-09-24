@@ -22,6 +22,8 @@ module media_multitool {
     requires org.bytedeco.ffmpeg;
     requires com.sun.jna;
     requires com.sun.jna.platform;
+    requires org.lwjgl;
+    requires org.lwjgl.nfd;
     requires org.junit.jupiter.api;
 
     opens media_multitool to javafx.fxml;

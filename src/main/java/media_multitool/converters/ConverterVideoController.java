@@ -213,7 +213,7 @@ public class ConverterVideoController extends AbstractMediaController {
         SelectFile selectFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), "Select video")
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()))
                 .ifPresent(this::loadFile);
     }
 

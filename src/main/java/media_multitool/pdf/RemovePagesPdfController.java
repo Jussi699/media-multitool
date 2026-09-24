@@ -124,9 +124,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
         Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
 
         selectPdf.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf"),
-                "Select PDF"
-        ).ifPresent(this::loadPdfFile);
+                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(this::loadPdfFile);
     }
 
     private void loadPdfFile(File file) {

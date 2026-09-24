@@ -178,9 +178,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()),
-                "Select video"
-        ).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 
     @FXML

@@ -108,7 +108,7 @@ public class CompressorVideoController extends AbstractMediaController {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
         selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), "Select video")
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()))
                 .ifPresent(this::loadFile);
     }
 
