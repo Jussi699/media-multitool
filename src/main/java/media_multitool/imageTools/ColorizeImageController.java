@@ -1,5 +1,6 @@
 package media_multitool.imageTools;
 
+import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
@@ -132,7 +133,7 @@ public class ColorizeImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                BufferedImage processedImage = ImagePreprocessing.applyColorizeEffect(currentBufferedImage, selectedColorFX);
+                BufferedImage processedImage = com.imagetools.ImageTools.applyColorizeEffect(currentBufferedImage, selectedColorFX);
 
                 updateProgress(30, 100);
 
@@ -279,7 +280,7 @@ public class ColorizeImageController extends AbstractMediaController {
     private void updateColorModel(java.awt.Color awtColor) {
         this.selectedColorFX = WorkColors.toFxColor(awtColor);
         if (currentBufferedImage != null) {
-            previewContainer.setEffect(ImagePreprocessing.colorizeImage(currentBufferedImage, selectedColorFX));
+            previewContainer.setEffect(ImageTools.colorizeImage(currentBufferedImage, selectedColorFX));
         }
     }
 }

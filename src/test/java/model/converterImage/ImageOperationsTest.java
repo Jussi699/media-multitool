@@ -3,8 +3,7 @@ package model.converterImage;
 import model.converterImage.strategy.ImageConversionStrategy;
 import model.converterImage.strategy.ImageStrategyFactory;
 import model.compressorImage.Compressor;
-import model.preprocessing.ImagePreprocessing;
-import model.preprocessing.ImagePreprocessing.RotateSide;
+import com.imagetools.RotateSide;
 import model.properties.ImageProperties;
 import model.compressorImage.CompressionResult;
 import org.junit.jupiter.api.Test;
@@ -81,22 +80,22 @@ public class ImageOperationsTest {
         int height = 50;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         
-        Optional<BufferedImage> flippedH = ImagePreprocessing.rotateImage(image, RotateSide.HORIZONTALLY);
+        Optional<BufferedImage> flippedH = com.imagetools.ImageTools.rotateImage(image, RotateSide.HORIZONTALLY);
         assertTrue(flippedH.isPresent());
         assertEquals(width, flippedH.get().getWidth());
         assertEquals(height, flippedH.get().getHeight());
 
-        Optional<BufferedImage> flippedV = ImagePreprocessing.rotateImage(image, RotateSide.VERTICALLY);
+        Optional<BufferedImage> flippedV = com.imagetools.ImageTools.rotateImage(image, RotateSide.VERTICALLY);
         assertTrue(flippedV.isPresent());
         assertEquals(width, flippedV.get().getWidth());
         assertEquals(height, flippedV.get().getHeight());
 
-        Optional<BufferedImage> rotatedR = ImagePreprocessing.rotateImage(image, RotateSide.RIGHT);
+        Optional<BufferedImage> rotatedR = com.imagetools.ImageTools.rotateImage(image, RotateSide.RIGHT);
         assertTrue(rotatedR.isPresent());
         assertEquals(height, rotatedR.get().getWidth());
         assertEquals(width, rotatedR.get().getHeight());
 
-        Optional<BufferedImage> rotatedL = ImagePreprocessing.rotateImage(image, RotateSide.LEFT);
+        Optional<BufferedImage> rotatedL = com.imagetools.ImageTools.rotateImage(image, RotateSide.LEFT);
         assertTrue(rotatedL.isPresent());
         assertEquals(height, rotatedL.get().getWidth());
         assertEquals(width, rotatedL.get().getHeight());

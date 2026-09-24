@@ -1,5 +1,6 @@
 package media_multitool.imageTools;
 
+import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -182,7 +183,7 @@ public class NegativeImageController extends AbstractMediaController {
             return;
         }
 
-        ImagePreprocessing.toNegative(originalBufferedImage).ifPresent(negative -> {
+        ImageTools.toNegative(originalBufferedImage).ifPresent(negative -> {
             currentBufferedImage = negative;
             setPreview(currentBufferedImage);
         });

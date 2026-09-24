@@ -72,7 +72,7 @@ public class DarkenImageController extends AbstractMediaController {
             return;
         }
 
-        ImagePreprocessing.brightnessImage(originalBufferedImage, offset).ifPresent(darkened -> {
+        com.imagetools.ImageTools.brightnessImage(originalBufferedImage, offset).ifPresent(darkened -> {
             currentBufferedImage = darkened;
             setPreview(currentBufferedImage);
         });

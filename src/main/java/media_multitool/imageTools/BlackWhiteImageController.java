@@ -63,7 +63,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
             return;
         }
 
-        ImagePreprocessing.blackAndWhiteImage(originalBufferedImage).ifPresent(bw -> {
+        com.imagetools.ImageTools.blackAndWhiteImage(originalBufferedImage).ifPresent(bw -> {
             currentBufferedImage = bw;
             setPreview(currentBufferedImage);
         });

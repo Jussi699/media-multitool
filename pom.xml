@@ -20,6 +20,13 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.imagetools</groupId>
+            <artifactId>imagetools</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/ImageTools.jar</systemPath>
+        </dependency>
+        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>

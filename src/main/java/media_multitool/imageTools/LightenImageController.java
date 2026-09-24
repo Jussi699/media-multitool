@@ -1,5 +1,6 @@
 package media_multitool.imageTools;
 
+import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
@@ -72,7 +73,7 @@ public class LightenImageController extends AbstractMediaController {
             return;
         }
 
-        ImagePreprocessing.brightnessImage(originalBufferedImage, offset).ifPresent(lightened -> {
+        ImageTools.brightnessImage(originalBufferedImage, offset).ifPresent(lightened -> {
             currentBufferedImage = lightened;
             setPreview(currentBufferedImage);
         });

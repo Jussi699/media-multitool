@@ -79,7 +79,7 @@ public class BlurImageController extends AbstractMediaController {
             protected BufferedImage call() throws Exception {
                 updateProgress(0, 1.0);
                 updateMessage("Updating preview...");
-                return ImagePreprocessing.blurryImage(
+                return com.imagetools.ImageTools.blurryImage(
                         originalBufferedImage,
                         radius,
                         progress -> updateProgress(progress, 1.0)
@@ -172,7 +172,7 @@ public class BlurImageController extends AbstractMediaController {
                 updateMessage("Blurring image...");
                 int radius = (int) sliderBlurry.getValue();
                 
-                Optional<BufferedImage> blurred = ImagePreprocessing.blurryImage(
+                Optional<BufferedImage> blurred = com.imagetools.ImageTools.blurryImage(
                         originalBufferedImage, 
                         radius, 
                         progress -> updateProgress(progress, 1.0)

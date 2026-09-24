@@ -1,5 +1,7 @@
 package media_multitool.imageTools;
 
+import com.imagetools.ImageTools;
+import com.imagetools.RotateSide;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -125,17 +127,16 @@ public class RotateImageController extends AbstractMediaController {
 
         Button source = (Button) event.getSource();
 
-        ImagePreprocessing.RotateSide side = switch (source.getId()) {
-            case "btnFlipHorizontally" -> ImagePreprocessing.RotateSide.HORIZONTALLY;
-            case "btnFlipVertically"   -> ImagePreprocessing.RotateSide.VERTICALLY;
-            case "btnRotateImageRight" -> ImagePreprocessing.RotateSide.RIGHT;
-            case "btnRotateImageLeft"  -> ImagePreprocessing.RotateSide.LEFT;
+        RotateSide side = switch (source.getId()) {
+            case "btnFlipHorizontally" -> RotateSide.HORIZONTALLY;
+            case "btnFlipVertically"   -> RotateSide.VERTICALLY;
+            case "btnRotateImageRight" -> RotateSide.RIGHT;
+            case "btnRotateImageLeft"  -> RotateSide.LEFT;
 
             default -> throw new IllegalStateException("Unexpected value: " + source.getId());
         };
 
-
-        ImagePreprocessing.rotateImage(currentBufferedImage, side).ifPresent(rotated -> {
+        ImageTools.rotateImage(currentBufferedImage, side).ifPresent(rotated -> {
             currentBufferedImage = rotated;
             setPreview(currentBufferedImage);
         });
