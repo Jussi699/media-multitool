@@ -274,76 +274,121 @@ public class ImagePreprocessing {
         }
 
         if (radius <= 0) {
-            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(),
-                    image.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_ARGB : image.getType());
-            Graphics2D g2d = copy.createGraphics();
-            g2d.drawImage(image, 0, 0, null);
-            g2d.dispose();
-            return Optional.of(copy);
+            return Optional.of(copyImage(image));
         }
 
         int width  = image.getWidth();
         int height = image.getHeight();
-
-        // Normalize to TYPE_INT_ARGB so DataBufferInt is always available
-        BufferedImage src = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        {
-            Graphics2D g = src.createGraphics();
-            g.drawImage(image, 0, 0, null);
-            g.dispose();
-        }
-        int[] pixels = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
+        BufferedImage src = normalizeToArgb(image);
+        int[] pixels = getPixels(src);
 
         // Three box-blur passes (SAT-based, O(W*H) each) → Gaussian approximation
-        int stride = width + 1;
         for (int pass = 0; pass < 3; pass++) {
             if (Thread.interrupted()) return Optional.empty();
             if (progressConsumer != null) progressConsumer.accept((double) pass / 3.0);
 
-            // Build SAT for this pass
-            long[] satA = new long[stride * (height + 1)];
-            long[] satR = new long[stride * (height + 1)];
-            long[] satG = new long[stride * (height + 1)];
-            long[] satB = new long[stride * (height + 1)];
-
-            for (int y = 0; y < height; y++) {
-                long rowA = 0, rowR = 0, rowG = 0, rowB = 0;
-                for (int x = 0; x < width; x++) {
-                    int argb = pixels[y * width + x];
-                    rowA += (argb >> 24) & 0xFF;
-                    rowR += (argb >> 16) & 0xFF;
-                    rowG += (argb >>  8) & 0xFF;
-                    rowB +=  argb        & 0xFF;
-                    int idx = (y + 1) * stride + (x + 1);
-                    int above = y * stride + (x + 1);
-                    satA[idx] = rowA + satA[above];
-                    satR[idx] = rowR + satR[above];
-                    satG[idx] = rowG + satG[above];
-                    satB[idx] = rowB + satB[above];
-                }
-            }
-
-            // Write blurred pixels back into the same array
-            int[] tmp = Arrays.copyOf(pixels, pixels.length);
-            for (int y = 0; y < height; y++) {
-                int y1 = Math.max(0, y - radius);
-                int y2 = Math.min(height, y + radius + 1);
-                for (int x = 0; x < width; x++) {
-                    int x1 = Math.max(0, x - radius);
-                    int x2 = Math.min(width, x + radius + 1);
-                    long area = (long)(x2 - x1) * (y2 - y1);
-                    long sumA = satA[y2 * stride + x2] - satA[y1 * stride + x2] - satA[y2 * stride + x1] + satA[y1 * stride + x1];
-                    long sumR = satR[y2 * stride + x2] - satR[y1 * stride + x2] - satR[y2 * stride + x1] + satR[y1 * stride + x1];
-                    long sumG = satG[y2 * stride + x2] - satG[y1 * stride + x2] - satG[y2 * stride + x1] + satG[y1 * stride + x1];
-                    long sumB = satB[y2 * stride + x2] - satB[y1 * stride + x2] - satB[y2 * stride + x1] + satB[y1 * stride + x1];
-                    tmp[y * width + x] = ((int)(sumA / area) << 24) | ((int)(sumR / area) << 16) | ((int)(sumG / area) << 8) | (int)(sumB / area);
-                }
-            }
-            System.arraycopy(tmp, 0, pixels, 0, pixels.length);
+            applyBoxBlurPass(pixels, width, height, radius);
         }
 
         if (progressConsumer != null) progressConsumer.accept(1.0);
 
         return Optional.of(src);
+    }
+
+    private static BufferedImage copyImage(BufferedImage image) {
+        int imageType = image.getType() == BufferedImage.TYPE_CUSTOM
+                ? BufferedImage.TYPE_INT_ARGB
+                : image.getType();
+        BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), imageType);
+        Graphics2D g2d = copy.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+        return copy;
+    }
+
+    private static BufferedImage normalizeToArgb(BufferedImage image) {
+        BufferedImage normalized = new BufferedImage(
+                image.getWidth(),
+                image.getHeight(),
+                BufferedImage.TYPE_INT_ARGB
+        );
+        Graphics2D g2d = normalized.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+        return normalized;
+    }
+
+    private static int[] getPixels(BufferedImage image) {
+        return ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+    }
+
+    private static void applyBoxBlurPass(int[] pixels, int width, int height, int radius) {
+        IntegralImages integralImages = buildIntegralImages(pixels, width, height);
+        int stride = width + 1;
+        int[] blurredPixels = Arrays.copyOf(pixels, pixels.length);
+
+        for (int y = 0; y < height; y++) {
+            int y1 = Math.max(0, y - radius);
+            int y2 = Math.min(height, y + radius + 1);
+            for (int x = 0; x < width; x++) {
+                int x1 = Math.max(0, x - radius);
+                int x2 = Math.min(width, x + radius + 1);
+                long area = (long) (x2 - x1) * (y2 - y1);
+
+                long sumA = getRegionSum(integralImages.alpha(), stride, x1, y1, x2, y2);
+                long sumR = getRegionSum(integralImages.red(), stride, x1, y1, x2, y2);
+                long sumG = getRegionSum(integralImages.green(), stride, x1, y1, x2, y2);
+                long sumB = getRegionSum(integralImages.blue(), stride, x1, y1, x2, y2);
+
+                blurredPixels[y * width + x] = ((int) (sumA / area) << 24)
+                        | ((int) (sumR / area) << 16)
+                        | ((int) (sumG / area) << 8)
+                        | (int) (sumB / area);
+            }
+        }
+
+        System.arraycopy(blurredPixels, 0, pixels, 0, pixels.length);
+    }
+
+    private static IntegralImages buildIntegralImages(int[] pixels, int width, int height) {
+        int stride = width + 1;
+        long[] alpha = new long[stride * (height + 1)];
+        long[] red = new long[stride * (height + 1)];
+        long[] green = new long[stride * (height + 1)];
+        long[] blue = new long[stride * (height + 1)];
+
+        for (int y = 0; y < height; y++) {
+            long rowA = 0;
+            long rowR = 0;
+            long rowG = 0;
+            long rowB = 0;
+            for (int x = 0; x < width; x++) {
+                int argb = pixels[y * width + x];
+                rowA += (argb >> 24) & 0xFF;
+                rowR += (argb >> 16) & 0xFF;
+                rowG += (argb >> 8) & 0xFF;
+                rowB += argb & 0xFF;
+
+                int index = (y + 1) * stride + (x + 1);
+                int above = y * stride + (x + 1);
+                alpha[index] = rowA + alpha[above];
+                red[index] = rowR + red[above];
+                green[index] = rowG + green[above];
+                blue[index] = rowB + blue[above];
+            }
+        }
+
+        return new IntegralImages(alpha, red, green, blue);
+    }
+
+    private static long getRegionSum(long[] integralImage, int stride,
+                                     int x1, int y1, int x2, int y2) {
+        return integralImage[y2 * stride + x2]
+                - integralImage[y1 * stride + x2]
+                - integralImage[y2 * stride + x1]
+                + integralImage[y1 * stride + x1];
+    }
+
+    private record IntegralImages(long[] alpha, long[] red, long[] green, long[] blue) {
     }
 }
