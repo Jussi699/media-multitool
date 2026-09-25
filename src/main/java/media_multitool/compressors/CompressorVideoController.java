@@ -22,6 +22,7 @@ import viewHelp.Alerts;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
@@ -72,16 +73,16 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
+        Stream.of(btnSelectFile, btnChoiceDirForSaveFile, btnReset, btnCompress, chkCompressAudio, chkUseGPU,
+                        btnSuperCompress, btnBasicCompress, btnStrongCompress)
+                .forEach(btn -> btn.setDisable(true));
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
+        Stream.of(btnSelectFile, btnChoiceDirForSaveFile, btnReset, btnCompress, chkCompressAudio, chkUseGPU,
+                        btnSuperCompress, btnBasicCompress, btnStrongCompress)
+                .forEach(btn -> btn.setDisable(false));
     }
 
     @Override

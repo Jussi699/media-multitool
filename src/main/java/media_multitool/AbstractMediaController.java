@@ -61,21 +61,27 @@ public abstract class AbstractMediaController {
         }
 
         task.setOnSucceeded(_ -> {
-            currentTask.set(null);
+            if (!currentTask.compareAndSet(task, null)) {
+                return;
+            }
             unbindProgress();
             unlockUI();
             handleTaskSuccess(task.getValue());
         });
 
         task.setOnCancelled(_ -> {
-            currentTask.set(null);
+            if (!currentTask.compareAndSet(task, null)) {
+                return;
+            }
             unbindProgress();
             unlockUI();
             handleTaskCancelled();
         });
 
         task.setOnFailed(_ -> {
-            currentTask.set(null);
+            if (!currentTask.compareAndSet(task, null)) {
+                return;
+            }
             unbindProgress();
             unlockUI();
             Throwable exception = task.getException();

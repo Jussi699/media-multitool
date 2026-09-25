@@ -20,8 +20,14 @@ public class CompressVideoTask extends Task<Boolean> {
 
     @Override
     protected Boolean call() throws Exception {
+        updateProgress(0, 1);
+
         String format = DetermineType.determineFormat(srcFile).orElse("mp4");
         File finalFileOutput = PathWorker.createOutputFile(srcFile, outputDir, format);
+
+        if (isCancelled()) {
+            return false;
+        }
 
         compressor.compress(srcFile, finalFileOutput,
                 selectedPreset.video(), selectedPreset.audio(), selectedPreset.crf(), p -> updateProgress(p, 1.0));
