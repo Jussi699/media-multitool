@@ -1,4 +1,4 @@
-package media_multitool.editors;
+package media_multitool.mediaTools;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -17,6 +17,7 @@ import javafx.util.Duration;
 import lombok.NonNull;
 import media_multitool.AbstractMediaController;
 import model.preprocessing.AudioPreprocessing;
+import model.preprocessing.MediaTagPreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
@@ -37,7 +38,7 @@ import java.util.function.UnaryOperator;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
 
-public class AudioTagEditorController extends AbstractMediaController {
+public class MediaTagEditorController extends AbstractMediaController {
     private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
     private final ObservableList<DetailsAudioFile> masterFile = FXCollections.observableArrayList();
     private final FilteredList<DetailsAudioFile> filteredFile = new FilteredList<>(masterFile, _ -> true);
@@ -64,7 +65,8 @@ public class AudioTagEditorController extends AbstractMediaController {
     @FXML private ComboBox<String> genreComboBox;
 
     @FXML private TextField titleField, artistField, albumField, albumArtistField, composerField, trackField,
-            discNumberField, commentField, yearField, textFieldFindFile;
+            discNumberField, commentField, yearField, descriptionField, keywordsField, copyrightField,
+            ratingField, textFieldFindFile;
 
     private File chosenDir;
     private List<TextField> textFields;
@@ -82,10 +84,7 @@ public class AudioTagEditorController extends AbstractMediaController {
 
         genreComboBox.showingProperty().addListener((_, _, isShowing) -> {
             if (Boolean.TRUE.equals(isShowing)) {
-                var popupListView = (ListView<?>) genreComboBox.getSkin().getNode().lookup(".list-view");
-                if (popupListView != null) {
-                    popupListView.prefWidthProperty().bind(genreComboBox.widthProperty());
-                }
+                bindComboBoxPopupWidth(genreComboBox);
             }
         });
 
@@ -94,12 +93,13 @@ public class AudioTagEditorController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
         onResetPressed();
-        setupDragAndDrop(dropZone, Global.getAllSupportedAudioFormats(), this::loadFile);
+        setupDragAndDrop(dropZone, Global.getAllSupportedMediaFormats(), this::loadFile);
     }
 
     private void initLists() {
         textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField,
-                trackField, discNumberField, commentField, yearField, textFieldFindFile);
+                trackField, discNumberField, commentField, yearField, descriptionField, keywordsField,
+                copyrightField, ratingField, textFieldFindFile);
 
 
         listControls = new ArrayList<>();
@@ -188,16 +188,16 @@ public class AudioTagEditorController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Audio Tag Editor",
+                "Media Tag Editor",
                 """
                         How to use:
-                        1. Select an audio file using 'Select audio file' or drag and drop.
+                        1. Select an audio, photo or video file using 'Select media file' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
-                        3. Fill in the metadata fields (Title, Artist, Album, etc.).
-                        4. (Optional) Change the icon using 'Change Icon'.
-                        5. Click 'Save Tags' to apply all changes.
+                        3. Fill in the tag fields (Title, Artist, Description, Keywords, etc.).
+                        4. (Optional) Change the cover image for audio files using 'Change Icon'.
+                        5. Click 'Save Changes' to apply all changes.
                         
-                        This tool allows you to edit audio tags and album art.
+                        This tool allows you to edit audio, photo and video tags.
                         
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
@@ -228,7 +228,7 @@ public class AudioTagEditorController extends AbstractMediaController {
         SelectFile selectAudioFile = new SelectFile();
         Stage stage = (Stage) btnSelectImage.getScene().getWindow();
         selectAudioFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Audio Files", Global.getSupportedAudioFormatsForFileChooser())).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("Media Files", Global.getSupportedMediaFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 
     @FXML
@@ -243,14 +243,19 @@ public class AudioTagEditorController extends AbstractMediaController {
             return;
         }
 
-        Map<FieldKey, String> tags = collectTags();
-        String imagePath = audioProperties.getPathToImage() != null ? audioProperties.getPathToImage().getPath() : null;
-
         Task<Boolean> task = new Task<>() {
             @Override
-            protected Boolean call() {
+            protected Boolean call() throws Exception {
                 updateProgress(10, 100);
-                AudioPreprocessing.applyTags(audioProperties.getSrcFile(), tags, imagePath);
+                if (isAudioFile(audioProperties.getSrcFile())) {
+                    Map<FieldKey, String> tags = collectTags();
+                    String imagePath = audioProperties.getPathToImage() != null
+                            ? audioProperties.getPathToImage().getPath()
+                            : null;
+                    AudioPreprocessing.applyTags(audioProperties.getSrcFile(), tags, imagePath);
+                } else {
+                    MediaTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
+                }
                 updateProgress(100, 100);
                 return true;
             }
@@ -258,6 +263,25 @@ public class AudioTagEditorController extends AbstractMediaController {
 
         executeMediaTask(task);
         labelSuccess.setManaged(true);
+    }
+
+    private Map<String, String> collectMediaTags() {
+        Map<String, String> tags = new LinkedHashMap<>();
+        tags.put("title", titleField.getText());
+        tags.put("artist", artistField.getText());
+        tags.put("album", albumField.getText());
+        tags.put("albumArtist", albumArtistField.getText());
+        tags.put("composer", composerField.getText());
+        tags.put("track", trackField.getText());
+        tags.put("discNumber", discNumberField.getText());
+        tags.put("year", yearField.getText());
+        tags.put("genre", genreComboBox.getEditor().getText());
+        tags.put("comment", commentField.getText());
+        tags.put("description", descriptionField.getText());
+        tags.put("keywords", keywordsField.getText());
+        tags.put("copyright", copyrightField.getText());
+        tags.put("rating", ratingField.getText());
+        return tags;
     }
 
     private @NonNull Map<FieldKey, String> collectTags() {
@@ -299,26 +323,28 @@ public class AudioTagEditorController extends AbstractMediaController {
         if (result instanceof Boolean && Boolean.FALSE.equals(result)) {
             return;
         }
-        ErrorLogger.info("MP3 tags and icon changed successfully!");
+        ErrorLogger.info("Media tags changed successfully!");
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Tags saved successfully!", audioProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
-            AudioEditor.updatePreview(audioProperties, imageViewPreview);
+            if (isAudioFile(audioProperties.getSrcFile())) {
+                AudioEditor.updatePreview(audioProperties, imageViewPreview);
+            }
             
             DetailsAudioFile selected = tableViewAudio.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                Map<FieldKey, String> newTags = collectTags();
-                selected.setTitle(newTags.get(FieldKey.TITLE));
-                selected.setArtist(newTags.get(FieldKey.ARTIST));
-                selected.setAlbum(newTags.get(FieldKey.ALBUM));
-                selected.setAlbumArtist(newTags.get(FieldKey.ALBUM_ARTIST));
-                selected.setTrack(newTags.get(FieldKey.TRACK));
-                selected.setDiscNumber(newTags.get(FieldKey.DISC_NO));
-                selected.setYear(newTags.get(FieldKey.YEAR));
-                selected.setGenre(genreComboBox.getEditor().getText());
-                selected.setComment(newTags.get(FieldKey.COMMENT));
-                tableViewAudio.refresh();
+            if (selected != null && isAudioFile(audioProperties.getSrcFile())) {
+                    Map<FieldKey, String> newTags = collectTags();
+                    selected.setTitle(newTags.get(FieldKey.TITLE));
+                    selected.setArtist(newTags.get(FieldKey.ARTIST));
+                    selected.setAlbum(newTags.get(FieldKey.ALBUM));
+                    selected.setAlbumArtist(newTags.get(FieldKey.ALBUM_ARTIST));
+                    selected.setTrack(newTags.get(FieldKey.TRACK));
+                    selected.setDiscNumber(newTags.get(FieldKey.DISC_NO));
+                    selected.setYear(newTags.get(FieldKey.YEAR));
+                    selected.setGenre(genreComboBox.getEditor().getText());
+                    selected.setComment(newTags.get(FieldKey.COMMENT));
+                    tableViewAudio.refresh();
             }
         });
     }
@@ -360,14 +386,18 @@ public class AudioTagEditorController extends AbstractMediaController {
         labelSelectImageName.setText("Selected audio: " + selectedFile.getName());
 
         try {
-            AudioPreprocessing.getIconMp3(audioProperties.getSrcFile())
-                    .ifPresentOrElse(file -> AudioEditor.setPreview(file, imageViewPreview),
-                    () -> AudioEditor.loadDefaultPreview(imageViewPreview));
-
-            populateFields(AudioPreprocessing.getTags(selectedFile));
+            if (isAudioFile(selectedFile)) {
+                AudioPreprocessing.getIconMp3(audioProperties.getSrcFile())
+                        .ifPresentOrElse(file -> AudioEditor.setPreview(file, imageViewPreview),
+                                () -> AudioEditor.loadDefaultPreview(imageViewPreview));
+                populateFields(AudioPreprocessing.getTags(selectedFile));
+            } else {
+                populateMediaFields(MediaTagPreprocessing.getTags(selectedFile));
+                AudioEditor.loadDefaultPreview(imageViewPreview);
+            }
 
         } catch (Exception e) {
-            ErrorLogger.error("Failed to load metadata: " + e.getMessage());
+            ErrorLogger.error("Failed to load tags: " + e.getMessage());
         }
 
         textDragZone.setText("Selected: " + selectedFile.getName());
@@ -387,7 +417,33 @@ public class AudioTagEditorController extends AbstractMediaController {
         discNumberField.setText(tags.getOrDefault(FieldKey.DISC_NO, ""));
         commentField.setText(tags.getOrDefault(FieldKey.COMMENT, ""));
         yearField.setText(tags.getOrDefault(FieldKey.YEAR, ""));
+        descriptionField.clear();
+        keywordsField.clear();
+        copyrightField.clear();
+        ratingField.clear();
         AudioEditor.setGenreValue(genreComboBox, tags.get(FieldKey.GENRE));
+    }
+
+    private void populateMediaFields(@NonNull Map<String, String> tags) {
+        titleField.setText(tags.getOrDefault("title", ""));
+        artistField.setText(tags.getOrDefault("artist", ""));
+        albumField.setText(tags.getOrDefault("album", ""));
+        albumArtistField.setText(tags.getOrDefault("albumArtist", ""));
+        composerField.setText(tags.getOrDefault("composer", ""));
+        trackField.setText(tags.getOrDefault("track", ""));
+        discNumberField.setText(tags.getOrDefault("discNumber", ""));
+        commentField.setText(tags.getOrDefault("comment", ""));
+        yearField.setText(tags.getOrDefault("year", ""));
+        descriptionField.setText(tags.getOrDefault("description", ""));
+        keywordsField.setText(tags.getOrDefault("keywords", ""));
+        copyrightField.setText(tags.getOrDefault("copyright", ""));
+        ratingField.setText(tags.getOrDefault("rating", ""));
+        AudioEditor.setGenreValue(genreComboBox, tags.get("genre"));
+    }
+
+    private boolean isAudioFile(File file) {
+        return file != null && Global.getAllSupportedAudioFormats().stream()
+                .anyMatch(format -> file.getName().toLowerCase(Locale.ROOT).endsWith(format));
     }
 
     public void onActionChangeIcon() {
@@ -407,17 +463,40 @@ public class AudioTagEditorController extends AbstractMediaController {
 
     public void onActionBtnSelectMultipleFile() {
         Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        directoryChooser(stage, audioProperties.getOutput(), "Select directory")
+        ChoiceDialog<String> mediaTypeDialog = new ChoiceDialog<>(
+                "All media",
+                "Photos",
+                "Videos",
+                "Audio",
+                "All media"
+        );
+        mediaTypeDialog.initOwner(stage);
+        mediaTypeDialog.setTitle("Batch File");
+        mediaTypeDialog.setHeaderText("Choose files to search for");
+        mediaTypeDialog.setContentText("Media type:");
+        mediaTypeDialog.setGraphic(Alerts.createQuestionGraphic());
+        mediaTypeDialog.setOnShown(_ -> {
+            mediaTypeDialog.getDialogPane().setGraphic(Alerts.createQuestionGraphic());
+            ComboBox<?> comboBox = (ComboBox<?>) mediaTypeDialog.getDialogPane().lookup(".combo-box");
+            if (comboBox != null) {
+                bindComboBoxPopupWidth(comboBox);
+            }
+        });
+
+        mediaTypeDialog.showAndWait().ifPresent(mediaType ->
+                directoryChooser(stage, audioProperties.getOutput(), "Select directory")
                 .ifPresent(dir -> {
                     disableControls();
                     chosenDir = dir;
                     audioProperties.setOutput(dir);
+                    List<String> formats = getFormatsForMediaType(mediaType);
 
                     Task<List<DetailsAudioFile>> task = new Task<>() {
                         @Override
                         protected List<DetailsAudioFile> call() {
                             return TableViewHelper.loadFilesFromDir(
                                     chosenDir.toPath(),
+                                    formats,
                                     (processed, total) -> {
                                         updateProgress(processed, Math.max(total, 1));
                                         updateMessage("Read files: " + processed + " / " + total);
@@ -427,8 +506,33 @@ public class AudioTagEditorController extends AbstractMediaController {
                         }
                     };
 
-                    Alerts.showProgressDialog(stage, task, "Loading files", "Reading audio files from directory");
+                    Alerts.showProgressDialog(stage, task, "Loading files", "Reading " + mediaType.toLowerCase(Locale.ROOT) + " from directory");
                     executeMediaTask(task);
-                });
+                }));
+    }
+
+    private List<String> getFormatsForMediaType(String mediaType) {
+        return switch (mediaType) {
+            case "Photos" -> Global.getAllSupportedImageFormats();
+            case "Videos" -> Global.getAllSupportedVideoFormats();
+            case "Audio" -> Global.getAllSupportedAudioFormats();
+            case "All media" -> Global.getAllSupportedMediaFormats();
+            default -> throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        };
+    }
+
+    private void bindComboBoxPopupWidth(ComboBox<?> comboBox) {
+        Platform.runLater(() -> {
+            if (comboBox.getSkin() == null) {
+                return;
+            }
+
+            var popupListView = (ListView<?>) comboBox.getSkin().getNode().lookup(".list-view");
+            if (popupListView != null) {
+                popupListView.minWidthProperty().bind(comboBox.widthProperty());
+                popupListView.prefWidthProperty().bind(comboBox.widthProperty());
+                popupListView.maxWidthProperty().bind(comboBox.widthProperty());
+            }
+        });
     }
 }

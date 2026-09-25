@@ -5,12 +5,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import model.utility.DetailsAudioFile;
-import model.utility.Global;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +34,9 @@ public class TableViewHelper {
 
     public static List<DetailsAudioFile> loadFilesFromDir(
             Path inputDirectory,
+            List<String> formats,
             BiConsumer<Integer, Integer> onProgress,
             BooleanSupplier isCancelled) {
-        List<String> formats = Global.getAllSupportedAudioFormats();
         List<DetailsAudioFile> detailsList = new ArrayList<>();
 
         List<Path> foundPaths = new ArrayList<>();
@@ -44,7 +44,7 @@ public class TableViewHelper {
             Files.walkFileTree(inputDirectory, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE,
                 new SimpleFileVisitor<>() {
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    public FileVisitResult visitFile(@NonNull Path file, @NonNull BasicFileAttributes attrs) {
                         String name = file.toString().toLowerCase();
                         if (formats.stream().anyMatch(ext -> name.endsWith(ext.toLowerCase()))) {
                             foundPaths.add(file);
@@ -53,13 +53,12 @@ public class TableViewHelper {
                     }
 
                     @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                        // Skip inaccessible files/directories
+                    public FileVisitResult visitFileFailed(@NonNull Path file, @NonNull IOException exc) {
                         return FileVisitResult.CONTINUE;
                     }
 
                     @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                    public FileVisitResult preVisitDirectory(@NonNull Path dir, @NonNull BasicFileAttributes attrs) {
                         return FileVisitResult.CONTINUE;
                     }
                 });
@@ -120,7 +119,7 @@ public class TableViewHelper {
             BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
             details.setModified(attr.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
 
-        } catch (Exception e) {
+        } catch (Exception _) {
             // If some file fails to load, we still return basic info
         }
         return details;

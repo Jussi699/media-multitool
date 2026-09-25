@@ -137,16 +137,24 @@
                       styleClass="folder-content">
                 </VBox>
 
-                <Button fx:id="navEditorAudioTag" focusTraversable="false" mnemonicParsing="false" onAction="#showEditorAudioTagPage"
-                        prefWidth="190.0" text="Audio Tag Editor" alignment="BASELINE_LEFT" styleClass="standalone-btn">
+                <ToggleButton fx:id="btnMediaTools" focusTraversable="false" text="Media Tools" styleClass="folder-btn"
+                              toggleGroup="$folderGroup" prefWidth="190.0" alignment="BASELINE_LEFT">
                     <graphic>
                         <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">
                             <SVGPath
-                                    content="M11.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v10.35 M14 2v5a1 1 0 0 0 1 1h5 M8 20v-7l3 1.474 M4 20a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"
-                                    styleClass="other-icon"/>
+                                    content="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20 M8 12v-2a4 4 0 0 1 8 0v2 M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"
+                                    styleClass="folder-icon"/>
                         </StackPane>
                     </graphic>
-                </Button>
+                </ToggleButton>
+                <VBox fx:id="mediaToolsContent" visible="${btnMediaTools.selected}" managed="${btnMediaTools.selected}"
+                      styleClass="folder-content">
+                    <Button fx:id="navMediaEditorTag" focusTraversable="false" mnemonicParsing="false" onAction="#showMediaEditorTagPage"
+                            prefWidth="150.0" text="Media Tag Editor" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+
+                    <Button fx:id="navMetaData" focusTraversable="false" mnemonicParsing="false" onAction="#showMetaDataPage"
+                            prefWidth="150.0" text="Meta Data" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                </VBox>
 
                 <Button fx:id="navInfo" focusTraversable="false" mnemonicParsing="false" onAction="#showInfoPage" prefWidth="190.0" text="Info"
                         alignment="BASELINE_LEFT" styleClass="standalone-btn">
@@ -178,7 +186,7 @@
         <fx:include fx:id="colorizePage" source="image-tools-views/colorize-image-view.fxml"/>
         <fx:include fx:id="blackAndWhitePage" source="image-tools-views/black-white-image-view.fxml"/>
         <fx:include fx:id="blurPage" source="image-tools-views/blur-image-view.fxml"/>
-        <fx:include fx:id="audioEditorTagPage" source="editors-views/editor-audio-tag-view.fxml"/>
+        <fx:include fx:id="mediaTagEditorPage" source="media-tools/media-tag-editor-view.fxml"/>
         <fx:include fx:id="findPixelPage" source="image-tools-views/find-color-pixel-image-view.fxml"/>
         <fx:include fx:id="cropPage" source="image-tools-views/crop-image-view.fxml"/>
         <fx:include fx:id="imageToPdfPage" source="pdf-views/converter-image-to-pdf-view.fxml"/>
@@ -195,5 +203,6 @@
         <fx:include fx:id="watermarkImagePane" source="watermark-views/watermark-image-view.fxml"/>
         <fx:include fx:id="watermarkPdfPane" source="watermark-views/watermark-pdf-view.fxml"/>
         <fx:include fx:id="watermarkVideoPane" source="watermark-views/watermark-video-view.fxml"/>
+        <fx:include fx:id="metaDataPage" source="media-tools/meta-data.fxml"/>
     </StackPane>
 </HBox>

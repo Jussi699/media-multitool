@@ -267,10 +267,10 @@
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="section-container">
-                    <Label text="Audio Tools" styleClass="section-title">
+                    <Label text="Media Tools" styleClass="section-title">
                         <graphic>
                             <SVGPath styleClass="section-icon"
-                                     content="M11.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v10.35 M14 2v5a1 1 0 0 0 1 1h5 M8 20v-7l3 1.474 M4 20a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                     content="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20 M8 12v-2a4 4 0 0 1 8 0v2 M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
                         </graphic>
                     </Label>
                     <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
@@ -278,7 +278,13 @@
                                 onAction="#onOpenEditorAudioTagPressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
-                                text="Tag Editor"/>
+                                text="Media Tag Editor"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onOpenMetaDataPressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Metadata"/>
                     </FlowPane>
                 </VBox>
 

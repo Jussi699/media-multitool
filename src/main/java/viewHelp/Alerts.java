@@ -36,6 +36,16 @@ public class Alerts {
         return INFO_ICON_PATH;
     }
 
+    public static ImageView createQuestionGraphic() {
+        URL resource = Alerts.class.getResource(QUESTION_ICON_PATH);
+        if (resource == null) {
+            ErrorLogger.error("File " + QUESTION_ICON_PATH + " not found");
+            return null;
+        }
+
+        return new ImageView(new Image(resource.toExternalForm(), 48, 48, true, true));
+    }
+
     private static ImageView createGraphic(Alert.AlertType type) {
         String path = getIconPath(type);
         URL resource = Alerts.class.getResource(path);
@@ -71,6 +81,7 @@ public class Alerts {
         alert.setResizable(true);
         alert.setWidth(600);
 
+        alert.setGraphic(null);
         ImageView graphic = createGraphic(type);
         if (graphic != null) {
             alert.setGraphic(graphic);
@@ -189,6 +200,7 @@ public class Alerts {
         alert.setHeaderText(headerText);
         alert.setContentText(message);
 
+        alert.setGraphic(null);
         ImageView graphic = createGraphic(Alert.AlertType.CONFIRMATION);
         if (graphic != null) {
             alert.setGraphic(graphic);

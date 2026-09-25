@@ -17,18 +17,19 @@ import java.util.function.IntConsumer;
 
 public class ViewController {
 
-    @FXML private StackPane audioEditorTagPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
+    @FXML private StackPane mediaTagEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
             compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
             negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage;
+            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage,
+            metaDataPage;
     @FXML private HomeViewController homeViewController;
 
     @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
-            navCompressorImage, navCompressorVideo, navInfo, navEditorAudioTag, navCompressorPdf;
+            navCompressorImage, navCompressorVideo, navInfo, navMediaEditorTag, navCompressorPdf, navMetaData;
 
-    @FXML private VBox imageToolsContent, pdfToolsContent, watermarkContent;
-    @FXML private ToggleButton btnConverters, btnCompressors, btnImageTools, btnPdfTools, btnWatermark;
+    @FXML private VBox imageToolsContent, pdfToolsContent, watermarkContent, mediaToolsContent;
+    @FXML private ToggleButton btnConverters, btnCompressors, btnImageTools, btnPdfTools, btnWatermark, btnMediaTools;
 
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
     private final Map<Integer, StackPane> stackPaneMapPdfTools = new HashMap<>();
@@ -38,7 +39,8 @@ public class ViewController {
 
     @FXML
     public void initialize() {
-        listSubBtn.addAll(List.of(navConverterImageButton, navConverterVideoButton, navConverterAudioButton, navCompressorImage, navCompressorVideo));
+        listSubBtn.addAll(List.of(navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
+                navCompressorImage, navCompressorVideo, navMediaEditorTag, navMetaData));
 
         if (homeViewController != null) {
             homeViewController.setMainController(this);
@@ -178,9 +180,17 @@ public class ViewController {
     }
 
     @FXML
-    public void showEditorAudioTagPage() {
-        setActivePage(audioEditorTagPage, navEditorAudioTag);
-        if (btnConverters != null && btnConverters.getToggleGroup() != null) btnConverters.getToggleGroup().selectToggle(null);
+    public void showMediaEditorTagPage() {
+        setActivePage(mediaTagEditorPage, navMediaEditorTag);
+        btnMediaTools.setSelected(true);
+        setActiveSubButton(navMediaEditorTag);
+    }
+
+    @FXML
+    public void showMetaDataPage() {
+        setActivePage(metaDataPage, navMetaData);
+        btnMediaTools.setSelected(true);
+        setActiveSubButton(navMetaData);
     }
 
     @FXML
@@ -232,7 +242,7 @@ public class ViewController {
             if (!activeBtn.getStyleClass().contains("sub-btn-active")) {
                 activeBtn.getStyleClass().add("sub-btn-active");
             }
-            if (activeBtn == navHomeButton || activeBtn == navEditorAudioTag || activeBtn == navInfo) {
+            if (activeBtn == navHomeButton || activeBtn == navInfo) {
                 activeBtn.getStyleClass().remove("standalone-btn-active");
                 activeBtn.getStyleClass().add("standalone-btn-active");
             }
@@ -244,10 +254,10 @@ public class ViewController {
                 homeView, converterImagePage, converterVideoPage, converterMP3Page,
                 compressorImagePage, compressorVideoPage, negativeImagePage, rotateImagePage,
                 infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
-                audioEditorTagPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
+                mediaTagEditorPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
                 imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
                 removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane,
-                watermarkPdfPane, watermarkVideoPane, spotBlurPage
+                watermarkPdfPane, watermarkVideoPane, spotBlurPage, metaDataPage
         };
 
         for (StackPane page : allPages) {
@@ -258,7 +268,6 @@ public class ViewController {
         }
 
         navHomeButton.getStyleClass().remove("standalone-btn-active");
-        navEditorAudioTag.getStyleClass().remove("standalone-btn-active");
         navInfo.getStyleClass().remove("standalone-btn-active");
 
         if (activeButton != null) {

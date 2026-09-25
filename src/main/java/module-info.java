@@ -26,6 +26,8 @@ module media_multitool {
     requires org.lwjgl.nfd;
     requires org.junit.jupiter.api;
     requires com.imagetools;
+    requires metadata.extractor;
+    requires com.github.mjeanroy.exiftool;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;
@@ -36,6 +38,8 @@ module media_multitool {
     exports model.properties;
     exports model.select;
     exports model.preprocessing;
+    exports model.metadata;
+    opens model.metadata to javafx.base, javafx.fxml;
     exports viewHelp;
     exports model.enums;
     exports viewHelp.audioEditor;
@@ -47,8 +51,6 @@ module media_multitool {
     opens media_multitool.converters to javafx.fxml;
     exports media_multitool.compressors;
     opens media_multitool.compressors to javafx.fxml;
-    exports media_multitool.editors;
-    opens media_multitool.editors to javafx.fxml;
     exports media_multitool.pdf;
     opens media_multitool.pdf to javafx.fxml;
     exports model.checks;
@@ -62,4 +64,6 @@ module media_multitool {
     opens model.helper.images to javafx.fxml;
     opens model.converterVideo;
     opens model.converterImage;
+    opens media_multitool.mediaTools to javafx.fxml;
+    exports media_multitool.mediaTools;
 }

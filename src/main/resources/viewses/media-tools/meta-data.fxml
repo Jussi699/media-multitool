@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Cursor?>
+
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="media_multitool.mediaTools.MetaDataController">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="10.0"
+          styleClass="gradient-background">
+
+        <Label styleClass="main-label-name-page"
+               text="Media Metadata">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="12.0">
+            <Button fx:id="btnSelectFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionBtnSelectFile"
+                    prefWidth="220.0"
+                    text="Select File"/>
+
+            <Button fx:id="btnChoiceFolderForSaveFile"
+                    mnemonicParsing="false"
+                    onAction="#onChoiceFolderForSaveFile"
+                    prefWidth="220.0"
+                    text="Directory for save">
+                <tooltip>
+                    <Tooltip text="Output directory for stripped/cleaned files (Default: Desktop)"/>
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="12.0">
+            <Button fx:id="btnDeleteTag"
+                    mnemonicParsing="false"
+                    onAction="#onActionDeleteSelectedTag"
+                    prefWidth="220.0"
+                    text="Delete Selected Tag">
+                <tooltip>
+                    <Tooltip text="Delete selected metadata tag from current file"/>
+                </tooltip>
+            </Button>
+
+            <Button fx:id="btnCopyAll"
+                    mnemonicParsing="false"
+                    onAction="#onActionCopyAll"
+                    prefWidth="160.0"
+                    text="Copy All Metadata">
+                <tooltip>
+                    <Tooltip text="Copy all extracted metadata to clipboard"/>
+                </tooltip>
+            </Button>
+
+            <Button fx:id="btnRemoveAllMetadata"
+                    mnemonicParsing="false"
+                    onAction="#onActionRemoveAllMetadata"
+                    prefWidth="220.0"
+                    text="Remove All Metadata">
+                <tooltip>
+                    <Tooltip text="Strip all metadata and save clean copy to output folder"/>
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   visible="false"
+                   managed="false"
+                   text="Metadata status: success"/>
+
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="450.0"
+                         visible="false"
+                         managed="false"/>
+        </VBox>
+
+        <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="4.0" right="4.0"/>
+            </padding>
+
+            <TextField fx:id="txtSearch"
+                       promptText="Search property, tag or value..."
+                       style="-fx-border-color: -main-gradient-color; -fx-border-width: 1; -fx-background-radius: 8; -fx-border-radius: 8;"/>
+
+            <HBox VBox.vgrow="ALWAYS">
+                <TableView fx:id="tableViewMetadata"
+                           prefHeight="420.0"
+                           HBox.hgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colCategory" prefWidth="170.0" maxWidth="200" minWidth="170" text="Category"/>
+                        <TableColumn fx:id="colProperty" prefWidth="170.0" maxWidth="200" minWidth="170" text="Property / Tag"/>
+                        <TableColumn fx:id="colValue" prefWidth="250.0" text="Value"/>
+                        <TableColumn fx:id="colCanDelete" prefWidth="60.0" minWidth="60.0" maxWidth="60.0" resizable="false"
+                                     text="Del" style="-fx-alignment: CENTER;"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <cursor>
+                        <Cursor fx:constant="DEFAULT"/>
+                    </cursor>
+                </TableView>
+                <ScrollBar fx:id="metadataVerticalScrollBar"
+                           managed="false"
+                           maxWidth="14.0"
+                           minWidth="14.0"
+                           orientation="VERTICAL"
+                           prefWidth="14.0"
+                           visible="false"
+                           styleClass="external-table-scrollbar"/>
+            </HBox>
+
+            <StackPane fx:id="dropZone"
+                       styleClass="drop-zone"
+                       minHeight="90.0"
+                       prefHeight="90.0"
+                       maxHeight="100.0"
+                       VBox.vgrow="NEVER">
+                <Label fx:id="textDragZone"
+                       styleClass="label-drag-zone"
+                       text="Drag &amp; Drop photo, PDF, video or audio file here"/>
+            </StackPane>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <Label fx:id="labelSelectFile"
+                   styleClass="labelSelect"
+                   text="Selected file: none"/>
+
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
+        </VBox>
+
+        <padding>
+            <Insets top="8.0" left="16.0" right="16.0" bottom="16.0"/>
+        </padding>
+    </VBox>
+
+    <Button text="?"
+            onAction="#showInfo"
+            styleClass="info-button"
+            StackPane.alignment="TOP_LEFT">
+        <StackPane.margin>
+            <Insets top="10.0" left="10.0"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

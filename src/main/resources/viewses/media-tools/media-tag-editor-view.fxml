@@ -20,11 +20,11 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.Cursor?>
 <StackPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="media_multitool.editors.AudioTagEditorController">
+           fx:controller="media_multitool.mediaTools.MediaTagEditorController">
     <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0"
           styleClass="gradient-background">
 
-        <Label text="Audio Tag Editor"
+        <Label text="Media Tag Editor"
                styleClass="main-label-name-page">
             <VBox.margin>
                 <Insets top="8.0"/>
@@ -33,7 +33,7 @@
 
         <HBox alignment="CENTER" spacing="20.0">
             <Button fx:id="btnSelectImage" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0"
-                    text="Select audio file"/>
+                    text="Select media file"/>
             <Button fx:id="btnSelectMultipleFile" mnemonicParsing="false" onAction="#onActionBtnSelectMultipleFile"
                     prefWidth="180.0" text="Select multiple file"/>
 
@@ -127,6 +127,24 @@
                             <Label styleClass="label-h" text="Comment:" textFill="WHITE"/>
                             <TextField fx:id="commentField"/>
                         </VBox>
+                        <VBox spacing="2.0">
+                            <Label styleClass="label-h" text="Description:" textFill="WHITE"/>
+                            <TextField fx:id="descriptionField"/>
+                        </VBox>
+                        <VBox spacing="2.0">
+                            <Label styleClass="label-h" text="Keywords:" textFill="WHITE"/>
+                            <TextField fx:id="keywordsField"/>
+                        </VBox>
+                        <HBox spacing="10.0">
+                            <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="label-h" text="Copyright:" textFill="WHITE"/>
+                                <TextField fx:id="copyrightField"/>
+                            </VBox>
+                            <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="label-h" text="Rating:" textFill="WHITE"/>
+                                <TextField fx:id="ratingField"/>
+                            </VBox>
+                        </HBox>
                         <VBox maxWidth="Infinity" styleClass="vbox-button-change-icon">
                             <Button fx:id="btnChangeIcon" maxWidth="Infinity" mnemonicParsing="false"
                                     onAction="#onActionChangeIcon" text="Change Icon"/>
@@ -207,4 +225,3 @@
         </StackPane.margin>
     </Button>
 </StackPane>
-

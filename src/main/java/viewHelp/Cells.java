@@ -1,7 +1,7 @@
 package viewHelp;
 
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
+import javafx.scene.control.*;
+import model.metadata.MetadataEntry;
 
 public class Cells {
     private Cells() {}
@@ -37,6 +37,28 @@ public class Cells {
                     setText(item);
                     setGraphic(null);
                     setStyle("-fx-alignment: CENTER; -fx-text-fill: WHITE;");
+                }
+            }
+        });
+    }
+
+    public static void setCellFactoryTableColumn(TableColumn<MetadataEntry, Boolean> table) {
+        table.setCellFactory(_ -> new TableCell<>() {
+            @Override
+            protected void updateItem(Boolean canDelete, boolean empty) {
+                super.updateItem(canDelete, empty);
+                if (empty || canDelete == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setTooltip(null);
+                } else if (canDelete) {
+                    setText("✓");
+                    setStyle("-fx-text-fill: #2ecc71; -fx-font-weight: bold; -fx-font-size: 15px; -fx-alignment: CENTER;");
+                    setTooltip(new Tooltip("Can be deleted manually"));
+                } else {
+                    setText("✕");
+                    setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 13px; -fx-alignment: CENTER;");
+                    setTooltip(new Tooltip("Read-only file property"));
                 }
             }
         });

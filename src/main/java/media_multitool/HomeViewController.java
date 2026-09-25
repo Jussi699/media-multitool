@@ -206,7 +206,14 @@ public class HomeViewController {
     @FXML
     private void onOpenEditorAudioTagPressed() {
         if (mainController != null) {
-            mainController.showEditorAudioTagPage();
+            mainController.showMediaEditorTagPage();
+        }
+    }
+
+    @FXML
+    private void onOpenMetaDataPressed() {
+        if (mainController != null) {
+            mainController.showMetaDataPage();
         }
     }
     //--------------------------/Audio Tag Editor--------------------------//

@@ -31,6 +31,20 @@ public class Global {
         return allSupportedAudioFormat;
     }
 
+    public static List<String> getAllSupportedMetadataFormats() {
+        List<String> all = getAllSupportedMediaFormats();
+        all.add(".pdf");
+        return all;
+    }
+
+    public static List<String> getAllSupportedMediaFormats() {
+        List<String> all = new ArrayList<>();
+        all.addAll(allSupportedImageFormat);
+        all.addAll(allSupportedAudioFormat);
+        all.addAll(allSupportedVideoFormat);
+        return all;
+    }
+
     public static List<String> getSupportedVideoFormatsForFileChooser() {
         List<String> supported = new ArrayList<>();
         for(String format : allSupportedVideoFormat) {
@@ -55,6 +69,22 @@ public class Global {
             supported.add("*".concat(format));
         }
 
+        return supported;
+    }
+
+    public static List<String> getSupportedMediaFormatsForFileChooser() {
+        List<String> supported = new ArrayList<>();
+        for (String format : getAllSupportedMediaFormats()) {
+            supported.add("*".concat(format));
+        }
+        return supported;
+    }
+
+    public static List<String> getSupportedMetadataFormatsForFileChooser() {
+        List<String> supported = new ArrayList<>();
+        for (String format : getAllSupportedMetadataFormats()) {
+            supported.add("*".concat(format));
+        }
         return supported;
     }
 }
