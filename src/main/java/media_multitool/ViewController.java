@@ -22,11 +22,10 @@ public class ViewController {
             negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
             pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
             compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage;
-
     @FXML private HomeViewController homeViewController;
 
     @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
-            navCompressorImage, navCompressorVideo, navInfo, navEditorAudioTag;
+            navCompressorImage, navCompressorVideo, navInfo, navEditorAudioTag, navCompressorPdf;
 
     @FXML private VBox imageToolsContent, pdfToolsContent, watermarkContent;
     @FXML private ToggleButton btnConverters, btnCompressors, btnImageTools, btnPdfTools, btnWatermark;
@@ -168,6 +167,13 @@ public class ViewController {
     public void showCompressorVideoPage() {
         setActivePage(compressorVideoPage, null);
         setActiveSubButton(navCompressorVideo);
+        btnCompressors.setSelected(true);
+    }
+
+    @FXML
+    public void showCompressorPdfPage() {
+        setActivePage(compressPdfPage, null);
+        setActiveSubButton(navCompressorPdf);
         btnCompressors.setSelected(true);
     }
 

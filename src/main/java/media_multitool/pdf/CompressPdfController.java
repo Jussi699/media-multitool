@@ -122,7 +122,7 @@ public class CompressPdfController extends AbstractMediaController {
         Task<File> task = new Task<>() {
             @Override
             protected File call() throws Exception {
-                updateProgress(10, 100);
+                updateProgress(0, 100);
                 if (isCancelled() || cancelFlag.get()) {
                     throw new InterruptedException("Compression cancelled");
                 }
@@ -133,14 +133,13 @@ public class CompressPdfController extends AbstractMediaController {
                         "pdf"
                 );
 
-                updateProgress(30, 100);
                 if (isCancelled() || cancelFlag.get()) {
                     Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Compression cancelled");
                 }
 
                 try {
-                    CompressPdfHelper.compressPdf(imageProperties.getImage(), outputFile, selectedLevel);
+                    CompressPdfHelper.compressPdf(imageProperties.getImage(), outputFile, selectedLevel, this::updateProgress);
                 } catch (Exception e) {
                     Utility.cleanupFile(outputFile);
                     throw e;

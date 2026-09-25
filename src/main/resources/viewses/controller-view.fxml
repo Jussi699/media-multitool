@@ -96,6 +96,8 @@
                             prefWidth="150.0" text="Compressor Image" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
                     <Button fx:id="navCompressorVideo" focusTraversable="false" mnemonicParsing="false" onAction="#showCompressorVideoPage"
                             prefWidth="150.0" text="Compressor Video" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
+                    <Button fx:id="navCompressorPdf" focusTraversable="false" mnemonicParsing="false" onAction="#showCompressorPdfPage"
+                            prefWidth="150.0" text="Compressor PDF" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
                 </VBox>
 
                 <ToggleButton fx:id="btnImageTools" focusTraversable="false" text="Image Tools" styleClass="folder-btn"

@@ -19,9 +19,16 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class CompressPdfHelper {
+    @FunctionalInterface
+    public interface ProgressCallback {
+        void onProgress(double workDone, double max);
+    }
+
     @Getter
     public enum CompressionLevel {
         LOW(1.0f),
@@ -35,24 +42,49 @@ public class CompressPdfHelper {
         }
     }
 
-    public static void compressPdf(File inputFile, File outputFile, CompressionLevel level) throws IOException {
+    public static void compressPdf(File inputFile, File outputFile, CompressionLevel level, ProgressCallback progressCallback) throws IOException {
+        if (progressCallback != null) {
+            progressCallback.onProgress(0, 100);
+        }
+
         try (PDDocument document = Loader.loadPDF(inputFile)) {
-            
-            if (level != CompressionLevel.LOW) {
-                for (PDPage page : document.getPages()) {
+            if (progressCallback != null) {
+                progressCallback.onProgress(5, 100);
+            }
+
+            int totalPages = document.getNumberOfPages();
+
+            if (level != CompressionLevel.LOW && totalPages > 0) {
+                for (int i = 0; i < totalPages; i++) {
                     if (Thread.currentThread().isInterrupted()) {
                         throw new IOException("Compression cancelled");
                     }
-                    optimizeResources(page.getResources(), document, level);
+                    PDPage page = document.getPage(i);
+                    optimizeResources(page.getResources(), document, level, progressCallback, i, totalPages);
+
+                    if (progressCallback != null) {
+                        double pageProgress = 5.0 + 85.0 * (i + 1) / totalPages;
+                        progressCallback.onProgress(pageProgress, 100);
+                    }
                 }
+            } else if (progressCallback != null) {
+                progressCallback.onProgress(85, 100);
             }
 
             if (Thread.currentThread().isInterrupted()) {
                 throw new IOException("Compression cancelled");
             }
 
+            if (progressCallback != null) {
+                progressCallback.onProgress(90, 100);
+            }
+
             document.setAllSecurityToBeRemoved(true);
             document.save(outputFile);
+
+            if (progressCallback != null) {
+                progressCallback.onProgress(100, 100);
+            }
 
             ErrorLogger.info("PDF compressed successfully: " + outputFile.getAbsolutePath());
         } catch (IOException e) {
@@ -61,23 +93,46 @@ public class CompressPdfHelper {
         }
     }
 
-    private static void optimizeResources(PDResources resources, PDDocument document, CompressionLevel level) throws IOException {
+    private static void optimizeResources(PDResources resources, PDDocument document, CompressionLevel level,
+                                          ProgressCallback progressCallback, int pageIndex, int totalPages) throws IOException {
         if (resources == null) return;
 
+        List<COSName> xObjectNames = new ArrayList<>();
         for (COSName name : resources.getXObjectNames()) {
+            xObjectNames.add(name);
+        }
+        int totalXObjects = xObjectNames.size();
+
+        for (int j = 0; j < totalXObjects; j++) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new IOException("Compression cancelled");
             }
+
+            COSName name = xObjectNames.get(j);
             PDXObject xobject = resources.getXObject(name);
             if (xobject instanceof PDImageXObject image) {
-                BufferedImage bufferedImage = image.getImage();
-                if (bufferedImage != null) {
-                    byte[] compressedBytes = compressImage(bufferedImage, level.getImageQuality());
-                    PDImageXObject compressedImage = PDImageXObject.createFromByteArray(document, compressedBytes, name.getName());
-                    resources.put(name, compressedImage);
+                try {
+                    BufferedImage bufferedImage = image.getImage();
+                    if (bufferedImage != null) {
+                        byte[] compressedBytes = compressImage(bufferedImage, level.getImageQuality());
+                        PDImageXObject compressedImage = PDImageXObject.createFromByteArray(document, compressedBytes, name.getName());
+                        resources.put(name, compressedImage);
+                    }
+                } catch (Exception e) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new IOException("Compression cancelled");
+                    }
+                    ErrorLogger.warn("Skipping image optimization for " + name.getName() + ": " + e.getMessage());
                 }
             } else if (xobject instanceof PDFormXObject form) {
-                optimizeResources(form.getResources(), document, level);
+                optimizeResources(form.getResources(), document, level, progressCallback, pageIndex, totalPages);
+            }
+
+            if (progressCallback != null && totalPages > 0 && totalXObjects > 0) {
+                double pageBase = 5.0 + 85.0 * pageIndex / totalPages;
+                double pageSlice = 85.0 / totalPages;
+                double currentProgress = pageBase + pageSlice * (j + 1) / totalXObjects;
+                progressCallback.onProgress(currentProgress, 100);
             }
         }
     }
