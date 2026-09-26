@@ -2,10 +2,8 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.MouseButton;
@@ -61,10 +59,12 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnReset);
+        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> originalBufferedImage, "Selected");
 
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
@@ -241,7 +241,7 @@ public class FindPixelImageController extends AbstractMediaController {
                         labelPreviewPlaceholder.setVisible(false);
                     }
                     zoomControlHelper.resetZoom();
-                    setPreview(originalBufferedImage);
+                    setImagePreview(originalBufferedImage, imageViewPreview);
                     zoomControlHelper.updateImageSize();
                 }
             } catch (Exception e) {
@@ -251,14 +251,6 @@ public class FindPixelImageController extends AbstractMediaController {
 
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
-    private void setPreview(BufferedImage bi) {
-
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
         }
     }
 

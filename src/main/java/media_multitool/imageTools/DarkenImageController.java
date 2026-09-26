@@ -2,10 +2,8 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -49,10 +47,12 @@ public class DarkenImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderDarken, btnSubmit, btnReset);
+        listControls = List.of(sliderDarken, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Darkened");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         sliderDarken.setMin(0);
@@ -74,7 +74,7 @@ public class DarkenImageController extends AbstractMediaController {
 
         com.imagetools.ImageTools.brightnessImage(originalBufferedImage, offset).ifPresent(darkened -> {
             currentBufferedImage = darkened;
-            setPreview(currentBufferedImage);
+            setImagePreview(currentBufferedImage, imageViewPreview);
         });
     }
 
@@ -236,10 +236,4 @@ public class DarkenImageController extends AbstractMediaController {
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
-        }
-    }
 }

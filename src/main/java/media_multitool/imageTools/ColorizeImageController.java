@@ -3,10 +3,8 @@ package media_multitool.imageTools;
 import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -54,12 +52,18 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnColorPicker, btnSubmit, btnReset);
+        listControls = List.of(btnColorPicker, btnSubmit, btnSubmitAndCopy, btnReset);
         btnChoiceFolderForSaveFile.setTooltip(new Tooltip("Default directory: Desktop"));
 
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(
+                () -> currentBufferedImage == null ? null
+                        : com.imagetools.ImageTools.applyColorizeEffect(currentBufferedImage, selectedColorFX),
+                "Colorized"
+        );
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -207,7 +211,7 @@ public class ColorizeImageController extends AbstractMediaController {
                 originalBufferedImage = ImageIO.read(selectedFile);
                 currentBufferedImage = originalBufferedImage;
                 if (currentBufferedImage != null) {
-                    setPreview(currentBufferedImage);
+                    setImagePreview(currentBufferedImage, imageViewPreview);
                         labelPreviewPlaceholder.setVisible(false);
                 }
             } catch (Exception e) {
@@ -219,13 +223,6 @@ public class ColorizeImageController extends AbstractMediaController {
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
         }
     }
 

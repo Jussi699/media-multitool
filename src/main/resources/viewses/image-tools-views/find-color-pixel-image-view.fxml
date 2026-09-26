@@ -130,6 +130,7 @@
                    styleClass="labelSelect"
                    text="Selected image file: none"/>
 
+            <Button fx:id="btnSubmitAndCopy" prefWidth="240.0" text="Copy Image to Clipboard"/>
             <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset"/>
         </VBox>
 
@@ -144,4 +145,3 @@
         </StackPane.margin>
     </Button>
 </StackPane>
-

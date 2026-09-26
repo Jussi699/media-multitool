@@ -2,10 +2,8 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -52,10 +50,12 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderBlurry, btnSubmit, btnReset);
+        listControls = List.of(sliderBlurry, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Blurred");
 
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
@@ -219,7 +219,7 @@ public class BlurImageController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         if (result instanceof BufferedImage bi) {
             currentBufferedImage = bi;
-            setPreview(currentBufferedImage);
+            setImagePreview(currentBufferedImage, imageViewPreview);
             Platform.runLater(() -> {
                 if (progressBar != null) {
                     progressBar.setVisible(true);
@@ -301,10 +301,4 @@ public class BlurImageController extends AbstractMediaController {
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
-        }
-    }
 }

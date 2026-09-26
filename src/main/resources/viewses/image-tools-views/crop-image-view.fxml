@@ -31,8 +31,11 @@
         <VBox alignment="CENTER" spacing="8.0">
             <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Crop image status: success" visible="false"/>
 
-            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0"
-                    text="Crop and Download"/>
+            <HBox alignment="CENTER" spacing="10.0">
+                <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0"
+                        text="Crop and Download"/>
+                <Button fx:id="btnSubmitAndCopy" prefWidth="180.0" text="To Clipboard"/>
+            </HBox>
         </VBox>
 
         <VBox spacing="12.0" VBox.vgrow="ALWAYS">
@@ -152,4 +155,3 @@
         </StackPane.margin>
     </Button>
 </StackPane>
-

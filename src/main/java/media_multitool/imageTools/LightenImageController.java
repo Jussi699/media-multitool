@@ -3,10 +3,8 @@ package media_multitool.imageTools;
 import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -50,10 +48,12 @@ public class LightenImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderLighten, btnSubmit, btnReset);
+        listControls = List.of(sliderLighten, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Lightened");
 
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
@@ -75,7 +75,7 @@ public class LightenImageController extends AbstractMediaController {
 
         ImageTools.brightnessImage(originalBufferedImage, offset).ifPresent(lightened -> {
             currentBufferedImage = lightened;
-            setPreview(currentBufferedImage);
+            setImagePreview(currentBufferedImage, imageViewPreview);
         });
     }
 
@@ -237,10 +237,4 @@ public class LightenImageController extends AbstractMediaController {
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
-        }
-    }
 }

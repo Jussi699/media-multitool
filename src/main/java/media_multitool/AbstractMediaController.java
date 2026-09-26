@@ -2,9 +2,12 @@ package media_multitool;
 
 import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import lombok.NonNull;
@@ -16,10 +19,12 @@ import model.utility.ResetContext;
 import viewHelp.Alerts;
 import viewHelp.Message;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.hideSuccessMessage;
@@ -29,6 +34,7 @@ public abstract class AbstractMediaController {
     @FXML protected ProgressBar progressBar;
     @FXML protected Label labelSuccess;
     @FXML protected Button btnReset;
+    @FXML protected Button btnSubmitAndCopy;
 
     /** Currently running a media task — used for cancellation. */
     private final AtomicReference<Task<?>> currentTask = new AtomicReference<>();
@@ -38,6 +44,59 @@ public abstract class AbstractMediaController {
     protected abstract void disableControls();
     protected abstract void enableControls();
     protected abstract MediaProperties getProperties();
+
+    protected void setupTooltips() {
+        Tooltip clipboardTooltip = new Tooltip("Certain copied images may not show a preview in the Windows clipboard menu (Win + V).\nHowever, the image is still in the clipboard and can be pasted as usual.");
+        Tooltip resetTooltip = new Tooltip("Resets everything to default values.");
+
+        if (btnSubmitAndCopy != null) {
+            btnSubmitAndCopy.setTooltip(clipboardTooltip);
+        }
+        if (btnReset != null) {
+            btnReset.setTooltip(resetTooltip);
+        }
+    }
+
+    protected void setupImageClipboardButton(Supplier<BufferedImage> imageSupplier, String imageDescription) {
+        if (btnSubmitAndCopy == null) {
+            return;
+        }
+
+        btnSubmitAndCopy.setOnAction(_ -> {
+            try {
+                BufferedImage image = imageSupplier.get();
+                if (image == null) {
+                    String message = "No image is available to copy.";
+                    ErrorLogger.error(message);
+                    Message.showErrorMessage(labelSuccess, message, getProperties().getHideSuccessMessageTimer());
+                    return;
+                }
+
+                ClipboardContent content = new ClipboardContent();
+                content.putImage(SwingFXUtils.toFXImage(image, null));
+                if (!Clipboard.getSystemClipboard().setContent(content)) {
+                    String message = "The image could not be copied to the clipboard. Please try again.";
+                    ErrorLogger.error(message);
+                    Message.showErrorMessage(labelSuccess, message, getProperties().getHideSuccessMessageTimer());
+                    return;
+                }
+
+                ErrorLogger.info(imageDescription + " image copied to clipboard.");
+                Message.showSuccessText(
+                        labelSuccess,
+                        imageDescription + " image copied to clipboard!",
+                        getProperties().getHideSuccessMessageTimer()
+                );
+            } catch (RuntimeException exception) {
+                ErrorLogger.error("Failed to copy image to clipboard: " + exception.getMessage());
+                Message.showErrorMessage(
+                        labelSuccess,
+                        "Failed to copy image to clipboard: " + exception.getMessage(),
+                        getProperties().getHideSuccessMessageTimer()
+                );
+            }
+        });
+    }
 
     /**
      * Cancel the currently running media task (if any).
@@ -150,23 +209,6 @@ public abstract class AbstractMediaController {
         }
     }
 
-    protected void selectFormat(String format, ToggleButton selectedBtn, List<ToggleButton> allButtons, Consumer<String> propertySetter) {
-        if (selectedBtn != null && !selectedBtn.isSelected()) {
-            propertySetter.accept(null);
-            if (allButtons != null) {
-                allButtons.forEach(tb -> tb.setSelected(false));
-            }
-        } else {
-            propertySetter.accept(format);
-            if (allButtons != null) {
-                for (ToggleButton tb : allButtons) {
-                    tb.setSelected(tb == selectedBtn);
-                }
-            }
-        }
-        Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
-    }
-
     protected void selectFormat(String format , @NonNull Consumer<String> propertySetter) {
         propertySetter.accept(format);
 
@@ -245,6 +287,12 @@ public abstract class AbstractMediaController {
             if (!imageViewPreview.fitHeightProperty().isBound()) {
                 imageViewPreview.fitHeightProperty().bind(previewContainer.heightProperty().subtract(10));
             }
+        }
+    }
+
+    protected void setImagePreview(BufferedImage image, ImageView imageViewPreview) {
+        if (image != null && imageViewPreview != null) {
+            imageViewPreview.setImage(SwingFXUtils.toFXImage(image, null));
         }
     }
 }

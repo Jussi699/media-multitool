@@ -68,6 +68,9 @@
                         onAction="#submitAndDownload"
                         prefWidth="120.0"
                         text="Download"/>
+                <Button fx:id="btnSubmitAndCopy"
+                        prefWidth="120.0"
+                        text="To Clipboard"/>
                 <Button fx:id="btnCancel" mnemonicParsing="false"
                         onAction="#cancelTask"
                         prefWidth="120.0"
@@ -116,4 +119,3 @@
         </StackPane.margin>
     </Button>
 </StackPane>
-

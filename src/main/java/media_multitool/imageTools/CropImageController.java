@@ -2,11 +2,9 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -64,12 +62,14 @@ public class CropImageController extends AbstractMediaController {
                 btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9, btnAspectRatio4x5,
                 btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3, btnAspectRatio2x3,
                 btnAspectRatio3x2, btnAspectRatio5x7, btnAspectRatio7x5, btnAspectRatio1x2,
-                btnAspectRatio2x1, imageScaleSlider, btnSubmit, btnReset
+                btnAspectRatio2x1, imageScaleSlider, btnSubmit, btnSubmitAndCopy, btnReset
         );
 
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(this::createSelectedCrop, "Cropped");
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
         cropHelper = new CropHelper(cropOverlay, imageViewPreview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
 
@@ -165,14 +165,9 @@ public class CropImageController extends AbstractMediaController {
                         imageProperties.getTypeImage()
                 );
 
-                int x = Math.clamp((int) Math.floor(cropToSave.x()), 0, originalBufferedImage.getWidth() - 1);
-                int y = Math.clamp((int) Math.floor(cropToSave.y()), 0, originalBufferedImage.getHeight() - 1);
-                int width = Math.clamp((int) Math.round(cropToSave.width()), 1, originalBufferedImage.getWidth() - x);
-                int height = Math.clamp((int) Math.round(cropToSave.height()), 1, originalBufferedImage.getHeight() - y);
-
                 updateProgress(50, 100);
 
-                BufferedImage cropped = copyImage(originalBufferedImage.getSubimage(x, y, width, height));
+                BufferedImage cropped = createCroppedImage(cropToSave);
                 ImagePreprocessing.downloadImage(cropped, imageProperties.getTypeImage(), outputFile);
                 updateProgress(100, 100);
 
@@ -182,6 +177,23 @@ public class CropImageController extends AbstractMediaController {
 
         executeMediaTask(task);
         labelSuccess.setManaged(true);
+    }
+
+    private BufferedImage createSelectedCrop() {
+        CropHelper.CropArea cropArea = cropHelper.getCropArea();
+        return cropArea == null ? null : createCroppedImage(cropArea);
+    }
+
+    private BufferedImage createCroppedImage(CropHelper.CropArea cropArea) {
+        if (originalBufferedImage == null || cropArea == null) {
+            return null;
+        }
+
+        int x = Math.clamp((int) Math.floor(cropArea.x()), 0, originalBufferedImage.getWidth() - 1);
+        int y = Math.clamp((int) Math.floor(cropArea.y()), 0, originalBufferedImage.getHeight() - 1);
+        int width = Math.clamp((int) Math.round(cropArea.width()), 1, originalBufferedImage.getWidth() - x);
+        int height = Math.clamp((int) Math.round(cropArea.height()), 1, originalBufferedImage.getHeight() - y);
+        return copyImage(originalBufferedImage.getSubimage(x, y, width, height));
     }
 
     @Override
@@ -244,7 +256,7 @@ public class CropImageController extends AbstractMediaController {
             }
 
             zoomControlHelper.resetZoom();
-            setPreview(originalBufferedImage);
+            setImagePreview(originalBufferedImage, imageViewPreview);
 
             if (labelPreviewPlaceholder != null) {
                 labelPreviewPlaceholder.setVisible(false);
@@ -263,13 +275,6 @@ public class CropImageController extends AbstractMediaController {
 
         if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
         }
     }
 

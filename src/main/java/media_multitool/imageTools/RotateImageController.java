@@ -9,12 +9,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.embed.swing.SwingFXUtils;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
 import model.preprocessing.ImagePreprocessing;
@@ -53,10 +51,12 @@ public class RotateImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit, btnReset);
+        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Rotated");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -138,7 +138,7 @@ public class RotateImageController extends AbstractMediaController {
 
         ImageTools.rotateImage(currentBufferedImage, side).ifPresent(rotated -> {
             currentBufferedImage = rotated;
-            setPreview(currentBufferedImage);
+            setImagePreview(currentBufferedImage, imageViewPreview);
         });
     }
 
@@ -218,7 +218,7 @@ public class RotateImageController extends AbstractMediaController {
             try {
                 currentBufferedImage = ImageIO.read(selectedFile);
                 if (currentBufferedImage != null) {
-                    setPreview(currentBufferedImage);
+                    setImagePreview(currentBufferedImage, imageViewPreview);
                         labelPreviewPlaceholder.setVisible(false);
                 }
             } catch (Exception e) {
@@ -233,10 +233,4 @@ public class RotateImageController extends AbstractMediaController {
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
-        }
-    }
 }

@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -47,10 +46,12 @@ public class NegativeImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset);
+        listControls = List.of(btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Negative");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -185,7 +186,7 @@ public class NegativeImageController extends AbstractMediaController {
 
         ImageTools.toNegative(originalBufferedImage).ifPresent(negative -> {
             currentBufferedImage = negative;
-            setPreview(currentBufferedImage);
+            setImagePreview(currentBufferedImage, imageViewPreview);
         });
     }
 
@@ -214,10 +215,4 @@ public class NegativeImageController extends AbstractMediaController {
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = javafx.embed.swing.SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
-        }
-    }
 }

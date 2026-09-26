@@ -2,10 +2,8 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -58,14 +56,16 @@ public class ColorReplaceImageController extends AbstractMediaController {
     public void initialize() {
         listControls = List.of(
             comboSourceColor, comboTargetColor, textSourceColorHex, textTargetColorHex,
-            spinnerIntensity, spinnerSmoothing, spinnerEnhancement, 
-            toggleJPEG, togglePNG, checkBoxReplaceAllColors, btnSubmit, btnReset
+            spinnerIntensity, spinnerSmoothing, spinnerEnhancement,
+            toggleJPEG, togglePNG, checkBoxReplaceAllColors, btnSubmit, btnSubmitAndCopy, btnReset
         );
         
         btnChoiceFolderForSaveFile.setTooltip(new Tooltip("Default directory: Desktop"));
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Color-replaced");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         initializeColorCombos();
@@ -387,10 +387,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
     private void setPreview(BufferedImage bi) {
         if (bi != null && imageViewPreview != null) {
-            Platform.runLater(() -> {
-                Image image = SwingFXUtils.toFXImage(bi, null);
-                imageViewPreview.setImage(image);
-            });
+            Platform.runLater(() -> setImagePreview(bi, imageViewPreview));
         }
     }
 }

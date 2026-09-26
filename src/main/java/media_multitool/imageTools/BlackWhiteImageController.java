@@ -2,10 +2,8 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -48,10 +46,13 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset);
+        listControls = List.of(btnSubmit, btnReset, btnSubmitAndCopy);
         imageProperties.setOutput(getSavedPath());
 
+        setupTooltips();
+
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> currentBufferedImage, "Black-white");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -65,7 +66,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
         com.imagetools.ImageTools.blackAndWhiteImage(originalBufferedImage).ifPresent(bw -> {
             currentBufferedImage = bw;
-            setPreview(currentBufferedImage);
+            setImagePreview(currentBufferedImage, imageViewPreview);
         });
     }
 
@@ -80,9 +81,12 @@ public class BlackWhiteImageController extends AbstractMediaController {
                         1. Select an image file using 'Select image' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
                         3. Click 'Download' to apply the effect.
-                        
+                       \s
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).\s
+                        However, the image is still in the clipboard and can be pasted as usual.
+                       \s
                         This tool will take a black and white your image.
-                        
+                       \s
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
@@ -125,9 +129,12 @@ public class BlackWhiteImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void submitAndDownload() {
-        if(Checking.checkImageAndOutputOnNull(imageProperties, currentBufferedImage)) return;
+    private void submitAndDownload() {
+        if (Checking.checkImageAndOutputOnNull(imageProperties, currentBufferedImage)) {
+            return;
+        }
 
+        BufferedImage imageToSubmit = currentBufferedImage;
         Task<File> task = new Task<>() {
             @Override
             protected File call() throws Exception {
@@ -141,9 +148,8 @@ public class BlackWhiteImageController extends AbstractMediaController {
 
                 updateProgress(50, 100);
 
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
+                ImagePreprocessing.downloadImage(imageToSubmit, imageProperties.getTypeImage(), outputFile);
                 updateProgress(100, 100);
-
                 return outputFile;
             }
         };
@@ -190,7 +196,16 @@ public class BlackWhiteImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        enableControls();
+        originalBufferedImage = null;
+        currentBufferedImage = null;
+        if (imageViewPreview != null) {
+            imageViewPreview.setImage(null);
+        }
+        if (labelPreviewPlaceholder != null) {
+            labelPreviewPlaceholder.setVisible(true);
+        }
+        disableControls();
+
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFile.setText("Select image: " + selectedFile.getName());
@@ -198,12 +213,22 @@ public class BlackWhiteImageController extends AbstractMediaController {
         if (imageViewPreview != null) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
+                if (originalBufferedImage == null) {
+                    throw new IllegalArgumentException("Unsupported image format.");
+                }
                 updatePreview();
                 if (currentBufferedImage != null && labelPreviewPlaceholder != null) {
                     labelPreviewPlaceholder.setVisible(false);
                 }
+                if (currentBufferedImage != null) {
+                    enableControls();
+                } else {
+                    throw new IllegalStateException("Failed to create image preview.");
+                }
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());
+                showErrorMessage(labelSuccess, "Failed to load image: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
+                labelSuccess.setManaged(true);
             }
         }
 
@@ -215,10 +240,4 @@ public class BlackWhiteImageController extends AbstractMediaController {
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
-            Image image = SwingFXUtils.toFXImage(bi, null);
-            imageViewPreview.setImage(image);
-        }
-    }
 }

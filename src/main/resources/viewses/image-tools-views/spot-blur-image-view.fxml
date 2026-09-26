@@ -67,6 +67,9 @@
                         onAction="#submitAndDownload"
                         prefWidth="110.0"
                         text="Download"/>
+                <Button fx:id="btnSubmitAndCopy"
+                        prefWidth="110.0"
+                        text="To Clipboard"/>
                 <Button fx:id="btnCancel" mnemonicParsing="false"
                         onAction="#cancelTask"
                         prefWidth="110.0"
