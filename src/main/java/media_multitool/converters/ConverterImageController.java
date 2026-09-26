@@ -63,7 +63,14 @@ public class ConverterImageController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         isPressedReset();
-        setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadImage);
+        List<String> supportedFormats = Global.getAllSupportedImageFormats();
+        dropZone.setOnDragOver(e -> DragDropped.handleDragOver(e, supportedFormats, dropZone));
+        dropZone.setOnDragDropped(e -> {
+            List<File> droppedFiles = DragDropped.handleDragDropped(e, dropZone, supportedFormats);
+            if (!droppedFiles.isEmpty()) {
+                loadImages(droppedFiles, false);
+            }
+        });
     }
 
     private void initLists() {
@@ -151,38 +158,7 @@ public class ConverterImageController extends AbstractMediaController {
                         return;
                     }
 
-                    for (File s : filesToProcess) ErrorLogger.info("User selected file (image): " + s.getName());
-
-                    imageProperties.setImage(filesToProcess.getFirst());
-                    labelSelectFile.setText("Current file in list: " + imageProperties.getImage().getName());
-
-                    try {
-                        Optional<BufferedImage> biOpt = readPreviewImage(imageProperties.getImage());
-                        if (biOpt.isEmpty()) {
-                            ErrorLogger.warn("Failed to read preview for file: " + imageProperties.getImage().getName());
-                            Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Unsupported image format!");
-                            return;
-                        }
-
-                        Image fxImage = SwingFXUtils.toFXImage(biOpt.get(), null);
-
-                        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
-
-                        imageViewPreview.setImage(fxImage);
-
-                        labelPreviewPlaceholder.setVisible(false);
-
-                        textDragZone.setText("Batch: " + filesToProcess.size() + " files");
-
-                        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-                            dropZone.getStyleClass().add("drop-zone-filled");
-                        }
-
-                        ErrorLogger.info("Preview loaded successfully for: " + imageProperties.getImage().getName());
-                    } catch (IOException e) {
-                        ErrorLogger.log(122, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
-                        Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "IO", "File error!");
-                    }
+                    loadImages(filesToProcess, true);
                 });
     }
 
@@ -209,17 +185,34 @@ public class ConverterImageController extends AbstractMediaController {
     public void onActionBtnSelectFile() {
         SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadImage);
+        selectImageFile.showOpenMultipleDialog(stage,
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()))
+                .ifPresent(files -> {
+                    if (!files.isEmpty()) {
+                        loadImages(files, false);
+                    }
+                });
     }
 
-    private void loadImage(File file) {
-        enableControls();
-        imageProperties.setImage(file);
-        filesToProcess.clear();
+    private void loadImages(List<File> files, boolean batchSelection) {
+        if (files.isEmpty()) {
+            return;
+        }
 
-        ErrorLogger.info("User selected file (image): " + imageProperties.getImage().getAbsolutePath());
-        labelSelectFile.setText("Select image file: " + imageProperties.getImage().getName());
+        enableControls();
+        filesToProcess = new ArrayList<>(files);
+        imageProperties.setImage(filesToProcess.getFirst());
+
+        filesToProcess.forEach(file -> ErrorLogger.info("User selected file (image): " + file.getAbsolutePath()));
+        labelSelectFile.setText(batchSelection
+                ? "Batch: " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName()
+                : filesToProcess.size() == 1
+                        ? "Select image file: " + imageProperties.getImage().getName()
+                        : "Selected " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName());
+        textDragZone.setText((batchSelection ? "Batch: " : "Selected: ") + filesToProcess.size() + " files");
+
+        imageViewPreview.setImage(null);
+        labelPreviewPlaceholder.setVisible(true);
 
         try {
             Optional<BufferedImage> biOpt = readPreviewImage(imageProperties.getImage());
@@ -237,8 +230,6 @@ public class ConverterImageController extends AbstractMediaController {
 
 
             labelPreviewPlaceholder.setVisible(false);
-
-            textDragZone.setText("Selected: " + file.getName());
 
             if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");

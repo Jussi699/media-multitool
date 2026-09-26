@@ -34,7 +34,7 @@
                     mnemonicParsing="false"
                     onAction="#onActionBtnSelectFile"
                     prefWidth="180.0"
-                    text="Select image"/>
+                    text="Select image(s)"/>
 
             <Button fx:id="btnSelectBatchFileProcessing"
                     mnemonicParsing="false"
@@ -122,12 +122,11 @@
                    visible="false"
                    text="Conversion status"/>
 
-            <VBox alignment="CENTER" spacing="10.0">
-                <Button fx:id="btnSubmit" mnemonicParsing="false"
-                        onAction="#submitAndDownload"
-                        prefWidth="240.0"
-                        text="Convert and Download"/>
-            </VBox>
+            <Button fx:id="btnSubmit" mnemonicParsing="false"
+                    onAction="#submitAndDownload"
+                    prefWidth="240.0"
+                    text="Convert and Download"/>
+
         </VBox>
 
         <VBox spacing="10.0" VBox.vgrow="ALWAYS">

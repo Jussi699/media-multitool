@@ -14,24 +14,30 @@ public class DragDropped {
     public static void handleDragOver(DragEvent e, List<String> supportedExtensions, StackPane dropZone) {
         Dragboard db = e.getDragboard();
         if (e.getGestureSource() != dropZone && db.hasFiles()) {
-            File file = db.getFiles().getFirst();
-            if (isSupportedMediaFile(file, supportedExtensions)) {
+            if (db.getFiles().stream().anyMatch(file -> isSupportedMediaFile(file, supportedExtensions))) {
                 e.acceptTransferModes(TransferMode.COPY);
-                e.consume();
             }
         }
         e.consume();
     }
 
     public static File handleDragDropped(DragEvent e, StackPane dropZone) {
+        List<File> files = handleDragDropped(e, dropZone, List.of());
+        return files.isEmpty() ? null : files.getFirst();
+    }
+
+    public static List<File> handleDragDropped(DragEvent e, StackPane dropZone, List<String> supportedExtensions) {
         Dragboard db = e.getDragboard();
-        boolean success = false;
-        File file = null;
+        List<File> files = List.of();
 
         if (db.hasFiles()) {
-            file = db.getFiles().getFirst();
-            success = true;
-            
+            files = db.getFiles().stream()
+                    .filter(file -> isSupportedMediaFile(file, supportedExtensions))
+                    .toList();
+        }
+
+        boolean success = !files.isEmpty();
+        if (success) {
             if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");
             }
@@ -39,6 +45,6 @@ public class DragDropped {
 
         e.setDropCompleted(success);
         e.consume();
-        return file;
+        return files;
     }
 }
