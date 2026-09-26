@@ -29,8 +29,8 @@ public class MediaMultitoolApp extends Application {
 
         try {
             loadingStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));
-        } catch (NullPointerException _) {
-            ErrorLogger.warn("The icon for the application is missing or damaged.");
+        } catch (NullPointerException e) {
+            ErrorLogger.error("The icon for the application is missing or damaged: " + e);
         }
 
         loadingStage.setOnCloseRequest(_ -> {
@@ -63,8 +63,8 @@ public class MediaMultitoolApp extends Application {
 
             try {
                 mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));
-            } catch (NullPointerException _) {
-                ErrorLogger.warn("The icon for the application is missing or damaged.");
+            } catch (NullPointerException e) {
+                ErrorLogger.error("The icon for the application is missing or damaged: " + e);
             }
 
             mainStage.setResizable(true);
@@ -81,7 +81,7 @@ public class MediaMultitoolApp extends Application {
         loadAppTask.setOnFailed(_ -> {
             Throwable ex = loadAppTask.getException();
             if (ex != null) {
-                ErrorLogger.error("Failed to load application: " + ex.getMessage());
+                ErrorLogger.error("Failed to load application: " + ex);
             }
             loadingStage.close();
             Platform.exit();
