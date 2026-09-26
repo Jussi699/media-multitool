@@ -2,6 +2,7 @@ package media_multitool;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import model.logger.ErrorLogger;
@@ -12,8 +13,10 @@ import viewHelp.Alerts;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 public class InfoController {
+    @FXML private Button btnGithub;
     @FXML private Tooltip activeTooltip;
 
     @FXML
@@ -45,5 +48,23 @@ public class InfoController {
 
         Clipboards clipboards = new Clipboards();
         clipboards.clip(discordId,"Discord ID copied to clipboard!\nNow you can paste it.", 2, mouseEvent);
+    }
+
+    @FXML
+    private void redirectToGithub() {
+        if (btnGithub == null) {
+            ErrorLogger.error("The GitHub redirect button has a null value!");
+            return;
+        }
+
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(new URI("https://github.com/Jussi699/media-multitool"));
+            }
+        } catch (Exception e) {
+            ErrorLogger.error("An error occurred while opening the page: " + e);
+            Alerts.alertDialog(Alert.AlertType.ERROR, "Error opening page", "Error opening page",
+                    "An error occurred while opening the page.\nCheck log file for more details!");
+        }
     }
 }

@@ -238,6 +238,43 @@
 
 .section-icon {
     -fx-stroke: -main-color;
-    -fx-scaleX: 1;
-    -fx-scaleY: 1;
+    -fx-scale-x: 1;
+    -fx-scale-y: 1;
+}
+
+#btnGithub {
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-padding: 0 10 10 0;
+    -fx-cursor: hand;
+}
+
+#btnGithub:hover {
+    -fx-fill: white;
+    -fx-opacity: 1.0;
+    -fx-stroke: transparent;
+    -fx-stroke-width: 0;
+    -fx-effect: null;
+}
+
+#btnGithub:pressed {
+    -fx-scale-x: 0.9;
+    -fx-scale-y: 0.9;
+}
+
+.toGithubSVG {
+    -fx-fill: white;
+    -fx-opacity: 0.6;
+    -fx-scale-x: 0.3;
+    -fx-scale-y: 0.3;
+}
+
+#btnGithub:hover .toGithubSVG {
+    -fx-opacity: 1.0;
 }
