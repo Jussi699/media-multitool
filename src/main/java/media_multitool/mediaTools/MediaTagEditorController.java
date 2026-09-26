@@ -64,14 +64,35 @@ public class MediaTagEditorController extends AbstractMediaController {
     @FXML private Label labelSelectImageName, textDragZone;
     @FXML private ComboBox<String> genreComboBox;
 
+    @FXML private Label titleLabel, artistLabel, albumLabel, albumArtistLabel, composerLabel, trackLabel,
+            discNumberLabel, commentLabel, yearLabel, descriptionLabel, keywordsLabel, copyrightLabel,
+            ratingLabel, genreLabel;
+
     @FXML private TextField titleField, artistField, albumField, albumArtistField, composerField, trackField,
             discNumberField, commentField, yearField, descriptionField, keywordsField, copyrightField,
             ratingField, textFieldFindFile;
+
+    private static final Set<String> AUDIO_EDITABLE_TAGS = Set.of(
+            "title", "artist", "album", "albumArtist", "composer", "track",
+            "discNumber", "comment", "year", "genre"
+    );
+    private static final Set<String> PHOTO_EDITABLE_TAGS = Set.of(
+            "title", "artist", "comment", "description", "keywords", "copyright", "rating"
+    );
+    private static final Set<String> VIDEO_EDITABLE_TAGS = Set.of(
+            "title", "artist", "album", "albumArtist", "composer", "track", "discNumber",
+            "comment", "year", "description", "keywords", "copyright", "rating", "genre"
+    );
 
     private File chosenDir;
     private List<TextField> textFields;
     private List<Button> listBtn;
     private List<Control> listControls;
+    private Map<String, TextField> tagTextFields;
+    private Map<String, Label> tagLabels;
+    private Map<String, String> originalTagLabelTexts;
+    private Set<String> editableTagKeys = Set.of();
+    private String selectedMediaType = "";
     private final ScrollBar[] tableInternalVBarRef = new ScrollBar[1];
 
     @FXML
@@ -101,6 +122,39 @@ public class MediaTagEditorController extends AbstractMediaController {
                 trackField, discNumberField, commentField, yearField, descriptionField, keywordsField,
                 copyrightField, ratingField, textFieldFindFile);
 
+        tagTextFields = Map.ofEntries(
+                Map.entry("title", titleField),
+                Map.entry("artist", artistField),
+                Map.entry("album", albumField),
+                Map.entry("albumArtist", albumArtistField),
+                Map.entry("composer", composerField),
+                Map.entry("track", trackField),
+                Map.entry("discNumber", discNumberField),
+                Map.entry("comment", commentField),
+                Map.entry("year", yearField),
+                Map.entry("description", descriptionField),
+                Map.entry("keywords", keywordsField),
+                Map.entry("copyright", copyrightField),
+                Map.entry("rating", ratingField)
+        );
+        tagLabels = Map.ofEntries(
+                Map.entry("title", titleLabel),
+                Map.entry("artist", artistLabel),
+                Map.entry("album", albumLabel),
+                Map.entry("albumArtist", albumArtistLabel),
+                Map.entry("composer", composerLabel),
+                Map.entry("track", trackLabel),
+                Map.entry("discNumber", discNumberLabel),
+                Map.entry("comment", commentLabel),
+                Map.entry("year", yearLabel),
+                Map.entry("description", descriptionLabel),
+                Map.entry("keywords", keywordsLabel),
+                Map.entry("copyright", copyrightLabel),
+                Map.entry("rating", ratingLabel),
+                Map.entry("genre", genreLabel)
+        );
+        originalTagLabelTexts = new HashMap<>();
+        tagLabels.forEach((key, label) -> originalTagLabelTexts.put(key, label.getText()));
 
         listControls = new ArrayList<>();
         listControls.addAll(textFields);
@@ -193,7 +247,7 @@ public class MediaTagEditorController extends AbstractMediaController {
                         How to use:
                         1. Select an audio, photo or video file using 'Select media file' or drag and drop.
                         2. (Optional) Choose a directory for saving the output.
-                        3. Fill in the tag fields (Title, Artist, Description, Keywords, etc.).
+                        3. Edit the fields available for the selected media type; unavailable fields are locked and marked.
                         4. (Optional) Change the cover image for audio files using 'Change Icon'.
                         5. Click 'Save Changes' to apply all changes.
                         
@@ -211,6 +265,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     @Override
     protected void unlockUI() {
         listBtn.forEach(button -> button.setDisable(false));
+        updateTagFieldAvailability();
     }
 
     @Override
@@ -221,6 +276,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
+        updateTagFieldAvailability();
     }
 
     @FXML
@@ -281,6 +337,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         tags.put("keywords", keywordsField.getText());
         tags.put("copyright", copyrightField.getText());
         tags.put("rating", ratingField.getText());
+        tags.keySet().removeIf(key -> !editableTagKeys.contains(key));
         return tags;
     }
 
@@ -367,6 +424,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         reset(audioProperties, ctx, "Selected audio file: none");
         AudioEditor.loadDefaultPreview(imageViewPreview);
         AudioEditor.clearFields(textFields, genreComboBox);
+        configureEditableFields("", Set.of());
         masterFile.clear();
         if (!SetupScrollPane.hasRealTableData(masterFile)) {
             SetupScrollPane.fillPlaceholderRows(tableViewAudio, masterFile, tableScrollPane.getViewportBounds().getHeight());
@@ -381,9 +439,10 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        configureEditableFields(selectedMediaType(selectedFile), getEditableTags(selectedFile));
         enableControls();
         audioProperties.setSrcFile(selectedFile);
-        labelSelectImageName.setText("Selected audio: " + selectedFile.getName());
+        labelSelectImageName.setText("Selected: " + selectedFile.getName());
 
         try {
             if (isAudioFile(selectedFile)) {
@@ -446,8 +505,58 @@ public class MediaTagEditorController extends AbstractMediaController {
                 .anyMatch(format -> file.getName().toLowerCase(Locale.ROOT).endsWith(format));
     }
 
+    private String selectedMediaType(File file) {
+        if (isAudioFile(file)) {
+            return "audio";
+        }
+        String fileName = file.getName().toLowerCase(Locale.ROOT);
+        if (Global.getAllSupportedImageFormats().stream().anyMatch(fileName::endsWith)) {
+            return "photo";
+        }
+        if (Global.getAllSupportedVideoFormats().stream().anyMatch(fileName::endsWith)) {
+            return "video";
+        }
+        throw new IllegalArgumentException("Unsupported media file: " + file.getName());
+    }
+
+    private Set<String> getEditableTags(File file) {
+        return switch (selectedMediaType(file)) {
+            case "audio" -> AUDIO_EDITABLE_TAGS;
+            case "photo" -> PHOTO_EDITABLE_TAGS;
+            case "video" -> VIDEO_EDITABLE_TAGS;
+            default -> throw new IllegalArgumentException("Unsupported media type for file: " + file.getName());
+        };
+    }
+
+    private void configureEditableFields(String mediaType, Set<String> editableTags) {
+        selectedMediaType = mediaType;
+        editableTagKeys = editableTags;
+        updateTagFieldAvailability();
+    }
+
+    private void updateTagFieldAvailability() {
+        if (tagTextFields == null || tagLabels == null) {
+            return;
+        }
+        tagTextFields.forEach((key, field) -> {
+            boolean editable = editableTagKeys.contains(key);
+            field.setDisable(!editable);
+            Label label = tagLabels.get(key);
+            label.setText(editable || selectedMediaType.isEmpty()
+                    ? originalTagLabelTexts.get(key)
+                    : originalTagLabelTexts.get(key) + " (not editable for " + selectedMediaType + ")");
+        });
+        boolean genreEditable = editableTagKeys.contains("genre");
+        genreComboBox.setDisable(!genreEditable);
+        Label genreTagLabel = tagLabels.get("genre");
+        genreTagLabel.setText(genreEditable || selectedMediaType.isEmpty()
+                ? originalTagLabelTexts.get("genre")
+                : originalTagLabelTexts.get("genre") + " (not editable for " + selectedMediaType + ")");
+        btnChangeIcon.setDisable(!"audio".equals(selectedMediaType));
+    }
+
     public void onActionChangeIcon() {
-        if (audioProperties.getSrcFile() == null) {
+        if (!isAudioFile(audioProperties.getSrcFile())) {
             Alerts.alertDialog(Alert.AlertType.INFORMATION, "Audio file not selected!", "Audio file not selected!", "First select audio file!");
             return;
         }

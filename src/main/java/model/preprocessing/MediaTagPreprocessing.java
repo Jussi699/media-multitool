@@ -36,8 +36,12 @@ public final class MediaTagPreprocessing {
 
     public static void applyTags(File file, Map<String, String> values) throws IOException {
         Map<Tag, String> tags = new LinkedHashMap<>();
-        for (Map.Entry<String, Tag> entry : TAGS.entrySet()) {
-            tags.put(entry.getValue(), values.getOrDefault(entry.getKey(), ""));
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            Tag tag = TAGS.get(entry.getKey());
+            if (tag == null) {
+                throw new IllegalArgumentException("Unsupported media tag: " + entry.getKey());
+            }
+            tags.put(tag, entry.getValue());
         }
 
         try (ExifTool exifTool = new ExifToolBuilder().build()) {

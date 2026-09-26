@@ -24,7 +24,7 @@
             <Label text="Log Files Location" styleClass="section-header"/>
 
             <HBox alignment="CENTER_LEFT" spacing="20.0">
-                <Button onAction="#toLogsWindows" styleClass="button-open-log" text="Open Logs Folder"/>
+                <Button onAction="#toLogsDir" styleClass="button-open-log" text="Open Logs Folder"/>
                 <Label text="Quick access to app logs" style="-fx-font-size: 13px; -fx-text-fill: -main-color-label"/>
             </HBox>
 
@@ -66,7 +66,7 @@
         </VBox>
     </VBox>
 
-    <HBox alignment="BOTTOM_RIGHT" VBox.vgrow="ALWAYS">
+    <HBox alignment="BOTTOM_RIGHT" VBox.vgrow="ALWAYS" pickOnBounds="false">
         <Button fx:id="btnGithub" focusTraversable="false" onAction="#redirectToGithub" >
             <graphic>
                 <SVGPath styleClass="toGithubSVG"

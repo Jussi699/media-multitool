@@ -67,8 +67,11 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 - **Unlock PDF:** Remove password protection from encrypted PDFs
 - **Remove Pages:** Delete specific pages from PDF with visual preview
 
-### 🎵 Audio Tag Editor
-- **Metadata Editing:** Title, Artist, Album, Album Artist, Composer, Genre, Year, Track, Disc Number, Comment
+### 🎵 Media Tag Editor
+- **Type-aware Metadata Editing:** Available tag fields vary by audio, photo, or video; unsupported fields are locked and marked
+- **Audio Metadata:** Title, Artist, Album, Album Artist, Composer, Genre, Year, Track, Disc Number, Comment
+- **Photo Metadata:** Title, Artist, Comment, Description, Keywords, Copyright, Rating
+- **Video Metadata:** Title, Artist, Album, Album Artist, Composer, Genre, Year, Track, Disc Number, Comment, Description, Keywords, Copyright, Rating
 - **Cover Art:** View, change, or remove album artwork
 - **Batch Editing:** Edit multiple audio files at once
 - **Search/Filter:** Find files in loaded batch by filename or metadata

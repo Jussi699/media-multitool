@@ -226,12 +226,10 @@ public abstract class AbstractMediaController {
 
     protected void setupDragAndDrop(@NonNull StackPane dropZone, @NonNull List<String> supportedFormats, @NonNull Consumer<File> fileProcessor) {
         dropZone.setOnDragOver(e -> DragDropped.handleDragOver(e, supportedFormats, dropZone));
-        dropZone.setOnDragDropped(e -> {
-            File droppedFile = DragDropped.handleDragDropped(e, dropZone);
-            if (droppedFile != null) {
-                fileProcessor.accept(droppedFile);
-            }
-        });
+        dropZone.setOnDragDropped(e -> DragDropped.handleDragDropped(e, dropZone, supportedFormats)
+                .stream()
+                .findFirst()
+                .ifPresent(fileProcessor));
     }
 
     public static void showProgressBar(ProgressBar bar, PauseTransition timer) {

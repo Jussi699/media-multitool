@@ -20,7 +20,7 @@ public class InfoController {
     @FXML private Tooltip activeTooltip;
 
     @FXML
-    public void toLogsWindows() {
+    public void toLogsDir() {
         String logPath = OS.getAppConfigDir() + File.separator + "logs";
         File dirLog = new File(logPath);
 

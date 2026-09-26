@@ -83,65 +83,65 @@
                             style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent; -fx-padding: 0;">
                     <VBox spacing="10.0">
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Title:" />
+                            <Label fx:id="titleLabel" styleClass="label-h" text="Title:" />
                             <TextField fx:id="titleField"/>
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Artist:" textFill="WHITE"/>
+                            <Label fx:id="artistLabel" styleClass="label-h" text="Artist:" textFill="WHITE"/>
                             <TextField fx:id="artistField"/>
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Album:" textFill="WHITE"/>
+                            <Label fx:id="albumLabel" styleClass="label-h" text="Album:" textFill="WHITE"/>
                             <TextField fx:id="albumField"/>
                         </VBox>
                         <HBox spacing="10.0">
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                <Label styleClass="label-h" text="Album Artist:" textFill="WHITE"/>
+                                <Label fx:id="albumArtistLabel" styleClass="label-h" text="Album Artist:" textFill="WHITE"/>
                                 <TextField fx:id="albumArtistField"/>
                             </VBox>
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                <Label styleClass="label-h" text="Composer:" textFill="WHITE"/>
+                                <Label fx:id="composerLabel" styleClass="label-h" text="Composer:" textFill="WHITE"/>
                                 <TextField fx:id="composerField"/>
                             </VBox>
                         </HBox>
                         <HBox spacing="10.0">
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                <Label styleClass="label-h" text="Track:" textFill="WHITE"/>
+                                <Label fx:id="trackLabel" styleClass="label-h" text="Track:" textFill="WHITE"/>
                                 <TextField fx:id="trackField" prefHeight="25.0" prefWidth="30.0"/>
                             </VBox>
                             <VBox spacing="2.0">
-                                <Label styleClass="label-h" text="Year:" textFill="WHITE"/>
+                                <Label fx:id="yearLabel" styleClass="label-h" text="Year:" textFill="WHITE"/>
                                 <TextField fx:id="yearField" prefHeight="25.0" prefWidth="82.0"/>
                             </VBox>
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                <Label styleClass="label-h" text="Genre:" textFill="WHITE"/>
+                                <Label fx:id="genreLabel" styleClass="label-h" text="Genre:" textFill="WHITE"/>
                                 <ComboBox fx:id="genreComboBox" maxWidth="Infinity"
                                           prefHeight="25.0" prefWidth="0.0"/>
                             </VBox>
                         </HBox>
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Disc Number:" textFill="WHITE"/>
+                            <Label fx:id="discNumberLabel" styleClass="label-h" text="Disc Number:" textFill="WHITE"/>
                             <TextField fx:id="discNumberField"/>
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Comment:" textFill="WHITE"/>
+                            <Label fx:id="commentLabel" styleClass="label-h" text="Comment:" textFill="WHITE"/>
                             <TextField fx:id="commentField"/>
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Description:" textFill="WHITE"/>
+                            <Label fx:id="descriptionLabel" styleClass="label-h" text="Description:" textFill="WHITE"/>
                             <TextField fx:id="descriptionField"/>
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label styleClass="label-h" text="Keywords:" textFill="WHITE"/>
+                            <Label fx:id="keywordsLabel" styleClass="label-h" text="Keywords:" textFill="WHITE"/>
                             <TextField fx:id="keywordsField"/>
                         </VBox>
                         <HBox spacing="10.0">
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                <Label styleClass="label-h" text="Copyright:" textFill="WHITE"/>
+                                <Label fx:id="copyrightLabel" styleClass="label-h" text="Copyright:" textFill="WHITE"/>
                                 <TextField fx:id="copyrightField"/>
                             </VBox>
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                <Label styleClass="label-h" text="Rating:" textFill="WHITE"/>
+                                <Label fx:id="ratingLabel" styleClass="label-h" text="Rating:" textFill="WHITE"/>
                                 <TextField fx:id="ratingField"/>
                             </VBox>
                         </HBox>
