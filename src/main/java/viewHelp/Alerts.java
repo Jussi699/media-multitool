@@ -187,31 +187,42 @@ public class Alerts {
             }
         }
 
+        applyTypeStyleClass(type, pane);
+        setupWindowAppearance(alert, type);
+    }
+
+    private static void applyTypeStyleClass(Alert.AlertType type, DialogPane pane) {
         switch (type) {
             case WARNING           -> pane.getStyleClass().add("warning");
             case ERROR             -> pane.getStyleClass().add("danger");
             case INFORMATION       -> pane.getStyleClass().add("info");
             default                -> pane.getStyleClass().add("info");
         }
+    }
 
+    private static void setupWindowAppearance(Alert alert, Alert.AlertType type) {
         alert.showingProperty().addListener((_, _, isShowing) -> {
             if (Boolean.TRUE.equals(isShowing)) {
                 Platform.runLater(() -> {
                     var scene = alert.getDialogPane().getScene();
-                    if (scene != null && scene.getWindow() != null) {
-                        if (scene.getWindow() instanceof Stage stage) {
-                            Image stageIcon = createStageIcon(type);
-                            if (stageIcon != null) {
-                                scene.setFill(Color.web("#232323"));
-                                stage.getIcons().setAll(stageIcon);
+                    if (scene != null) {
+                        scene.setFill(Color.web("#232323"));
+
+                        if (scene.getWindow() != null) {
+                            if (scene.getWindow() instanceof Stage stage) {
+                                Image stageIcon = createStageIcon(type);
+                                if (stageIcon != null) {
+                                    stage.getIcons().setAll(stageIcon);
+                                }
                             }
+                            WindowsDwmUtils.applyDarkMode(scene.getWindow());
                         }
-                        WindowsDwmUtils.applyDarkMode(scene.getWindow());
                     }
                 });
             }
         });
     }
+
 
     public static boolean confirmationDialog(String title, String headerText, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
