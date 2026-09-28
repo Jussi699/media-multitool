@@ -801,7 +801,7 @@
 }
 
 .dialog-pane .header-panel .label {
-    -fx-text-fill: -main-color-label;
+    -fx-text-fill: -main-color;
     -fx-font-weight: bold;
 }
 
