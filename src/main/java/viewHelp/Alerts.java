@@ -7,15 +7,14 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -79,7 +78,11 @@ public class Alerts {
         alert.setContentText(message);
         alert.initModality(Modality.NONE);
         alert.setResizable(true);
-        alert.setWidth(600);
+
+        DialogPane dialogPane = alert.getDialogPane();
+        double dynamicWidth = calculatePreferredWidth(headerText, message);
+        dialogPane.setPrefWidth(dynamicWidth);
+        dialogPane.setMinHeight(Region.USE_PREF_SIZE);
 
         alert.setGraphic(null);
         ImageView graphic = createGraphic(type);
@@ -89,6 +92,22 @@ public class Alerts {
 
         applyDialogStyles(alert, type);
         alert.showAndWait();
+    }
+
+    private static double calculatePreferredWidth(String header, String message) {
+        double maxLineWidth = 0;
+        Font contentFont = Font.font("Segoe UI", 14);
+
+        String allText = (header != null ? header + "\n" : "") + (message != null ? message : "");
+        for (String line : allText.split("\n")) {
+            Text textNode = new Text(line);
+            textNode.setFont(contentFont);
+            maxLineWidth = Math.max(maxLineWidth, textNode.getLayoutBounds().getWidth());
+        }
+
+        double targetWidth = maxLineWidth + 120;
+
+        return Math.clamp(targetWidth, 380, 750);
     }
 
     public static void showProgressDialog(Stage owner, Task<?> task, String title, String headerText) {
@@ -183,6 +202,7 @@ public class Alerts {
                         if (scene.getWindow() instanceof Stage stage) {
                             Image stageIcon = createStageIcon(type);
                             if (stageIcon != null) {
+                                scene.setFill(Color.web("#232323"));
                                 stage.getIcons().setAll(stageIcon);
                             }
                         }
