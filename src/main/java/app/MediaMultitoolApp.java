@@ -5,10 +5,12 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.logger.ErrorLogger;
+import viewHelp.Alerts;
 import viewHelp.WindowsDwmUtils;
 
 import java.io.IOException;
@@ -17,6 +19,11 @@ import java.util.Objects;
 public class MediaMultitoolApp extends Application {
     @Override
     public void start(Stage loadingStage) throws IOException {
+        if(!Launcher.isCanWriteInLog()) {
+            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Logback Error",
+                    "Logback cannot write logs to the log file!\nIn the app, go to the \"Info\" tab to access the logs folder and view the 'logback.log' file.");
+        }
+
         FXMLLoader loadingLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/loading-page-view.fxml"));
         Scene loadingScene = new Scene(loadingLoader.load(), 300, 200);
         loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
