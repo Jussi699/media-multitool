@@ -17,6 +17,7 @@ import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.ImagePreviewCard;
 import viewHelp.Message;
@@ -305,7 +306,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         if (exception instanceof InterruptedException || (exception.getCause() instanceof InterruptedException) || cancelFlag.get()) {
             handleTaskCancelled();
             return;

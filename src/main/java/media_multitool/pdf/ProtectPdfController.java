@@ -20,6 +20,7 @@ import model.select.SelectFile;
 import model.utility.ResetContext;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 
 import java.awt.image.BufferedImage;
@@ -341,7 +342,7 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, progressBar,"Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());

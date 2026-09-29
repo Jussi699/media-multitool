@@ -18,6 +18,7 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import com.bric.colorpicker.ColorPicker;
 import viewHelp.WorkColors;
@@ -185,7 +186,7 @@ public class ColorizeImageController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());

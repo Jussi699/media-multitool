@@ -19,6 +19,7 @@ import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.Item;
 import model.utility.ResetContext;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
 import ws.schild.jave.info.MultimediaInfo;
@@ -192,7 +193,7 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         String msg = exception.getMessage();
         Throwable cause = exception.getCause();
         String causeMsg = (cause != null) ? cause.getMessage() : "";

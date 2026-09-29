@@ -27,6 +27,7 @@ import model.utility.DetermineType;
 import model.utility.Global;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.OpenWatermarkWindow;
 
@@ -281,7 +282,7 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());

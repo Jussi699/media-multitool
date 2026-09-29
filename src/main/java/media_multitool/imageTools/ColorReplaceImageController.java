@@ -17,6 +17,7 @@ import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.*;
 import model.helper.images.ColorReplaceHelper;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 
 import javax.imageio.ImageIO;
@@ -335,7 +336,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());

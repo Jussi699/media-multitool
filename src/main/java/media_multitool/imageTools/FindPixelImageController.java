@@ -21,6 +21,7 @@ import model.properties.MediaProperties;
 import model.properties.ImageProperties;
 import model.select.SelectFile;
 import model.utility.*;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.ImageZoomHelper;
 import viewHelp.ZoomControlHelper;
@@ -201,7 +202,7 @@ public class FindPixelImageController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());

@@ -414,7 +414,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@org.jspecify.annotations.NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), audioProperties.getHideSuccessMessageTimer());

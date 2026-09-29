@@ -20,6 +20,7 @@ import model.select.SelectFile;
 import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.Utility;
 
@@ -217,7 +218,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         if (exception instanceof InterruptedException || cancelFlag.get()) {
             handleTaskCancelled();
             return;
