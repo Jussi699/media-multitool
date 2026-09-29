@@ -5,13 +5,14 @@ import ws.schild.jave.Encoder;
 
 import java.io.File;
 
+import static java.util.Objects.isNull;
 import static model.utility.PathWorker.IO_EXECUTOR;
 
 public class EncoderUtility {
     public static void abortEncoding(Encoder encoder, File file){
         encoder.abortEncoding();
 
-        if (file == null) return;
+        if (isNull(file)) return;
 
         IO_EXECUTOR.submit(() -> {
             ErrorLogger.info("Attempting to delete partial file: " + file.getName());
@@ -32,7 +33,7 @@ public class EncoderUtility {
                         attempts++;
                         ErrorLogger.warn("Delete attempt " + attempts + " failed. File might be locked.");
                     }
-                } catch (InterruptedException e) {
+                } catch (InterruptedException _) {
                     Thread.currentThread().interrupt();
                     break;
                 }

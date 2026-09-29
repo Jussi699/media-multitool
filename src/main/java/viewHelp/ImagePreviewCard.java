@@ -16,6 +16,8 @@ import model.logger.ErrorLogger;
 import java.io.File;
 import java.util.function.Consumer;
 
+import static java.util.Objects.nonNull;
+
 /**
  * UI component for displaying an image preview card with drag-and-drop and delete functionality
  */
@@ -119,7 +121,7 @@ public class ImagePreviewCard {
         
         button.setOnMouseClicked(e -> {
             e.consume();
-            if (onDelete != null) {
+            if (nonNull(onDelete)) {
                 onDelete.run();
             }
         });
@@ -210,7 +212,7 @@ public class ImagePreviewCard {
         st.setToX(0);
         st.setToY(0);
         st.setOnFinished(_ -> {
-            if (onComplete != null) {
+            if (nonNull(onComplete)) {
                 onComplete.run();
             }
         });

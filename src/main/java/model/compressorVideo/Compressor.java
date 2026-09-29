@@ -16,12 +16,15 @@ import ws.schild.jave.progress.EncoderProgressListener;
 import java.io.File;
 import java.util.function.Consumer;
 
+import static java.util.Objects.nonNull;
+
 public class Compressor {
+    private final Encoder encoder = new Encoder();
+    private volatile File currentTarget;
+
     private String videoCodec;
     private String audioCodec;
     private String ffmpegFormat;
-    private volatile File currentTarget;
-    private final Encoder encoder = new Encoder();
 
     @Setter private boolean useGPU;
     @Setter private boolean compressAudio = true;
@@ -52,7 +55,7 @@ public class Compressor {
             attrs.setOutputFormat(ffmpegFormat);
             attrs.setVideoAttributes(video);
 
-            if (sourceInfo.getAudio() != null) {
+            if (nonNull(sourceInfo.getAudio())) {
                 if (compressAudio) {
                     audio.setCodec(audioCodec);
                     attrs.setAudioAttributes(audio);
@@ -75,7 +78,7 @@ public class Compressor {
 
                 @Override
                 public void progress(int permille) {
-                    if (progressConsumer != null) {
+                    if (nonNull(progressConsumer)) {
                         progressConsumer.accept(permille / 1000.0);
                     }
                 }
@@ -89,7 +92,7 @@ public class Compressor {
             ErrorLogger.info("Video compression completed successfully: " + output.getAbsolutePath());
         } catch (EncoderException e) {
             String msg = e.getMessage();
-            boolean isCancelled = msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
+            boolean isCancelled = nonNull(msg) && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
             if (isCancelled) {
                 ErrorLogger.info("Compression was cancelled by user.");
             } else {
@@ -102,7 +105,7 @@ public class Compressor {
 
     public void cancelCompress() {
         File target = currentTarget;
-        if (target != null) {
+        if (nonNull(target)) {
             EncoderUtility.abortEncoding(encoder, target);
             currentTarget = null;
         } else {
@@ -111,7 +114,7 @@ public class Compressor {
     }
 
     private void clearCurrentTarget(File target) {
-        if (target != null && target.equals(currentTarget)) {
+        if (nonNull(target) && target.equals(currentTarget)) {
             currentTarget = null;
         }
     }

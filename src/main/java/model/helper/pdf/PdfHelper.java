@@ -5,9 +5,15 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.io.IOException;
 
+import static java.util.Objects.nonNull;
+
 public class PdfHelper {
+    private PdfHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     public static PDDocument closeDocument(PDDocument document) throws IOException {
-        if (document != null) {
+        if (nonNull(document)) {
             try {
                 document.close();
             } catch (IOException e) {

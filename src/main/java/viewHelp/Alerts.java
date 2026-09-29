@@ -22,6 +22,9 @@ import model.logger.ErrorLogger;
 
 import java.net.URL;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class Alerts {
     private static final String INFO_ICON_PATH = "/img/info.png";
     private static final String QUESTION_ICON_PATH = "/img/question.png";
@@ -37,7 +40,7 @@ public class Alerts {
 
     public static ImageView createQuestionGraphic() {
         URL resource = Alerts.class.getResource(QUESTION_ICON_PATH);
-        if (resource == null) {
+        if (isNull(resource)) {
             ErrorLogger.error("File " + QUESTION_ICON_PATH + " not found");
             return null;
         }
@@ -48,7 +51,7 @@ public class Alerts {
     private static ImageView createGraphic(Alert.AlertType type) {
         String path = getIconPath(type);
         URL resource = Alerts.class.getResource(path);
-        if (resource == null) {
+        if (isNull(resource)) {
             ErrorLogger.error("File " + path + " not found");
             return null;
         }
@@ -60,7 +63,7 @@ public class Alerts {
     private static Image createStageIcon(Alert.AlertType type) {
         String path = getIconPath(type);
         URL resource = Alerts.class.getResource(path);
-        if (resource == null) {
+        if (isNull(resource)) {
             return null;
         }
         return new Image(resource.toExternalForm());
@@ -86,7 +89,7 @@ public class Alerts {
 
         alert.setGraphic(null);
         ImageView graphic = createGraphic(type);
-        if (graphic != null) {
+        if (nonNull(graphic)) {
             alert.setGraphic(graphic);
         }
 
@@ -112,7 +115,7 @@ public class Alerts {
 
     public static void showProgressDialog(Stage owner, Task<?> task, String title, String headerText) {
         Alert alert = new Alert(Alert.AlertType.NONE);
-        if (owner != null) {
+        if (nonNull(owner)) {
             alert.initOwner(owner);
         }
         alert.initModality(Modality.NONE);
@@ -128,7 +131,7 @@ public class Alerts {
         Timeline timeline = getTimeline(messageLabel);
 
         task.messageProperty().addListener((_, _, message) -> {
-            if (message != null && !message.isEmpty()) {
+            if (nonNull(message) && !message.isEmpty()) {
                 timeline.stop();
                 Platform.runLater(() -> messageLabel.setText(message));
             }
@@ -171,18 +174,18 @@ public class Alerts {
     private static void applyDialogStyles(Alert alert, Alert.AlertType type) {
         var pane = alert.getDialogPane();
         var rootRes = ErrorLogger.class.getResource("/root.css");
-        if (rootRes != null) {
+        if (nonNull(rootRes)) {
             pane.getStylesheets().add(rootRes.toExternalForm());
         }
         var res = ErrorLogger.class.getResource("/style.css");
-        if (res != null) {
+        if (nonNull(res)) {
             pane.getStylesheets().add(res.toExternalForm());
         }
         pane.getStyleClass().add("dialog-pane");
 
-        if (pane.getScene() != null && pane.getScene().getWindow() instanceof Stage stage) {
+        if (nonNull(pane.getScene()) && pane.getScene().getWindow() instanceof Stage stage) {
             Image stageIcon = createStageIcon(type);
-            if (stageIcon != null) {
+            if (nonNull(stageIcon)) {
                 stage.getIcons().setAll(stageIcon);
             }
         }
@@ -205,13 +208,13 @@ public class Alerts {
             if (Boolean.TRUE.equals(isShowing)) {
                 Platform.runLater(() -> {
                     var scene = alert.getDialogPane().getScene();
-                    if (scene != null) {
+                    if (nonNull(scene)) {
                         scene.setFill(Color.web("#232323"));
 
-                        if (scene.getWindow() != null) {
+                        if (nonNull(scene.getWindow())) {
                             if (scene.getWindow() instanceof Stage stage) {
                                 Image stageIcon = createStageIcon(type);
-                                if (stageIcon != null) {
+                                if (nonNull(stageIcon)) {
                                     stage.getIcons().setAll(stageIcon);
                                 }
                             }
@@ -233,7 +236,7 @@ public class Alerts {
 
         alert.setGraphic(null);
         ImageView graphic = createGraphic(Alert.AlertType.CONFIRMATION);
-        if (graphic != null) {
+        if (nonNull(graphic)) {
             alert.setGraphic(graphic);
         }
 

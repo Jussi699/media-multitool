@@ -26,6 +26,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -70,7 +72,7 @@ public class LightenImageController extends AbstractMediaController {
     }
 
     private void updatePreview(int offset) {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -152,7 +154,7 @@ public class LightenImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
             return;
         }
 
@@ -214,9 +216,7 @@ public class LightenImageController extends AbstractMediaController {
 
         currentBufferedImage = null;
         originalBufferedImage = null;
-        if (sliderLighten != null) {
-            sliderLighten.setValue(0);
-        }
+        sliderLighten.setValue(0);
         currentValueSlider.setText("100%");
         disableControls();
     }
@@ -227,10 +227,10 @@ public class LightenImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage != null) {
+                if (nonNull(originalBufferedImage)) {
                     updatePreview((int) sliderLighten.getValue());
                         labelPreviewPlaceholder.setVisible(false);
                 }
@@ -239,10 +239,10 @@ public class LightenImageController extends AbstractMediaController {
             }
         }
 
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + selectedFile.getName());
         }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

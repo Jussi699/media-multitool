@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.util.Objects.nonNull;
+
 public class CompressPdfHelper {
     @FunctionalInterface
     public interface ProgressCallback {
@@ -43,12 +45,12 @@ public class CompressPdfHelper {
     }
 
     public static void compressPdf(File inputFile, File outputFile, CompressionLevel level, ProgressCallback progressCallback) throws IOException {
-        if (progressCallback != null) {
+        if (nonNull(progressCallback)) {
             progressCallback.onProgress(0, 100);
         }
 
         try (PDDocument document = Loader.loadPDF(inputFile)) {
-            if (progressCallback != null) {
+            if (nonNull(progressCallback)) {
                 progressCallback.onProgress(5, 100);
             }
 
@@ -62,12 +64,12 @@ public class CompressPdfHelper {
                     PDPage page = document.getPage(i);
                     optimizeResources(page.getResources(), document, level, progressCallback, i, totalPages);
 
-                    if (progressCallback != null) {
+                    if (nonNull(progressCallback)) {
                         double pageProgress = 5.0 + 85.0 * (i + 1) / totalPages;
                         progressCallback.onProgress(pageProgress, 100);
                     }
                 }
-            } else if (progressCallback != null) {
+            } else if (nonNull(progressCallback)) {
                 progressCallback.onProgress(85, 100);
             }
 
@@ -75,14 +77,14 @@ public class CompressPdfHelper {
                 throw new IOException("Compression cancelled");
             }
 
-            if (progressCallback != null) {
+            if (nonNull(progressCallback)) {
                 progressCallback.onProgress(90, 100);
             }
 
             document.setAllSecurityToBeRemoved(true);
             document.save(outputFile);
 
-            if (progressCallback != null) {
+            if (nonNull(progressCallback)) {
                 progressCallback.onProgress(100, 100);
             }
 
@@ -113,7 +115,7 @@ public class CompressPdfHelper {
             if (xobject instanceof PDImageXObject image) {
                 try {
                     BufferedImage bufferedImage = image.getImage();
-                    if (bufferedImage != null) {
+                    if (nonNull(bufferedImage)) {
                         byte[] compressedBytes = compressImage(bufferedImage, level.getImageQuality());
                         PDImageXObject compressedImage = PDImageXObject.createFromByteArray(document, compressedBytes, name.getName());
                         resources.put(name, compressedImage);

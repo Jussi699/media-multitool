@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
 import static model.utility.PathWorker.*;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_WINDOW_HANDLE_TYPE_WINDOWS;
 
@@ -131,7 +132,7 @@ public class SelectFile extends AbstractSelectFile {
             MemoryStack stack
     ) {
         NFDWindowHandle parentWindow = createParentWindow(stage, stack);
-        if (parentWindow == null) {
+        if (isNull(parentWindow)) {
             return multiple
                     ? NativeFileDialog.NFD_OpenDialogMultiple(result, filters, defaultPath)
                     : NativeFileDialog.NFD_OpenDialog(result, filters, defaultPath);
@@ -147,12 +148,12 @@ public class SelectFile extends AbstractSelectFile {
     }
 
     private static NFDWindowHandle createParentWindow(Stage stage, MemoryStack stack) {
-        if (stage == null || OS.getOS() != OS.TypeOS.WINDOWS) {
+        if (isNull(stage) || OS.getOS() != OS.TypeOS.WINDOWS) {
             return null;
         }
 
         var hwnd = WindowsDwmUtils.findHwnd(stage);
-        if (hwnd == null) {
+        if (isNull(hwnd)) {
             return null;
         }
 
@@ -169,12 +170,12 @@ public class SelectFile extends AbstractSelectFile {
     private static IllegalStateException nativeDialogError(String operation) {
         String error = NativeFileDialog.NFD_GetError();
         return new IllegalStateException("Failed " + operation + " via NativeFileDialog-Extended"
-                + (error == null || error.isBlank() ? "" : ": " + error));
+                + (isNull(error) || error.isBlank() ? "" : ": " + error));
     }
 
     private static void handleDialogError(RuntimeException exception) {
         String message = exception.getMessage();
-        String detail = message == null || message.isBlank()
+        String detail = isNull(message) || message.isBlank()
                 ? "The native file dialog could not be opened."
                 : message;
         Alerts.alertDialog(

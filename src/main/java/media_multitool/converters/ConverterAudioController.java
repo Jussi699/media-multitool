@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.IO_EXECUTOR;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -121,6 +123,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
+        btnSelectAudioVideoFile.setDisable(true);
         btnSubmitAndDownload.setDisable(true);
         btnReset.setDisable(true);
         listModifiableControls.forEach(tb -> tb.setDisable(true));
@@ -143,7 +146,7 @@ public class ConverterAudioController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-        if (audioProperties.getTargetFormat() != null) {
+        if (nonNull(audioProperties.getTargetFormat())) {
             boolean supportsChoice = MediaHelper.supportsCodecChoice(audioProperties.getTargetFormat());
             checkBoxLossyCompression.setDisable(!supportsChoice);
         } else {
@@ -193,7 +196,7 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private boolean checkAudioTrack(MultimediaInfo sourceInfo) {
-        if(sourceInfo != null && sourceInfo.getAudio() == null) {
+        if(nonNull(sourceInfo) && isNull(sourceInfo.getAudio())) {
             Platform.runLater(() -> Alerts.alertDialog(
                     Alert.AlertType.WARNING,
                     "No Audio Track Detected",
@@ -206,17 +209,17 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private boolean checks(@NonNull VideoAndAudioProperties audioProperties) {
-        if(audioProperties.getOutput() == null){
+        if(isNull(audioProperties.getOutput())){
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
             return false;
         }
 
-        if (audioProperties.getSrcFile() == null) {
+        if (isNull((audioProperties.getSrcFile()))) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "File missing!", "Select audio or video file!");
             return false;
         }
 
-        if(audioProperties.getTargetFormat() == null){
+        if(isNull(audioProperties.getTargetFormat())){
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Format missing!", "Select audio format!");
             return false;
         }
@@ -272,10 +275,10 @@ public class ConverterAudioController extends AbstractMediaController {
             ErrorLogger.info("Source bitrate invalid, using default: 320");
         }
 
-        if (finalChannels <= 0) finalChannels = (sourceInfo != null) ? parseChannels(sourceInfo) : 2;
+        if (finalChannels <= 0) finalChannels = nonNull(sourceInfo) ? parseChannels(sourceInfo) : 2;
         if (finalChannels <= 0) finalChannels = 2;
 
-        if (finalSamplingRate <= 0) finalSamplingRate = (sourceInfo != null) ? parseSamplingRate(sourceInfo) : 48000;
+        if (finalSamplingRate <= 0) finalSamplingRate = nonNull(sourceInfo) ? parseSamplingRate(sourceInfo) : 48000;
         if (finalSamplingRate <= 0) finalSamplingRate = 48000;
 
         audioProperties.setAudioBitRate(finalAudioBitrate);
@@ -330,7 +333,7 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private static String getString(ToggleButton tb) {
-        if (tb == null || tb.getId() == null) {
+        if (isNull(tb) || isNull(tb.getId())) {
             return null;
         }
         return switch (tb.getId()) {
@@ -361,7 +364,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
     @FXML
     public void onCancelConversion() {
-        if (currentTask != null) currentTask.cancelConversion();
+        if (nonNull(currentTask)) currentTask.cancelConversion();
     }
 
     @FXML

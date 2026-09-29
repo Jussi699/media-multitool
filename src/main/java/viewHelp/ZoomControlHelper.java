@@ -10,6 +10,9 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class ZoomControlHelper {
     private final ScrollPane scrollPane;
     private final ImageView imageView;
@@ -51,7 +54,7 @@ public class ZoomControlHelper {
     }
 
     public void updateImageSize() {
-        if (imageView.getImage() != null) {
+        if (nonNull(imageView.getImage())) {
             if (slider.getValue() == 1.0) {
                 double viewPortWidth = scrollPane.getViewportBounds().getWidth();
                 double viewPortHeight = scrollPane.getViewportBounds().getHeight();
@@ -66,7 +69,7 @@ public class ZoomControlHelper {
 
     private void setupZoomWithMouseWheel() {
         scrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
-            if (imageView.getImage() == null || event.getDeltaY() == 0) {
+            if (isNull(imageView.getImage()) || event.getDeltaY() == 0) {
                 return;
             }
             event.consume();
@@ -104,7 +107,7 @@ public class ZoomControlHelper {
     }
 
     private void applyZoomWithAnchor(double newZoom, Point2D sceneFocal, Point2D imageAnchor) {
-        if (sceneFocal == null || imageAnchor == null) {
+        if (isNull(sceneFocal) || isNull(imageAnchor)) {
             return;
         }
 

@@ -29,6 +29,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
 
@@ -43,9 +45,9 @@ public class CropImageController extends AbstractMediaController {
     @FXML private ImageView imageViewPreview;
     @FXML private Rectangle cropRect;
 
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9, btnAspectRatio4x5,
-            btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3,btnAspectRatio2x3, btnAspectRatio3x2,btnAspectRatio5x7,btnAspectRatio7x5,
-            btnAspectRatio1x2,btnAspectRatio2x1, btnSubmit;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnAspectRatioSquare, btnAspectRatio9x16;
+    @FXML private Button btnAspectRatio16x9, btnAspectRatio4x5, btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3;
+    @FXML private Button btnAspectRatio2x3, btnAspectRatio3x2,btnAspectRatio5x7,btnAspectRatio7x5, btnAspectRatio1x2,btnAspectRatio2x1, btnSubmit;
 
     private BufferedImage originalBufferedImage;
     private ZoomControlHelper zoomControlHelper;
@@ -186,11 +188,11 @@ public class CropImageController extends AbstractMediaController {
 
     private BufferedImage createSelectedCrop() {
         CropHelper.CropArea cropArea = cropHelper.getCropArea();
-        return cropArea == null ? null : createCroppedImage(cropArea);
+        return isNull(cropArea) ? null : createCroppedImage(cropArea);
     }
 
     private BufferedImage createCroppedImage(CropHelper.CropArea cropArea) {
-        if (originalBufferedImage == null || cropArea == null) {
+        if (isNull(originalBufferedImage) || isNull(cropArea)) {
             return null;
         }
 
@@ -235,11 +237,11 @@ public class CropImageController extends AbstractMediaController {
         reset(imageProperties, ctx, "Selected image file: none");
 
         originalBufferedImage = null;
-        if (cropHelper != null) {
+        if (nonNull(cropHelper)) {
             cropHelper.reset();
         }
 
-        if (zoomControlHelper != null) {
+        if (nonNull(zoomControlHelper)) {
             zoomControlHelper.resetZoom();
         }
         disableControls();
@@ -255,7 +257,7 @@ public class CropImageController extends AbstractMediaController {
 
         try {
             originalBufferedImage = ImageIO.read(selectedFile);
-            if (originalBufferedImage == null) {
+            if (isNull(originalBufferedImage)) {
                 showErrorMessage(labelSuccess, "Unsupported image format.", imageProperties.getHideSuccessMessageTimer());
                 return;
             }
@@ -263,7 +265,7 @@ public class CropImageController extends AbstractMediaController {
             zoomControlHelper.resetZoom();
             setImagePreview(originalBufferedImage, imageViewPreview);
 
-            if (labelPreviewPlaceholder != null) {
+            if (nonNull(labelPreviewPlaceholder)) {
                 labelPreviewPlaceholder.setVisible(false);
             }
 
@@ -278,7 +280,7 @@ public class CropImageController extends AbstractMediaController {
             showErrorMessage(labelSuccess, "Failed to load image.", imageProperties.getHideSuccessMessageTimer());
         }
 
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }
@@ -292,20 +294,22 @@ public class CropImageController extends AbstractMediaController {
     }
 
     public void onActionSelectAspectRatio(ActionEvent event) {
-        Object source = event.getSource();
+        Button btn = (Button) event.getSource();
 
-        if      (source == btnAspectRatioSquare)  cropHelper.setupAspectRatio(1.0, 1.0);
-        else if (source == btnAspectRatio9x16)    cropHelper.setupAspectRatio(9.0, 16.0);
-        else if (source == btnAspectRatio16x9)    cropHelper.setupAspectRatio(16.0, 9.0);
-        else if (source == btnAspectRatio4x5)     cropHelper.setupAspectRatio(4.0, 5.0);
-        else if (source == btnAspectRatio5x4)     cropHelper.setupAspectRatio(5.0, 4.0);
-        else if (source == btnAspectRatio3x4)     cropHelper.setupAspectRatio(3.0, 4.0);
-        else if (source == btnAspectRatio4x3)     cropHelper.setupAspectRatio(4.0, 3.0);
-        else if (source == btnAspectRatio2x3)     cropHelper.setupAspectRatio(2.0, 3.0);
-        else if (source == btnAspectRatio3x2)     cropHelper.setupAspectRatio(3.0, 2.0);
-        else if (source == btnAspectRatio5x7)     cropHelper.setupAspectRatio(5.0, 7.0);
-        else if (source == btnAspectRatio7x5)     cropHelper.setupAspectRatio(7.0, 5.0);
-        else if (source == btnAspectRatio1x2)     cropHelper.setupAspectRatio(1.0, 2.0);
-        else if (source == btnAspectRatio2x1)     cropHelper.setupAspectRatio(2.0, 1.0);
+        switch (btn.getId()) {
+            case "btnAspectRatioSquare" -> cropHelper.setupAspectRatio(1.0, 1.0);
+            case "btnAspectRatio9x16"   -> cropHelper.setupAspectRatio(9.0, 16.0);
+            case "btnAspectRatio16x9"   -> cropHelper.setupAspectRatio(16.0, 9.0);
+            case "btnAspectRatio4x5"    -> cropHelper.setupAspectRatio(4.0, 5.0);
+            case "btnAspectRatio5x4"    -> cropHelper.setupAspectRatio(5.0, 4.0);
+            case "btnAspectRatio3x4"    -> cropHelper.setupAspectRatio(3.0, 4.0);
+            case "btnAspectRatio4x3"    -> cropHelper.setupAspectRatio(4.0, 3.0);
+            case "btnAspectRatio2x3"    -> cropHelper.setupAspectRatio(2.0, 3.0);
+            case "btnAspectRatio3x2"    -> cropHelper.setupAspectRatio(3.0, 2.0);
+            case "btnAspectRatio5x7"    -> cropHelper.setupAspectRatio(5.0, 7.0);
+            case "btnAspectRatio7x5"    -> cropHelper.setupAspectRatio(7.0, 5.0);
+            case "btnAspectRatio1x2"    -> cropHelper.setupAspectRatio(1.0, 2.0);
+            case "btnAspectRatio2x1"    -> cropHelper.setupAspectRatio(2.0, 1.0);
+        }
     }
 }

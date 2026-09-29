@@ -24,6 +24,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -61,7 +63,7 @@ public class BlackWhiteImageController extends AbstractMediaController {
     }
 
     private void updatePreview() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -204,10 +206,10 @@ public class BlackWhiteImageController extends AbstractMediaController {
     private void loadFile(File selectedFile) {
         originalBufferedImage = null;
         currentBufferedImage = null;
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             imageViewPreview.setImage(null);
         }
-        if (labelPreviewPlaceholder != null) {
+        if (nonNull(labelPreviewPlaceholder)) {
             labelPreviewPlaceholder.setVisible(true);
         }
         disableControls();
@@ -216,17 +218,17 @@ public class BlackWhiteImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFile.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage == null) {
+                if (isNull(originalBufferedImage)) {
                     throw new IllegalArgumentException("Unsupported image format.");
                 }
                 updatePreview();
-                if (currentBufferedImage != null && labelPreviewPlaceholder != null) {
+                if (nonNull(currentBufferedImage) && nonNull(labelPreviewPlaceholder)) {
                     labelPreviewPlaceholder.setVisible(false);
                 }
-                if (currentBufferedImage != null) {
+                if (nonNull(currentBufferedImage)) {
                     enableControls();
                 } else {
                     throw new IllegalStateException("Failed to create image preview.");
@@ -238,10 +240,10 @@ public class BlackWhiteImageController extends AbstractMediaController {
             }
         }
 
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + selectedFile.getName());
         }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

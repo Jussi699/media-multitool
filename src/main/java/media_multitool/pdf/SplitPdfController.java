@@ -28,25 +28,25 @@ import java.io.File;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.helper.pdf.SplitPdfHelper.*;
 
 public class SplitPdfController extends AbstractMediaController {
+    private final ImageProperties imageProperties = new ImageProperties();
+    private final List<PageEntry> allPages = new ArrayList<>();
+    private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
+    private final Set<Integer> selectedPageIndices = new HashSet<>();
+
     @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
     @FXML private Label textDragZone, labelSelectFileName;
     @FXML private FlowPane imagesFlowPane;
     @FXML private ScrollPane scrollPanePreview;
     @FXML private StackPane dropZone;
-
     @FXML private VBox vboxRangeOptions, vboxPagesOptions, vboxToPage;
-
     @FXML private RadioButton rbCustomRange, rbFixedRange, rbRange, rbPages;
     @FXML private ToggleGroup rangeTypeGroup, splitModeGroup;
     @FXML private TextField tfFromPage, tfToPage;
-
-    private final ImageProperties imageProperties = new ImageProperties();
-    private final List<PageEntry> allPages = new ArrayList<>();
-    private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
-    private final Set<Integer> selectedPageIndices = new HashSet<>();
 
     private List<Control> listControls;
 
@@ -317,9 +317,11 @@ public class SplitPdfController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (imageProperties.getImage() == null) return;
+        if (isNull(imageProperties.getImage())){
+            return;
+        }
 
-        File outputDir = imageProperties.getOutput() != null
+        File outputDir = nonNull(imageProperties.getOutput())
                 ? imageProperties.getOutput()
                 : new File(System.getProperty("user.home"), "Desktop");
 
@@ -348,9 +350,9 @@ public class SplitPdfController extends AbstractMediaController {
     }
 
     private Task<Void> buildSplitTask(File outputDir) {
-        boolean isRange = rbRange.isSelected();
-        int fromPage = isRange ? parsePageField(tfFromPage.getText()) : 0;
-        int toPage   = isRange ? parsePageField(tfToPage.getText())   : 0;
+        boolean isRange    = rbRange.isSelected();
+        int fromPage       = isRange ? parsePageField(tfFromPage.getText()) : 0;
+        int toPage         = isRange ? parsePageField(tfToPage.getText()) : 0;
         boolean fixedRange = isRange && rbFixedRange.isSelected();
 
         return new Task<>() {

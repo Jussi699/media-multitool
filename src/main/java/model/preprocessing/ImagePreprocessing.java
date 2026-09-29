@@ -9,15 +9,17 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import static java.util.Objects.isNull;
+
 public class ImagePreprocessing {
     public static void downloadImage(BufferedImage image, String formatFile, File output) throws IOException {
-        if (image == null) {
+        if (isNull(image)) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Error delivered", "Error delivered", "Error, image not delivered to download!");
             ErrorLogger.info("Unfortunately, current image = null!");
             return;
         }
 
-        if (output == null) {
+        if (isNull(output)) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Error delivered", "Error delivered", "Error, output path not delivered to download!");
             ErrorLogger.error("Output file is null!");
             return;

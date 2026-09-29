@@ -5,6 +5,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import static java.util.Objects.nonNull;
+
 public class MetadataEntry {
     private final StringProperty category = new SimpleStringProperty();
     private final StringProperty key = new SimpleStringProperty();
@@ -13,9 +15,9 @@ public class MetadataEntry {
     private final Object rawTagKey;
 
     public MetadataEntry(String category, String key, String value, boolean canDelete, Object rawTagKey) {
-        this.category.set(category != null ? category : "");
-        this.key.set(key != null ? key : "");
-        this.value.set(value != null ? value : "");
+        this.category.set(nonNull(category) ? category : "");
+        this.key.set(nonNull(key) ? key : "");
+        this.value.set(nonNull(value) ? value : "");
         this.canDelete.set(canDelete);
         this.rawTagKey = rawTagKey;
     }

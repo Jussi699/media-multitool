@@ -5,10 +5,12 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.Locale;
 
+import static java.util.Objects.isNull;
+
 public class ConverterImage {
     
     public static String normalizeOutputFormat(String typeFile) {
-        if (typeFile == null) {
+        if (isNull(typeFile)) {
             throw new IllegalArgumentException("Output format is null");
         }
 

@@ -7,6 +7,9 @@ import javafx.scene.input.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkDragHandler {
     private final ImageView imageView;
     private BufferedImage image;
@@ -42,9 +45,7 @@ public class WatermarkDragHandler {
     private double[] getImageScale() {
         double viewW = imageView.getBoundsInLocal().getWidth();
         double viewH = imageView.getBoundsInLocal().getHeight();
-        if (viewW <= 0 || viewH <= 0) {
-            return null;
-        }
+        if (viewW <= 0 || viewH <= 0) return null;
         return new double[]{image.getWidth() / viewW, image.getHeight() / viewH};
     }
     
@@ -54,7 +55,7 @@ public class WatermarkDragHandler {
      */
     private double[] toImageCoords(MouseEvent event) {
         double[] scale = getImageScale();
-        if (scale == null) return null;
+        if (isNull(scale)) return null;
         return new double[]{event.getX() * scale[0], event.getY() * scale[1]};
     }
     
@@ -65,7 +66,8 @@ public class WatermarkDragHandler {
         if (!canDrag()) return;
         
         double[] imgCoords = toImageCoords(event);
-        if (imgCoords == null) return;
+        if (isNull(imgCoords)) return;
+
         
         double[] posData = WatermarkDimensionsHelper.getCurrentPosition(settings, image);
         double posX = posData[0], posY = posData[1];
@@ -90,13 +92,14 @@ public class WatermarkDragHandler {
     
     /**
      * Handle mouse drag - update watermark position
-     * Optimized to compute scale factor once instead of twice
+     * Optimized to compute a scale factor once instead of twice
      */
     public void handleMouseDragged(MouseEvent event) {
-        if (!isDragging || image == null) return;
+        if (!isDragging || isNull(image)) return;
+
         
         double[] scale = getImageScale();
-        if (scale == null) return;
+        if (isNull(scale)) return;
         
         double deltaX = (event.getX() - dragStartX) * scale[0];
         double deltaY = (event.getY() - dragStartY) * scale[1];
@@ -130,13 +133,13 @@ public class WatermarkDragHandler {
      * Handle mouse move - update cursor based on position
      */
     public void handleMouseMoved(MouseEvent event) {
-        if (image == null || !canDrag()) {
+        if (isNull(image) || !canDrag()) {
             imageView.setCursor(Cursor.DEFAULT);
             return;
         }
         
         double[] imgCoords = toImageCoords(event);
-        if (imgCoords == null) {
+        if (isNull(imgCoords)) {
             imageView.setCursor(Cursor.DEFAULT);
             return;
         }
@@ -185,13 +188,13 @@ public class WatermarkDragHandler {
     }
     
     private void notifyUpdate() {
-        if (onUpdateCallback != null) {
+        if (nonNull(onUpdateCallback)) {
             onUpdateCallback.accept(settings);
         }
     }
     
     private void notifyDragComplete() {
-        if (onDragCompleteCallback != null) {
+        if (nonNull(onDragCompleteCallback)) {
             onDragCompleteCallback.run();
         }
     }

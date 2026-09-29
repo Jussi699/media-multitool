@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.hideSuccessMessage;
 
@@ -49,23 +51,23 @@ public abstract class AbstractMediaController {
         Tooltip clipboardTooltip = new Tooltip("Certain copied images may not show a preview in the Windows clipboard menu (Win + V).\nHowever, the image is still in the clipboard and can be pasted as usual.");
         Tooltip resetTooltip = new Tooltip("Resets everything to default values.");
 
-        if (btnSubmitAndCopy != null) {
+        if (nonNull(btnSubmitAndCopy)) {
             btnSubmitAndCopy.setTooltip(clipboardTooltip);
         }
-        if (btnReset != null) {
+        if (nonNull(btnReset)) {
             btnReset.setTooltip(resetTooltip);
         }
     }
 
     protected void setupImageClipboardButton(Supplier<BufferedImage> imageSupplier, String imageDescription) {
-        if (btnSubmitAndCopy == null) {
+        if (isNull(btnSubmitAndCopy)) {
             return;
         }
 
         btnSubmitAndCopy.setOnAction(_ -> {
             try {
                 BufferedImage image = imageSupplier.get();
-                if (image == null) {
+                if (isNull(image)) {
                     String message = "No image is available to copy.";
                     ErrorLogger.error(message);
                     Message.showErrorMessage(labelSuccess, message, getProperties().getHideSuccessMessageTimer());
@@ -103,9 +105,9 @@ public abstract class AbstractMediaController {
      * Subclasses may call this from a "Cancel" button action.
      */
     protected void cancelCurrentTask() {
-        Task<?> t = currentTask.get();
-        if (t != null && t.isRunning()) {
-            t.cancel(true);
+        Task<?> task = currentTask.get();
+        if (nonNull(task) && task.isRunning()) {
+            task.cancel(true);
         }
     }
 
@@ -113,7 +115,7 @@ public abstract class AbstractMediaController {
         currentTask.set(task);
         lockUI();
         
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
             progressBar.progressProperty().bind(task.progressProperty());
@@ -152,21 +154,21 @@ public abstract class AbstractMediaController {
     }
 
     private void unbindProgress() {
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.progressProperty().unbind();
         }
     }
 
     protected void handleTaskSuccess(Object result) {
         if (Boolean.FALSE.equals(result)) {
-            if (progressBar != null) {
+            if (nonNull(progressBar)) {
                 progressBar.setProgress(0);
             }
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", "The operation completed but did not produce the expected result. Please check the logs.");
             startSuccessTimer();
             return;
         }
-        if (labelSuccess != null) {
+        if (nonNull(labelSuccess)) {
             labelSuccess.setStyle("-fx-text-fill: #32CD32;");
             labelSuccess.setText("Operation successful!");
             labelSuccess.setVisible(true);
@@ -176,13 +178,13 @@ public abstract class AbstractMediaController {
     }
 
     protected void handleTaskCancelled() {
-        if (labelSuccess != null) {
+        if (nonNull(labelSuccess)) {
             labelSuccess.setStyle("-fx-text-fill: orange;");
             labelSuccess.setText("Operation cancelled.");
             labelSuccess.setVisible(true);
             labelSuccess.setManaged(true);
         }
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setProgress(0);
         }
         startSuccessTimer();
@@ -190,13 +192,13 @@ public abstract class AbstractMediaController {
 
     protected void handleTaskFailure(@NonNull Throwable exception) {
         Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", exception.getMessage());
-        if (labelSuccess != null) {
+        if (nonNull(labelSuccess)) {
             labelSuccess.setStyle("-fx-text-fill: RED;");
             labelSuccess.setText("Operation failed.");
             labelSuccess.setVisible(true);
             labelSuccess.setManaged(true);
         }
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setProgress(0);
         }
         startSuccessTimer();
@@ -204,7 +206,7 @@ public abstract class AbstractMediaController {
 
     protected void startSuccessTimer() {
         MediaProperties props = getProperties();
-        if (props != null && props.getHideSuccessMessageTimer() != null) {
+        if (nonNull(props) && nonNull(props.getHideSuccessMessageTimer())) {
             props.getHideSuccessMessageTimer().playFromStart();
         }
     }
@@ -233,12 +235,12 @@ public abstract class AbstractMediaController {
     }
 
     public static void showProgressBar(ProgressBar bar, PauseTransition timer) {
-        if (bar != null) {
+        if (nonNull(bar)) {
             bar.setVisible(true);
             bar.setManaged(true);
             bar.setProgress(1.0);
         }
-        if (timer != null) timer.playFromStart();
+        if (nonNull(timer)) timer.playFromStart();
     }
 
     public static Stage getStage(@NonNull Control control) {
@@ -249,11 +251,11 @@ public abstract class AbstractMediaController {
     public static void reset(@NonNull MediaProperties properties, @NonNull ResetContext ctx, String defaultText) {
         properties.reset();
 
-        if (ctx.labelSelectFileName() != null) {
+        if (nonNull(ctx.labelSelectFileName())) {
             ctx.labelSelectFileName().setText(defaultText != null ? defaultText : "Selected file: none");
         }
 
-        if (ctx.labelSuccess() != null) {
+        if (nonNull(ctx.labelSuccess())) {
             ctx.labelSuccess().setVisible(true);
             ctx.labelSuccess().setText("");
             hideSuccessMessage(ctx.labelSuccess(), ctx.progressBar(), properties.getHideSuccessMessageTimer(), ctx.managed());
@@ -262,10 +264,10 @@ public abstract class AbstractMediaController {
 
         resetDropZone(ctx.textDragZone(), ctx.dropZone(), ctx.textForDragZone());
 
-        if (ctx.imageViewPreview() != null) {
+        if (nonNull(ctx.imageViewPreview())) {
             ctx.imageViewPreview().setImage(null);
         }
-        if (ctx.labelPreviewPlaceholder() != null) {
+        if (nonNull(ctx.labelPreviewPlaceholder())) {
             ctx.labelPreviewPlaceholder().setVisible(true);
         }
     }
@@ -278,7 +280,7 @@ public abstract class AbstractMediaController {
     }
 
     public static void bindingImageViewToPreviewContainer(ImageView imageViewPreview, StackPane previewContainer) {
-        if(imageViewPreview != null && previewContainer != null) {
+        if(nonNull(imageViewPreview) && nonNull(previewContainer)) {
             if (!imageViewPreview.fitWidthProperty().isBound()) {
                 imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));
             }
@@ -289,7 +291,7 @@ public abstract class AbstractMediaController {
     }
 
     protected void setImagePreview(BufferedImage image, ImageView imageViewPreview) {
-        if (image != null && imageViewPreview != null) {
+        if (nonNull(image) && nonNull(imageViewPreview)) {
             imageViewPreview.setImage(SwingFXUtils.toFXImage(image, null));
         }
     }

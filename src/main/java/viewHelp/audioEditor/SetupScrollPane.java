@@ -16,7 +16,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class SetupScrollPane {
+    private SetupScrollPane() {
+        /* This utility class should not be instantiated */
+    }
+
     public static void setupHorizontalDragScroll(ScrollPane scrollPane) {
         var dragState = new Object() {
             double startX;
@@ -47,7 +54,7 @@ public class SetupScrollPane {
                 return;
             }
             Node content = scrollPane.getContent();
-            if (content == null) {
+            if (isNull(content)) {
                 return;
             }
             double scrollableWidth = Math.max(content.getLayoutBounds().getWidth() - scrollPane.getViewportBounds().getWidth(), 1);
@@ -143,7 +150,7 @@ public class SetupScrollPane {
                     break;
                 }
             }
-            if (internalBar == null) {
+            if (isNull(internalBar)) {
                 return;
             }
 
@@ -183,22 +190,22 @@ public class SetupScrollPane {
         InvalidationListener onItemsChange = _ -> Platform.runLater(sync);
 
         tableView.skinProperty().addListener((_, _, newSkin) -> {
-            if (newSkin != null) {
+            if (nonNull(newSkin)) {
                 Platform.runLater(sync);
             }
         });
 
         tableView.itemsProperty().addListener((_, oldItems, newItems) -> {
-            if (oldItems != null) {
+            if (nonNull(oldItems)) {
                 oldItems.removeListener(onItemsChange);
             }
-            if (newItems != null) {
+            if (nonNull(newItems)) {
                 newItems.addListener(onItemsChange);
             }
             Platform.runLater(sync);
         });
 
-        if (tableView.getItems() != null) {
+        if (nonNull(tableView.getItems())) {
             tableView.getItems().addListener(onItemsChange);
         }
 
@@ -220,7 +227,7 @@ public class SetupScrollPane {
 
         int neededNulls = Math.max(0, rowCount - (int) visibleRealCount);
 
-        while (!modifiableList.isEmpty() && modifiableList.getLast() == null) {
+        while (!modifiableList.isEmpty() && isNull(modifiableList.getLast())) {
             modifiableList.removeLast();
         }
         

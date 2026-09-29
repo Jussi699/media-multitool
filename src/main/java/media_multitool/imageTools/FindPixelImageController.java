@@ -31,6 +31,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -41,12 +43,10 @@ public class FindPixelImageController extends AbstractMediaController {
     @FXML private Slider imageScaleSlider;
     @FXML private ScrollPane scrollPaneImage;
     @FXML private BufferedImage originalBufferedImage;
-
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnSaveRGB, btnSaveHex;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, labelHex;
     @FXML private ImageView imageViewPreview;
-
     @FXML private TextField textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB;
     @FXML private Rectangle colorPreview;
 
@@ -60,7 +60,8 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnSubmitAndCopy, btnReset);
+        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX,
+                textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -69,7 +70,7 @@ public class FindPixelImageController extends AbstractMediaController {
 
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
-        if(imageViewPreview != null) {
+        if(nonNull(imageViewPreview)) {
             imageViewPreview.setOnMouseClicked(this::handlePixelSelection);
             ImageZoomHelper.applyZoomEffect(imageViewPreview, previewContainer);
         }
@@ -158,7 +159,7 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(originalBufferedImage)) {
             return;
         }
 
@@ -238,11 +239,11 @@ public class FindPixelImageController extends AbstractMediaController {
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
         textDragZone.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage != null) {
-                    if (labelPreviewPlaceholder != null) {
+                if (nonNull(originalBufferedImage)) {
+                    if (nonNull(labelPreviewPlaceholder)) {
                         labelPreviewPlaceholder.setVisible(false);
                     }
                     zoomControlHelper.resetZoom();
@@ -254,7 +255,7 @@ public class FindPixelImageController extends AbstractMediaController {
             }
         }
 
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

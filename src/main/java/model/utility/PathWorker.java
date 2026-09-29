@@ -11,9 +11,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 public class PathWorker {
+    private PathWorker() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final String KEY_INPUT_PATH = "last_input_path";
     private static final Preferences prefs = Preferences.userNodeForPackage(PathWorker.class);
 
@@ -42,9 +47,9 @@ public class PathWorker {
     }
 
     public static void saveInputPath(File file) {
-        if (file != null) {
+        if (nonNull(file)) {
             File dir = file.isDirectory() ? file : file.getParentFile();
-            if (dir != null && dir.exists()) {
+            if (nonNull(dir) && dir.exists()) {
                 prefs.put(KEY_INPUT_PATH, dir.getAbsolutePath());
             }
         }
@@ -79,7 +84,7 @@ public class PathWorker {
     }
 
     public static Optional<File> resolveInitialDirectory(File directory) {
-        if (directory != null && directory.exists() && directory.isDirectory()) {
+        if (nonNull(directory) && directory.exists() && directory.isDirectory()) {
             return Optional.of(directory);
         }
         return Optional.empty();

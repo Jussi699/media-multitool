@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -69,7 +71,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
             progressBar.setProgress(0);
@@ -95,7 +97,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     @FXML
     private void onActionClickToggleBtnFormat() {
         ToggleButton selectedBtn = (ToggleButton) toggleGroup.getSelectedToggle();
-        if (selectedBtn != null) {
+        if (nonNull(selectedBtn)) {
             String format = selectedBtn.getText().replace("to ", "").toLowerCase();
             imageProperties.setTypeImage(format);
         }
@@ -128,7 +130,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         btnAllImageToJpeg.setDisable(true);
         btnAllImageToPng.setDisable(true);
         btnSubmit.setDisable(true);
-        if (btnCancel != null) btnCancel.setDisable(false);
+        btnCancel.setDisable(false);
         listToggleBtn.forEach(tb -> tb.setDisable(true));
     }
 
@@ -140,7 +142,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         btnAllImageToJpeg.setDisable(false);
         btnAllImageToPng.setDisable(false);
         btnSubmit.setDisable(false);
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
         listToggleBtn.forEach(tb -> tb.setDisable(false));
         cancelFlag.set(false);
     }
@@ -148,13 +150,13 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     @Override
     protected void disableControls() {
         listControls.forEach(c -> c.setDisable(true));
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
     }
 
     @FXML
@@ -176,7 +178,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
             return;
         }
 
-        if (imageProperties.getTypeImage() == null || imageProperties.getTypeImage().isEmpty()) {
+        if (isNull(imageProperties.getTypeImage()) || imageProperties.getTypeImage().isEmpty()) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please select output format", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -195,7 +197,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                if (currentDoc == null) {
+                if (isNull(currentDoc)) {
                     throw new IOException("PDF document not loaded");
                 }
                 if (isCancelled() || cancelFlag.get()) {
@@ -245,7 +247,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         return new Task<>() {
             @Override
             protected File call() throws Exception {
-                if (currentDoc == null) {
+                if (isNull(currentDoc)) {
                     throw new IOException("PDF document not loaded");
                 }
 
@@ -330,7 +332,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     }
 
     private void updatePreview() {
-        if (currentDoc != null) {
+        if (nonNull(currentDoc)) {
             try {
                 PDFRenderer renderer = new PDFRenderer(currentDoc);
                 BufferedImage bim = renderer.renderImageWithDPI(0, 72);
@@ -397,7 +399,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         listToggleBtn.forEach(tb -> tb.setDisable(true));
 
         closeCurrentDoc();
-        if (imageViewPdf != null) {
+        if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
 
@@ -410,7 +412,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     }
 
     private void closeCurrentDoc() {
-        if (currentDoc != null) {
+        if (nonNull(currentDoc)) {
             try {
                 currentDoc.close();
             } catch (IOException e) {

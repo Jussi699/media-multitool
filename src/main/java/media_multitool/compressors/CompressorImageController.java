@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
+import static model.utility.TemplateCheck.*;
 import static viewHelp.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
@@ -101,12 +104,12 @@ public class CompressorImageController extends AbstractMediaController {
 
     @Override
     protected void disableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(true));
+        listControls.forEach(c -> c.setDisable(true));
     }
 
     @Override
     protected void enableControls() {
-        if (listControls != null) listControls.forEach(c -> c.setDisable(false));
+        listControls.forEach(c -> c.setDisable(false));
     }
 
     @Override
@@ -160,12 +163,12 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
     private boolean checks(boolean isSvg, boolean qualityRequired) {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
             return false;
         }
 
-        if (imageProperties.getOutput() == null) {
+        if (isNull(imageProperties.getOutput())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Output missing!", "Select output path first.");
             return false;
         }
@@ -238,7 +241,7 @@ public class CompressorImageController extends AbstractMediaController {
     @FXML
     public void onChoiceScaleImage() {
         Item selectedItem = comboBoxScaleImage.getValue();
-        imageProperties.setScale((selectedItem != null) ? selectedItem.id() : -1);
+        imageProperties.setScale((nonNull(selectedItem)) ? selectedItem.id() : -1);
         ErrorLogger.info("User select scale: " + imageProperties.getScale());
         updateEstimatedSize();
     }
@@ -246,7 +249,7 @@ public class CompressorImageController extends AbstractMediaController {
     @FXML
     public void onChoiceOutputQuality() {
         Item selectedItem = comboBoxOutputQuality.getValue();
-        imageProperties.setQuality((selectedItem != null) ? selectedItem.id() : -1);
+        imageProperties.setQuality(nonNull(selectedItem) ? selectedItem.id() : -1);
         ErrorLogger.info("User select quality: " + imageProperties.getQuality());
         updateEstimatedSize();
     }
@@ -272,12 +275,22 @@ public class CompressorImageController extends AbstractMediaController {
 
 
     private void loadFile(File selectedFile) {
+        if(!isValidFile(selectedFile)) {
+            return;
+        }
+
+        ErrorLogger.info("User selected file: " + selectedFile.getAbsolutePath());
+
+        if(!canRead(selectedFile)) {
+            return;
+        }
+
         enableControls();
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFile.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 Image image = new Image(selectedFile.toURI().toString());
                 imageViewPreview.setImage(image);
@@ -298,12 +311,12 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
     private void updateEstimatedSize() {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             return;
         }
 
         try {
-            if (imageProperties.getHideSuccessMessageTimer() != null) {
+            if (nonNull(imageProperties.getHideSuccessMessageTimer())) {
                 imageProperties.getHideSuccessMessageTimer().stop();
             }
         } catch (Exception _) {}
@@ -317,7 +330,7 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
     private double calculateEstimatedSizeMB() {
-        if (imageProperties.getImage() == null) return 0;
+        if (isNull(imageProperties.getImage())) return 0;
 
         float scale = imageProperties.getScale();
         float quality = imageProperties.getQuality();

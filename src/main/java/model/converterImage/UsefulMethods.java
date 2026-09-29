@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+
 public class UsefulMethods {
     public static Optional<BufferedImage> readPreviewImage(File imageFile) throws IOException {
         if ("ico".equals(getFileExtension(imageFile))) {
@@ -51,7 +53,7 @@ public class UsefulMethods {
     }
 
     public static String normalizeFormat(String format) {
-        if (format == null) {
+        if (isNull(format)) {
             return "";
         }
 

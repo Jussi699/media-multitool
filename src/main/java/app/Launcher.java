@@ -16,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Objects.nonNull;
+
 public class Launcher {
     @Getter private static boolean canWriteInLog = true;
 
@@ -40,7 +42,7 @@ public class Launcher {
 
         Exception writeError = checkLogWritable(logDirFile);
 
-        if (writeError != null) {
+        if (nonNull(writeError)) {
             canWriteInLog = false;
             File fallbackLogFile = new File(logDirFile, "logback.log");
             try (PrintWriter writer = new PrintWriter(new FileWriter(fallbackLogFile, true))) {
@@ -54,7 +56,7 @@ public class Launcher {
         }
 
         String ffmpegPath = System.getenv("FFMPEG_PATH");
-        if (ffmpegPath != null && !ffmpegPath.isEmpty()) {
+        if (nonNull(ffmpegPath) && !ffmpegPath.isEmpty()) {
             System.setProperty("jave.ffmpeg.executable", ffmpegPath);
         }
 

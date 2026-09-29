@@ -24,8 +24,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
+import static model.utility.TemplateCheck.isValidFile;
+import static model.utility.TemplateCheck.canRead;
+import static java.util.Objects.isNull;
 import static viewHelp.Message.*;
 import static viewHelp.Utility.getMetadata;
 
@@ -124,7 +128,7 @@ public class CompressorVideoController extends AbstractMediaController {
 
         // WebM (libvpx) does not support GPU acceleration — NVENC cannot encode VP8/VP9.
         // Notify the user so the checkbox is not misleading.
-        if (chkUseGPU.isSelected() && videoProperties.getSrcFile() != null) {
+        if (chkUseGPU.isSelected() && nonNull(videoProperties.getSrcFile())) {
             String fmt = model.utility.DetermineType.determineFormat(videoProperties.getSrcFile()).orElse("");
             if ("webm".equals(fmt)) {
                 Alerts.alertDialog(Alert.AlertType.INFORMATION,
@@ -139,17 +143,17 @@ public class CompressorVideoController extends AbstractMediaController {
     @FXML
     private void onAudioCompressionSelected() {
         // Recreate presets when audio compression setting changes
-        if (videoProperties.getSrcFile() != null && adaptivePresets != null) {
+        if (nonNull(videoProperties.getSrcFile()) && nonNull(adaptivePresets)) {
             adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
 
-            if (adaptivePresets != null && adaptivePresets.length >= 3 && selectedPreset != null) {
+            if (nonNull(adaptivePresets) && adaptivePresets.length >= 3 && nonNull(selectedPreset)) {
                 ToggleButton selected = (ToggleButton) toggleGroup.getSelectedToggle();
                 if      (selected == btnBasicCompress)   {selectedPreset = adaptivePresets[0];}
                 else if (selected == btnStrongCompress)  {selectedPreset = adaptivePresets[1];}
                 else if (selected == btnSuperCompress)   {selectedPreset = adaptivePresets[2];}
 
                 updateEstimatedSize();
-            } else if (adaptivePresets == null) {
+            } else if (isNull(adaptivePresets)) {
                 selectedPreset = null;
                 updateEstimatedSize();
             }
@@ -163,13 +167,13 @@ public class CompressorVideoController extends AbstractMediaController {
             return false;
         }
 
-        if (videoProperties.getSrcFile() == null || adaptivePresets == null || selectedPreset == null) {
+        if (isNull(videoProperties.getSrcFile()) || isNull(adaptivePresets) || isNull(selectedPreset)) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Invalid selection!", "Invalid selection!",
                     "Please select a video file and a preset.");
             return false;
         }
 
-        if (videoProperties.getOutput() == null) {
+        if (isNull(videoProperties.getOutput())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Output directory not selected!", "Output directory not selected!",
                     "Please select an output directory for the compressed video.");
             return false;
@@ -198,9 +202,9 @@ public class CompressorVideoController extends AbstractMediaController {
         }
 
         Compressor compressor = new Compressor();
-        videoProperties.setUseGPU(chkUseGPU != null && chkUseGPU.isSelected());
+        videoProperties.setUseGPU(nonNull(chkUseGPU) && chkUseGPU.isSelected());
         compressor.setUseGPU(videoProperties.isUseGPU());
-        compressor.setCompressAudio(chkCompressAudio != null && chkCompressAudio.isSelected());
+        compressor.setCompressAudio(nonNull(chkCompressAudio) && chkCompressAudio.isSelected());
         
         currentTask = new CompressVideoTask(compressor, videoProperties.getSrcFile(), videoProperties.getOutput(), selectedPreset);
         
@@ -215,7 +219,7 @@ public class CompressorVideoController extends AbstractMediaController {
         );
         reset(videoProperties, ctx, "Select video file: none");
 
-        if (currentTask != null) currentTask.cancelCompress();
+        if (nonNull(currentTask)) currentTask.cancelCompress();
 
         adaptivePresets = null;
         selectedPreset = null;
@@ -236,7 +240,7 @@ public class CompressorVideoController extends AbstractMediaController {
         Object source = actionEvent.getSource();
         ToggleButton tb = (ToggleButton) source;
 
-        if (adaptivePresets == null || adaptivePresets.length < 3) {
+        if (isNull(adaptivePresets) || adaptivePresets.length < 3) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "No presets available!", "No presets available!",
                     "Please load a video file first to create presets.");
             tb.setSelected(false);
@@ -261,13 +265,13 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     private void updateEstimatedSize() {
-        if (selectedPreset == null || durationMillis <= 0 || videoProperties.getSrcFile() == null) {
+        if (isNull(selectedPreset) || durationMillis <= 0 || isNull(videoProperties.getSrcFile())) {
             labelSuccess.setVisible(false);
             return;
         }
 
         try {
-            if (videoProperties.getHideSuccessMessageTimer() != null) {
+            if (nonNull(videoProperties.getHideSuccessMessageTimer())) {
                 videoProperties.getHideSuccessMessageTimer().stop();
             }
         } catch (Exception _) {}
@@ -281,10 +285,10 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     private double calculateEstimatedSizeMB() {
-        if (selectedPreset == null || durationMillis <= 0) return 0;
+        if (isNull(selectedPreset) || durationMillis <= 0) return 0;
 
         int vBitrate = selectedPreset.video().getBitRate().orElse(0);
-        int aBitrate = (hasAudio && selectedPreset.audio() != null) ? selectedPreset.audio().getBitRate().orElse(0) : 0;
+        int aBitrate = (hasAudio && nonNull(selectedPreset.audio())) ? selectedPreset.audio().getBitRate().orElse(0) : 0;
 
         double totalBitrateBps = vBitrate + aBitrate;
         double durationSeconds = durationMillis / 1000.0;
@@ -324,6 +328,16 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if(!isValidFile(selectedFile)) {
+            return;
+        }
+
+        ErrorLogger.info("User selected file: " + selectedFile.getAbsolutePath());
+
+        if(!canRead(selectedFile)) {
+            return;
+        }
+
         enableControls();
         videoProperties.setSrcFile(selectedFile);
         selectedPreset = null;
@@ -333,7 +347,7 @@ public class CompressorVideoController extends AbstractMediaController {
         durationMillis = 0;
 
         adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
-        if (adaptivePresets != null) {
+        if (nonNull(adaptivePresets)) {
             ErrorLogger.info("Adaptive presets created successfully for: " + videoProperties.getSrcFile().getName());
         } else {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Preset Creation Error",
@@ -358,14 +372,14 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     private void updateLabelFromMetadata(ws.schild.jave.info.MultimediaInfo info) {
-        if (info == null || videoProperties.getSrcFile() == null) {
+        if (isNull(info) || isNull(videoProperties.getSrcFile())) {
             durationMillis = 0;
             hasAudio = false;
             return;
         }
 
         durationMillis = info.getDuration();
-        hasAudio = info.getAudio() != null;
+        hasAudio = nonNull(info.getAudio());
         String res = parseResolution(info).orElse("N/A");
         int f = parseFps(info);
         int vbr = parseVideoBitrate(info);
@@ -391,6 +405,6 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     private void onActionCancelOperation() {
-        if (currentTask != null) currentTask.cancelCompress();
+        if (nonNull(currentTask)) currentTask.cancelCompress();
     }
 }

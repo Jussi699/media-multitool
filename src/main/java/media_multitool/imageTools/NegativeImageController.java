@@ -24,6 +24,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -188,7 +190,7 @@ public class NegativeImageController extends AbstractMediaController {
     }
 
     private void updatePreview() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -204,11 +206,11 @@ public class NegativeImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFileName.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = javax.imageio.ImageIO.read(selectedFile);
                 updatePreview();
-                if (currentBufferedImage != null) {
+                if (nonNull(currentBufferedImage)) {
                     labelPreviewPlaceholder.setVisible(false);
                 }
             } catch (Exception e) {

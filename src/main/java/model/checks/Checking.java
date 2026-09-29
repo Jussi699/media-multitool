@@ -9,9 +9,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 public class Checking {
     public static boolean checkImageAndOutputOnNull(ImageProperties imageProperties) {
-        if (imageProperties.getImage() == null || imageProperties.getOutput() == null) {
+        if (isNull(imageProperties.getImage()) || isNull(imageProperties.getOutput())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!", "Select image first.");
             return true;
         }
@@ -19,7 +21,7 @@ public class Checking {
     }
 
     public static boolean checkImageAndOutputOnNull(ImageProperties props, BufferedImage image) {
-        return image == null || checkImageAndOutputOnNull(props);
+        return isNull(image) || checkImageAndOutputOnNull(props);
     }
 
     public static boolean isSupportedMediaFile(File file, List<String> list) {

@@ -29,6 +29,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -61,7 +63,7 @@ public class ColorizeImageController extends AbstractMediaController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(
-                () -> currentBufferedImage == null ? null
+                () -> isNull(currentBufferedImage) ? null
                         : com.imagetools.ImageTools.applyColorizeEffect(currentBufferedImage, selectedColorFX),
                 "Colorized"
         );
@@ -138,7 +140,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void submitColorizeAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(originalBufferedImage)) {
             return;
         }
 
@@ -216,11 +218,11 @@ public class ColorizeImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
                 currentBufferedImage = originalBufferedImage;
-                if (currentBufferedImage != null) {
+                if (nonNull(currentBufferedImage)) {
                     setImagePreview(currentBufferedImage, imageViewPreview);
                         labelPreviewPlaceholder.setVisible(false);
                 }
@@ -238,7 +240,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     @FXML
     public void handleColorChange() {
-        if (swingDialog == null) {
+        if (isNull(swingDialog)) {
             initSwingColorPicker();
             bindSwingDialogToStage();
         }
@@ -273,11 +275,11 @@ public class ColorizeImageController extends AbstractMediaController {
 
     private void bindSwingDialogToStage() {
         Platform.runLater(() -> {
-            if (btnColorPicker.getScene() != null && btnColorPicker.getScene().getWindow() != null) {
+            if (nonNull(btnColorPicker.getScene()) && nonNull(btnColorPicker.getScene().getWindow())) {
                 btnColorPicker.getScene().getWindow().addEventHandler(
                         javafx.stage.WindowEvent.WINDOW_HIDING,
                         _ -> {
-                            if (swingDialog != null) swingDialog.dispose();
+                            if (nonNull(swingDialog)) swingDialog.dispose();
                         }
                 );
             }
@@ -286,7 +288,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
     private void updateColorModel(java.awt.Color awtColor) {
         this.selectedColorFX = WorkColors.toFxColor(awtColor);
-        if (currentBufferedImage != null) {
+        if (nonNull(currentBufferedImage)) {
             previewContainer.setEffect(ImageTools.colorizeImage(currentBufferedImage, selectedColorFX));
         }
     }

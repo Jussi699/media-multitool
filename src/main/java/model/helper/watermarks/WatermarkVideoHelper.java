@@ -14,6 +14,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.LongConsumer;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkVideoHelper {
 
     /**
@@ -37,7 +40,7 @@ public class WatermarkVideoHelper {
 
             Frame frame = grabber.grabImage();
 
-            if (frame != null) {
+            if (nonNull(frame)) {
                 return Optional.of(converter.convert(frame));
             }
 
@@ -76,8 +79,8 @@ public class WatermarkVideoHelper {
             ErrorLogger.log(2002, ErrorLogger.Level.ERROR, "Failed to apply watermark to video", e);
             return false;
         } finally {
-            try { if (recorder != null) recorder.stop(); } catch (Exception ignored) {}
-            try { if (grabber  != null) grabber.stop();  } catch (Exception ignored) {}
+            try { if (nonNull(recorder)) recorder.stop(); } catch (Exception _) {}
+            try { if (nonNull(grabber)) grabber.stop();   } catch (Exception _) {}
         }
     }
 
@@ -105,7 +108,7 @@ public class WatermarkVideoHelper {
         if (audioBitrate > 0) recorder.setAudioBitrate((int) audioBitrate);
 
         String chosenEncoder = tryConfigureGpuEncoder(recorder);
-        if (chosenEncoder == null) {
+        if (isNull(chosenEncoder)) {
             ErrorLogger.info("No GPU encoder available — using software h264 (preset=fast).");
             recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
             recorder.setVideoOption("crf", "18");
@@ -132,17 +135,17 @@ public class WatermarkVideoHelper {
                                          AtomicBoolean cancelFlag) throws Exception {
         Frame frame;
         long frameIndex = 0;
-        while ((frame = grabber.grab()) != null) {
-            if (cancelFlag != null && cancelFlag.get()) {
+        while (nonNull((frame = grabber.grab()))) {
+            if (nonNull(cancelFlag) && cancelFlag.get()) {
                 ErrorLogger.info("Watermark processing cancelled by user.");
                 return false;
             }
-            if (frame.image != null) {
+            if (nonNull(frame.image)) {
                 BufferedImage bgrFrame = converter.getBufferedImage(frame);
                 applyOverlayToBGR(bgrFrame, overlayCache);
                 recorder.record(converter.getFrame(bgrFrame));
                 frameIndex++;
-                if (progressCallback != null && totalFrames > 0) {
+                if (nonNull(progressCallback) && totalFrames > 0) {
                     progressCallback.accept(frameIndex * 100 / totalFrames);
                 }
             } else {
@@ -179,7 +182,7 @@ public class WatermarkVideoHelper {
                     }
                 }
                 return encoderName;
-            } catch (Exception ignored) {
+            } catch (Exception _) {
                 // encoder is not available on this system — try next
             }
         }
@@ -191,7 +194,7 @@ public class WatermarkVideoHelper {
      * without converting its pixel format (avoids the red-channel swap bug).
      */
     private static void applyOverlayToBGR(BufferedImage bgrFrame, WatermarkOverlayCache cache) {
-        if (cache == null || cache.overlay() == null) return;
+        if (isNull(cache) || isNull(cache.overlay())) return;
         Graphics2D g2d = bgrFrame.createGraphics();
         try {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -202,7 +205,7 @@ public class WatermarkVideoHelper {
     }
 
     public static void deleteFile(File path) {
-        if (path == null) return;
+        if (isNull(path)) return;
 
         Thread.ofVirtual().start(() -> {
             for (int i = 0; i < 5; i++) {
@@ -211,7 +214,7 @@ public class WatermarkVideoHelper {
                 if (!path.exists()) return;
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException _) {
                     Thread.currentThread().interrupt();
                     return;
                 }

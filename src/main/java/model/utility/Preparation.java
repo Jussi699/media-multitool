@@ -5,7 +5,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Objects.nonNull;
+
 public class Preparation {
+    private Preparation() {
+        /* This utility class should not be instantiated */
+    }
+
     public static List<File> getFilesFromFolder(File path, List<String> filter) {
 
         File[] matches = path.listFiles((_, name) -> {
@@ -17,7 +23,7 @@ public class Preparation {
            return false;
         });
 
-        if(matches != null){
+        if(nonNull(matches)){
             return new ArrayList<>(Arrays.asList(matches));
         }
 

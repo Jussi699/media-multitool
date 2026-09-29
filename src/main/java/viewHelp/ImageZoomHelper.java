@@ -12,12 +12,19 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class ImageZoomHelper {
+    private ImageZoomHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final double ZOOM_FACTOR = 16.0;
     private static final double MAGNIFIER_RADIUS = 86.0;
 
     public static void applyZoomEffect(ImageView imageView, StackPane container) {
-        if (imageView == null || container == null) return;
+        if (isNull(imageView) || isNull(container)) return;
 
         imageView.setCursor(Cursor.CROSSHAIR);
 
@@ -43,7 +50,7 @@ public class ImageZoomHelper {
         container.getChildren().add(magnifierWrapper);
 
         imageView.setOnMouseEntered(event -> {
-            if (imageView.getImage() != null) {
+            if (nonNull(imageView.getImage())) {
                 magnifierWrapper.setVisible(true);
                 updateMagnifier(event, imageView, magnifierCanvas, magnifierWrapper, container);
             }
@@ -52,7 +59,7 @@ public class ImageZoomHelper {
         imageView.setOnMouseExited(_ -> magnifierWrapper.setVisible(false));
 
         imageView.setOnMouseMoved(event -> {
-            if (imageView.getImage() != null) {
+            if (nonNull(imageView.getImage())) {
                 if (!magnifierWrapper.isVisible()) {
                     magnifierWrapper.setVisible(true);
                 }
@@ -68,7 +75,7 @@ public class ImageZoomHelper {
         double y = event.getY();
 
         Image originalImage = imageView.getImage();
-        if (originalImage == null) return;
+        if (isNull(originalImage)) return;
 
         double imageWidth = originalImage.getWidth();
         double imageHeight = originalImage.getHeight();
@@ -110,7 +117,7 @@ public class ImageZoomHelper {
         int imgH = (int) imageHeight;
 
         PixelReader reader = originalImage.getPixelReader();
-        if (reader != null) {
+        if (nonNull(reader)) {
             GraphicsContext gc = magnifierCanvas.getGraphicsContext2D();
             gc.clearRect(0, 0, MAGNIFIER_RADIUS * 2, MAGNIFIER_RADIUS * 2);
 

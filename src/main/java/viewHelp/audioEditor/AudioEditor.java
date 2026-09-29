@@ -12,15 +12,22 @@ import model.properties.VideoAndAudioProperties;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class AudioEditor {
+    private AudioEditor() {
+        /* This utility class should not be instantiated */
+    }
+
     public static void updatePreviewWithPath(VideoAndAudioProperties audioProperties, ImageView imageView) {
-        if (audioProperties.getPathToImage() != null) {
+        if (nonNull(audioProperties.getPathToImage())) {
             setPreview(new Image(audioProperties.getPathToImage().toURI().toString()), imageView);
         }
     }
 
     public static void setPreview(Image image, ImageView imageViewPreview) {
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             imageViewPreview.setImage(image);
         }
     }
@@ -36,13 +43,13 @@ public class AudioEditor {
     }
 
     public static void updatePreview(VideoAndAudioProperties audioProperties, ImageView imageViewPreview) {
-        if (audioProperties.getSrcFile() != null) {
+        if (nonNull(audioProperties.getSrcFile())) {
             AudioPreprocessing.getIconMp3(audioProperties.getSrcFile()).ifPresent(file -> AudioEditor.setPreview(file, imageViewPreview));
         }
     }
 
     public static void setGenreValue(ComboBox<String> genreComboBox, String genre) {
-        if (genre == null || genre.isEmpty()) {
+        if (isNull(genre) || genre.isEmpty()) {
             genreComboBox.setValue(null);
             genreComboBox.getEditor().clear();
             return;

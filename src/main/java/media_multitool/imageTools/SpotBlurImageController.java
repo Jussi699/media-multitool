@@ -58,8 +58,7 @@ public class SpotBlurImageController extends AbstractMediaController {
     @FXML private Pane blurOverlay;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit, btnCancel;
     @FXML private Button btnAddRect, btnAddOval, btnUndo;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
-    @FXML private Label labelBlurIntensity;
+    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, labelBlurIntensity;
     @FXML private ImageView imageViewPreview;
 
     private Task<?> currentTask;
@@ -88,8 +87,8 @@ public class SpotBlurImageController extends AbstractMediaController {
         imageProperties.setOutput(getSavedPath());
 
         sliderBlurIntensity.setMin(0);
-        sliderBlurIntensity.setValue(5);
-        sliderBlurIntensity.setMax(100);
+        sliderBlurIntensity.setValue(1);
+        sliderBlurIntensity.setMax(20);
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -100,7 +99,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
-        SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromNumbers(sliderBlurIntensity, labelBlurIntensity);
+        SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderBlurIntensity, labelBlurIntensity, 20);
 
         sliderBlurIntensity.setOnMouseReleased(_ -> {
             if (!blurShapes.isEmpty()) {
@@ -734,12 +733,8 @@ public class SpotBlurImageController extends AbstractMediaController {
         currentShape = null;
         selectedShape = null;
         blurOverlay.getChildren().clear();
-
-        if (sliderBlurIntensity != null) {
-            sliderBlurIntensity.setValue(5);
-            labelBlurIntensity.setText("5%");
-        }
-
+        sliderBlurIntensity.setValue(1);
+        labelBlurIntensity.setText("100%");
         selectedShapeType = ShapeType.RECTANGLE;
         btnAddRect.setStyle("-fx-background-color: #32CD32;");
         btnAddOval.setStyle("");

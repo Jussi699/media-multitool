@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Tooltips {
+    private Tooltips() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final Map<Node, Tooltip> activeTooltips = new HashMap<>();
     public static void setupTooltip(MouseEvent event, String text, int showSeconds) {
         Node source = (Node) event.getSource();

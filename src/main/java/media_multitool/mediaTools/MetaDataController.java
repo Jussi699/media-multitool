@@ -32,6 +32,8 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Cells.setCellFactoryTableColumn;
 import static viewHelp.Message.setupClearMessageTimer;
@@ -109,7 +111,7 @@ public class MetaDataController extends AbstractMediaController {
         });
 
         tableViewMetadata.skinProperty().addListener((_, _, newSkin) -> {
-            if (newSkin != null) {
+            if (nonNull(newSkin)) {
                 Platform.runLater(() -> {
                     setupExternalVerticalScrollBar();
                     attachScrollBarListener();
@@ -119,7 +121,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     private void setupExternalVerticalScrollBar() {
-        if (metadataVerticalScrollBar == null || tableViewMetadata == null) {
+        if (isNull(metadataVerticalScrollBar) || isNull(tableViewMetadata)) {
             return;
         }
 
@@ -131,7 +133,7 @@ public class MetaDataController extends AbstractMediaController {
                 break;
             }
         }
-        if (currentInternalBar == null) {
+        if (isNull(currentInternalBar)) {
             return;
         }
 
@@ -143,7 +145,7 @@ public class MetaDataController extends AbstractMediaController {
         currentInternalBar.setMaxWidth(0);
 
         if (internalMetadataScrollBar != currentInternalBar) {
-            if (internalMetadataScrollBar != null) {
+            if (nonNull(internalMetadataScrollBar)) {
                 metadataVerticalScrollBar.minProperty().unbind();
                 metadataVerticalScrollBar.maxProperty().unbind();
                 metadataVerticalScrollBar.visibleAmountProperty().unbind();
@@ -174,7 +176,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     private void updateExternalVerticalScrollBarVisibility() {
-        if (metadataVerticalScrollBar == null || internalMetadataScrollBar == null) {
+        if (isNull(metadataVerticalScrollBar) || isNull(internalMetadataScrollBar)) {
             return;
         }
 
@@ -191,7 +193,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     private void attachScrollBarListener() {
-        if (tableViewMetadata == null) return;
+        if (isNull(tableViewMetadata)) return;
         for (Node node : tableViewMetadata.lookupAll(".scroll-bar")) {
             if (node instanceof ScrollBar scrollBar && scrollBar.getOrientation() == Orientation.VERTICAL) {
                 scrollBar.visibleProperty().addListener((_, _, _) -> alignTableColumns());
@@ -202,16 +204,16 @@ public class MetaDataController extends AbstractMediaController {
 
     private void alignTableColumns() {
         Platform.runLater(() -> Platform.runLater(() -> {
-            if (tableViewMetadata == null) return;
+            if (isNull(tableViewMetadata)) return;
             setupExternalVerticalScrollBar();
             updateExternalVerticalScrollBarVisibility();
             var policy = tableViewMetadata.getColumnResizePolicy();
-            if (policy != null) {
+            if (nonNull(policy)) {
                 policy.call(new TableView.ResizeFeatures<>(tableViewMetadata, null, 0.0));
             }
             tableViewMetadata.requestLayout();
             Node headerRow = tableViewMetadata.lookup("TableHeaderRow");
-            if (headerRow != null) {
+            if (nonNull(headerRow)) {
                 requestLayoutRecursively(headerRow);
             }
         }));
@@ -232,7 +234,7 @@ public class MetaDataController extends AbstractMediaController {
         MenuItem copyValueItem = new MenuItem("Copy Value");
         copyValueItem.setOnAction(_ -> {
             MetadataEntry selected = tableViewMetadata.getSelectionModel().getSelectedItem();
-            if (selected != null) {
+            if (nonNull(selected)) {
                 copyToClipboard(selected.getValue());
                 showSuccessMessage("Value copied to clipboard!");
             }
@@ -241,7 +243,7 @@ public class MetaDataController extends AbstractMediaController {
         MenuItem copyKeyValueItem = new MenuItem("Copy Tag & Value");
         copyKeyValueItem.setOnAction(_ -> {
             MetadataEntry selected = tableViewMetadata.getSelectionModel().getSelectedItem();
-            if (selected != null) {
+            if (nonNull(selected)) {
                 copyToClipboard(selected.getKey() + ": " + selected.getValue());
                 showSuccessMessage("Tag & value copied to clipboard!");
             }
@@ -256,7 +258,7 @@ public class MetaDataController extends AbstractMediaController {
 
     private void setupSearchFilter() {
         txtSearch.textProperty().addListener((_, _, newVal) -> {
-            if (newVal == null || newVal.trim().isEmpty()) {
+            if (isNull(newVal) || newVal.trim().isEmpty()) {
                 filteredMetadataList.setPredicate(_ -> true);
             } else {
                 String lower = newVal.toLowerCase().trim();
@@ -287,7 +289,7 @@ public class MetaDataController extends AbstractMediaController {
 
     @FXML
     public void onActionCopyAll() {
-        if (metaDataProperties.getCurrentFile() == null || masterMetadataList.isEmpty()) {
+        if (isNull(metaDataProperties.getCurrentFile()) || masterMetadataList.isEmpty()) {
             return;
         }
 
@@ -301,7 +303,7 @@ public class MetaDataController extends AbstractMediaController {
         MetadataEntry selected = tableViewMetadata.getSelectionModel().getSelectedItem();
         File currentFile = metaDataProperties.getCurrentFile();
 
-        if (selected == null || currentFile == null) {
+        if (isNull(selected) || isNull(currentFile)) {
             Alerts.alertDialog(Alert.AlertType.INFORMATION, "Selection", "No tag selected",
                     "Please select a metadata tag from the table to delete.");
             return;
@@ -327,7 +329,7 @@ public class MetaDataController extends AbstractMediaController {
     @FXML
     public void onActionRemoveAllMetadata() {
         File currentFile = metaDataProperties.getCurrentFile();
-        if (currentFile == null) {
+        if (isNull(currentFile)) {
             return;
         }
 
@@ -348,7 +350,7 @@ public class MetaDataController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result) || result == null) {
+        if (Boolean.FALSE.equals(result) || isNull(result)) {
             return;
         }
         File outputFile = (File) result;
@@ -379,7 +381,7 @@ public class MetaDataController extends AbstractMediaController {
 
         masterMetadataList.clear();
         txtSearch.clear();
-        if (metadataVerticalScrollBar != null) {
+        if (nonNull(metadataVerticalScrollBar)) {
             metadataVerticalScrollBar.setVisible(false);
             metadataVerticalScrollBar.setManaged(false);
         }
@@ -388,7 +390,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        if (selectedFile == null || !selectedFile.exists()) {
+        if (isNull(selectedFile) || !selectedFile.exists()) {
             return;
         }
 
@@ -398,10 +400,10 @@ public class MetaDataController extends AbstractMediaController {
 
         labelSelectFile.setText("Selected: " + selectedFile.getName());
 
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + selectedFile.getName());
         }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
@@ -410,7 +412,7 @@ public class MetaDataController extends AbstractMediaController {
 
     private void reloadCurrentFileMetadata() {
         File current = metaDataProperties.getCurrentFile();
-        if (current == null) return;
+        if (isNull(current)) return;
 
         List<MetadataEntry> entries = MetadataHelper.extractMetadata(current);
         masterMetadataList.setAll(entries);
@@ -420,7 +422,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     private void copyToClipboard(String text) {
-        if (text == null) return;
+        if (isNull(text)) return;
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
         content.putString(text);

@@ -1,5 +1,6 @@
 package media_multitool;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -15,18 +16,20 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.function.IntConsumer;
 
+import static java.util.Objects.nonNull;
+
 public class ViewController {
 
-    @FXML private StackPane mediaTagEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage,
-            compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage,
-            negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage,
-            pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage,
-            compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage,
-            metaDataPage;
+    @FXML private StackPane mediaTagEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage, metaDataPage;
+    @FXML private StackPane compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage;
+    @FXML private StackPane negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage;
+    @FXML private StackPane pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage;
+    @FXML private StackPane compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage;
+
     @FXML private HomeViewController homeViewController;
 
-    @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
-            navCompressorImage, navCompressorVideo, navInfo, navMediaEditorTag, navCompressorPdf, navMetaData;
+    @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton;
+    @FXML private Button navCompressorImage, navCompressorVideo, navInfo, navMediaEditorTag, navCompressorPdf, navMetaData;
 
     @FXML private VBox imageToolsContent, pdfToolsContent, watermarkContent, mediaToolsContent;
     @FXML private ToggleButton btnConverters, btnCompressors, btnImageTools, btnPdfTools, btnWatermark, btnMediaTools;
@@ -42,7 +45,7 @@ public class ViewController {
         listSubBtn.addAll(List.of(navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
                 navCompressorImage, navCompressorVideo, navMediaEditorTag, navMetaData));
 
-        if (homeViewController != null) {
+        if (nonNull(homeViewController)) {
             homeViewController.setMainController(this);
         }
 
@@ -131,66 +134,69 @@ public class ViewController {
         }
     }
 
+    public void setActive(StackPane page, Button button) {
+        setActivePage(page, button);
+        if (nonNull(btnConverters) && nonNull(btnConverters.getToggleGroup())) {
+            btnConverters.getToggleGroup().selectToggle(null);
+        }
+    }
+
+    public void setActive(StackPane page, Button button, ToggleButton toggleButton) {
+        setActivePage(page, null);
+        setActiveSubButton(button);
+        if (nonNull(toggleButton)) {
+            toggleButton.setSelected(true);
+        }
+    }
+
     @FXML
     public void showHomePage() {
-        setActivePage(homeView, navHomeButton);
-        if (btnConverters != null && btnConverters.getToggleGroup() != null) btnConverters.getToggleGroup().selectToggle(null);
+        setActive(homeView, navHomeButton);
+    }
+
+    @FXML
+    public void showInfoPage() {
+        setActive(infoPage, navInfo);
     }
 
     @FXML
     public void showConverterImagePage() {
-        setActivePage(converterImagePage, null);
-        setActiveSubButton(navConverterImageButton);
-        btnConverters.setSelected(true);
+        setActive(converterImagePage, navConverterImageButton, btnConverters);
     }
 
     @FXML
-    public void showConverterVideoPage(){
-        setActivePage(converterVideoPage, null);
-        setActiveSubButton(navConverterVideoButton);
-        btnConverters.setSelected(true);
+    public void showConverterVideoPage() {
+        setActive(converterVideoPage, navConverterVideoButton, btnConverters);
     }
 
     @FXML
     public void showConverterAudioPage() {
-        setActivePage(converterMP3Page, null);
-        setActiveSubButton(navConverterAudioButton);
-        btnConverters.setSelected(true);
+        setActive(converterMP3Page, navConverterAudioButton, btnConverters);
     }
 
     @FXML
     public void showCompressorImagePage() {
-        setActivePage(compressorImagePage, null);
-        setActiveSubButton(navCompressorImage);
-        btnCompressors.setSelected(true);
+        setActive(compressorImagePage, navCompressorImage, btnCompressors);
     }
 
     @FXML
     public void showCompressorVideoPage() {
-        setActivePage(compressorVideoPage, null);
-        setActiveSubButton(navCompressorVideo);
-        btnCompressors.setSelected(true);
+        setActive(compressorVideoPage, navCompressorVideo, btnCompressors);
     }
 
     @FXML
     public void showCompressorPdfPage() {
-        setActivePage(compressPdfPage, null);
-        setActiveSubButton(navCompressorPdf);
-        btnCompressors.setSelected(true);
+        setActive(compressPdfPage, navCompressorPdf, btnCompressors);
     }
 
     @FXML
     public void showMediaEditorTagPage() {
-        setActivePage(mediaTagEditorPage, navMediaEditorTag);
-        btnMediaTools.setSelected(true);
-        setActiveSubButton(navMediaEditorTag);
+        setActive(mediaTagEditorPage, navMediaEditorTag, btnMediaTools);
     }
 
     @FXML
     public void showMetaDataPage() {
-        setActivePage(metaDataPage, navMetaData);
-        btnMediaTools.setSelected(true);
-        setActiveSubButton(navMetaData);
+        setActive(metaDataPage, navMetaData, btnMediaTools);
     }
 
     @FXML
@@ -220,7 +226,7 @@ public class ViewController {
     private void highlightSubButtonByUserData(VBox box, int index) {
         for (Node node : box.getChildren()) {
             if (node instanceof Button btn) {
-                if (btn.getUserData() != null && (int) btn.getUserData() == index) {
+                if (nonNull(btn.getUserData()) && (int) btn.getUserData() == index) {
                     setActiveSubButton(btn);
                     break;
                 }
@@ -228,17 +234,11 @@ public class ViewController {
         }
     }
 
-    @FXML
-    public void showInfoPage() {
-        setActivePage(infoPage, navInfo);
-        if (btnConverters != null && btnConverters.getToggleGroup() != null) btnConverters.getToggleGroup().selectToggle(null);
-    }
-
     private void setActiveSubButton(Button activeBtn) {
         for (Button btn : listSubBtn) {
             btn.getStyleClass().remove("sub-btn-active");
         }
-        if (activeBtn != null) {
+        if (nonNull(activeBtn)) {
             if (!activeBtn.getStyleClass().contains("sub-btn-active")) {
                 activeBtn.getStyleClass().add("sub-btn-active");
             }
@@ -273,6 +273,24 @@ public class ViewController {
         if (activeButton != null) {
             activeButton.getStyleClass().add("standalone-btn-active");
             setActiveSubButton(null);
+        }
+    }
+
+    @FXML
+    public void showPage(ActionEvent actionEvent) {
+        Button button = (Button) actionEvent.getSource();
+
+        switch (button.getId()) {
+            case "navHomeButton"           -> setActive(homeView, navHomeButton);
+            case "navConverterImageButton" -> setActive(converterImagePage, navConverterImageButton, btnConverters);
+            case "navConverterVideoButton" -> setActive(converterVideoPage, navConverterVideoButton, btnConverters);
+            case "navConverterAudioButton" -> setActive(converterMP3Page, navConverterAudioButton, btnConverters);
+            case "navCompressorImage"      -> setActive(compressorImagePage, navCompressorImage, btnCompressors);
+            case "navCompressorVideo"      -> setActive(compressorVideoPage, navCompressorVideo, btnCompressors);
+            case "navCompressorPdf"        -> setActive(compressPdfPage, navCompressorPdf, btnCompressors);
+            case "navMediaEditorTag"       -> setActive(mediaTagEditorPage, navMediaEditorTag, btnMediaTools);
+            case "navMetaData"             -> setActive(metaDataPage, navMetaData, btnMediaTools);
+            case "navInfo"                 -> setActive(infoPage, navInfo);
         }
     }
 }

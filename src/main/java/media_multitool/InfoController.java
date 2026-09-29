@@ -15,6 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class InfoController {
     @FXML private Button btnGithub;
     @FXML private Tooltip activeTooltip;
@@ -40,7 +43,7 @@ public class InfoController {
 
     @FXML
     private void handleContactClick(MouseEvent mouseEvent) {
-        if (activeTooltip != null && activeTooltip.isShowing()) {
+        if (nonNull(activeTooltip) && activeTooltip.isShowing()) {
             return;
         }
 
@@ -52,7 +55,7 @@ public class InfoController {
 
     @FXML
     private void redirectToGithub() {
-        if (btnGithub == null) {
+        if (isNull(btnGithub)) {
             ErrorLogger.error("The GitHub redirect button has a null value!");
             return;
         }

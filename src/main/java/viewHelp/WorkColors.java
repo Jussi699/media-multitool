@@ -5,6 +5,9 @@ import javafx.scene.paint.Color;
 import model.helper.images.ColorReplaceHelper;
 
 public class WorkColors {
+    private WorkColors() {
+        /* This utility class should not be instantiated */
+    }
 
     /**
      * Opening the graphical interface (View) button selects the color.

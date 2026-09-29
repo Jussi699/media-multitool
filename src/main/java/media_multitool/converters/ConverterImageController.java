@@ -26,6 +26,8 @@ import java.util.*;
 import viewHelp.Alerts;
 import viewHelp.Cells;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static viewHelp.Message.*;
 import static model.utility.PathWorker.*;
 import static model.converterImage.UsefulMethods.*;
@@ -92,7 +94,7 @@ public class ConverterImageController extends AbstractMediaController {
         Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, TO_ICO);
 
         comboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
-            if (newVal != null && !newVal.equals(TO_ICO) && imageViewPreview.getImage() != null) {
+            if (nonNull(newVal) && !newVal.equals(TO_ICO) && nonNull(imageViewPreview.getImage())) {
                 if (imageProperties.getImage() != null && imageProperties.getImage().getName().toLowerCase().endsWith(".ico")) {
                     try {
                         double size = Double.parseDouble(newVal);
@@ -227,36 +229,33 @@ public class ConverterImageController extends AbstractMediaController {
             bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
             imageViewPreview.setImage(fxImage);
-
-
             labelPreviewPlaceholder.setVisible(false);
 
             if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
                 dropZone.getStyleClass().add("drop-zone-filled");
             }
 
-            
             ErrorLogger.info("Preview loaded successfully for: " + imageProperties.getImage().getName());
         } catch (IOException e) {
-            ErrorLogger.log(107, ErrorLogger.Level.ERROR, "IO | File error while loading preview", e);
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "IO", "File error!");
+            ErrorLogger.log(107, ErrorLogger.Level.ERROR, "Failed load preview", e);
+            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load preview", "Failed load preview.\nCheck log file for more details!");
         }
     }
 
     private boolean checks() {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
                     "Select image first.");
             return false;
         }
 
-        if(imageProperties.getOutput() == null) {
+        if(isNull(imageProperties.getOutput())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Output missing!",
                     "Select output directory!.");
             return false;
         }
 
-        if (imageProperties.getTypeImage() == null) {
+        if (isNull(imageProperties.getTypeImage())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Format missing!",
                     "Select photo format!");
             return false;
@@ -315,7 +314,7 @@ public class ConverterImageController extends AbstractMediaController {
         viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
         String selected = comboBoxIcoSize.getValue();
 
-        if (selected == null || selected.equals(TO_ICO)) {
+        if (isNull(selected) || selected.equals(TO_ICO)) {
             if ("ico".equals(imageProperties.getTypeImage())) {
                 imageProperties.setTypeImage(null);
             }

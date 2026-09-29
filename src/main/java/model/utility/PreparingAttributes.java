@@ -8,7 +8,13 @@ import ws.schild.jave.info.VideoSize;
 
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+
 public class PreparingAttributes {
+    private PreparingAttributes() {
+        /* This utility class should not be instantiated */
+    }
+
     public static AudioAttributes audioAttributes(int channels, int samplingRate, int bitrate, String audioCodec) {
         AudioAttributes audio = new AudioAttributes();
         audio.setChannels(channels);
@@ -33,7 +39,7 @@ public class PreparingAttributes {
     }
 
     private static boolean isLosslessVideo(String codec) {
-        if (codec == null) return false;
+        if (isNull(codec)) return false;
         String c = codec.toLowerCase();
         return c.contains("png") || c.contains("ffv1") || c.contains("huffyuv");
     }
@@ -49,7 +55,7 @@ public class PreparingAttributes {
                 if (height % 2 != 0) height--;
 
                 return Optional.of(new VideoSize(width, height));
-            } catch (Exception e) {
+            } catch (Exception _) {
                 ErrorLogger.warn("Invalid resolution format: " + resolution);
             }
         }

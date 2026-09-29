@@ -14,6 +14,9 @@ import model.utility.OS;
 
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public final class WindowsDwmUtils {
     private static final int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
     private static final int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
@@ -49,13 +52,13 @@ public final class WindowsDwmUtils {
     }
 
     public static boolean applyDarkMode(Window window) {
-        if (window == null || OS.getOS() != OS.TypeOS.WINDOWS) {
+        if (isNull(window) || OS.getOS() != OS.TypeOS.WINDOWS) {
             return false;
         }
 
         try {
             HWND hwnd = findHwnd(window);
-            if (hwnd != null) {
+            if (nonNull(hwnd)) {
                 return applyCustomDarkTitleBar(hwnd, DEFAULT_CAPTION_COLOR_REF, DEFAULT_TEXT_COLOR_REF);
             }
         } catch (Exception t) {
@@ -72,7 +75,7 @@ public final class WindowsDwmUtils {
      * - Older Windows: fails gracefully without error.
      */
     public static boolean applyCustomDarkTitleBar(HWND hwnd, int captionColorRef, int textColorRef) {
-        if (hwnd == null) {
+        if (isNull(hwnd)) {
             return false;
         }
         boolean darkModeApplied = setWindowDarkMode(hwnd, true);
@@ -88,7 +91,7 @@ public final class WindowsDwmUtils {
     }
 
     public static boolean setWindowDarkMode(HWND hwnd, boolean enable) {
-        if (hwnd == null) {
+        if (isNull(hwnd)) {
             return false;
         }
         try {
@@ -106,20 +109,8 @@ public final class WindowsDwmUtils {
         }
     }
 
-    public static boolean setCaptionColor(HWND hwnd, int red, int green, int blue) {
-        return setDwmAttributeColorRef(hwnd, DWMWA_CAPTION_COLOR, toColorRef(red, green, blue));
-    }
-
-    public static boolean setTextColor(HWND hwnd, int red, int green, int blue) {
-        return setDwmAttributeColorRef(hwnd, DWMWA_TEXT_COLOR, toColorRef(red, green, blue));
-    }
-
-    public static boolean setBorderColor(HWND hwnd, int red, int green, int blue) {
-        return setDwmAttributeColorRef(hwnd, DWMWA_BORDER_COLOR, toColorRef(red, green, blue));
-    }
-
     private static boolean setDwmAttributeColorRef(HWND hwnd, int attribute, int colorRef) {
-        if (hwnd == null) {
+        if (isNull(hwnd)) {
             return false;
         }
         try {
@@ -139,9 +130,9 @@ public final class WindowsDwmUtils {
 
         if (window instanceof Stage stage) {
             String title = stage.getTitle();
-            if (title != null && !title.isBlank()) {
+            if (nonNull(title) && !title.isBlank()) {
                 HWND hwnd = User32.INSTANCE.FindWindow(null, title);
-                if (hwnd != null && isWindowOfProcess(hwnd, currentPid)) {
+                if (nonNull(hwnd) && isWindowOfProcess(hwnd, currentPid)) {
                     return hwnd;
                 }
             }
@@ -152,14 +143,14 @@ public final class WindowsDwmUtils {
             stage.setTitle(tempTitle);
             HWND hwnd = User32.INSTANCE.FindWindow(null, tempTitle);
             stage.setTitle(originalTitle);
-            if (hwnd != null && isWindowOfProcess(hwnd, currentPid)) {
+            if (nonNull(hwnd) && isWindowOfProcess(hwnd, currentPid)) {
                 return hwnd;
             }
         }
 
         // Fallback: search among visible top-level windows of current process
         final HWND[] found = new HWND[1];
-        User32.INSTANCE.EnumWindows((hwnd, pointer) -> {
+        User32.INSTANCE.EnumWindows((hwnd, _) -> {
             if (isWindowOfProcess(hwnd, currentPid) && User32.INSTANCE.IsWindowVisible(hwnd)) {
                 found[0] = hwnd;
                 return false;

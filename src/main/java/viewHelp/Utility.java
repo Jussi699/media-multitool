@@ -12,11 +12,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class Utility {
     private Utility() {}
 
     public static Optional<MultimediaInfo> getMetadata(File file) {
-        if (file == null || !file.exists()) return Optional.empty();
+        if (isNull(file) || !file.exists()) return Optional.empty();
         try {
             return Optional.of(new MultimediaObject(file).getInfo());
         } catch (Exception e) {
@@ -37,7 +40,7 @@ public class Utility {
     }
 
     public static void cleanupFile(File file) {
-        if (file != null && file.exists()) {
+        if (nonNull(file) && file.exists()) {
             try {
                 cleanUp(file.toPath());
                 ErrorLogger.info("File deleted: " + file.getName());

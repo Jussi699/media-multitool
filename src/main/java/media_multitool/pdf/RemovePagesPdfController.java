@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 
@@ -202,7 +204,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
     }
 
     private void updateUIState() {
-        labelSelectFileName.setText(imageProperties.getImage() == null ? "Selected PDF file: none" : "Selected PDF: " +
+        labelSelectFileName.setText(isNull(imageProperties.getImage()) ? "Selected PDF file: none" : "Selected PDF: " +
                 imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
         
         if (!selectedPages.isEmpty()) {
@@ -230,7 +232,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
             return;
         }
 
-        if (imageProperties.getOutput() == null) {
+        if (isNull(imageProperties.getOutput())) {
             imageProperties.setOutput(getSavedPath());
         }
 
@@ -299,14 +301,14 @@ public class RemovePagesPdfController extends AbstractMediaController {
             labelSelectFileName, labelSuccess, textDragZone, null,
             dropZone, null, progressBar, true, "PDF"
         );
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.progressProperty().unbind();
         }
         reset(imageProperties, ctx, "Selected PDF file: none");
 
         disableControls();
         textDragZone.setText("Drag PDF here");
-        if (dropZone != null) {
+        if (nonNull(dropZone)) {
             dropZone.getStyleClass().remove("drop-zone-filled");
         }
     }

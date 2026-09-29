@@ -25,6 +25,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -69,7 +71,7 @@ public class DarkenImageController extends AbstractMediaController {
     }
 
     private void updatePreview(int offset) {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -151,7 +153,7 @@ public class DarkenImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
             return;
         }
 
@@ -213,9 +215,7 @@ public class DarkenImageController extends AbstractMediaController {
 
         currentBufferedImage = null;
         originalBufferedImage = null;
-        if (sliderDarken != null) {
-            sliderDarken.setValue(0);
-        }
+        sliderDarken.setValue(0);
         currentValueSlider.setText("100%");
         disableControls();
     }
@@ -226,10 +226,10 @@ public class DarkenImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage != null) {
+                if (nonNull(originalBufferedImage)) {
                     updatePreview(- (int) sliderDarken.getValue());
                         labelPreviewPlaceholder.setVisible(false);
                 }
@@ -238,10 +238,10 @@ public class DarkenImageController extends AbstractMediaController {
             }
         }
 
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + selectedFile.getName());
         }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

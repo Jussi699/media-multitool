@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -47,7 +49,6 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnCancel;
     @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
-    
     @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;
 
     private PDDocument currentDoc;
@@ -82,7 +83,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     }
 
     private void updatePdfAndPreview() {
-        if (imageProperties.getImage() != null) {
+        if (nonNull(imageProperties.getImage())) {
             loadFile(imageProperties.getImage());
         }
     }
@@ -93,7 +94,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         btnChoiceDirForSaveFile.setDisable(true);
         btnReset.setDisable(true);
         btnSubmit.setDisable(true);
-        if (btnCancel != null) btnCancel.setDisable(false);
+        btnCancel.setDisable(false);
     }
 
     @Override
@@ -102,20 +103,20 @@ public class ConverterImageToPdfController extends AbstractMediaController {
         btnChoiceDirForSaveFile.setDisable(false);
         btnReset.setDisable(false);
         btnSubmit.setDisable(false);
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
         cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(c -> c.setDisable(true));
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
     }
 
     @FXML
@@ -159,7 +160,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
                     throw new InterruptedException("Conversion cancelled");
                 }
 
-                if (currentDoc != null) {
+                if (nonNull(currentDoc)) {
                     try {
                         currentDoc.save(outputFile);
                     } catch (Exception e) {
@@ -190,7 +191,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     }
 
     private void updatePreview() {
-        if (currentDoc != null) {
+        if (nonNull(currentDoc)) {
             try {
                 PDFRenderer renderer = new PDFRenderer(currentDoc);
                 BufferedImage bim = renderer.renderImageWithDPI(0, 72);
@@ -205,7 +206,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (result == null || Boolean.FALSE.equals(result)) {
+        if (isNull(result) || Boolean.FALSE.equals(result)) {
             return;
         }
         File outputFile = (File) result;
@@ -248,7 +249,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             ErrorLogger.error("Error closing document during reset: " + e.getMessage());
         }
         
-        if (imageViewPdf != null) {
+        if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
 

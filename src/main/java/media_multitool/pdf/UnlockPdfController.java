@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
@@ -53,7 +55,6 @@ public class UnlockPdfController extends AbstractMediaController {
 
     private PDDocument currentDoc;
     private List<Control> listControls;
-
     private String typePassword;
     private boolean isFileEncrypted = false;
 
@@ -63,7 +64,7 @@ public class UnlockPdfController extends AbstractMediaController {
 
         imageProperties.setOutput(getSavedPath());
 
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
             progressBar.setProgress(0);
@@ -81,13 +82,13 @@ public class UnlockPdfController extends AbstractMediaController {
     private void setupListener() {
         typePasswordField.textProperty().addListener((_, _, newValue) -> {
             typePassword = newValue;
-            if (typePasswordTextField != null) {
+            if (nonNull(typePasswordTextField)) {
                 typePasswordTextField.setText(newValue);
             }
         });
 
 
-        if (typePasswordTextField != null) {
+        if (nonNull(typePasswordTextField)) {
             typePasswordTextField.textProperty().addListener((_, _, newValue) -> {
                 typePassword = newValue;
                 typePasswordField.setText(newValue);
@@ -114,7 +115,7 @@ public class UnlockPdfController extends AbstractMediaController {
         listControls.forEach(c -> c.setDisable(true));
         typePasswordField.setDisable(true);
 
-        if (typePasswordTextField != null) {
+        if (nonNull(typePasswordTextField)) {
             typePasswordTextField.setDisable(true);
         }
 
@@ -125,7 +126,7 @@ public class UnlockPdfController extends AbstractMediaController {
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
         typePasswordField.setDisable(false);
-        if (typePasswordTextField != null) {
+        if (nonNull(typePasswordTextField)) {
             typePasswordTextField.setDisable(false);
         }
 
@@ -163,7 +164,7 @@ public class UnlockPdfController extends AbstractMediaController {
     }
 
     private boolean checks() {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please select a PDF file", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -171,7 +172,7 @@ public class UnlockPdfController extends AbstractMediaController {
             return false;
         }
 
-        if (imageProperties.getOutput() == null) {
+        if (isNull(imageProperties.getOutput())) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please select output directory", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -179,7 +180,7 @@ public class UnlockPdfController extends AbstractMediaController {
             return false;
         }
 
-        if (isFileEncrypted && (typePassword == null || typePassword.isEmpty())) {
+        if (isFileEncrypted && (isNull(typePassword) || typePassword.isEmpty())) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please enter password", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -206,14 +207,14 @@ public class UnlockPdfController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                if (imageProperties.getImage() == null) {
+                if (isNull(imageProperties.getImage())) {
                     throw new IOException("PDF file not selected");
                 }
 
                 updateProgress(30, 100);
 
                 String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                String shortId = UUID.randomUUID().toString().substring(0, 8);
+                String shortId  = UUID.randomUUID().toString().substring(0, 8);
                 File outputFile = new File(imageProperties.getOutput(), baseName + "_unlocked_" + shortId + ".pdf");
 
                 updateProgress(50, 100);
@@ -304,7 +305,7 @@ public class UnlockPdfController extends AbstractMediaController {
             ErrorLogger.error("Error closing document during reset: " + e.getMessage());
         }
         
-        if (imageViewPdf != null) {
+        if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
 
@@ -312,7 +313,7 @@ public class UnlockPdfController extends AbstractMediaController {
 
         typePassword = "";
         typePasswordField.setText("");
-        if (typePasswordTextField != null) {
+        if (nonNull(typePasswordTextField)) {
             typePasswordTextField.setText("");
         }
 
@@ -322,7 +323,7 @@ public class UnlockPdfController extends AbstractMediaController {
             btnShowTypePassword.setSelected(false);
             typePasswordField.setVisible(true);
             typePasswordField.setManaged(true);
-            if (typePasswordTextField != null) {
+            if (nonNull(typePasswordTextField)) {
                 typePasswordTextField.setVisible(false);
                 typePasswordTextField.setManaged(false);
             }
@@ -351,7 +352,7 @@ public class UnlockPdfController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        if (imageViewPdf != null) {
+        if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
 

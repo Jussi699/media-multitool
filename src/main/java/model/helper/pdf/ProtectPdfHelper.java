@@ -10,6 +10,10 @@ import java.io.File;
 import java.io.IOException;
 
 public class ProtectPdfHelper {
+    private ProtectPdfHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     public static File protectPdf(File inputFile, File outputFile, String ownerPassword, String userPassword) throws IOException {
         try (PDDocument document = Loader.loadPDF(inputFile)) {
             StandardProtectionPolicy policy = getStandardProtectionPolicy(ownerPassword, userPassword);

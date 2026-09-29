@@ -6,11 +6,13 @@ import javafx.util.StringConverter;
 
 import java.util.function.Function;
 
+import static java.util.Objects.isNull;
+
 public class ComboBoxes {
     public static <T> void setupComboBox(ComboBox<T> comboBox, Function<T, String> textProvider) {
         comboBox.setConverter(new StringConverter<>() {
             @Override
-            public String toString(T item) { return item == null ? null : textProvider.apply(item); }
+            public String toString(T item) { return isNull(item) ? null : textProvider.apply(item); }
             @Override
             public T fromString(String string) { return null; }
         });
@@ -21,7 +23,7 @@ public class ComboBoxes {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
+                if (empty || isNull(item)) {
                     setText(null);
                     setGraphic(null);
                 } else {
@@ -34,7 +36,7 @@ public class ComboBoxes {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
+                if (empty || isNull(item)) {
                     setText(cb.getValue());
                 } else {
                     setText(item);

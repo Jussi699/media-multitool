@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.BiConsumer;
 
+import static java.util.Objects.nonNull;
+
 public class TableViewHelper {
     public static final double TABLE_ROW_HEIGHT = 28.0;
     public static final double TABLE_HEADER_HEIGHT = 28.0;
@@ -94,7 +96,7 @@ public class TableViewHelper {
         try {
             AudioFile audioFile = AudioFileIO.read(file);
             Tag tag = audioFile.getTag();
-            if (tag != null) {
+            if (nonNull(tag)) {
                 details.setTag(tag.getClass().getSimpleName().replace("Tag", ""));
                 details.setTitle(tag.getFirst(FieldKey.TITLE));
                 details.setArtist(tag.getFirst(FieldKey.ARTIST));
@@ -108,7 +110,7 @@ public class TableViewHelper {
             }
 
             AudioHeader header = audioFile.getAudioHeader();
-            if (header != null) {
+            if (nonNull(header)) {
                 details.setCodec(header.getEncodingType());
                 details.setBitrate(String.valueOf(header.getBitRate()));
                 details.setFrequency(String.valueOf(header.getSampleRate()));
@@ -127,7 +129,7 @@ public class TableViewHelper {
 
     public static double getTableHeaderHeight(TableView<?> tableView) {
         Node header = tableView.lookup(".column-header-background");
-        if (header != null) {
+        if (nonNull(header)) {
             return header.getBoundsInLocal().getHeight();
         }
         return TABLE_HEADER_HEIGHT;

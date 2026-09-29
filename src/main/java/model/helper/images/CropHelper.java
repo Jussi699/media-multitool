@@ -23,6 +23,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.enums.EnumCrop.*;
 
 public class CropHelper {
@@ -104,7 +106,7 @@ public class CropHelper {
     }
 
     private void startMoveCrop(MouseEvent event) {
-        if (!canEditCrop(event) || cropArea == null) {
+        if (!canEditCrop(event) || isNull(cropArea)) {
             return;
         }
 
@@ -118,7 +120,7 @@ public class CropHelper {
     }
 
     private void moveCrop(MouseEvent event) {
-        if (dragMode != DragMode.MOVE || dragStartCrop == null || dragStartImagePoint == null) {
+        if (dragMode != DragMode.MOVE || isNull(dragStartCrop) || isNull(dragStartImagePoint)) {
             return;
         }
 
@@ -132,7 +134,7 @@ public class CropHelper {
     }
 
     private void startResizeCrop(MouseEvent event, HandlePosition position) {
-        if (!canEditCrop(event) || cropArea == null) {
+        if (!canEditCrop(event) || isNull(cropArea)) {
             return;
         }
 
@@ -147,7 +149,7 @@ public class CropHelper {
     }
 
     private void resizeCropByHandle(MouseEvent event) {
-        if (dragMode != DragMode.RESIZE || dragStartCrop == null || activeHandle == null) {
+        if (dragMode != DragMode.RESIZE || isNull(dragStartCrop) || isNull(activeHandle)) {
             return;
         }
 
@@ -185,7 +187,7 @@ public class CropHelper {
 
     private Optional<Point2D> imagePointFromOverlay(MouseEvent event) {
         Bounds displayedBounds = getDisplayedImageBoundsInParent();
-        if (displayedBounds == null) {
+        if (isNull(displayedBounds)) {
             return Optional.empty();
         }
 
@@ -194,7 +196,7 @@ public class CropHelper {
         Point2D localPoint = imageViewPreview.parentToLocal(parentX, parentY);
         DisplayedImage displayedImage = getDisplayedImageInLocal();
 
-        if (displayedImage == null) {
+        if (isNull(displayedImage)) {
             return Optional.empty();
         }
 
@@ -220,7 +222,7 @@ public class CropHelper {
 
     private Bounds imageCropToParentBounds(CropArea area) {
         DisplayedImage displayedImage = getDisplayedImageInLocal();
-        if (displayedImage == null) {
+        if (isNull(displayedImage)) {
             return null;
         }
 
@@ -242,7 +244,7 @@ public class CropHelper {
 
     private Bounds getDisplayedImageBoundsInParent() {
         DisplayedImage displayedImage = getDisplayedImageInLocal();
-        if (displayedImage == null) {
+        if (isNull(displayedImage)) {
             return null;
         }
 
@@ -262,7 +264,7 @@ public class CropHelper {
 
     private DisplayedImage getDisplayedImageInLocal() {
         Image image = imageViewPreview.getImage();
-        if (image == null) {
+        if (isNull(image)) {
             return null;
         }
 
@@ -294,7 +296,7 @@ public class CropHelper {
     }
 
     public void createDefaultCrop() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -325,7 +327,7 @@ public class CropHelper {
     }
 
     public void updateCropOverlay() {
-        boolean hasCrop = cropArea != null && originalBufferedImage != null && imageViewPreview.getImage() != null;
+        boolean hasCrop = nonNull(cropArea) && nonNull(originalBufferedImage) && nonNull(imageViewPreview.getImage());
         cropRect.setVisible(hasCrop);
 
         handles.values().forEach(handle -> handle.setVisible(hasCrop));
@@ -335,7 +337,7 @@ public class CropHelper {
         }
 
         Bounds cropBounds = imageCropToParentBounds(cropArea);
-        if (cropBounds == null) {
+        if (isNull(cropBounds)) {
             return;
         }
 
@@ -348,7 +350,7 @@ public class CropHelper {
     }
 
     public void setupAspectRatio(double ratioWidth, double ratioHeight) {
-        if (cropArea == null || originalBufferedImage == null || ratioWidth <= 0 || ratioHeight <= 0) return;
+        if (isNull(cropArea) || isNull(originalBufferedImage) || ratioWidth <= 0 || ratioHeight <= 0) return;
 
         double imageWidth = originalBufferedImage.getWidth();
         double imageHeight = originalBufferedImage.getHeight();

@@ -37,6 +37,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class MetadataHelper {
     private MetadataHelper() {}
 
@@ -44,7 +47,7 @@ public class MetadataHelper {
 
     public static List<MetadataEntry> extractMetadata(File file) {
         List<MetadataEntry> entries = new ArrayList<>();
-        if (file == null || !file.exists()) {
+        if (isNull(file) || !file.exists()) {
             return entries;
         }
 
@@ -97,13 +100,13 @@ public class MetadataHelper {
     private static boolean extractMediaAndGpsMetadata(File file, List<MetadataEntry> entries) {
         try {
             Metadata metadata = ImageMetadataReader.readMetadata(file);
-            if (metadata == null) return false;
+            if (isNull(metadata)) return false;
 
             GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
             if (gpsDirectory != null) {
                 String catGps = "GPS & Location";
                 GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-                if (geoLocation != null && !geoLocation.isZero()) {
+                if (nonNull(geoLocation) && !geoLocation.isZero()) {
                     double lat = geoLocation.getLatitude();
                     double lon = geoLocation.getLongitude();
                     String decCoords = String.format(Locale.US, "%.6f, %.6f", lat, lon);
@@ -114,7 +117,7 @@ public class MetadataHelper {
 
                 for (Tag tag : gpsDirectory.getTags()) {
                     String desc = tag.getDescription();
-                    if (desc != null && !desc.isBlank()) {
+                    if (nonNull(desc) && !desc.isBlank()) {
                         entries.add(new MetadataEntry(catGps, tag.getTagName(), desc, true, tag.getTagName()));
                     }
                 }
@@ -151,7 +154,7 @@ public class MetadataHelper {
     }
 
     private static String categorizeDirectoryName(String dirName) {
-        if (dirName == null) return "Metadata";
+        if (isNull(dirName)) return "Metadata";
         String lower = dirName.toLowerCase(Locale.ROOT);
         if (lower.contains("gps")) {
             return "GPS & Location";
@@ -174,7 +177,7 @@ public class MetadataHelper {
             AudioFile audioFile = AudioFileIO.read(file);
             AudioHeader header = audioFile.getAudioHeader();
 
-            if (header != null) {
+            if (nonNull(header)) {
                 String catHeader = "Audio Technical";
                 addIfNotEmpty(entries, catHeader, "Encoding / Format", header.getEncodingType(), false, null);
                 addIfNotEmpty(entries, catHeader, "Bitrate", header.getBitRate() + " kbps", false, null);
@@ -187,18 +190,18 @@ public class MetadataHelper {
             }
 
             org.jaudiotagger.tag.Tag tag = audioFile.getTag();
-            if (tag != null) {
+            if (nonNull(tag)) {
                 String catTag = "Audio Tag";
                 for (FieldKey key : FieldKey.values()) {
                     try {
                         String val = tag.getFirst(key);
-                        if (val != null && !val.trim().isEmpty()) {
+                        if (nonNull(val) && !val.trim().isEmpty()) {
                             entries.add(new MetadataEntry(catTag, formatTagKey(key.name()), val, true, key));
                         }
                     } catch (Exception _) {}
                 }
 
-                if (tag.getFirstArtwork() != null) {
+                if (nonNull(tag.getFirstArtwork())) {
                     entries.add(new MetadataEntry(catTag, "Embedded Artwork",
                             tag.getFirstArtwork().getMimeType() + " (" + tag.getFirstArtwork().getBinaryData().length + " bytes)",
                             true, "ARTWORK"));
@@ -214,7 +217,7 @@ public class MetadataHelper {
             String catDoc = "PDF Information";
             PDDocumentInformation info = document.getDocumentInformation();
 
-            if (info != null) {
+            if (nonNull(info)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(PATTERN_DATE);
 
                 addIfNotEmpty(entries, catDoc, "Title", info.getTitle(), true, "Title");
@@ -224,11 +227,11 @@ public class MetadataHelper {
                 addIfNotEmpty(entries, catDoc, "Creator", info.getCreator(), true, "Creator");
                 addIfNotEmpty(entries, catDoc, "Producer", info.getProducer(), true, "Producer");
 
-                if (info.getCreationDate() != null) {
+                if (nonNull(info.getCreationDate())) {
                     entries.add(new MetadataEntry(catDoc, "Creation Date",
                             formatDateTime(info.getCreationDate(), formatter), true, "Creation Date"));
                 }
-                if (info.getModificationDate() != null) {
+                if (nonNull(info.getModificationDate())) {
                     entries.add(new MetadataEntry(catDoc, "Modification Date",
                             formatDateTime(info.getModificationDate(), formatter), true, "Modification Date"));
                 }
@@ -259,7 +262,7 @@ public class MetadataHelper {
             MultimediaObject multimediaObject = new MultimediaObject(file);
             MultimediaInfo info = multimediaObject.getInfo();
 
-            if (info == null) {
+            if (isNull(info)) {
                 return;
             }
 
@@ -279,10 +282,10 @@ public class MetadataHelper {
             }
 
             VideoInfo video = info.getVideo();
-            if (video != null) {
+            if (nonNull(video)) {
                 String catVideo = "Video Stream";
                 addIfNotEmpty(entries, catVideo, "Video Codec", video.getDecoder(), false, null);
-                if (video.getSize() != null) {
+                if (nonNull(video.getSize())) {
                     entries.add(new MetadataEntry(catVideo, "Resolution", video.getSize().getWidth() + "x" + video.getSize().getHeight(), false, null));
                 }
                 if (video.getFrameRate() > 0) {
@@ -294,7 +297,7 @@ public class MetadataHelper {
             }
 
             AudioInfo audio = info.getAudio();
-            if (audio != null) {
+            if (nonNull(audio)) {
                 String catAudio = "Audio Stream";
                 addIfNotEmpty(entries, catAudio, "Audio Codec", audio.getDecoder(), false, null);
                 if (audio.getBitRate() > 0) {
@@ -315,7 +318,7 @@ public class MetadataHelper {
     }
 
     public static boolean deleteSingleTag(File file, MetadataEntry entry, File outputDir) {
-        if (file == null || entry == null || !entry.isCanDelete()) {
+        if (isNull(file) || isNull(entry) || !entry.isCanDelete()) {
             return false;
         }
 
@@ -355,7 +358,7 @@ public class MetadataHelper {
         switch (ext) {
             case "jpg", "jpeg" -> {
                 byte[] modified = removeGpsFromJpegBytes(bytes);
-                if (modified != null) {
+                if (nonNull(modified)) {
                     Files.write(file.toPath(), modified);
                     return true;
                 }
@@ -599,7 +602,7 @@ public class MetadataHelper {
     private static boolean reSaveCleanImage(File file) {
         try {
             BufferedImage image = ImageIO.read(file);
-            if (image == null) return false;
+            if (isNull(image)) return false;
             String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
             String formatName = ext.isEmpty() ? "png" : ext;
             if (formatName.equalsIgnoreCase("jpg") || formatName.equalsIgnoreCase("jpeg")) {
@@ -620,7 +623,7 @@ public class MetadataHelper {
         try {
             AudioFile audioFile = AudioFileIO.read(file);
             org.jaudiotagger.tag.Tag tag = audioFile.getTag();
-            if (tag == null) return false;
+            if (isNull(tag)) return false;
 
             if (entry.getRawTagKey() instanceof FieldKey fk) {
                 tag.deleteField(fk);
@@ -652,19 +655,19 @@ public class MetadataHelper {
 
         try (PDDocument document = Loader.loadPDF(file)) {
             PDDocumentInformation info = document.getDocumentInformation();
-            if (info != null) {
+            if (nonNull(info)) {
                 String key = String.valueOf(entry.getRawTagKey());
                 switch (key.toLowerCase(Locale.ROOT)) {
-                    case "title" -> info.setTitle(null);
-                    case "author" -> info.setAuthor(null);
-                    case "subject" -> info.setSubject(null);
-                    case "keywords" -> info.setKeywords(null);
-                    case "creator" -> info.setCreator(null);
-                    case "producer" -> info.setProducer(null);
-                    case "creation date" -> info.setCreationDate(null);
+                    case "title"             -> info.setTitle(null);
+                    case "author"            -> info.setAuthor(null);
+                    case "subject"           -> info.setSubject(null);
+                    case "keywords"          -> info.setKeywords(null);
+                    case "creator"           -> info.setCreator(null);
+                    case "producer"          -> info.setProducer(null);
+                    case "creation date"     -> info.setCreationDate(null);
                     case "modification date" -> info.setModificationDate(null);
-                    case "trapped" -> info.setTrapped(null);
-                    default -> info.setCustomMetadataValue(key, null);
+                    case "trapped"           -> info.setTrapped(null);
+                    default                  -> info.setCustomMetadataValue(key, null);
                 }
                 document.save(target);
                 return true;
@@ -676,11 +679,11 @@ public class MetadataHelper {
     }
 
     public static File removeAllMetadata(File inputFile, File outputDirectory) throws Exception {
-        if (inputFile == null || !inputFile.exists()) {
+        if (isNull(inputFile) || !inputFile.exists()) {
             throw new IllegalArgumentException("Input file does not exist");
         }
 
-        File targetDir = (outputDirectory != null && outputDirectory.isDirectory())
+        File targetDir = (nonNull(outputDirectory) && outputDirectory.isDirectory())
                 ? outputDirectory
                 : inputFile.getParentFile();
 
@@ -692,7 +695,7 @@ public class MetadataHelper {
             Files.copy(inputFile.toPath(), outputFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             AudioFile audioFile = AudioFileIO.read(outputFile);
             org.jaudiotagger.tag.Tag tag = audioFile.getTag();
-            if (tag != null) {
+            if (nonNull(tag)) {
                 tag.deleteArtworkField();
                 for (FieldKey fk : FieldKey.values()) {
                     try {
@@ -705,7 +708,7 @@ public class MetadataHelper {
         } else if (isPdfFormat(ext)) {
             try (PDDocument document = Loader.loadPDF(inputFile)) {
                 document.setDocumentInformation(new PDDocumentInformation());
-                if (document.getDocumentCatalog() != null) {
+                if (nonNull(document.getDocumentCatalog())) {
                     document.getDocumentCatalog().setMetadata(null);
                 }
                 document.save(outputFile);
@@ -713,7 +716,7 @@ public class MetadataHelper {
             }
         } else if (isImageFormat(ext)) {
             BufferedImage image = ImageIO.read(inputFile);
-            if (image == null) {
+            if (isNull(image)) {
                 throw new IOException("Unable to decode image");
             }
             String formatName = ext.isEmpty() ? "png" : ext;
@@ -732,12 +735,12 @@ public class MetadataHelper {
             EncodingAttributes attrs = new EncodingAttributes();
             attrs.setOutputFormat(ext);
 
-            if (info != null && info.getVideo() != null) {
+            if (nonNull(info) && nonNull(info.getVideo())) {
                 VideoAttributes va = new VideoAttributes();
                 va.setCodec("copy");
                 attrs.setVideoAttributes(va);
             }
-            if (info != null && info.getAudio() != null) {
+            if (nonNull(info) && nonNull(info.getAudio())) {
                 AudioAttributes aa = new AudioAttributes();
                 aa.setCodec("copy");
                 attrs.setAudioAttributes(aa);
@@ -754,8 +757,8 @@ public class MetadataHelper {
     public static String exportMetadataToText(File file, List<MetadataEntry> entries) {
         StringBuilder sb = new StringBuilder();
         sb.append("=== METADATA REPORT ===\n");
-        sb.append("File: ").append(file != null ? file.getName() : "Unknown").append("\n");
-        sb.append("Path: ").append(file != null ? file.getAbsolutePath() : "").append("\n");
+        sb.append("File: ").append(nonNull(file) ? file.getName() : "Unknown").append("\n");
+        sb.append("Path: ").append(nonNull(file) ? file.getAbsolutePath() : "").append("\n");
         sb.append("Generated on: ")
                 .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern(PATTERN_DATE)))
                 .append("\n\n");
@@ -792,7 +795,7 @@ public class MetadataHelper {
     }
 
     private static void addIfNotEmpty(List<MetadataEntry> list, String cat, String key, String val, boolean canDelete, Object rawKey) {
-        if (val != null && !val.trim().isEmpty()) {
+        if (nonNull(val) && !val.trim().isEmpty()) {
             list.add(new MetadataEntry(cat, key, val, canDelete, rawKey));
         }
     }
@@ -802,7 +805,7 @@ public class MetadataHelper {
     }
 
     private static String formatTagKey(String raw) {
-        if (raw == null) return "";
+        if (isNull(raw)) return "";
         String lower = raw.replace('_', ' ').toLowerCase(Locale.ROOT);
         StringBuilder res = new StringBuilder();
         for (String word : lower.split(" ")) {
@@ -821,7 +824,7 @@ public class MetadataHelper {
     }
 
     private static String getBaseName(String fileName) {
-        if (fileName == null) return "output";
+        if (isNull(fileName)) return "output";
         int dot = fileName.lastIndexOf('.');
         return dot == -1 ? fileName : fileName.substring(0, dot);
     }

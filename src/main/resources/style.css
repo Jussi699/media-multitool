@@ -91,30 +91,44 @@
     -fx-background-color: WHITE;
 }
 
-#genreComboBox {
+.combo-box-genre {
     -fx-border-color: -color-for-active-button-comboBox;
     -fx-background-color: -dark-gradient-background;
-    -fx-text-fill: -color-for-active-button-comboBox;
+    -fx-text-fill: -main-color-label;
     -fx-background-radius: 0 10 10 0;
     -fx-border-radius: 0 10 10 0;
     -fx-pref-height: 30px;
 }
 
-#genreComboBox:hover {
+.combo-box-genre:hover {
     -fx-scale-x: 1;
     -fx-scale-y: 1;
 }
 
-#genreComboBox > .arrow-button {
+.combo-box-genre > .arrow-button {
     -fx-background-color: -main-gradient-color-button;
 }
 
-#genreComboBox > .arrow-button:hover {
+.combo-box-genre > .arrow-button:hover {
     -fx-background-color: -color-for-active-button-comboBox;
 }
 
-#genreComboBox .list-view {
-    -fx-min-width: 75px;
+.combo-box-genre .list-view {
+    -fx-min-width: 85px;
+    -fx-max-width: 85px;
+    -fx-pref-width: 85px;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.combo-box-genre .list-view .scroll-bar:vertical {
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0;
+    -fx-padding: 0;
 }
 
 .text-field {

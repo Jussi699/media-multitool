@@ -3,6 +3,8 @@ package viewHelp;
 import javafx.scene.control.*;
 import model.metadata.MetadataEntry;
 
+import static java.util.Objects.isNull;
+
 public class Cells {
     private Cells() {}
 
@@ -12,7 +14,7 @@ public class Cells {
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
 
-                if (empty || item == null || text.equals(item)) {
+                if (empty || isNull(item) || text.equals(item)) {
                     setText(text);
                     setStyle("-fx-background-color: transparent; -fx-alignment: CENTER; -fx-text-fill: WHITE;");
                 } else {
@@ -29,7 +31,7 @@ public class Cells {
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
 
-                if (empty || item == null || text.equals(item)) {
+                if (empty || isNull(item) || text.equals(item)) {
                     setText(null);
                     setGraphic(null);
                     setStyle("-fx-background-color: transparent;");
@@ -47,7 +49,7 @@ public class Cells {
             @Override
             protected void updateItem(Boolean canDelete, boolean empty) {
                 super.updateItem(canDelete, empty);
-                if (empty || canDelete == null) {
+                if (empty || isNull(canDelete)) {
                     setText(null);
                     setGraphic(null);
                     setTooltip(null);

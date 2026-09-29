@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import java.io.File;
 
+import static java.util.Objects.nonNull;
+
 @Getter
 @Setter
 public class ImageProperties implements MediaProperties {
@@ -32,7 +34,7 @@ public class ImageProperties implements MediaProperties {
 
     public void setImage(File image) {
         this.image = image;
-        if(image != null) {
+        if(nonNull(image)) {
             pathToImage = image.getPath();
         }
     }

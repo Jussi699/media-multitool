@@ -11,14 +11,17 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class DetermineType {
     public static String determineFormatImage(File file) throws IOException {
-        if (file == null) {
+        if (isNull(file)) {
             throw new IllegalArgumentException("File is null");
         }
 
         try (ImageInputStream iis = ImageIO.createImageInputStream(file)) {
-            if (iis == null) {
+            if (isNull(iis)) {
                 throw new IOException("Unable to create image input stream");
             }
 
@@ -38,13 +41,13 @@ public class DetermineType {
     }
 
     public static Optional<String> determineFormat(File file) {
-        if (file == null) {
+        if (isNull(file)) {
             return Optional.empty();
         }
 
         try {
             String type = Files.probeContentType(file.toPath());
-            if (type != null && type.contains("/")) {
+            if (nonNull(type) && type.contains("/")) {
                 String format = type.split("/")[1].toLowerCase();
                 return switch (format) {
                     case "svg+xml"                              -> Optional.of("svg");
@@ -84,7 +87,7 @@ public class DetermineType {
     }
 
     public static String getExtensionByString(String filename) {
-        if (filename == null || !filename.contains(".")) {
+        if (isNull(filename) || !filename.contains(".")) {
             return "";
         }
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);

@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -36,7 +38,7 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML private Slider sliderBlurry;
     @FXML private StackPane dropZone;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit, btnCancel;
+    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit, btnCancelBlurring;
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, currentValueSlider;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer;
@@ -61,7 +63,7 @@ public class BlurImageController extends AbstractMediaController {
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         sliderBlurry.setMin(0);
-        sliderBlurry.setMax(100);
+        sliderBlurry.setMax(20);
         sliderBlurry.setValue(0);
 
         SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderBlurry, currentValueSlider, 20);
@@ -71,7 +73,7 @@ public class BlurImageController extends AbstractMediaController {
     }
 
     private void updatePreview(int radius) {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -129,8 +131,7 @@ public class BlurImageController extends AbstractMediaController {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
-        btnCancel.setVisible(true);
-        btnCancel.setManaged(true);
+        btnCancelBlurring.setDisable(false);
     }
 
     @Override
@@ -139,18 +140,19 @@ public class BlurImageController extends AbstractMediaController {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
-        btnCancel.setVisible(false);
-        btnCancel.setManaged(false);
+        btnCancelBlurring.setDisable(true);
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(c -> c.setDisable(true));
+        btnCancelBlurring.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
+        btnCancelBlurring.setDisable(true);
     }
 
     @FXML
@@ -173,7 +175,7 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(originalBufferedImage)) {
             return;
         }
 
@@ -183,10 +185,10 @@ public class BlurImageController extends AbstractMediaController {
                 updateProgress(0, 1.0);
                 updateMessage("Blurring image...");
                 int radius = (int) sliderBlurry.getValue();
-                
+
                 Optional<BufferedImage> blurred = com.imagetools.ImageTools.blurryImage(
-                        originalBufferedImage, 
-                        radius, 
+                        originalBufferedImage,
+                        radius,
                         progress -> updateProgress(progress, 1.0)
                 );
 
@@ -215,16 +217,17 @@ public class BlurImageController extends AbstractMediaController {
         };
 
         executeMediaTask(currentTask);
-        if (labelSuccess != null) {
+        if (nonNull(labelSuccess)) {
             labelSuccess.setManaged(true);
         }
     }
 
     @FXML
     private void cancelTask() {
-        if (currentTask != null && currentTask.isRunning()) {
+        if (nonNull(currentTask) && currentTask.isRunning()) {
             currentTask.cancel();
         }
+        cancelCurrentTask();
     }
 
     @Override
@@ -233,11 +236,11 @@ public class BlurImageController extends AbstractMediaController {
             currentBufferedImage = bi;
             setImagePreview(currentBufferedImage, imageViewPreview);
             Platform.runLater(() -> {
-                if (progressBar != null) {
+                if (nonNull(progressBar)) {
                     progressBar.setVisible(true);
                     progressBar.setManaged(true);
                 }
-                if (labelSuccess != null) {
+                if (nonNull(labelSuccess)) {
                     labelSuccess.setVisible(true);
                     labelSuccess.setManaged(true);
                 }
@@ -246,7 +249,7 @@ public class BlurImageController extends AbstractMediaController {
         }
 
         super.handleTaskSuccess(result);
-        
+
         if (Boolean.FALSE.equals(result)) {
             return;
         }
@@ -270,6 +273,8 @@ public class BlurImageController extends AbstractMediaController {
 
     @FXML
     public void isPressedReset() {
+        cancelTask();
+
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true, "image"
@@ -278,9 +283,7 @@ public class BlurImageController extends AbstractMediaController {
 
         currentBufferedImage = null;
         originalBufferedImage = null;
-        if (sliderBlurry != null) {
-            sliderBlurry.setValue(0);
-        }
+        sliderBlurry.setValue(0);
         currentValueSlider.setText("100%");
         disableControls();
     }
@@ -291,12 +294,12 @@ public class BlurImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage != null) {
+                if (nonNull(originalBufferedImage)) {
                     updatePreview((int) sliderBlurry.getValue());
-                    if (labelPreviewPlaceholder != null) {
+                    if (nonNull(labelPreviewPlaceholder)) {
                         labelPreviewPlaceholder.setVisible(false);
                     }
                 }
@@ -305,10 +308,10 @@ public class BlurImageController extends AbstractMediaController {
             }
         }
 
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + selectedFile.getName());
         }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }

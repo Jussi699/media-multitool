@@ -5,6 +5,9 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.image.BufferedImage;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkDimensionsHelper {
     private static String cachedFontName;
     private static int cachedFontSize;
@@ -14,7 +17,7 @@ public class WatermarkDimensionsHelper {
     private WatermarkDimensionsHelper() {}
 
     public static double getScale(BufferedImage image) {
-        if (image == null) return 1.0;
+        if (isNull(image)) return 1.0;
         return Math.min(image.getWidth(), image.getHeight()) / 1000.0;
     }
 
@@ -31,7 +34,7 @@ public class WatermarkDimensionsHelper {
         int fontSize = computeFontSize(settings, image);
         String fontName = settings.getFontName();
         
-        if (cachedFont == null || cachedFontSize != fontSize || !fontName.equals(cachedFontName)) {
+        if (isNull(cachedFont) || cachedFontSize != fontSize || !fontName.equals(cachedFontName)) {
             cachedFontName = fontName;
             cachedFontSize = fontSize;
             cachedFont = new Font(fontName, Font.BOLD, fontSize);
@@ -57,7 +60,7 @@ public class WatermarkDimensionsHelper {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
             double scale = getScale(image);
             double size = settings.getSize() * scale;
-            if (image != null) {
+            if (nonNull(image)) {
                 double maxDim = Math.min(image.getWidth(), image.getHeight());
                 if (size > maxDim) {
                     return new double[]{maxDim, maxDim};
@@ -103,7 +106,7 @@ public class WatermarkDimensionsHelper {
      * Check if watermark can be dragged based on current settings
      */
     public static boolean canDrag(WatermarkSettings settings, BufferedImage image) {
-        if (image == null || settings.getType() == WatermarkSettings.WatermarkType.NONE) {
+        if (isNull(image) || settings.getType() == WatermarkSettings.WatermarkType.NONE) {
             return false;
         }
         return settings.isSingleMode() && 
@@ -111,16 +114,16 @@ public class WatermarkDimensionsHelper {
     }
     
     /**
-     * Initialize default center position for watermark
+     * Initialize the default center position for the watermark
      */
     public static void initDefaultPosition(WatermarkSettings settings, BufferedImage image) {
-        if (image == null) {
+        if (isNull(image)) {
             return;
         }
         
         double[] dims = calculateDimensions(settings, image);
-        double posX = (image.getWidth() - dims[0]) / 2;
-        double posY = (image.getHeight() - dims[1]) / 2;
+        double posX   = (image.getWidth() - dims[0]) / 2;
+        double posY   = (image.getHeight() - dims[1]) / 2;
         
         settings.setPositionX(Math.max(0, posX));
         settings.setPositionY(Math.max(0, posY));
@@ -149,7 +152,7 @@ public class WatermarkDimensionsHelper {
      * Position the watermark at the given relative image coordinates (0–1 range).
      */
     public static void applyRelativePosition(double relX, double relY, WatermarkSettings settings, BufferedImage image) {
-        if (image == null) {
+        if (isNull(image)) {
             return;
         }
 

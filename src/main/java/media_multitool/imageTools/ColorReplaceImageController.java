@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -151,7 +153,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
     private void updateSourceColorFromCombo() {
         String color = comboSourceColor.getValue();
-        if (color != null) {
+        if (nonNull(color)) {
             textSourceColorHex.setText(ColorReplaceHelper.getHexFromColorName(color));
             updatePreview();
         }
@@ -159,14 +161,14 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
     private void updateTargetColorFromCombo() {
         String color = comboTargetColor.getValue();
-        if (color != null) {
+        if (nonNull(color)) {
             textTargetColorHex.setText(ColorReplaceHelper.getHexFromColorName(color));
             updatePreview();
         }
     }
 
     private void updatePreview() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
@@ -275,7 +277,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
     @FXML
     public void submitReplaceColorAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
             return;
         }
 
@@ -376,11 +378,11 @@ public class ColorReplaceImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectImageName.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
                 currentBufferedImage = originalBufferedImage;
-                if (currentBufferedImage != null) {
+                if (nonNull(currentBufferedImage)) {
                     updatePreview();
                     labelPreviewPlaceholder.setVisible(false);
                 }
@@ -397,7 +399,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
     }
 
     private void setPreview(BufferedImage bi) {
-        if (bi != null && imageViewPreview != null) {
+        if (nonNull(bi) && nonNull(imageViewPreview)) {
             Platform.runLater(() -> setImagePreview(bi, imageViewPreview));
         }
     }

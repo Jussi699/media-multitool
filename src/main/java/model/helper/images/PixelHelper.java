@@ -8,10 +8,17 @@ import javafx.scene.paint.Color;
 
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class PixelHelper {
+    private PixelHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     public static Optional<Color> pixelSelection(MouseEvent e, ImageView imageViewPreview) {
         Image image = imageViewPreview.getImage();
-        if (image == null) return Optional.empty();
+        if (isNull(image)) return Optional.empty();
 
         double imageWidth = image.getWidth();
         double imageHeight = image.getHeight();
@@ -46,7 +53,7 @@ public class PixelHelper {
         pixelY = Math.clamp(pixelY, 0, (int) imageHeight - 1);
 
         PixelReader pixelReader = image.getPixelReader();
-        if (pixelReader != null) {
+        if (nonNull(pixelReader)) {
             return Optional.of(pixelReader.getColor(pixelX, pixelY));
         }
 

@@ -4,6 +4,8 @@ import javafx.animation.PauseTransition;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
+import static java.util.Objects.nonNull;
+
 public class Message {
     public static void setupClearMessageTimer(Label label, PauseTransition timer, boolean manage) {
         setupClearMessageTimer(label, null, timer, manage);
@@ -37,7 +39,7 @@ public class Message {
     }
 
     public static void hideSuccessMessage(Label label, ProgressBar bar, PauseTransition timer, boolean managed) {
-        if (timer != null) timer.stop();
+        if (nonNull(timer)) timer.stop();
         label.setVisible(false);
         label.setManaged(managed);
         label.setText("");

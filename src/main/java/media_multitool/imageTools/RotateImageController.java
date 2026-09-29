@@ -29,6 +29,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -131,7 +133,7 @@ public class RotateImageController extends AbstractMediaController {
 
     @FXML
     private void onActionRotateImage(ActionEvent event) {
-        if (currentBufferedImage == null) {
+        if (isNull(currentBufferedImage)) {
             return;
         }
 
@@ -154,7 +156,7 @@ public class RotateImageController extends AbstractMediaController {
 
     @FXML
     public void submitRotateAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
             return;
         }
 
@@ -224,10 +226,10 @@ public class RotateImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFile.setText("Select image: " + selectedFile.getName());
 
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 currentBufferedImage = ImageIO.read(selectedFile);
-                if (currentBufferedImage != null) {
+                if (nonNull(currentBufferedImage)) {
                     setImagePreview(currentBufferedImage, imageViewPreview);
                         labelPreviewPlaceholder.setVisible(false);
                 }

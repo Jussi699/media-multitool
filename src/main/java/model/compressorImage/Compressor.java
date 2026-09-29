@@ -132,19 +132,19 @@ public class Compressor {
             
             try {
                 factory.setFeature("https://apache.org/xml/features/disallow-doctype-decl", true);
-            } catch (Exception e) {
+            } catch (Exception _) {
                 ErrorLogger.info("XML feature 'disallow-doctype-decl' not supported in this JDK version");
             }
             
             try {
                 factory.setFeature("https://xml.org/sax/features/external-general-entities", false);
-            } catch (Exception e) {
+            } catch (Exception _) {
                 ErrorLogger.info("XML feature 'external-general-entities' not supported in this JDK version");
             }
             
             try {
                 factory.setFeature("https://xml.org/sax/features/external-parameter-entities", false);
-            } catch (Exception e) {
+            } catch (Exception _) {
                 ErrorLogger.info("XML feature 'external-parameter-entities' not supported in this JDK version");
             }
 

@@ -14,7 +14,6 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import lombok.NonNull;
 import media_multitool.AbstractMediaController;
 import model.preprocessing.AudioPreprocessing;
 import model.preprocessing.MediaTagPreprocessing;
@@ -25,6 +24,7 @@ import model.select.SelectFile;
 import model.utility.*;
 import org.jaudiotagger.tag.FieldKey;
 import model.helper.TableViewHelper;
+import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.audioEditor.AudioEditor;
 import viewHelp.audioEditor.SetupScrollPane;
@@ -35,7 +35,10 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
+import static model.utility.TemplateCheck.*;
 import static viewHelp.Message.*;
 
 public class MediaTagEditorController extends AbstractMediaController {
@@ -103,11 +106,11 @@ public class MediaTagEditorController extends AbstractMediaController {
         initTextFieldFind();
         initComboBoxes();
 
-        genreComboBox.showingProperty().addListener((_, _, isShowing) -> {
-            if (Boolean.TRUE.equals(isShowing)) {
-                bindComboBoxPopupWidth(genreComboBox);
-            }
-        });
+//        genreComboBox.showingProperty().addListener((_, _, isShowing) -> {
+//            if (Boolean.TRUE.equals(isShowing)) {
+//                bindComboBoxPopupWidth(genreComboBox);
+//            }
+//        });
 
         audioProperties.setOutput(getSavedPath());
 
@@ -199,7 +202,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         Timeline searchDebounce = new Timeline(new KeyFrame(Duration.millis(300), _ -> {
             String query = textFieldFindFile.getText().toLowerCase();
             filteredFile.setPredicate(file -> {
-                if (file == null) return true;
+                if (isNull(file)) return true;
                 if (query.isEmpty()) return true;
                 return file.getFileName().toLowerCase().contains(query);
             });
@@ -224,7 +227,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         TableViewHelper.setCellValueFactoryCol(allTableCol, property);
 
         tableViewAudio.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
-            if (newValue != null) {
+            if (nonNull(newValue)) {
                 loadFile(new File(newValue.getPath()));
             }
         });
@@ -234,7 +237,6 @@ public class MediaTagEditorController extends AbstractMediaController {
         genreComboBox.getItems().addAll(
                 "Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Electronic", "Metal", "Blues", "Country", "Reggae", "Other"
         );
-        genreComboBox.setEditable(true);
     }
 
     @FXML
@@ -301,7 +303,7 @@ public class MediaTagEditorController extends AbstractMediaController {
 
     @FXML
     public void submitAndDownload() {
-        if (audioProperties.getSrcFile() == null) {
+        if(isNull(audioProperties.getSrcFile())) {
             ErrorLogger.error("Audio file not selected!");
             return;
         }
@@ -312,7 +314,7 @@ public class MediaTagEditorController extends AbstractMediaController {
                 updateProgress(10, 100);
                 if (isAudioFile(audioProperties.getSrcFile())) {
                     Map<FieldKey, String> tags = collectTags();
-                    String imagePath = audioProperties.getPathToImage() != null
+                    String imagePath = nonNull(audioProperties.getPathToImage())
                             ? audioProperties.getPathToImage().getPath()
                             : null;
                     AudioPreprocessing.applyTags(audioProperties.getSrcFile(), tags, imagePath);
@@ -361,7 +363,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         tags.put(FieldKey.YEAR, yearField.getText());
 
         String genre = genreComboBox.getEditor().getText();
-        if (genre != null && !genre.isEmpty()) {
+        if (nonNull(genre) && !genre.isEmpty()) {
             tags.put(FieldKey.GENRE, genre);
         }
 
@@ -395,7 +397,7 @@ public class MediaTagEditorController extends AbstractMediaController {
             if (isAudioFile(audioProperties.getSrcFile())) {
                 AudioEditor.updatePreview(audioProperties, imageViewPreview);
             }
-            
+
             DetailsAudioFile selected = tableViewAudio.getSelectionModel().getSelectedItem();
             if (selected != null && isAudioFile(audioProperties.getSrcFile())) {
                     Map<FieldKey, String> newTags = collectTags();
@@ -414,7 +416,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     @Override
-    protected void handleTaskFailure(@org.jspecify.annotations.NonNull Throwable exception) {
+    protected void handleTaskFailure(@NonNull Throwable exception) {
         super.handleTaskFailure(exception);
         Platform.runLater(() -> {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), audioProperties.getHideSuccessMessageTimer());
@@ -426,7 +428,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     public void onResetPressed() {
         ResetContext ctx = new ResetContext(
                 labelSelectImageName, labelSuccess, textDragZone, null,
-                dropZone, imageViewPreview, progressBar, true, "audio"
+                dropZone, imageViewPreview, progressBar, true, "photo, video or audio"
         );
         reset(audioProperties, ctx, "Selected audio file: none");
         AudioEditor.loadDefaultPreview(imageViewPreview);
@@ -446,6 +448,16 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!isValidFile(selectedFile)) {
+            return;
+        }
+
+        ErrorLogger.info("User selected file: " + selectedFile.getAbsolutePath());
+
+        if (!canReadAndWrite(selectedFile)) {
+            return;
+        }
+
         configureEditableFields(selectedMediaType(selectedFile), getEditableTags(selectedFile));
         enableControls();
         audioProperties.setSrcFile(selectedFile);
@@ -507,12 +519,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         AudioEditor.setGenreValue(genreComboBox, tags.get("genre"));
     }
 
-    private boolean isAudioFile(File file) {
-        return file != null && Global.getAllSupportedAudioFormats().stream()
-                .anyMatch(format -> file.getName().toLowerCase(Locale.ROOT).endsWith(format));
-    }
-
-    private String selectedMediaType(File file) {
+    private String selectedMediaType(@NonNull File file) {
         if (isAudioFile(file)) {
             return "audio";
         }
@@ -542,7 +549,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     private void updateTagFieldAvailability() {
-        if (tagTextFields == null || tagLabels == null) {
+        if (isNull(tagTextFields) || isNull(tagLabels)) {
             return;
         }
         tagTextFields.forEach((key, field) -> {
@@ -591,13 +598,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         mediaTypeDialog.setHeaderText("Choose files to search for");
         mediaTypeDialog.setContentText("Media type:");
         mediaTypeDialog.setGraphic(Alerts.createQuestionGraphic());
-        mediaTypeDialog.setOnShown(_ -> {
-            mediaTypeDialog.getDialogPane().setGraphic(Alerts.createQuestionGraphic());
-            ComboBox<?> comboBox = (ComboBox<?>) mediaTypeDialog.getDialogPane().lookup(".combo-box");
-            if (comboBox != null) {
-                bindComboBoxPopupWidth(comboBox);
-            }
-        });
+        mediaTypeDialog.setOnShown(_ -> mediaTypeDialog.getDialogPane().setGraphic(Alerts.createQuestionGraphic()));
 
         mediaTypeDialog.showAndWait().ifPresent(mediaType ->
                 directoryChooser(stage, audioProperties.getOutput(), "Select directory")
@@ -635,20 +636,5 @@ public class MediaTagEditorController extends AbstractMediaController {
             case "All media" -> Global.getAllSupportedMediaFormats();
             default -> throw new IllegalArgumentException("Unsupported media type: " + mediaType);
         };
-    }
-
-    private void bindComboBoxPopupWidth(ComboBox<?> comboBox) {
-        Platform.runLater(() -> {
-            if (comboBox.getSkin() == null) {
-                return;
-            }
-
-            var popupListView = (ListView<?>) comboBox.getSkin().getNode().lookup(".list-view");
-            if (popupListView != null) {
-                popupListView.minWidthProperty().bind(comboBox.widthProperty());
-                popupListView.prefWidthProperty().bind(comboBox.widthProperty());
-                popupListView.maxWidthProperty().bind(comboBox.widthProperty());
-            }
-        });
     }
 }

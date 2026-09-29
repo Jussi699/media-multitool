@@ -16,6 +16,9 @@ import javax.swing.*;
 import java.awt.GraphicsEnvironment;
 import java.util.function.DoubleConsumer;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkTextController {
     @FXML private Label labelTitle;
     @FXML private TextField fieldText;
@@ -56,13 +59,13 @@ public class WatermarkTextController {
 
     /** Sets the title label text inside the window (Variant A shared-FXML approach). */
     public void setWindowTitle(String title) {
-        if (labelTitle != null) {
+        if (nonNull(labelTitle)) {
             labelTitle.setText(title);
         }
     }
 
     public void loadSettings(WatermarkSettings settings) {
-        if (settings == null || settings.getType() != WatermarkSettings.WatermarkType.TEXT) {
+        if (isNull(settings) || settings.getType() != WatermarkSettings.WatermarkType.TEXT) {
             return;
         }
 
@@ -76,10 +79,10 @@ public class WatermarkTextController {
         sliderRotation.setValue(settings.getRotation());
 
         java.awt.Color awtColor = settings.getTextColor();
-        if (awtColor != null) {
+        if (nonNull(awtColor)) {
             this.selectedColorFX = WorkColors.toFxColor(awtColor);
             WorkColors.updateColorView(awtColor, btnColorPicker);
-            if (swingColorPicker != null) {
+            if (nonNull(swingColorPicker)) {
                 swingColorPicker.setColor(awtColor);
             }
         }
@@ -89,7 +92,7 @@ public class WatermarkTextController {
     }
 
     private void updateEffectCombo(String effect) {
-        if (effect != null && !effect.isEmpty()) {
+        if (nonNull(effect) && !effect.isEmpty()) {
             String capitalized = effect.substring(0, 1).toUpperCase() + effect.substring(1).toLowerCase();
             comboBoxEffect.setValue(capitalized);
         }
@@ -98,9 +101,9 @@ public class WatermarkTextController {
     private void updateTilePattern(String pattern) {
         switch (pattern) {
             case DEFAULT_PATTERN  -> tileSingle.setSelected(true);
-            case "grid"    -> tileEvenGrid.setSelected(true);
-            case "diamond" -> tileDiamondMesh.setSelected(true);
-            default -> tileSingle.setSelected(true);
+            case "grid"           -> tileEvenGrid.setSelected(true);
+            case "diamond"        -> tileDiamondMesh.setSelected(true);
+            default               -> tileSingle.setSelected(true);
         }
     }
 
@@ -163,7 +166,7 @@ public class WatermarkTextController {
 
         selectedColorFX = Color.WHITE;
         WorkColors.updateColorView(java.awt.Color.WHITE, btnColorPicker);
-        if (swingColorPicker != null) {
+        if (nonNull(swingColorPicker)) {
             swingColorPicker.setColor(java.awt.Color.WHITE);
         }
 
@@ -185,14 +188,14 @@ public class WatermarkTextController {
         });
 
         comboBoxFont.valueProperty().addListener((_, _, newVal) -> {
-            if (newVal != null) {
+            if (nonNull(newVal)) {
                 settings.updatePreservingPosition(s -> s.setFontName(newVal));
                 updatePreview();
             }
         });
 
         comboBoxEffect.valueProperty().addListener((_, _, newVal) -> {
-            if (newVal != null) {
+            if (nonNull(newVal)) {
                 settings.updatePreservingPosition(s -> s.setEffect(newVal.toLowerCase()));
                 updatePreview();
             }
@@ -200,13 +203,13 @@ public class WatermarkTextController {
     }
 
     private void updatePreview() {
-        if (mainImageController != null) {
+        if (nonNull(mainImageController)) {
             mainImageController.updateWatermarkPreview(settings);
         }
-        if (mainPdfController != null) {
+        if (nonNull(mainPdfController)) {
             mainPdfController.updateWatermarkPreview(settings);
         }
-        if (mainVideoController != null) {
+        if (nonNull(mainVideoController)) {
             mainVideoController.updateWatermarkPreview(settings);
         }
     }
@@ -229,11 +232,11 @@ public class WatermarkTextController {
 
     @FXML
     private void handleColorChange() {
-        if (swingDialog == null) {
+        if (isNull(swingDialog)) {
             initSwingColorPicker();
             bindSwingDialogToStage();
         }
-        if (swingColorPicker != null) {
+        if (nonNull(swingColorPicker)) {
             swingColorPicker.setColor(WorkColors.toAwtColor(selectedColorFX));
         }
         if (!swingDialog.isVisible()) {
@@ -267,11 +270,11 @@ public class WatermarkTextController {
 
     private void bindSwingDialogToStage() {
         Platform.runLater(() -> {
-            if (btnColorPicker.getScene() != null && btnColorPicker.getScene().getWindow() != null) {
+            if (nonNull(btnColorPicker.getScene()) && nonNull(btnColorPicker.getScene().getWindow())) {
                 btnColorPicker.getScene().getWindow().addEventHandler(
                         javafx.stage.WindowEvent.WINDOW_HIDING,
                         _ -> {
-                            if (swingDialog != null) swingDialog.dispose();
+                            if (nonNull(swingDialog)) swingDialog.dispose();
                         }
                 );
             }

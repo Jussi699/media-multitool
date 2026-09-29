@@ -18,6 +18,8 @@ import lombok.Getter;
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
+import static java.util.Objects.nonNull;
+
 public class PdfPagePreviewCard {
     @Getter private final StackPane container;
     @Getter private final int pageIndex;
@@ -58,7 +60,7 @@ public class PdfPagePreviewCard {
         imageView.setFitHeight(imageContainerHeight);
         imageView.setPreserveRatio(true);
         
-        if (pageImage != null) {
+        if (nonNull(pageImage)) {
             Image img = SwingFXUtils.toFXImage(pageImage, null);
             imageView.setImage(img);
         }
@@ -114,7 +116,7 @@ public class PdfPagePreviewCard {
 
         container.setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
-            if (db.hasString() && onDragDropped != null) {
+            if (db.hasString() && nonNull(onDragDropped)) {
                 onDragDropped.accept(db.getString());
                 event.setDropCompleted(true);
             } else {

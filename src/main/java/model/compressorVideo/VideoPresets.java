@@ -66,9 +66,9 @@ public class VideoPresets {
         if (!compressAudio) {
             AudioAttributes originalAudio = PreparingAttributes.audioAttributes(channels, samplingRate, aBitrate, null);
 
-            Preset basic  = new Preset("Basic",  PreparingAttributes.videoAttributes(fps,                 abrBasic,  null, null, resolution), originalAudio, crfBasic);
-            Preset strong = new Preset("Strong", PreparingAttributes.videoAttributes(Math.min(fps, 24),   abrStrong, null, null, strongRes),  originalAudio, crfStrong);
-            Preset superP = new Preset("Super",  PreparingAttributes.videoAttributes(fps,                 abrSuper,  null, null, resolution), originalAudio, crfSuper);
+            Preset basic  = new Preset("Basic",  PreparingAttributes.videoAttributes(fps, abrBasic,  null, null, resolution), originalAudio, crfBasic);
+            Preset strong = new Preset("Strong", PreparingAttributes.videoAttributes(Math.min(fps, 24), abrStrong, null, null, strongRes),  originalAudio, crfStrong);
+            Preset superP = new Preset("Super",  PreparingAttributes.videoAttributes(fps, abrSuper,  null, null, resolution), originalAudio, crfSuper);
 
             return Optional.of(new Preset[]{basic, strong, superP});
         }
@@ -103,7 +103,7 @@ public class VideoPresets {
             if (w % 2 != 0) w--;
             if (h % 2 != 0) h--;
             return w + "x" + h;
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             return resolution;
         }
     }

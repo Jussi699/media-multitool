@@ -71,12 +71,11 @@
                 <Button fx:id="btnSubmitAndCopy"
                         prefWidth="120.0"
                         text="To Clipboard"/>
-                <Button fx:id="btnCancel" mnemonicParsing="false"
+                <Button fx:id="btnCancelBlurring" mnemonicParsing="false"
+                        disable="true"
                         onAction="#cancelTask"
                         prefWidth="120.0"
-                        text="Cancel"
-                        visible="false"
-                        managed="false"/>
+                        text="Cancel blurring" />
             </HBox>
         </VBox>
 

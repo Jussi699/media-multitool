@@ -15,7 +15,10 @@ import ws.schild.jave.progress.EncoderProgressListener;
 
 import java.io.File;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 public class ConverterVideoAudioFile {
     private final Encoder encoder = new Encoder();
@@ -23,7 +26,7 @@ public class ConverterVideoAudioFile {
 
     public File nameFileAfter;
 
-    public boolean convert(VideoAndAudioProperties properties, TypeMedia typeConvert, Consumer<Double> progressConsumer) {
+    public boolean convert(VideoAndAudioProperties properties, TypeMedia typeConvert, DoubleConsumer progressConsumer) {
         File file = properties.getSrcFile();
         if (!checkingFile(file)) {
             return false;
@@ -50,7 +53,7 @@ public class ConverterVideoAudioFile {
 
                 @Override
                 public void progress(int permille) {
-                    if (progressConsumer != null) {
+                    if (nonNull(progressConsumer)) {
                         progressConsumer.accept(permille / 1000.0);
                     }
                 }
@@ -100,7 +103,7 @@ public class ConverterVideoAudioFile {
         attrs.setOutputFormat(normalizedFormat);
 
         boolean isVideo = (type == TypeMedia.VIDEO);
-        boolean hasAudio = (sourceInfo != null && sourceInfo.getAudio() != null);
+        boolean hasAudio = (nonNull(sourceInfo) && nonNull(sourceInfo.getAudio()));
         
         ErrorLogger.info("Creating encoding attributes - Format: " + normalizedFormat + ", IsVideo: " + isVideo + ", HasAudio: " + hasAudio);
 
@@ -169,7 +172,7 @@ public class ConverterVideoAudioFile {
 
     public void cancelConversion() {
         File target = currentTarget;
-        if (target != null) {
+        if (nonNull(target)) {
             EncoderUtility.abortEncoding(encoder, target);
             currentTarget = null;
         } else {
@@ -182,7 +185,7 @@ public class ConverterVideoAudioFile {
     }
 
     public static boolean shouldSetAudioBitrate(String codec) {
-        if (codec == null) return true;
+        if (isNull(codec)) return true;
         String c = codec.toLowerCase();
         return !c.contains("flac") && !c.contains("alac") && !c.contains("pcm");
     }
@@ -190,10 +193,10 @@ public class ConverterVideoAudioFile {
     private void handleError(Exception e) {
         String msg = e.getMessage();
         Throwable cause = e.getCause();
-        String causeMsg = (cause != null) ? cause.getMessage() : "";
+        String causeMsg = (nonNull(cause)) ? cause.getMessage() : "";
 
-        boolean isCancelled = (msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
-                || (causeMsg != null && causeMsg.contains("Stream Closed"));
+        boolean isCancelled = (nonNull(msg) && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
+                || (nonNull(causeMsg) && causeMsg.contains("Stream Closed"));
 
         if (isCancelled) {
             ErrorLogger.info("Conversion was cancelled by user.");
@@ -204,7 +207,7 @@ public class ConverterVideoAudioFile {
     }
 
     private void clearCurrentTarget(File target) {
-        if (target != null && target.equals(currentTarget)) {
+        if (nonNull(target) && target.equals(currentTarget)) {
             currentTarget = null;
         }
     }

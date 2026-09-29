@@ -9,6 +9,9 @@ import model.logger.ErrorLogger;
 
 import java.util.function.Consumer;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class OpenWatermarkWindow {
     public <T> T openWatermarkWindow(RecordOpenWatermarkWindow record, Consumer<T> controllerSetup, Consumer<T> settingsLoader) {
         Stage[] stageHolder = record.stageHolder();
@@ -18,7 +21,7 @@ public class OpenWatermarkWindow {
             T controller;
             Stage stage = stageHolder[0];
 
-            if (stage == null) {
+            if (isNull(stage)) {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource(record.fxmlPath()));
                 Scene scene = new Scene(loader.load());
                 scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
@@ -49,7 +52,7 @@ public class OpenWatermarkWindow {
                 controller = existing;
             }
 
-            if (controller != null && record.currentWatermarkSettings().getType() == record.expectedType()) {
+            if (nonNull(controller) && record.currentWatermarkSettings().getType() == record.expectedType()) {
                 settingsLoader.accept(controller);
             }
 

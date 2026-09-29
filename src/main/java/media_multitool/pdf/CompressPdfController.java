@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
 import static viewHelp.Utility.formatFileSize;
@@ -72,7 +74,7 @@ public class CompressPdfController extends AbstractMediaController {
         btnChoiceDirForSaveFile.setDisable(true);
         btnReset.setDisable(true);
         btnSubmit.setDisable(true);
-        if (btnCancel != null) btnCancel.setDisable(false);
+        btnCancel.setDisable(false);
     }
 
     @Override
@@ -82,20 +84,20 @@ public class CompressPdfController extends AbstractMediaController {
         btnChoiceDirForSaveFile.setDisable(false);
         btnReset.setDisable(false);
         btnSubmit.setDisable(false);
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
         cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
         listControls.forEach(lc -> lc.setDisable(true));
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         listControls.forEach(lc -> lc.setDisable(false));
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
     }
 
     @FXML
@@ -168,7 +170,7 @@ public class CompressPdfController extends AbstractMediaController {
     }
 
     private void updatePreview() {
-        if (currentDoc != null) {
+        if (nonNull(currentDoc)) {
             try {
                 PDFRenderer renderer = new PDFRenderer(currentDoc);
                 BufferedImage bim = renderer.renderImageWithDPI(0, 72);
@@ -183,7 +185,7 @@ public class CompressPdfController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (result == null || Boolean.FALSE.equals(result)) {
+        if (isNull(result) || Boolean.FALSE.equals(result)) {
             return;
         }
         File outputFile = (File) result;
@@ -197,7 +199,7 @@ public class CompressPdfController extends AbstractMediaController {
 
     @Override
     protected void handleTaskFailure(@NonNull Throwable exception) {
-        if (exception instanceof InterruptedException || (exception.getMessage() != null && exception.getMessage().contains("cancelled")) || cancelFlag.get()) {
+        if (exception instanceof InterruptedException || (nonNull(exception.getMessage()) && exception.getMessage().contains("cancelled")) || cancelFlag.get()) {
             handleTaskCancelled();
             return;
         }
@@ -226,7 +228,7 @@ public class CompressPdfController extends AbstractMediaController {
             ErrorLogger.error("Error closing document during reset: " + e.getMessage());
         }
 
-        if (imageViewPdf != null) {
+        if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
 
@@ -241,7 +243,7 @@ public class CompressPdfController extends AbstractMediaController {
     }
 
     private void updateEstimatedSize() {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             labelEstimatedSize.setText("Estimated size: Waiting load PDF");
             return;
         }
@@ -260,7 +262,7 @@ public class CompressPdfController extends AbstractMediaController {
     }
 
     private CompressPdfHelper.CompressionLevel getSelectedCompressionLevel() {
-        if (btnHighCompression.isSelected()) return CompressPdfHelper.CompressionLevel.HIGH;
+        if (btnHighCompression.isSelected())   return CompressPdfHelper.CompressionLevel.HIGH;
         if (btnMediumCompression.isSelected()) return CompressPdfHelper.CompressionLevel.MEDIUM;
         return CompressPdfHelper.CompressionLevel.LOW;
     }
@@ -330,7 +332,7 @@ public class CompressPdfController extends AbstractMediaController {
         }
 
         bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
-        if (currentDoc != null && !currentDoc.isEncrypted()) {
+        if (nonNull(currentDoc) && !currentDoc.isEncrypted()) {
             updatePreview();
         }
         updateEstimatedSize();

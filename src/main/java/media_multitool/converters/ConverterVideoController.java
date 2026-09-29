@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static viewHelp.Message.*;
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.*;
@@ -56,9 +58,6 @@ public class ConverterVideoController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        assert dropZone != null;
-        assert textDragZone != null;
-
         initLists();
         initComboBoxes();
 
@@ -196,11 +195,11 @@ public class ConverterVideoController extends AbstractMediaController {
     protected void handleTaskFailure(@NonNull Throwable exception) {
         String msg = exception.getMessage();
         Throwable cause = exception.getCause();
-        String causeMsg = (cause != null) ? cause.getMessage() : "";
+        String causeMsg = nonNull(cause) ? cause.getMessage() : "";
 
-        boolean isCancelled = (msg != null && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
-                || (causeMsg != null && causeMsg.contains("Stream Closed"))
-                || (currentTask != null && currentTask.isCancelled());
+        boolean isCancelled = (nonNull(msg) && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed")))
+                || (nonNull(causeMsg) && causeMsg.contains("Stream Closed"))
+                || (nonNull(currentTask) && currentTask.isCancelled());
 
         if (isCancelled) {
             handleTaskCancelled();
@@ -236,7 +235,7 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private void updateLabelFromMetadata(MultimediaInfo info) {
-        if (info == null || videoProperties.getSrcFile() == null) return;
+        if (isNull(info) || isNull(videoProperties.getSrcFile())) return;
 
         String res = parseResolution(info).orElse("N/A");
         int fps = parseFps(info);
@@ -245,8 +244,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
         String infoText = String.format("Selected file: %s [%s, %d fps, V:%d kbps, A:%d kbps]",
                 videoProperties.getSrcFile().getName(),
-                res,
-                fps, vbr, abr);
+                res, fps, vbr, abr);
 
         labelSelectFile.setText(infoText);
     }
@@ -266,23 +264,23 @@ public class ConverterVideoController extends AbstractMediaController {
         switch (comboBox.getId()) {
             case "comboBoxChoiceVideoBitRate" -> {
                 selectedItem = comboBoxChoiceVideoBitRate.getValue();
-                videoProperties.setVideoBitRate((selectedItem != null) ? (int) selectedItem.id() : -1);
+                videoProperties.setVideoBitRate((nonNull(selectedItem)) ? (int) selectedItem.id() : -1);
             }
             case "comboBoxChoiceAudioBitRate" -> {
                 selectedItem = comboBoxChoiceAudioBitRate.getValue();
-                videoProperties.setAudioBitRate((selectedItem != null) ? (int) selectedItem.id() : -1);
+                videoProperties.setAudioBitRate((nonNull(selectedItem)) ? (int) selectedItem.id() : -1);
             }
             case "comboBoxChoiceChannels" -> {
                 selectedItem = comboBoxChoiceChannels.getValue();
-                videoProperties.setChannel((selectedItem != null) ? (int) selectedItem.id() : -1);
+                videoProperties.setChannel((nonNull(selectedItem)) ? (int) selectedItem.id() : -1);
             }
             case "comboBoxChoiceSamplingRate" -> {
                 selectedItem = comboBoxChoiceSamplingRate.getValue();
-                videoProperties.setSamplingRate((selectedItem != null) ? (int) selectedItem.id() : -1);
+                videoProperties.setSamplingRate((nonNull(selectedItem)) ? (int) selectedItem.id() : -1);
             }
             case "comboBoxChoiceFPS" -> {
                 selectedItem = comboBoxChoiceFPS.getValue();
-                videoProperties.setFps((selectedItem != null) ? (int) selectedItem.id() : -1);
+                videoProperties.setFps((nonNull(selectedItem)) ? (int) selectedItem.id() : -1);
             }
         }
     }
@@ -308,17 +306,17 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private boolean checks() {
-        if(videoProperties.getSrcFile() == null) {
+        if(isNull(videoProperties.getSrcFile())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Missing selection", "Select video file!");
             return false;
         }
 
-        if(videoProperties.getOutput() == null) {
+        if(isNull(videoProperties.getOutput())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Missing selection", "Select output directory!");
             return false;
         }
 
-        if(videoProperties.getTargetFormat() == null) {
+        if(isNull(videoProperties.getTargetFormat())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Missing selection", "Select target format!");
             return false;
         }
@@ -335,7 +333,7 @@ public class ConverterVideoController extends AbstractMediaController {
         CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()), IO_EXECUTOR)
             .thenAccept(sourceInfoOpt -> {
                 MultimediaInfo sourceInfo = sourceInfoOpt.orElse(null);
-                if (sourceInfo != null && sourceInfo.getAudio() == null) {
+                if (nonNull(sourceInfo) && isNull(sourceInfo.getAudio())) {
                     Platform.runLater(() -> {
                         boolean proceed = Alerts.confirmationDialog(
                                 "No Audio Track Detected",
@@ -363,18 +361,24 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private void continueWithConversion(MultimediaInfo sourceInfo) {
-        int finalVideoBitrate = (videoProperties.getVideoBitRate() == -1) ? parseVideoBitrate(sourceInfo) : videoProperties.getVideoBitRate();
-        int finalAudioBitrate = (videoProperties.getAudioBitRate() == -1) ? parseAudioBitrate(sourceInfo) : videoProperties.getAudioBitRate();
-        int finalChannels = (videoProperties.getChannel() == -1) ? parseChannels(sourceInfo) : videoProperties.getChannel();
-        int finalSamplingRate = (videoProperties.getSamplingRate() == -1) ? parseSamplingRate(sourceInfo) : videoProperties.getSamplingRate();
-        int finalFps = (videoProperties.getFps() == -1) ? parseFps(sourceInfo) : videoProperties.getFps();
+        int videoBitrate = videoProperties.getVideoBitRate();
+        int audioBitrate = videoProperties.getAudioBitRate();
+        int channel = videoProperties.getChannel();
+        int samplingRate = videoProperties.getSamplingRate();
+        int fps = videoProperties.getFps();
+
+        int finalVideoBitrate = (videoBitrate == -1) ? parseVideoBitrate(sourceInfo) : videoBitrate;
+        int finalAudioBitrate = (audioBitrate == -1) ? parseAudioBitrate(sourceInfo) : audioBitrate;
+        int finalChannels = (channel == -1) ? parseChannels(sourceInfo) : channel;
+        int finalSamplingRate = (samplingRate == -1) ? parseSamplingRate(sourceInfo) : samplingRate;
+        int finalFps = (fps == -1) ? parseFps(sourceInfo) : fps;
 
         if (finalVideoBitrate <= 0) finalVideoBitrate = parseBitrate(sourceInfo);
         if (finalVideoBitrate <= 0) finalVideoBitrate = 5000;
         if (finalAudioBitrate <= 0) finalAudioBitrate = 192;
-        if (finalChannels <= 0) finalChannels = 2;
         if (finalSamplingRate <= 0) finalSamplingRate = 48000;
-        if (finalFps <= 0) finalFps = 30;
+        if (finalChannels <= 0)     finalChannels = 2;
+        if (finalFps <= 0)          finalFps = 30;
 
         ErrorLogger.info("Video conversion parameters: V-BR=" + finalVideoBitrate
                 + ", A-BR=" + finalAudioBitrate + ", CH=" + finalChannels 
@@ -390,7 +394,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
         String finalResolution = ("Match source".equalsIgnoreCase(videoProperties.getResolution())) ? parseResolution(sourceInfo).orElse(null) : videoProperties.getResolution();
 
-        videoProperties.setUseGPU(checkBoxGPU != null && checkBoxGPU.isSelected());
+        videoProperties.setUseGPU(nonNull(checkBoxGPU) && checkBoxGPU.isSelected());
         boolean useGPU = videoProperties.isUseGPU();
 
         String format = videoProperties.getTargetFormat();
@@ -422,7 +426,7 @@ public class ConverterVideoController extends AbstractMediaController {
 
     @FXML
     public void onCancelConversion() {
-        if (currentTask != null) currentTask.cancelConversion();
+        if (nonNull(currentTask)) currentTask.cancelConversion();
     }
 
     @FXML

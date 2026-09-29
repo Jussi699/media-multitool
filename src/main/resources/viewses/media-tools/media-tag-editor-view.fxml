@@ -117,7 +117,7 @@
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
                                 <Label fx:id="genreLabel" styleClass="label-h" text="Genre:" textFill="WHITE"/>
                                 <ComboBox fx:id="genreComboBox" maxWidth="Infinity"
-                                          prefHeight="25.0" prefWidth="0.0"/>
+                                          prefHeight="25.0" prefWidth="0.0" styleClass="combo-box-genre"/>
                             </VBox>
                         </HBox>
                         <VBox spacing="2.0">

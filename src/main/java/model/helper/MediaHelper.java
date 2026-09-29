@@ -7,6 +7,8 @@ import model.logger.ErrorLogger;
 import java.util.Locale;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+
 public class MediaHelper {
     public static String getVideoCodec(String format, boolean useGPU) {
         return switch (format.toLowerCase(Locale.ROOT)) {
@@ -52,7 +54,7 @@ public class MediaHelper {
     }
 
     public static String getFFmpegFormat(String format) {
-        if(format == null) {
+        if(isNull(format)) {
             ErrorLogger.error("Unexpected format");
             throw new IllegalArgumentException("Unexpected format");
         }

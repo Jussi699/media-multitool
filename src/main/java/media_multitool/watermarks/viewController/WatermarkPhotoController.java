@@ -19,6 +19,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.function.DoubleConsumer;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkPhotoController {
     @FXML private Label labelTitle;
     @FXML private StackPane watermarkDropZone;
@@ -51,13 +54,13 @@ public class WatermarkPhotoController {
 
     /** Sets the title label text inside the window (Variant A shared-FXML approach). */
     public void setWindowTitle(String title) {
-        if (labelTitle != null) {
+        if (nonNull(labelTitle)) {
             labelTitle.setText(title);
         }
     }
 
     public void loadSettings(WatermarkSettings settings) {
-        if (settings == null || settings.getType() != WatermarkSettings.WatermarkType.IMAGE) {
+        if (isNull(settings) || settings.getType() != WatermarkSettings.WatermarkType.IMAGE) {
             return;
         }
 
@@ -72,17 +75,17 @@ public class WatermarkPhotoController {
         
         switch (settings.getTilePattern()) {
             case DEFAULT_PATTERN  -> tileSingle.setSelected(true);
-            case "grid"    -> tileEvenGrid.setSelected(true);
-            case "diamond" -> tileDiamondMesh.setSelected(true);
-            default -> tileSingle.setSelected(true);
+            case "grid"           -> tileEvenGrid.setSelected(true);
+            case "diamond"        -> tileDiamondMesh.setSelected(true);
+            default               -> tileSingle.setSelected(true);
         }
         
-        if (settings.getWatermarkImage() != null) {
+        if (nonNull(settings.getWatermarkImage())) {
             labelWatermarkName.setText("Watermark loaded");
-            if (textDragZone != null) {
+            if (nonNull(textDragZone)) {
                 textDragZone.setText("Watermark loaded");
             }
-            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
+            if (nonNull(watermarkDropZone) && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
                 watermarkDropZone.getStyleClass().add(DROP_ZONE_FILLED);
             }
         }
@@ -194,7 +197,7 @@ public class WatermarkPhotoController {
         Stage stage = (Stage) btnSelectWatermark.getScene().getWindow();
         File file = fileChooser.showOpenDialog(stage);
 
-        if (file != null) {
+        if (nonNull(file)) {
             loadWatermarkImage(file);
         }
     }
@@ -202,16 +205,16 @@ public class WatermarkPhotoController {
     private void loadWatermarkImage(File file) {
         try {
             BufferedImage watermarkImage = ImageIO.read(file);
-            if (watermarkImage == null) {
+            if (isNull(watermarkImage)) {
                 ErrorLogger.error("Failed to load watermark image: file returned null");
                 return;
             }
 
             labelWatermarkName.setText(file.getName());
-            if (textDragZone != null) {
+            if (nonNull(textDragZone)) {
                 textDragZone.setText("Selected: " + file.getName());
             }
-            if (watermarkDropZone != null && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
+            if (nonNull(watermarkDropZone) && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
                 watermarkDropZone.getStyleClass().add(DROP_ZONE_FILLED);
             }
 
@@ -224,13 +227,13 @@ public class WatermarkPhotoController {
     }
 
     private void updatePreview() {
-        if (mainImageController != null) {
+        if (nonNull(mainImageController)) {
             mainImageController.updateWatermarkPreview(settings);
         }
-        if (mainPdfController != null) {
+        if (nonNull(mainPdfController)) {
             mainPdfController.updateWatermarkPreview(settings);
         }
-        if (mainVideoController != null) {
+        if (nonNull(mainVideoController)) {
             mainVideoController.updateWatermarkPreview(settings);
         }
     }
@@ -249,13 +252,13 @@ public class WatermarkPhotoController {
         this.relativePositionX = relX;
         this.relativePositionY = relY;
         
-        if (mainImageController != null) {
+        if (nonNull(mainImageController)) {
             mainImageController.updateWatermarkPosition(relX, relY, settings);
         }
-        if (mainPdfController != null) {
+        if (nonNull(mainPdfController)) {
             mainPdfController.updateWatermarkPosition(relX, relY, settings);
         }
-        if (mainVideoController != null) {
+        if (nonNull(mainVideoController)) {
             mainVideoController.updateWatermarkPosition(relX, relY, settings);
         }
     }
@@ -264,10 +267,10 @@ public class WatermarkPhotoController {
     private void handleResetSettings() {
         setupDefaults();
         labelWatermarkName.setText("None selected");
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Drag watermark here");
         }
-        if (watermarkDropZone != null) {
+        if (nonNull(watermarkDropZone)) {
             watermarkDropZone.getStyleClass().remove(DROP_ZONE_FILLED);
         }
         settings.setWatermarkImage(null);
@@ -279,10 +282,10 @@ public class WatermarkPhotoController {
         settings.setType(WatermarkSettings.WatermarkType.IMAGE);
         setupDefaults();
         labelWatermarkName.setText("None selected");
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Drag watermark here");
         }
-        if (watermarkDropZone != null) {
+        if (nonNull(watermarkDropZone)) {
             watermarkDropZone.getStyleClass().remove(DROP_ZONE_FILLED);
         }
         tileSingle.setSelected(true);

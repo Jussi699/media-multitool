@@ -13,6 +13,10 @@ import java.util.zip.ZipOutputStream;
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 
 public class SplitPdfHelper {
+    private SplitPdfHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     public static void splitMultiplePagesToZip(PDDocument sourceDoc, PDFMergerUtility merger, File outputDir,
                                          String baseName, String shortId, List<Integer> sortedIndices,
                                          BiConsumer<Long, Long> progress) throws Exception {

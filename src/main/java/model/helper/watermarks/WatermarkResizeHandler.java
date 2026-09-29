@@ -6,6 +6,8 @@ import javafx.scene.input.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
+import static java.util.Objects.nonNull;
+
 public class WatermarkResizeHandler {
     private final ImageView imageView;
     private BufferedImage image;
@@ -160,7 +162,7 @@ public class WatermarkResizeHandler {
         settings.setPositionY(Math.max(0, newPosY));
         settings.setUseCustomPosition(true);
         
-        if (onUpdateCallback != null) {
+        if (nonNull(onUpdateCallback)) {
             onUpdateCallback.accept(settings);
         }
         
@@ -171,9 +173,9 @@ public class WatermarkResizeHandler {
      * Handle mouse release - complete resize operation
      */
     public void handleMouseReleased(MouseEvent event) {
-        if (activeHandle != null) {
+        if (nonNull(activeHandle)) {
             activeHandle = null;
-            if (onResizeCompleteCallback != null) {
+            if (nonNull(onResizeCompleteCallback)) {
                 onResizeCompleteCallback.run();
             }
             event.consume();

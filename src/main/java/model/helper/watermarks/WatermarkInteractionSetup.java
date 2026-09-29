@@ -7,6 +7,9 @@ import javafx.scene.layout.StackPane;
 import java.awt.image.BufferedImage;
 import java.util.function.Supplier;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 /**
  * Encapsulates all watermark interaction setup logic (mouse events, drag, resize, overlay
  * listeners) that is shared between WatermarkImageController and WatermarkPdfController.
@@ -65,13 +68,13 @@ public class WatermarkInteractionSetup {
      * Safe to call even when the view is not yet fully initialised (guards are in place).
      */
     public void setup() {
-        if (imageView == null || previewContainer == null) {
+        if (isNull(imageView) || isNull(previewContainer)) {
             return;
         }
 
         imageView.setPickOnBounds(true);
 
-        if (watermarkOverlayPane != null) {
+        if (nonNull(watermarkOverlayPane)) {
             overlayManager.buildOverlayElements();
         }
 
@@ -85,7 +88,7 @@ public class WatermarkInteractionSetup {
      * Call this after a new file has been loaded.
      */
     public void rebuildOverlay() {
-        if (watermarkOverlayPane != null) {
+        if (nonNull(watermarkOverlayPane)) {
             overlayManager.buildOverlayElements();
             attachAllResizeHandlers();
         }
@@ -102,7 +105,7 @@ public class WatermarkInteractionSetup {
     private void conditionalOverlayUpdate() {
         BufferedImage img = imageSupplier.get();
         WatermarkSettings s = settingsSupplier.get();
-        if (img != null && s.getType() != WatermarkSettings.WatermarkType.NONE) {
+        if (nonNull(img) && s.getType() != WatermarkSettings.WatermarkType.NONE) {
             onUpdate.run();
         }
     }
@@ -143,7 +146,7 @@ public class WatermarkInteractionSetup {
     private void attachAllResizeHandlers() {
         for (WatermarkOverlayManager.HandlePosition pos : WatermarkOverlayManager.HandlePosition.values()) {
             javafx.scene.shape.Rectangle handle = overlayManager.getHandle(pos);
-            if (handle != null) {
+            if (nonNull(handle)) {
                 attachResizeHandler(handle, pos.name());
             }
         }

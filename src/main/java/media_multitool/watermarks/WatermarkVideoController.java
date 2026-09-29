@@ -36,6 +36,8 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -58,12 +60,12 @@ public class WatermarkVideoController extends AbstractMediaController {
     private List<Control> listControls;
 
     private WatermarkSettings currentWatermarkSettings;
-    private Stage textWatermarkStage, photoWatermarkStage;
     private WatermarkTextController textWatermarkController;
     private WatermarkPhotoController photoWatermarkController;
-
     private WatermarkOverlayManager overlayManager;
     private WatermarkInteractionSetup interactionSetup;
+    private Stage textWatermarkStage, photoWatermarkStage;
+
 
     @Override
     protected MediaProperties getProperties() {
@@ -72,7 +74,7 @@ public class WatermarkVideoController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        if(imageScaleSlider == null) {
+        if(isNull(imageScaleSlider)) {
             return;
         }
 
@@ -104,7 +106,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         setupDragAndDrop(dropZone, Global.getAllSupportedVideoFormats(), this::loadFile);
         interactionSetup.setup();
 
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
             progressBar.setProgress(0);
@@ -117,10 +119,10 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     private void syncSettingsToSubWindows() {
-        if (photoWatermarkController != null && photoWatermarkStage != null && photoWatermarkStage.isShowing()) {
+        if (nonNull(photoWatermarkController) && nonNull(photoWatermarkStage) && photoWatermarkStage.isShowing()) {
             photoWatermarkController.loadSettings(currentWatermarkSettings);
         }
-        if (textWatermarkController != null && textWatermarkStage != null && textWatermarkStage.isShowing()) {
+        if (nonNull(textWatermarkController) && nonNull(textWatermarkStage) && textWatermarkStage.isShowing()) {
             textWatermarkController.loadSettings(currentWatermarkSettings);
         }
     }
@@ -157,7 +159,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
-        if (btnCancel != null) btnCancel.setDisable(false);
+        btnCancel.setDisable(false);
     }
 
     @Override
@@ -165,7 +167,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
-        if (btnCancel != null) btnCancel.setDisable(true);
+        btnCancel.setDisable(true);
         cancelFlag.set(false);
     }
 
@@ -189,17 +191,17 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     private boolean checks() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             ErrorLogger.error("Error extract image from video file!");
             return false;
         }
 
-        if(videoProperties.getSrcFile() == null) {
+        if(isNull(videoProperties.getSrcFile())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "File missing!", "Select video file!");
             return false;
         }
 
-        if(videoProperties.getOutput() == null) {
+        if(isNull(videoProperties.getOutput())) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
             return false;
         }
@@ -268,7 +270,7 @@ public class WatermarkVideoController extends AbstractMediaController {
     @Override
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
-        if (result == null || Boolean.FALSE.equals(result)) {
+        if (isNull(result) || Boolean.FALSE.equals(result)) {
             return;
         }
 
@@ -303,14 +305,14 @@ public class WatermarkVideoController extends AbstractMediaController {
 
         resetSubWindowControllers();
 
-        if (watermarkOverlayPane != null) { overlayManager.clearOverlay(); }
-        if (cropHelper != null)           { cropHelper.reset(); }
+        if (nonNull(watermarkOverlayPane)) { overlayManager.clearOverlay(); }
+        if (nonNull(cropHelper))           { cropHelper.reset(); }
         disableControls();
     }
 
     private void resetSubWindowControllers() {
-        if (textWatermarkController != null)  { textWatermarkController.resetToDefaults();  }
-        if (photoWatermarkController != null) { photoWatermarkController.resetToDefaults(); }
+        if (nonNull(textWatermarkController))  { textWatermarkController.resetToDefaults();  }
+        if (nonNull(photoWatermarkController)) { photoWatermarkController.resetToDefaults(); }
     }
 
     private void loadFile(File selectedFile) {
@@ -325,7 +327,7 @@ public class WatermarkVideoController extends AbstractMediaController {
 
         loadImage(selectedFile);
 
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
@@ -333,7 +335,7 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     private void loadImage(File selectedFile) {
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
             progressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
@@ -349,11 +351,11 @@ public class WatermarkVideoController extends AbstractMediaController {
         loadTask.setOnSucceeded(_ -> {
             originalBufferedImage = loadTask.getValue();
 
-            if (progressBar != null) {
+            if (nonNull(progressBar)) {
                 progressBar.setProgress(0);
             }
 
-            if (originalBufferedImage == null) {
+            if (isNull(originalBufferedImage)) {
                 showErrorMessage(labelSuccess, "Unsupported video format.", videoProperties.getHideSuccessMessageTimer());
                 return;
             }
@@ -362,7 +364,7 @@ public class WatermarkVideoController extends AbstractMediaController {
             updatePreviewWithWatermark();
             updateWatermarkOverlay();
 
-            if (labelPreviewPlaceholder != null) {
+            if (nonNull(labelPreviewPlaceholder)) {
                 labelPreviewPlaceholder.setVisible(false);
             }
         });
@@ -377,12 +379,12 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     private void updatePreviewWithWatermark() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
         Image previewImage = WatermarkRenderer.renderPreview(originalBufferedImage, currentWatermarkSettings);
-        if (previewImage != null && imageViewPreview != null) {
+        if (nonNull(previewImage) && nonNull(imageViewPreview)) {
             imageViewPreview.setImage(previewImage);
         }
     }
@@ -404,7 +406,7 @@ public class WatermarkVideoController extends AbstractMediaController {
 
     public void handleOpenWindowWatermarkText() {
         Stage[] holder = {textWatermarkStage};
-        RecordOpenWatermarkWindow record = new RecordOpenWatermarkWindow(
+        RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
                 "/viewses/watermark-views/window-watermark-text.fxml",
                 "Text Watermark Settings",
@@ -414,7 +416,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         );
 
         WatermarkTextController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
-                record,
+                watermarkSettings,
                 (WatermarkTextController c) -> {
                     c.setMainVideoController(this);
                     c.setWindowTitle("Text Watermark Settings");
@@ -423,7 +425,7 @@ public class WatermarkVideoController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         textWatermarkStage = holder[0];
-        if (ctrl != null) {
+        if (nonNull(ctrl)) {
             textWatermarkController = ctrl;
             updateWatermarkPreview(ctrl.getSettings());
         }
@@ -431,7 +433,7 @@ public class WatermarkVideoController extends AbstractMediaController {
 
     public void handleOpenWindowWatermarkPhoto() {
         Stage[] holder = {photoWatermarkStage};
-        RecordOpenWatermarkWindow record = new RecordOpenWatermarkWindow(
+        RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
                 "/viewses/watermark-views/window-watermark-photo.fxml",
                 "Photo Watermark Settings",
@@ -440,7 +442,7 @@ public class WatermarkVideoController extends AbstractMediaController {
                 WatermarkSettings.WatermarkType.IMAGE
         );
         WatermarkPhotoController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
-                record,
+                watermarkSettings,
                 (WatermarkPhotoController c) -> {
                     c.setMainVideoController(this);
                     c.setWindowTitle("Photo Watermark Settings");
@@ -449,7 +451,7 @@ public class WatermarkVideoController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         photoWatermarkStage = holder[0];
-        if (ctrl != null) {
+        if (nonNull(ctrl)) {
             photoWatermarkController = ctrl;
             updateWatermarkPreview(ctrl.getSettings());
         }

@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
@@ -57,7 +59,7 @@ public class ProtectPdfController extends AbstractMediaController {
         listControls = List.of(btnSubmit, btnReset);
         imageProperties.setOutput(getSavedPath());
 
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.setVisible(true);
             progressBar.setManaged(true);
             progressBar.setProgress(0);
@@ -74,7 +76,7 @@ public class ProtectPdfController extends AbstractMediaController {
     private void setupListener() {
         typePasswordField.textProperty().addListener((_, _, newValue) -> {
             typePassword = newValue;
-            if (typePasswordTextField != null) {
+            if (nonNull(typePasswordTextField)) {
                 typePasswordTextField.setText(newValue);
             }
             checkPasswordMatch();
@@ -82,13 +84,13 @@ public class ProtectPdfController extends AbstractMediaController {
 
         repeatPasswordField.textProperty().addListener((_, _, newValue) -> {
             repeatPassword = newValue;
-            if (repeatPasswordTextField != null) {
+            if (nonNull(repeatPasswordTextField)) {
                 repeatPasswordTextField.setText(newValue);
             }
             checkPasswordMatch();
         });
 
-        if (typePasswordTextField != null) {
+        if (nonNull(typePasswordTextField)) {
             typePasswordTextField.textProperty().addListener((_, _, newValue) -> {
                 typePassword = newValue;
                 typePasswordField.setText(newValue);
@@ -96,7 +98,7 @@ public class ProtectPdfController extends AbstractMediaController {
             });
         }
 
-        if (repeatPasswordTextField != null) {
+        if (nonNull(repeatPasswordTextField)) {
             repeatPasswordTextField.textProperty().addListener((_, _, newValue) -> {
                 repeatPassword = newValue;
                 repeatPasswordField.setText(newValue);
@@ -106,8 +108,8 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void checkPasswordMatch() {
-        if (typePassword != null && !typePassword.isEmpty() && 
-            repeatPassword != null && !repeatPassword.isEmpty()) {
+        if (nonNull(typePassword) && !typePassword.isEmpty() &&
+            nonNull(repeatPassword) && !repeatPassword.isEmpty()) {
             if (typePassword.equals(repeatPassword)) {
                 labelPasswordMatch.setText("✓");
                 labelPasswordMatch.setStyle("-fx-text-fill: #32CD32; -fx-font-size: 16px;");
@@ -144,10 +146,8 @@ public class ProtectPdfController extends AbstractMediaController {
         repeatPasswordField.setDisable(true);
         btnShowTypePassword.setDisable(true);
         btnShowRepeatPassword.setDisable(true);
-
-        if (typePasswordTextField   != null)  { typePasswordTextField.setDisable(true);   }
-        if (repeatPasswordTextField != null)  { repeatPasswordTextField.setDisable(true); }
-
+        typePasswordTextField.setDisable(true);
+        repeatPasswordTextField.setDisable(true);
     }
 
     @Override
@@ -158,13 +158,14 @@ public class ProtectPdfController extends AbstractMediaController {
         repeatPasswordField.setDisable(false);
         btnShowTypePassword.setDisable(false);
         btnShowRepeatPassword.setDisable(false);
-
-        if (typePasswordTextField   != null)  { typePasswordTextField.setDisable(false);   }
-        if (repeatPasswordTextField != null)  { repeatPasswordTextField.setDisable(false); }
+        typePasswordTextField.setDisable(false);
+        repeatPasswordTextField.setDisable(false);
     }
 
     private void turnTypePassword(boolean isSelected) {
-        if (typePasswordTextField == null) return;
+        if (isNull(typePasswordTextField)){
+            return;
+        }
 
        if(isSelected) {
            typePasswordTextField.setText(typePassword);
@@ -183,7 +184,9 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void turnRepeatPassword(boolean isSelected) {
-        if (repeatPasswordTextField == null) return;
+        if (isNull(repeatPasswordTextField)) {
+            return;
+        }
 
         if(isSelected) {
             repeatPasswordTextField.setText(repeatPassword);
@@ -226,7 +229,7 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private boolean checks() {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please select a PDF file", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -234,7 +237,7 @@ public class ProtectPdfController extends AbstractMediaController {
             return false;
         }
 
-        if (imageProperties.getOutput() == null) {
+        if (isNull(imageProperties.getOutput())) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please select output directory", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -242,7 +245,7 @@ public class ProtectPdfController extends AbstractMediaController {
             return false;
         }
 
-        if (typePassword == null || typePassword.isEmpty()) {
+        if (isNull(typePassword) || typePassword.isEmpty()) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please enter password", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -250,7 +253,7 @@ public class ProtectPdfController extends AbstractMediaController {
             return false;
         }
 
-        if (repeatPassword == null || repeatPassword.isEmpty()) {
+        if (isNull(repeatPassword) || repeatPassword.isEmpty()) {
             Platform.runLater(() -> {
                 showErrorMessage(labelSuccess, progressBar,"Please repeat password", imageProperties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
@@ -285,7 +288,7 @@ public class ProtectPdfController extends AbstractMediaController {
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                if (imageProperties.getImage() == null) {
+                if (isNull(imageProperties.getImage())) {
                     throw new IOException("PDF file not selected");
                 }
 
@@ -312,7 +315,7 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void updatePreview() {
-        if (currentDoc != null) {
+        if (nonNull(currentDoc)) {
             try {
                 PDFRenderer renderer = new PDFRenderer(currentDoc);
                 BufferedImage bim = renderer.renderImageWithDPI(0, 72);
@@ -367,7 +370,7 @@ public class ProtectPdfController extends AbstractMediaController {
             ErrorLogger.error("Error closing document during reset: " + e.getMessage());
         }
         
-        if (imageViewPdf != null) {
+        if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
 
@@ -377,10 +380,10 @@ public class ProtectPdfController extends AbstractMediaController {
         repeatPassword = "";
         typePasswordField.setText("");
         repeatPasswordField.setText("");
-        if (typePasswordTextField != null) {
+        if (nonNull(typePasswordTextField)) {
             typePasswordTextField.setText("");
         }
-        if (repeatPasswordTextField != null) {
+        if (nonNull(repeatPasswordTextField)) {
             repeatPasswordTextField.setText("");
         }
         
@@ -390,7 +393,7 @@ public class ProtectPdfController extends AbstractMediaController {
             btnShowTypePassword.setSelected(false);
             typePasswordField.setVisible(true);
             typePasswordField.setManaged(true);
-            if (typePasswordTextField != null) {
+            if (nonNull(typePasswordTextField)) {
                 typePasswordTextField.setVisible(false);
                 typePasswordTextField.setManaged(false);
             }
@@ -400,7 +403,7 @@ public class ProtectPdfController extends AbstractMediaController {
             btnShowRepeatPassword.setSelected(false);
             repeatPasswordField.setVisible(true);
             repeatPasswordField.setManaged(true);
-            if (repeatPasswordTextField != null) {
+            if (nonNull(repeatPasswordTextField)) {
                 repeatPasswordTextField.setVisible(false);
                 repeatPasswordTextField.setManaged(false);
             }

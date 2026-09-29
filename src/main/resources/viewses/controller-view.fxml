@@ -49,7 +49,7 @@
                     <ToggleGroup fx:id="folderGroup"/>
                 </fx:define>
 
-                <Button fx:id="navHomeButton" focusTraversable="false" mnemonicParsing="false" onAction="#showHomePage" prefWidth="190.0"
+                <Button fx:id="navHomeButton" focusTraversable="false" mnemonicParsing="false" onAction="#showPage" prefWidth="190.0"
                         text="Home"
                         alignment="BASELINE_LEFT" styleClass="standalone-btn">
                     <graphic>
@@ -71,13 +71,13 @@
                 </ToggleButton>
                 <VBox visible="${btnConverters.selected}" managed="${btnConverters.selected}"
                       styleClass="folder-content">
-                    <Button fx:id="navConverterImageButton" focusTraversable="false" mnemonicParsing="false" onAction="#showConverterImagePage"
+                    <Button fx:id="navConverterImageButton" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Converter Image" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
 
-                    <Button fx:id="navConverterVideoButton" focusTraversable="false" mnemonicParsing="false" onAction="#showConverterVideoPage"
+                    <Button fx:id="navConverterVideoButton" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Converter Video" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
 
-                    <Button fx:id="navConverterAudioButton" focusTraversable="false" mnemonicParsing="false" onAction="#showConverterAudioPage"
+                    <Button fx:id="navConverterAudioButton" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Converter Audio" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
                 </VBox>
 
@@ -92,11 +92,11 @@
                 </ToggleButton>
                 <VBox visible="${btnCompressors.selected}" managed="${btnCompressors.selected}"
                       styleClass="folder-content">
-                    <Button fx:id="navCompressorImage" focusTraversable="false" mnemonicParsing="false" onAction="#showCompressorImagePage"
+                    <Button fx:id="navCompressorImage" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Compressor Image" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
-                    <Button fx:id="navCompressorVideo" focusTraversable="false" mnemonicParsing="false" onAction="#showCompressorVideoPage"
+                    <Button fx:id="navCompressorVideo" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Compressor Video" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
-                    <Button fx:id="navCompressorPdf" focusTraversable="false" mnemonicParsing="false" onAction="#showCompressorPdfPage"
+                    <Button fx:id="navCompressorPdf" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Compressor PDF" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
                 </VBox>
 
@@ -149,14 +149,14 @@
                 </ToggleButton>
                 <VBox fx:id="mediaToolsContent" visible="${btnMediaTools.selected}" managed="${btnMediaTools.selected}"
                       styleClass="folder-content">
-                    <Button fx:id="navMediaEditorTag" focusTraversable="false" mnemonicParsing="false" onAction="#showMediaEditorTagPage"
+                    <Button fx:id="navMediaEditorTag" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Media Tag Editor" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
 
-                    <Button fx:id="navMetaData" focusTraversable="false" mnemonicParsing="false" onAction="#showMetaDataPage"
+                    <Button fx:id="navMetaData" focusTraversable="false" mnemonicParsing="false" onAction="#showPage"
                             prefWidth="150.0" text="Meta Data" alignment="BASELINE_LEFT" styleClass="sub-btn"/>
                 </VBox>
 
-                <Button fx:id="navInfo" focusTraversable="false" mnemonicParsing="false" onAction="#showInfoPage" prefWidth="190.0" text="Info"
+                <Button fx:id="navInfo" focusTraversable="false" mnemonicParsing="false" onAction="#showPage" prefWidth="190.0" text="Info"
                         alignment="BASELINE_LEFT" styleClass="standalone-btn">
                     <graphic>
                         <StackPane prefWidth="24.0" minWidth="24.0" prefHeight="24.0" minHeight="24.0">

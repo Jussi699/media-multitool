@@ -2,6 +2,8 @@ package model.utility;
 
 import java.io.File;
 
+import static java.util.Objects.nonNull;
+
 public class OS {
     public enum TypeOS {
         WINDOWS, MACOS, LINUX, UNKNOWN
@@ -20,12 +22,12 @@ public class OS {
         return switch (getOS()) {
             case WINDOWS -> {
                 String appData = System.getenv("APPDATA");
-                yield (appData != null ? appData : home) + File.separator + "media-multitool";
+                yield (nonNull(appData) ? appData : home) + File.separator + "media-multitool";
             }
             case MACOS -> home + "/Library/Application Support/media-multitool";
             case LINUX -> {
                 String xdgData = System.getenv("XDG_DATA_HOME");
-                yield (xdgData != null ? xdgData : home + "/.local/share") + "/media-multitool";
+                yield (nonNull(xdgData) ? xdgData : home + "/.local/share") + "/media-multitool";
             }
             default -> home + "/.media-multitool";
         };

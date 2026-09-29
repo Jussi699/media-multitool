@@ -35,6 +35,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -69,7 +71,7 @@ public class WatermarkImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        if (imageScaleSlider == null) {
+        if (isNull(imageScaleSlider)) {
             return;
         }
 
@@ -108,10 +110,10 @@ public class WatermarkImageController extends AbstractMediaController {
     }
 
     private void syncSettingsToSubWindows() {
-        if (photoWatermarkController != null && photoWatermarkStage != null && photoWatermarkStage.isShowing()) {
+        if (nonNull(photoWatermarkController) && nonNull(photoWatermarkStage) && photoWatermarkStage.isShowing()) {
             photoWatermarkController.loadSettings(currentWatermarkSettings);
         }
-        if (textWatermarkController != null && textWatermarkStage != null && textWatermarkStage.isShowing()) {
+        if (nonNull(textWatermarkController) && nonNull(textWatermarkStage) && textWatermarkStage.isShowing()) {
             textWatermarkController.loadSettings(currentWatermarkSettings);
         }
     }
@@ -175,7 +177,7 @@ public class WatermarkImageController extends AbstractMediaController {
     }
 
     private boolean checks() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(originalBufferedImage)) {
             return false;
         }
 
@@ -209,7 +211,7 @@ public class WatermarkImageController extends AbstractMediaController {
 
                     BufferedImage watermarked = WatermarkRenderer.applyWatermark(originalBufferedImage, currentWatermarkSettings.copy());
 
-                    if(watermarked == null) {
+                    if(isNull(watermarked)) {
                         ErrorLogger.error("Failed to apply watermark to image!");
                         throw new ImageProcessingException("Failed to apply watermark to image!");
                     }
@@ -272,21 +274,21 @@ public class WatermarkImageController extends AbstractMediaController {
 
         resetSubWindowControllers();
 
-        if (watermarkOverlayPane != null) {
+        if (nonNull(watermarkOverlayPane)) {
             overlayManager.clearOverlay();
         }
 
-        if (cropHelper != null) {
+        if (nonNull(cropHelper)) {
             cropHelper.reset();
         }
         disableControls();
     }
 
     private void resetSubWindowControllers() {
-        if (textWatermarkController != null) {
+        if (nonNull(textWatermarkController)) {
             textWatermarkController.resetToDefaults();
         }
-        if (photoWatermarkController != null) {
+        if (nonNull(photoWatermarkController)) {
             photoWatermarkController.resetToDefaults();
         }
     }
@@ -301,7 +303,7 @@ public class WatermarkImageController extends AbstractMediaController {
 
         loadImage(selectedFile);
 
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
@@ -312,7 +314,7 @@ public class WatermarkImageController extends AbstractMediaController {
         try {
             originalBufferedImage = WatermarkLoadAndSaveHelper.determinedAndLoadTypeAsBufferedImage(selectedFile);
 
-            if (originalBufferedImage == null) {
+            if (isNull(originalBufferedImage)) {
                 showErrorMessage(labelSuccess, "Unsupported image format.", imageProperties.getHideSuccessMessageTimer());
                 return;
             }
@@ -322,7 +324,7 @@ public class WatermarkImageController extends AbstractMediaController {
             updatePreviewWithWatermark();
             updateWatermarkOverlay();
 
-            if (labelPreviewPlaceholder != null) {
+            if (nonNull(labelPreviewPlaceholder)) {
                 labelPreviewPlaceholder.setVisible(false);
             }
         } catch (Exception e) {
@@ -332,12 +334,12 @@ public class WatermarkImageController extends AbstractMediaController {
     }
 
     private void updatePreviewWithWatermark() {
-        if (originalBufferedImage == null) {
+        if (isNull(originalBufferedImage)) {
             return;
         }
 
         Image previewImage = WatermarkRenderer.renderPreview(originalBufferedImage, currentWatermarkSettings);
-        if (previewImage != null && imageViewPreview != null) {
+        if (nonNull(previewImage) && nonNull(imageViewPreview)) {
             imageViewPreview.setImage(previewImage);
         }
     }
@@ -359,7 +361,7 @@ public class WatermarkImageController extends AbstractMediaController {
 
     public void handleOpenWindowWatermarkText() {
         Stage[] holder = {textWatermarkStage};
-        RecordOpenWatermarkWindow record = new RecordOpenWatermarkWindow(
+        RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
                 "/viewses/watermark-views/window-watermark-text.fxml",
                 "Text Watermark Settings",
@@ -369,7 +371,7 @@ public class WatermarkImageController extends AbstractMediaController {
         );
 
         WatermarkTextController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
-                record,
+                watermarkSettings,
                 (WatermarkTextController c) -> {
                     c.setMainImageController(this);
                     c.setWindowTitle("Text Watermark Settings");
@@ -378,7 +380,7 @@ public class WatermarkImageController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         textWatermarkStage = holder[0];
-        if (ctrl != null) {
+        if (nonNull(ctrl)) {
             textWatermarkController = ctrl;
             updateWatermarkPreview(ctrl.getSettings());
         }
@@ -386,7 +388,7 @@ public class WatermarkImageController extends AbstractMediaController {
 
     public void handleOpenWindowWatermarkPhoto() {
         Stage[] holder = {photoWatermarkStage};
-        RecordOpenWatermarkWindow record = new RecordOpenWatermarkWindow(
+        RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
                 "/viewses/watermark-views/window-watermark-photo.fxml",
                 "Photo Watermark Settings",
@@ -395,7 +397,7 @@ public class WatermarkImageController extends AbstractMediaController {
                 WatermarkSettings.WatermarkType.IMAGE
         );
         WatermarkPhotoController ctrl = new OpenWatermarkWindow().openWatermarkWindow(
-                record,
+                watermarkSettings,
                 (WatermarkPhotoController c) -> {
                     c.setMainImageController(this);
                     c.setWindowTitle("Photo Watermark Settings");
@@ -404,7 +406,7 @@ public class WatermarkImageController extends AbstractMediaController {
                 c -> c.loadSettings(currentWatermarkSettings)
         );
         photoWatermarkStage = holder[0];
-        if (ctrl != null) {
+        if (nonNull(ctrl)) {
             photoWatermarkController = ctrl;
             updateWatermarkPreview(ctrl.getSettings());
         }

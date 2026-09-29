@@ -13,6 +13,9 @@ import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkOverlayManager {
     private static final double HANDLE_SIZE = 6;
     
@@ -106,14 +109,14 @@ public class WatermarkOverlayManager {
         BufferedImage image,
         ImageView imageView
     ) {
-        if (overlayPane == null || image == null) {
+        if (isNull(overlayPane) || isNull(image)) {
             return;
         }
         
         boolean shouldShow = WatermarkDimensionsHelper.canDrag(settings, image);
         overlayPane.setVisible(shouldShow);
         
-        if (shouldShow && boundingBox != null) {
+        if (shouldShow && nonNull(boundingBox)) {
             updateOverlayPosition(settings, image, imageView);
         }
     }
@@ -134,18 +137,18 @@ public class WatermarkOverlayManager {
             return;
         }
         
-        boolean dimensionsChanged = cachedImageWidth != image.getWidth() ||
-                                   cachedImageHeight != image.getHeight() ||
-                                   cachedViewWidth != (int)imageViewWidth ||
-                                   cachedViewHeight != (int)imageViewHeight;
+        boolean dimensionsChanged = cachedImageWidth  != image.getWidth() ||
+                                    cachedImageHeight != image.getHeight() ||
+                                    cachedViewWidth   != (int)imageViewWidth ||
+                                    cachedViewHeight  != (int)imageViewHeight;
         
         if (dimensionsChanged) {
-            cachedScaleX = imageViewWidth / image.getWidth();
-            cachedScaleY = imageViewHeight / image.getHeight();
-            cachedImageWidth = image.getWidth();
+            cachedScaleX      = imageViewWidth / image.getWidth();
+            cachedScaleY      = imageViewHeight / image.getHeight();
+            cachedImageWidth  = image.getWidth();
             cachedImageHeight = image.getHeight();
-            cachedViewWidth = (int)imageViewWidth;
-            cachedViewHeight = (int)imageViewHeight;
+            cachedViewWidth   = (int)imageViewWidth;
+            cachedViewHeight  = (int)imageViewHeight;
         }
         
         double[] posData = WatermarkDimensionsHelper.getCurrentPosition(settings, image);

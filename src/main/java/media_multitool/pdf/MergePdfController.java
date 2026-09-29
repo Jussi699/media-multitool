@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 
@@ -130,7 +132,7 @@ public class MergePdfController extends AbstractMediaController {
     }
 
     private void loadPdfFile(File file) {
-        if (imageProperties.getImage() == null) {
+        if (isNull(imageProperties.getImage())) {
             imageProperties.setImage(file);
         }
 
@@ -155,7 +157,7 @@ public class MergePdfController extends AbstractMediaController {
             progressBar.progressProperty().unbind();
             progressBar.setProgress(1.0);
             BufferedImage firstPage = loadTask.getValue();
-            if (firstPage != null) {
+            if (nonNull(firstPage)) {
                 PageEntry entry = new PageEntry(file, 0);
                 selectedPages.add(entry);
                 createPagePreviewCard(entry, firstPage);
@@ -252,7 +254,7 @@ public class MergePdfController extends AbstractMediaController {
             return;
         }
 
-        if (imageProperties.getOutput() == null) {
+        if (isNull(imageProperties.getOutput())) {
             imageProperties.setOutput(getSavedPath());
         }
 
@@ -321,14 +323,14 @@ public class MergePdfController extends AbstractMediaController {
             labelSelectFileName, labelSuccess, textDragZone, null,
             dropZone, null, progressBar, true, "PDF(s)"
         );
-        if (progressBar != null) {
+        if (nonNull(progressBar)) {
             progressBar.progressProperty().unbind();
         }
         reset(imageProperties, ctx, "Last uploaded PDF: none");
 
         disableControls();
         textDragZone.setText("Drag PDF here");
-        if (dropZone != null) {
+        if (nonNull(dropZone)) {
             dropZone.getStyleClass().remove("drop-zone-filled");
         }
     }

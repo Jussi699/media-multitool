@@ -7,15 +7,18 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public class WatermarkRenderer {
     /**
      * Apply watermark to base image based on settings
      */
     public static BufferedImage applyWatermark(BufferedImage baseImage, WatermarkSettings settings) {
-        if (settings == null || settings.getType() == WatermarkSettings.WatermarkType.NONE) {
+        if (isNull(settings) || settings.getType() == WatermarkSettings.WatermarkType.NONE) {
             return baseImage;
         }
-        if (baseImage == null) {
+        if (isNull(baseImage)) {
             return null;
         }
         
@@ -39,7 +42,7 @@ public class WatermarkRenderer {
      * Used for video processing to avoid pixel-format conversion.
      */
     static void applyWatermarkInPlace(BufferedImage target, WatermarkSettings settings) {
-        if (settings == null || settings.getType() == WatermarkSettings.WatermarkType.NONE || target == null) {
+        if (isNull(settings) || settings.getType() == WatermarkSettings.WatermarkType.NONE || isNull(target)) {
             return;
         }
         try {
@@ -61,9 +64,9 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,         RenderingHints.VALUE_RENDER_SPEED);
 
-            double scale = (image != null) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
-            int base_font_size = Math.max(10, (int) Math.round(24 * scale));
-            int fontSize = Math.max(8, (int) Math.round(base_font_size * settings.getFontSize()));
+            double scale = (nonNull(image)) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
+            int baseFontSize = Math.max(10, (int) Math.round(24 * scale));
+            int fontSize = Math.max(8, (int) Math.round(baseFontSize * settings.getFontSize()));
             Font font = new Font(settings.getFontName(), Font.BOLD, fontSize);
             g2d.setFont(font);
             
@@ -88,7 +91,7 @@ public class WatermarkRenderer {
                 case "single"  -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
                 case "grid"    -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, false, scale);
                 case "diamond" -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, true, scale);
-                default -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
+                default        -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
             }
         } finally {
             g2d.dispose();
@@ -101,7 +104,7 @@ public class WatermarkRenderer {
     private enum TextEffect { NONE, SHADOW, OUTLINE, GLOW }
     
     private static TextEffect resolveEffect(String effect) {
-        if (effect == null) return TextEffect.NONE;
+        if (isNull(effect)) return TextEffect.NONE;
         return switch (effect.toLowerCase()) {
             case "shadow"  -> TextEffect.SHADOW;
             case "outline" -> TextEffect.OUTLINE;
@@ -226,7 +229,7 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,     RenderingHints.VALUE_RENDER_SPEED);
             
-            double scale = (image != null) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
+            double scale = (nonNull(image)) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
             int size = (int) Math.round(settings.getSize() * scale);
             float opacity = (float) Math.min(1.0, settings.getOpacity() / 100.0);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
@@ -306,9 +309,9 @@ public class WatermarkRenderer {
     }
     
     public static Image renderPreview(BufferedImage baseImage, WatermarkSettings settings) {
-        if (baseImage == null) return null;
+        if (isNull(baseImage)) return null;
         BufferedImage result = applyWatermark(baseImage, settings);
-        if (result == null) return null;
+        if (isNull(result)) return null;
         return SwingFXUtils.toFXImage(result, null);
     }
 
@@ -320,7 +323,7 @@ public class WatermarkRenderer {
             BufferedImage previewImage,
             BufferedImage exportPageImage
     ) {
-        if (previewImage == null) {
+        if (isNull(previewImage)) {
             return previewSettings;
         }
 

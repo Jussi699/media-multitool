@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 public class ConvertImagesToPdfHelper {
 
@@ -17,7 +19,7 @@ public class ConvertImagesToPdfHelper {
     };
 
     public boolean isImageFile(File file) {
-        if (file == null || !file.exists()) {
+        if (isNull(file) || !file.exists()) {
             return false;
         }
         
@@ -37,7 +39,7 @@ public class ConvertImagesToPdfHelper {
      * @return lowercase margin value for processing
      */
     public String parseMarginValue(String comboValue) {
-        if (comboValue == null) {
+        if (isNull(comboValue)) {
             return "no margin";
         }
         return comboValue.toLowerCase();
@@ -50,7 +52,7 @@ public class ConvertImagesToPdfHelper {
      * @return lowercase orientation value for processing
      */
     public String parseOrientationValue(String comboValue) {
-        if (comboValue == null) {
+        if (isNull(comboValue)) {
             return "portrait";
         }
         return comboValue.toLowerCase();
@@ -63,7 +65,7 @@ public class ConvertImagesToPdfHelper {
      * @return parsed page size value ("a4", "us letter", or "fix")
      */
     public String parsePageSizeValue(String comboValue) {
-        if (comboValue == null) {
+        if (isNull(comboValue)) {
             return "fix";
         }
         
@@ -94,7 +96,7 @@ public class ConvertImagesToPdfHelper {
             IntConsumer progressCallback
     ) {
         
-        if (imageFiles == null || imageFiles.isEmpty()) {
+        if (isNull(imageFiles) || imageFiles.isEmpty()) {
             throw new IllegalArgumentException("Image files list is empty");
         }
 
@@ -124,7 +126,7 @@ public class ConvertImagesToPdfHelper {
                     orientation
                 ).ifPresent(tempDocuments::add);
                 
-                if (progressCallback != null) {
+                if (nonNull(progressCallback)) {
                     int progress = 30 + (50 * (i + 1) / totalImages);
                     progressCallback.accept(progress);
                 }
@@ -144,7 +146,7 @@ public class ConvertImagesToPdfHelper {
                     ErrorLogger.error("Error adding page from document " + i + ": " + e.getMessage());
                 }
                 
-                if (progressCallback != null) {
+                if (nonNull(progressCallback)) {
                     int progress = 80 + (10 * (i + 1) / tempDocuments.size());
                     progressCallback.accept(progress);
                 }
@@ -172,18 +174,16 @@ public class ConvertImagesToPdfHelper {
      * @throws IOException if an error occurred while saving
      */
     public void savePdfDocument(PDDocument document, File outputFile) throws IOException {
-        if (document == null) {
+        if (isNull(document)) {
             throw new IllegalArgumentException("PDF document is null");
         }
         
-        if (outputFile == null) {
+        if (isNull(outputFile)) {
             throw new IllegalArgumentException("Output file is null");
         }
-        
-        try {
+
+        try (document) {
             document.save(outputFile);
-        } finally {
-            document.close();
         }
     }
 }
