@@ -16,6 +16,7 @@ public class WatermarkResizeHandler {
     private String activeHandle = null;
     private double resizeStartWidth, resizeStartHeight;
     private double resizeStartPosX, resizeStartPosY;
+    private double resizeStartScaleX, resizeStartScaleY;
     private double resizeStartMouseX, resizeStartMouseY;
     
     private Consumer<WatermarkSettings> onUpdateCallback;
@@ -55,12 +56,19 @@ public class WatermarkResizeHandler {
         if (!canResize() || image == null) return;
         
         activeHandle = handleId;
-        resizeStartMouseX = event.getScreenX();
-        resizeStartMouseY = event.getScreenY();
+        double[] mousePosition = toImageCoords(event);
+        if (mousePosition == null) {
+            activeHandle = null;
+            return;
+        }
+        resizeStartMouseX = mousePosition[0];
+        resizeStartMouseY = mousePosition[1];
         
         double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings, image);
         resizeStartWidth = dims[0];
         resizeStartHeight = dims[1];
+        resizeStartScaleX = settings.getResizeScaleX();
+        resizeStartScaleY = settings.getResizeScaleY();
         
         if (!settings.isUseCustomPosition()) {
             WatermarkDimensionsHelper.initDefaultPosition(settings, image);
@@ -77,11 +85,10 @@ public class WatermarkResizeHandler {
     public void handleMouseDragged(MouseEvent event) {
         if (activeHandle == null || image == null) return;
         
-        double[] scale = getImageScale();
-        if (scale == null) return;
-        
-        double dxImage = (event.getScreenX() - resizeStartMouseX) * scale[0];
-        double dyImage = (event.getScreenY() - resizeStartMouseY) * scale[1];
+        double[] mousePosition = toImageCoords(event);
+        if (mousePosition == null) return;
+        double dxImage = mousePosition[0] - resizeStartMouseX;
+        double dyImage = mousePosition[1] - resizeStartMouseY;
         
         boolean isImage = settings.getType() == WatermarkSettings.WatermarkType.IMAGE;
         
@@ -91,75 +98,116 @@ public class WatermarkResizeHandler {
         double newPosY       = resizeStartPosY;
         boolean changeWidth  = false;
         boolean changeHeight = false;
+        boolean left = activeHandle.equals("TL") || activeHandle.equals("BL") || activeHandle.equals("LEFT");
+        boolean right = activeHandle.equals("TR") || activeHandle.equals("BR") || activeHandle.equals("RIGHT");
+        boolean top = activeHandle.equals("TL") || activeHandle.equals("TR") || activeHandle.equals("TOP");
+        boolean bottom = activeHandle.equals("BL") || activeHandle.equals("BR") || activeHandle.equals("BOTTOM");
+        boolean corner = (left || right) && (top || bottom);
         
         switch (activeHandle) {
             case "TL" -> {
                 if (isImage) {
-                    double delta = Math.max(-dxImage, -dyImage);
-                    newWidth = clampSize(resizeStartWidth + delta);
-                    newHeight = newWidth;
-                    double diff = resizeStartWidth - newWidth;
-                    newPosX = resizeStartPosX + diff;
-                    newPosY = resizeStartPosY + diff;
-                    changeWidth = changeHeight = true;
+                    double factor = Math.max(
+                            (resizeStartWidth - dxImage) / resizeStartWidth,
+                            (resizeStartHeight - dyImage) / resizeStartHeight);
+                    newWidth = resizeStartWidth * factor;
+                    newHeight = resizeStartHeight * factor;
                 } else {
-                    newHeight = clampSize(resizeStartHeight - dyImage);
-                    newPosY = resizeStartPosY + (resizeStartHeight - newHeight);
-                    changeHeight = true;
+                    newWidth = resizeStartWidth - dxImage;
+                    newHeight = resizeStartHeight - dyImage;
                 }
+                changeWidth = changeHeight = true;
             }
             case "TR" -> {
                 if (isImage) {
-                    double delta = Math.max(dxImage, -dyImage);
-                    newWidth = clampSize(resizeStartWidth + delta);
-                    newHeight = newWidth;
-                    newPosY = resizeStartPosY + (resizeStartHeight - newWidth);
-                    changeWidth = changeHeight = true;
+                    double factor = Math.max(
+                            (resizeStartWidth + dxImage) / resizeStartWidth,
+                            (resizeStartHeight - dyImage) / resizeStartHeight);
+                    newWidth = resizeStartWidth * factor;
+                    newHeight = resizeStartHeight * factor;
                 } else {
-                    newHeight = clampSize(resizeStartHeight - dyImage);
-                    newPosY = resizeStartPosY + (resizeStartHeight - newHeight);
-                    changeHeight = true;
+                    newWidth = resizeStartWidth + dxImage;
+                    newHeight = resizeStartHeight - dyImage;
                 }
+                changeWidth = changeHeight = true;
             }
             case "BL" -> {
                 if (isImage) {
-                    double delta = Math.max(-dxImage, dyImage);
-                    newWidth = clampSize(resizeStartWidth + delta);
-                    newHeight = newWidth;
-                    newPosX = resizeStartPosX + (resizeStartWidth - newWidth);
-                    changeWidth = changeHeight = true;
+                    double factor = Math.max(
+                            (resizeStartWidth - dxImage) / resizeStartWidth,
+                            (resizeStartHeight + dyImage) / resizeStartHeight);
+                    newWidth = resizeStartWidth * factor;
+                    newHeight = resizeStartHeight * factor;
                 } else {
-                    newHeight = clampSize(resizeStartHeight + dyImage);
-                    changeHeight = true;
+                    newWidth = resizeStartWidth - dxImage;
+                    newHeight = resizeStartHeight + dyImage;
                 }
+                changeWidth = changeHeight = true;
             }
             case "BR" -> {
                 if (isImage) {
-                    double delta = Math.max(dxImage, dyImage);
-                    newWidth = clampSize(resizeStartWidth + delta);
-                    newHeight = newWidth;
-                    changeWidth = changeHeight = true;
+                    double factor = Math.max(
+                            (resizeStartWidth + dxImage) / resizeStartWidth,
+                            (resizeStartHeight + dyImage) / resizeStartHeight);
+                    newWidth = resizeStartWidth * factor;
+                    newHeight = resizeStartHeight * factor;
                 } else {
-                    newHeight = clampSize(resizeStartHeight + dyImage);
-                    changeHeight = true;
+                    newWidth = resizeStartWidth + dxImage;
+                    newHeight = resizeStartHeight + dyImage;
                 }
+                changeWidth = changeHeight = true;
+            }
+            case "TOP" -> {
+                newHeight = clampSize(resizeStartHeight - dyImage, image.getHeight());
+                newPosY = resizeStartPosY + resizeStartHeight - newHeight;
+                changeHeight = true;
+            }
+            case "RIGHT" -> {
+                newWidth = clampSize(resizeStartWidth + dxImage, image.getWidth());
+                changeWidth = true;
+            }
+            case "BOTTOM" -> {
+                newHeight = clampSize(resizeStartHeight + dyImage, image.getHeight());
+                changeHeight = true;
+            }
+            case "LEFT" -> {
+                newWidth = clampSize(resizeStartWidth - dxImage, image.getWidth());
+                newPosX = resizeStartPosX + resizeStartWidth - newWidth;
+                changeWidth = true;
             }
         }
         
-        if (isImage && changeWidth) {
-            double imgScale = WatermarkDimensionsHelper.getScale(image);
-            settings.setSize(newWidth / (imgScale > 0 ? imgScale : 1.0));
-        } else if (!isImage && changeHeight) {
-            double ratio = newHeight / resizeStartHeight;
-            double newFontSize = Math.clamp(settings.getFontSize() * ratio, 0.5, 10.0);
-            settings.setFontSize(newFontSize);
-            
-            resizeStartHeight = WatermarkDimensionsHelper.calculateHeight(settings, image);
-            resizeStartMouseY = event.getScreenY();
+        double availableWidth = left ? resizeStartPosX + resizeStartWidth
+                : right ? image.getWidth() - resizeStartPosX : image.getWidth();
+        double availableHeight = top ? resizeStartPosY + resizeStartHeight
+                : bottom ? image.getHeight() - resizeStartPosY : image.getHeight();
+        if (corner && isImage) {
+            double factor = Math.max(newWidth / resizeStartWidth, newHeight / resizeStartHeight);
+            factor = Math.clamp(factor, Math.min(10 / resizeStartWidth, 10 / resizeStartHeight),
+                    Math.min(availableWidth / resizeStartWidth, availableHeight / resizeStartHeight));
+            newWidth = resizeStartWidth * factor;
+            newHeight = resizeStartHeight * factor;
+        } else {
+            newWidth = clampSize(newWidth, availableWidth);
+            newHeight = clampSize(newHeight, availableHeight);
+        }
+
+        if (left) {
+            newPosX = resizeStartPosX + resizeStartWidth - newWidth;
+        }
+        if (top) {
+            newPosY = resizeStartPosY + resizeStartHeight - newHeight;
+        }
+
+        if (changeWidth) {
+            settings.setResizeScaleX(resizeStartScaleX * newWidth / resizeStartWidth);
+        }
+        if (changeHeight) {
+            settings.setResizeScaleY(resizeStartScaleY * newHeight / resizeStartHeight);
         }
         
-        settings.setPositionX(Math.max(0, newPosX));
-        settings.setPositionY(Math.max(0, newPosY));
+        settings.setPositionX(newPosX);
+        settings.setPositionY(newPosY);
         settings.setUseCustomPosition(true);
         
         if (nonNull(onUpdateCallback)) {
@@ -186,8 +234,14 @@ public class WatermarkResizeHandler {
         return WatermarkDimensionsHelper.canDrag(settings, image);
     }
     
-    private static double clampSize(double value) {
-        int minSize = 10;
-        return Math.max(minSize, value);
+    private double[] toImageCoords(MouseEvent event) {
+        double[] scale = getImageScale();
+        if (scale == null) return null;
+        javafx.geometry.Point2D localPoint = imageView.sceneToLocal(event.getSceneX(), event.getSceneY());
+        return new double[]{localPoint.getX() * scale[0], localPoint.getY() * scale[1]};
+    }
+
+    private static double clampSize(double value, double maxSize) {
+        return Math.clamp(value, Math.min(10, maxSize), maxSize);
     }
 }

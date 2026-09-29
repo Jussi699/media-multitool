@@ -3,6 +3,9 @@ package model.helper.watermarks;
 import java.awt.Canvas;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.geom.Rectangle2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
 
 import static java.util.Objects.isNull;
@@ -45,6 +48,13 @@ public class WatermarkDimensionsHelper {
         
         return cachedMetrics;
     }
+
+    private static Rectangle2D getTextVisualBounds(WatermarkSettings settings, BufferedImage image) {
+        Font font = getMetrics(settings, image).getFont();
+        FontRenderContext context = new FontRenderContext(null, true, true);
+        GlyphVector glyphs = font.createGlyphVector(context, settings.getText());
+        return glyphs.getVisualBounds();
+    }
     
     /**
      * Calculate watermark dimensions (width and height) in a single call.
@@ -59,18 +69,20 @@ public class WatermarkDimensionsHelper {
     public static double[] calculateDimensions(WatermarkSettings settings, BufferedImage image) {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
             double scale = getScale(image);
-            double size = settings.getSize() * scale;
+            double width = settings.getSize() * scale * settings.getResizeScaleX();
+            double height = settings.getSize() * scale * settings.getResizeScaleY();
             if (nonNull(image)) {
-                double maxDim = Math.min(image.getWidth(), image.getHeight());
-                if (size > maxDim) {
-                    return new double[]{maxDim, maxDim};
-                }
+                width = Math.min(width, image.getWidth());
+                height = Math.min(height, image.getHeight());
             }
-            return new double[]{size, size};
+            return new double[]{width, height};
         }
         
-        FontMetrics fm = getMetrics(settings, image);
-        return new double[]{fm.stringWidth(settings.getText()), fm.getAscent() + fm.getDescent()};
+        Rectangle2D bounds = getTextVisualBounds(settings, image);
+        return new double[]{
+            bounds.getWidth() * settings.getResizeScaleX(),
+            bounds.getHeight() * settings.getResizeScaleY()
+        };
     }
     
     /**
@@ -82,9 +94,10 @@ public class WatermarkDimensionsHelper {
 
     public static double calculateWidth(WatermarkSettings settings, BufferedImage image) {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            return settings.getSize() * getScale(image);
+            double width = settings.getSize() * getScale(image) * settings.getResizeScaleX();
+            return nonNull(image) ? Math.min(width, image.getWidth()) : width;
         }
-        return getMetrics(settings, image).stringWidth(settings.getText());
+        return getTextVisualBounds(settings, image).getWidth() * settings.getResizeScaleX();
     }
     
     /**
@@ -96,10 +109,14 @@ public class WatermarkDimensionsHelper {
 
     public static double calculateHeight(WatermarkSettings settings, BufferedImage image) {
         if (settings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
-            return settings.getSize() * getScale(image);
+            double height = settings.getSize() * getScale(image) * settings.getResizeScaleY();
+            return nonNull(image) ? Math.min(height, image.getHeight()) : height;
         }
-        FontMetrics fm = getMetrics(settings, image);
-        return fm.getAscent() + fm.getDescent();
+        return getTextVisualBounds(settings, image).getHeight() * settings.getResizeScaleY();
+    }
+
+    public static Rectangle2D calculateTextVisualBounds(WatermarkSettings settings, BufferedImage image) {
+        return getTextVisualBounds(settings, image);
     }
     
     /**

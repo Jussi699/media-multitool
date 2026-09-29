@@ -24,7 +24,9 @@ public class WatermarkOverlayManager {
      */
     public enum HandlePosition {
         TL(Cursor.NW_RESIZE),  TR(Cursor.NE_RESIZE),
-        BL(Cursor.SW_RESIZE),  BR(Cursor.SE_RESIZE);
+        BL(Cursor.SW_RESIZE),  BR(Cursor.SE_RESIZE),
+        TOP(Cursor.N_RESIZE), RIGHT(Cursor.E_RESIZE),
+        BOTTOM(Cursor.S_RESIZE), LEFT(Cursor.W_RESIZE);
         
         @Getter private final Cursor cursor;
         
@@ -74,12 +76,7 @@ public class WatermarkOverlayManager {
         boundingBox.setMouseTransparent(true);
         overlayPane.getChildren().add(boundingBox);
         
-        HandlePosition[] cornerHandles = {
-            HandlePosition.TL, HandlePosition.TR,
-            HandlePosition.BL, HandlePosition.BR
-        };
-        
-        for (HandlePosition pos : cornerHandles) {
+        for (HandlePosition pos : HandlePosition.values()) {
             Rectangle handle = createHandle(pos.getCursor());
             handles.put(pos, handle);
             overlayPane.getChildren().add(handle);
@@ -160,8 +157,8 @@ public class WatermarkOverlayManager {
         
         double displayX = imageStartX + posData[0] * cachedScaleX;
         double displayY = imageStartY + posData[1] * cachedScaleY;
-        double displayW = Math.max(20, posData[2] * cachedScaleX);
-        double displayH = Math.max(14, posData[3] * cachedScaleY);
+        double displayW = posData[2] * cachedScaleX;
+        double displayH = posData[3] * cachedScaleY;
         
         overlayPane.setPrefWidth(containerWidth);
         overlayPane.setPrefHeight(containerHeight);
@@ -177,6 +174,10 @@ public class WatermarkOverlayManager {
         positionHandle(HandlePosition.TR, displayX + displayW - hh,     displayY - hh);
         positionHandle(HandlePosition.BL, displayX - hh,                displayY + displayH - hh);
         positionHandle(HandlePosition.BR, displayX + displayW - hh,     displayY + displayH - hh);
+        positionHandle(HandlePosition.TOP, displayX + displayW / 2 - hh, displayY - hh);
+        positionHandle(HandlePosition.RIGHT, displayX + displayW - hh, displayY + displayH / 2 - hh);
+        positionHandle(HandlePosition.BOTTOM, displayX + displayW / 2 - hh, displayY + displayH - hh);
+        positionHandle(HandlePosition.LEFT, displayX - hh, displayY + displayH / 2 - hh);
     }
 
     private void positionHandle(HandlePosition pos, double x, double y) {

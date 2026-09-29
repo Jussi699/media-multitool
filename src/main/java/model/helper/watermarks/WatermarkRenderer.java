@@ -88,10 +88,10 @@ public class WatermarkRenderer {
             TextEffect effect = resolveEffect(settings.getEffect());
             
             switch (settings.getTilePattern()) {
-                case "single"  -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
+                case "single"  -> renderTextSingle(g2d, image, settings, colorWithAlpha, rotation, effect);
                 case "grid"    -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, false, scale);
                 case "diamond" -> renderTextTiled(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect, true, scale);
-                default        -> renderTextSingle(g2d, image, settings, textWidth, textHeight, colorWithAlpha, rotation, effect);
+                default        -> renderTextSingle(g2d, image, settings, colorWithAlpha, rotation, effect);
             }
         } finally {
             g2d.dispose();
@@ -114,24 +114,29 @@ public class WatermarkRenderer {
     }
     
     private static void renderTextSingle(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
-                                         int textWidth, int textHeight, Color color, double rotation, TextEffect effect) {
-        int x, y;
-        FontMetrics fm = g2d.getFontMetrics();
-        if (settings.isUseCustomPosition()) {
-            x = (int) settings.getPositionX();
-            y = (int) settings.getPositionY() + fm.getAscent();
-        } else {
-            x = (image.getWidth() - textWidth) / 2;
-            y = (image.getHeight() - textHeight) / 2 + fm.getAscent();
-        }
-        
-        double centerX = settings.isUseCustomPosition() ? x + textWidth / 2.0 : image.getWidth() / 2.0;
-        double centerY = settings.isUseCustomPosition() ? y - fm.getAscent() + textHeight / 2.0 : image.getHeight() / 2.0;
+                                         Color color, double rotation, TextEffect effect) {
+        java.awt.geom.Rectangle2D visualBounds =
+                WatermarkDimensionsHelper.calculateTextVisualBounds(settings, image);
+        double scaleX = settings.getResizeScaleX();
+        double scaleY = settings.getResizeScaleY();
+        double originX = settings.isUseCustomPosition()
+                ? settings.getPositionX()
+                : (image.getWidth() - visualBounds.getWidth() * scaleX) / 2;
+        double originY = settings.isUseCustomPosition()
+                ? settings.getPositionY()
+                : (image.getHeight() - visualBounds.getHeight() * scaleY) / 2;
+        float x = (float) (originX - visualBounds.getX());
+        float y = (float) (originY - visualBounds.getY());
+        double centerX = originX + visualBounds.getWidth() * scaleX / 2;
+        double centerY = originY + visualBounds.getHeight() * scaleY / 2;
         
         AffineTransform transform = new AffineTransform();
         transform.translate(centerX, centerY);
         transform.rotate(rotation);
         transform.translate(-centerX, -centerY);
+        transform.translate(originX, originY);
+        transform.scale(scaleX, scaleY);
+        transform.translate(-originX, -originY);
         
         g2d.setTransform(transform);
         drawTextWithEffect(g2d, settings.getText(), x, y, effect, color);
@@ -169,7 +174,7 @@ public class WatermarkRenderer {
     /**
      * Draw text with pre-resolved effect type (avoids string comparison per tile)
      */
-    private static void drawTextWithEffect(Graphics2D g2d, String text, int x, int y, 
+    private static void drawTextWithEffect(Graphics2D g2d, String text, float x, float y,
                                            TextEffect effect, Color color) {
         switch (effect) {
             case SHADOW  -> drawShadowEffect(g2d, text, x, y, color);
@@ -182,14 +187,14 @@ public class WatermarkRenderer {
         }
     }
     
-    private static void drawShadowEffect(Graphics2D g2d, String text, int x, int y, Color color) {
+    private static void drawShadowEffect(Graphics2D g2d, String text, float x, float y, Color color) {
         g2d.setColor(new Color(0, 0, 0, color.getAlpha()));
         g2d.drawString(text, x + 2, y + 2);
         g2d.setColor(color);
         g2d.drawString(text, x, y);
     }
     
-    private static void drawOutlineEffect(Graphics2D g2d, String text, int x, int y, Color color) {
+    private static void drawOutlineEffect(Graphics2D g2d, String text, float x, float y, Color color) {
         Color outlineColor = new Color(0, 0, 0, color.getAlpha());
         g2d.setColor(outlineColor);
         for (int dx = -1; dx <= 1; dx++) {
@@ -203,7 +208,7 @@ public class WatermarkRenderer {
         g2d.drawString(text, x, y);
     }
     
-    private static void drawGlowEffect(Graphics2D g2d, String text, int x, int y, Color color) {
+    private static void drawGlowEffect(Graphics2D g2d, String text, float x, float y, Color color) {
         int alphaDiv = Math.max(1, color.getAlpha() / 3);
         Color glowColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), alphaDiv);
         g2d.setColor(glowColor);
@@ -230,7 +235,8 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,     RenderingHints.VALUE_RENDER_SPEED);
             
             double scale = (nonNull(image)) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
-            int size = (int) Math.round(settings.getSize() * scale);
+            int maxSize = Math.min(image.getWidth(), image.getHeight());
+            int size = (int) Math.round(Math.min(settings.getSize() * scale, maxSize));
             float opacity = (float) Math.min(1.0, settings.getOpacity() / 100.0);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
             
@@ -274,22 +280,24 @@ public class WatermarkRenderer {
     
     private static void renderImageSingle(Graphics2D g2d, BufferedImage image, WatermarkSettings settings,
                                           int size, double rotation) {
+        double width = Math.min(size * settings.getResizeScaleX(), image.getWidth());
+        double height = Math.min(size * settings.getResizeScaleY(), image.getHeight());
         int x, y;
         if (settings.isUseCustomPosition()) {
             x = (int) settings.getPositionX();
             y = (int) settings.getPositionY();
         } else {
-            x = (image.getWidth() - size) / 2;
-            y = (image.getHeight() - size) / 2;
+            x = (int) Math.round((image.getWidth() - width) / 2);
+            y = (int) Math.round((image.getHeight() - height) / 2);
         }
         
         AffineTransform transform = new AffineTransform();
-        transform.translate(x + size / 2.0, y + size / 2.0);
+        transform.translate(x + width / 2.0, y + height / 2.0);
         transform.rotate(rotation);
-        transform.translate(-size / 2.0, -size / 2.0);
+        transform.translate(-width / 2.0, -height / 2.0);
         
         g2d.setTransform(transform);
-        g2d.drawImage(settings.getWatermarkImage(), 0, 0, size, size, null);
+        g2d.drawImage(settings.getWatermarkImage(), 0, 0, (int) Math.round(width), (int) Math.round(height), null);
     }
     
     /**

@@ -17,6 +17,8 @@ public class WatermarkSettings {
     private double size        = 100;
     private double spacing     = 50;
     private double fontSize    = 2.5;
+    private double resizeScaleX = 1;
+    private double resizeScaleY = 1;
     private double positionX   = 0;
     private double positionY   = 0;
 
@@ -71,6 +73,8 @@ public class WatermarkSettings {
         copy.text              = this.text;
         copy.fontName          = this.fontName;
         copy.fontSize          = this.fontSize;
+        copy.resizeScaleX      = this.resizeScaleX;
+        copy.resizeScaleY      = this.resizeScaleY;
         copy.textColor         = this.textColor;
         copy.effect            = this.effect;
         copy.watermarkImage    = this.watermarkImage;

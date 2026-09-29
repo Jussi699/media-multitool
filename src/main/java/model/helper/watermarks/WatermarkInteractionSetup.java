@@ -142,7 +142,7 @@ public class WatermarkInteractionSetup {
         attachAllResizeHandlers();
     }
 
-    /** Attach resize mouse events to all four corner handles. */
+    /** Attach resize mouse events to all edge and corner handles. */
     private void attachAllResizeHandlers() {
         for (WatermarkOverlayManager.HandlePosition pos : WatermarkOverlayManager.HandlePosition.values()) {
             javafx.scene.shape.Rectangle handle = overlayManager.getHandle(pos);

@@ -42,7 +42,6 @@ public class MediaMultitoolApp extends Application {
 
         loadingStage.setOnCloseRequest(_ -> {
             Platform.exit();
-            System.exit(0);
         });
 
         WindowsDwmUtils.enableDarkMode(loadingStage);
@@ -92,13 +91,11 @@ public class MediaMultitoolApp extends Application {
             }
             loadingStage.close();
             Platform.exit();
-            System.exit(0);
         });
 
         loadAppTask.setOnCancelled(_ -> {
             loadingStage.close();
             Platform.exit();
-            System.exit(0);
         });
 
         Thread loaderThread = new Thread(loadAppTask);
@@ -106,9 +103,4 @@ public class MediaMultitoolApp extends Application {
         loaderThread.start();
     }
 
-    @Override
-    public void stop() throws Exception {
-        super.stop();
-        System.exit(0);
-    }
 }
