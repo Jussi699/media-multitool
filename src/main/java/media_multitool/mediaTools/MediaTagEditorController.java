@@ -245,14 +245,21 @@ public class MediaTagEditorController extends AbstractMediaController {
                 "Media Tag Editor",
                 """
                         How to use:
-                        1. Select an audio, photo or video file using 'Select media file' or drag and drop.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Edit the fields available for the selected media type; unavailable fields are locked and marked.
-                        4. (Optional) Change the cover image for audio files using 'Change Icon'.
-                        5. Click 'Save Changes' to apply all changes.
-                        
+                        1. Select an audio, photo or video file using "Select media" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) To view and edit multiple files from a folder, click the "Select multiple file" button and select the folder;
+
+                        3. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        4. Edit the available tag fields for the selected media file;
+
+                        5. (Optional) Change the cover image for audio files using "Change Icon";
+
+                        6. Click "Save Changes" to apply all changes.
+
                         This tool allows you to edit audio, photo and video tags.
-                        
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

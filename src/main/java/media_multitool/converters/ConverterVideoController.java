@@ -432,15 +432,21 @@ public class ConverterVideoController extends AbstractMediaController {
                 "Converter Video",
                 """
                         How to use:
-                        1. Select a video or audio file using 'Select audio/video' or drag and drop it into the dash-bordered zone.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Select the target video format (MP4, AVI, MKV, etc.).
-                        4. Configure video and audio settings (Bitrate, FPS, Resolution, etc.).
-                        5. (Optional) Enable GPU Acceleration if your hardware supports it.
-                        6. Click 'Convert and Download'.
-                        
-                        You can cancel the conversion at any time using the 'Cancel' button.
-                        
+                        1. Select a video or audio file using "Select video" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Select the target video format (MP4, AVI, MKV, etc.);
+
+                        4. Configure video and audio settings (Bitrate, FPS, Resolution, etc.);
+
+                        5. (Optional) Enable GPU Acceleration if your hardware supports it;
+
+                        6. Click "Convert and Download".
+
+                        You can cancel the conversion at any time using the "Cancel Conversion" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

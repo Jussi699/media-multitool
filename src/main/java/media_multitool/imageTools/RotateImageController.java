@@ -71,12 +71,21 @@ public class RotateImageController extends AbstractMediaController {
                 "Rotate",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Select which direction you want to rotate or flip the image by pressing the corresponding button.
-                        4. Click 'Rotate and Download' to apply the effect.
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
 
-                        This tool rotate or flips your image.
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Select which direction you want to rotate or flip the image by clicking the corresponding button;
+
+                        4. Click "Rotate and Download";
+
+                        5. (Optional) Click "To Clipboard" to copy the image to the clipboard.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+
+                        This tool rotates or flips your image.
 
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );

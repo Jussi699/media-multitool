@@ -127,22 +127,20 @@ public class WatermarkPdfController extends AbstractMediaController {
                 "Watermark PDF",
                 """
                         How to use:
-                        1. Select a PDF file or drag it into the drop zone.
-                        \s
-                        2. Click "Text" or "Photo" to open watermark settings.
-                        \s
-                        3. Configure watermark settings - changes appear in real-time on the first page preview.
-                        \s
-                        4. Click or drag on the preview to reposition the watermark.
-                           Drag the handles on corners to resize.
-                        \s
-                        5. Click "Submit and Download" to save the watermarked PDF.
-                           The watermark will be applied to ALL pages with the same settings.
-                        \s
+                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Click "Text" or "Photo" to configure watermark settings;
+
+                        4. Click or drag on the preview to reposition or resize the watermark;
+
+                        5. Click "Submit and Download".
+
                         This tool helps you add watermarks to your PDF documents.
-                        \s
-                        If you have any questions or problems, please go to Info and write to me on Discord.
-                        """
+
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
 

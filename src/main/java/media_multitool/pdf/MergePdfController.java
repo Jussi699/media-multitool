@@ -340,13 +340,16 @@ public class MergePdfController extends AbstractMediaController {
             "Information",
             "Merge PDF",
             """
-                How to use:
-                1. Select PDF files using 'Select PDF files' or drag and drop.
-                2. Each file will be represented by a thumbnail of its first page.
-                3. Drag and drop thumbnails to reorder the PDF files.
-                4. Click the X button on any thumbnail to remove that file from the merge.
-                5. Click 'Submit and Download' to save the merged PDF.
-                
+               How to use:
+                1. Select one or more PDF files using "Select PDF" or drag and drop them into the dash-bordered zone;
+
+                2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                    (Default directory: Desktop);
+
+                3. (Optional) Drag and drop thumbnails to reorder the PDF files, or click the remove button to remove a file;
+
+                4. Click "Submit and Download".
+
                 If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

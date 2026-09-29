@@ -100,23 +100,27 @@ public class FindPixelImageController extends AbstractMediaController {
 
     @FXML
     private void showInfo() {
-
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
                 "Find Color Pixel",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. Info:\s
-                        The left mouse button allows you to find a pixel.
-                        The right  mouse button lets you drag and drop the photo.
-                       \s
-                        3. Click on any pixel in the image to see its coordinates and color.
-                        4. Use the slider or mouse wheel to zoom in for better precision.
-                       \s
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. Click on any pixel with the left mouse button to view its RGB and HEX color values;
+
+                        3. (Optional) Drag with the right mouse button to move the image;
+
+                        4. (Optional) Use the slider or mouse wheel to zoom in for better precision;
+
+                        5. (Optional) Click "Save HEX" or "Save RGB" to copy color values, or "To Clipboard" to copy the image.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+
                         This tool helps you find the exact color and position of pixels in your image.
-                       \s
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

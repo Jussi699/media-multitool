@@ -337,14 +337,17 @@ public class ConverterImageController extends AbstractMediaController {
                 "Converter Image",
                 """
                         How to use:
-                        1. Select an image file using 'Select image'.
-                        3. (Optional) Select the directory from which you want to convert all photos
-                        3. (Optional) Choose a directory for saving the output.
-                        4. Select the target format (PNG, JPEG, etc.).
-                        5. Click 'Convert and Download'.
-                        
-                        You can also zoom the preview using the slider or mouse wheel.
-                        
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) To convert an entire folder, click the "Batch file processing" button and then select the folder containing the photos you want to convert;
+
+                        3. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        4. Select the target image format (PNG, JPEG, WEBP, etc.);
+
+                        5. Click "Convert and Download".
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

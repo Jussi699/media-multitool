@@ -372,13 +372,21 @@ public class ConverterAudioController extends AbstractMediaController {
                 "Converter Audio",
                 """
                         How to use:
-                        1. Select an audio or video file using 'Select audio/video' or drag and drop it into the dash-bordered zone.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Select the target audio format and configure quality settings (Bitrate, Channels, Sampling Rate).
-                        4. Click 'Convert and Download'.
-                        
-                        You can cancel the conversion at any time using the 'Cancel' button.
-                        
+                        1. Select an audio or video file using "Select audio/video" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Select the target audio format (MP3, AAC, OGG, etc.);
+
+                        4. Configure quality settings (Bitrate, Channels, Sampling Rate);
+
+                        5. (Optional) Enable "Use Lossy Compression (AAC)" if needed;
+
+                        6. Click "Convert and Download".
+
+                        You can cancel the conversion at any time using the "Cancel Conversion" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

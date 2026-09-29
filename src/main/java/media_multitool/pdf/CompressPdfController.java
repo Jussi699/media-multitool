@@ -272,11 +272,17 @@ public class CompressPdfController extends AbstractMediaController {
                 "Compress PDF",
                 """
                         How to use:
-                        1. Select a PDF file using 'Select PDF' or drag and drop.
-                        2. Select the desired compression preset.
-                        3. Click 'Compress and Download' to save the compressed PDF.
-                        4. You can cancel the compression at any time using the 'Cancel Compression' button.
-                        
+                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Select the desired compression level ("Low", "Medium", or "High");
+
+                        4. Click "Compress and Download".
+
+                        You can cancel the conversion at any time using the "Cancel Compression" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

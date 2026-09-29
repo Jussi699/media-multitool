@@ -301,14 +301,24 @@ public class CompressorVideoController extends AbstractMediaController {
                 "Compressor Video",
                 """
                         How to use:
-                        1. Select a video file using 'Select video'.
-                        2. (Optional) Choose a directory for saving the output.
+                        1. Select a video file using "Select video" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
                         3. Select a compression preset:
                            - Basic: Balanced size and quality.
                            - Strong: Maximum compression, lower quality.
-                           - Super: Optimized high quality with smaller size.
-                        4. Click 'Convert and Download'.
-                        
+                           - Super: Optimized high quality with smaller size;
+
+                        4. (Optional) Enable "Use GPU" if your hardware supports it;
+
+                        5. (Optional) Toggle "Compress Audio" if needed;
+
+                        6. Click "Compress and Download".
+
+                        You can cancel the conversion at any time using the "Cancel Compress" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

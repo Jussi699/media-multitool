@@ -266,11 +266,17 @@ public class ConverterImageToPdfController extends AbstractMediaController {
                 "Image to PDF",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. Choose Margin, Orientation and Page Size.
-                        3. Click 'Submit and Download' to save the PDF.
-                        4. You can cancel the conversion at any time using the 'Cancel Conversion' button.
-                        
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Select the desired margin, page orientation, and page size;
+
+                        4. Click "Submit and Download".
+
+                        You can cancel the conversion at any time using the "Cancel Conversion" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

@@ -427,13 +427,19 @@ public class ConverterPdfToImageController extends AbstractMediaController {
                 "PDF to Image",
                 """
                         How to use:
-                        1. Select a PDF file using 'Select PDF file' or drag and drop.
-                        2. Choose output format (PNG, JPEG, WEBP, TIFF, BMP, PPM, PGM, PAM).
-                        3. Click 'Convert and Download' to save the image, or 'Extract Jpeg/Png And Download' to extract all pages into a ZIP archive.
-                        4. You can cancel the conversion at any time using the 'Cancel Conversion' button.
-                        
-                        Note: 'Convert and Download' converts only the first page of the PDF.
-                        
+                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Choose the desired image format ("to PNG", "to JPEG", "to WEBP", "to TIFF", "to BMP", "to PPM", "to PGM", or "to PAM");
+
+                        4. Click "Convert and Download" to convert the first page, or click "Extract Jpeg And Download" / "Extract Png And Download" to extract all pages into a ZIP archive.
+
+                        Note: "Convert and Download" converts only the first page of the PDF.
+
+                        You can cancel the conversion at any time using the "Cancel Conversion" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

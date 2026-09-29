@@ -78,15 +78,20 @@ public class BlackWhiteImageController extends AbstractMediaController {
                 "Black-White Image",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Click 'Download' to apply the effect.
-                       \s
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).\s
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Click "Download" to apply the effect;
+
+                        4. (Optional) Click "To Clipboard" to copy the image to the clipboard.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
                         However, the image is still in the clipboard and can be pasted as usual.
-                       \s
-                        This tool will take a black and white your image.
-                       \s
+
+                        This tool will make your image black and white.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

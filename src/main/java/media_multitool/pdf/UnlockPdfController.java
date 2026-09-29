@@ -333,14 +333,18 @@ public class UnlockPdfController extends AbstractMediaController {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
                 "Information",
-                "Protect PDF",
+                "Unlock PDF",
                 """
                         How to use:
-                        1. Select a PDF file using 'Select PDF file' or drag and drop.
-                        2. If the PDF file is password protected, enter the password.
-                        3. If the file is not password protected, you can simply proceed to the next step.
-                        4. Click 'Unlock and Download' to unlock your PDF.
-                        
+                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. If the PDF file is password protected, enter the password (if the file is not password protected, you can simply proceed to the next step);
+
+                        4. Click "Unlock and Download".
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

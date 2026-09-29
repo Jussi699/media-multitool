@@ -437,17 +437,28 @@ public class MetaDataController extends AbstractMediaController {
     private void showInfo() {
         Alerts.alertDialog(
                 Alert.AlertType.INFORMATION,
-                "Media Metadata Viewer & Cleaner",
-                "How to use:",
+                "Information",
+                "Media Metadata",
                 """
-                        1. Select or Drag & Drop any file (Photo, PDF, Video, Audio).
-                        2. View all technical and embedded metadata in the table.
-                        3. The 'Del' column indicates if a property can be deleted manually (✓) or is read-only (✕).
-                        4. Use the Search field to quickly filter properties or values.
-                        5. Double-click or Right-click any row to copy values or delete specific tags.
-                        6. Click 'Copy All Metadata' to export everything to clipboard.
-                        7. Click 'Remove All Metadata' to strip all metadata and save a clean copy of the file.
-                        """
+                        How to use:
+                        1. Select a photo, PDF, video or audio file using "Select file" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. View technical and embedded metadata in the table, or use the search field to filter properties;
+
+                        4. (Optional) Double-click or right-click any row to copy values or delete specific tags;
+
+                        5. (Optional) Click "Delete Selected Tag" to delete the selected metadata tag;
+
+                        6. (Optional) Click "Copy All Metadata" to export all metadata to the clipboard;
+
+                        7. (Optional) Click "Remove All Metadata" to strip all metadata and save a clean copy of the file.
+
+                        This tool allows you to view, edit, and clean metadata from media and document files.
+
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
 

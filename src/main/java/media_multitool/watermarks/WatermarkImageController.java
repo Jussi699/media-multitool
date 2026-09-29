@@ -123,21 +123,20 @@ public class WatermarkImageController extends AbstractMediaController {
                 "Watermark Image",
                 """
                         How to use:
-                        1. Select an image file or drag it into the drop zone.
-                        \s
-                        2. Click "Text" or "Photo" to open watermark settings.
-                        \s
-                        3. Configure watermark settings - changes appear in real-time.
-                        \s
-                        4. Click or drag on the preview to reposition the watermark.
-                           Drag the handles on corners and edges to resize.
-                        \s
-                        5. Click "Submit and Download" to save the watermarked image.
-                        \s
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Click "Text" or "Photo" to configure watermark settings;
+
+                        4. Click or drag on the preview to reposition or resize the watermark;
+
+                        5. Click "Submit and Download".
+
                         This tool helps you add watermarks to your images.
-                        \s
-                        If you have any questions or problems, please go to Info and write to me on Discord.
-                        """
+
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
 

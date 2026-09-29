@@ -85,21 +85,25 @@ public class CropImageController extends AbstractMediaController {
                 "Crop Image",
                 """
                         How to use:
-                        1. Select an image file or drag it into the drop zone.
-                        \s
-                        2. A crop zone appears automatically on load.
-                        \s
-                        3. Controls:
-                        * Drag the crop zone to move it anywhere on the image.
-                        * Drag the white handles (corners / edges) to resize the crop zone.
-                        * Use the aspect-ratio buttons to snap to a fixed ratio.
-                        \s
-                        4. Use the slider or mouse wheel to zoom in for precision.
-                        \s
-                        5. Click "Crop and Download" to save the selected area.
-                        \s
-                        If you have any questions or problems, please go to Info and write to me on Discord.
-                        """
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Adjust the crop area by dragging the frame or corners, or select an aspect ratio;
+
+                        4. (Optional) Use the slider or mouse wheel to zoom in for precision;
+
+                        5. Click "Crop and Download";
+
+                        6. (Optional) Click "To Clipboard" to copy the image to the clipboard.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+
+                        This tool helps you crop your images.
+
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
 

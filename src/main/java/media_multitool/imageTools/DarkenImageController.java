@@ -86,13 +86,22 @@ public class DarkenImageController extends AbstractMediaController {
                 "Darken Image",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Use the slider to select several photos you want to darken.
-                        4. Click 'Darken and Download' to apply the effect.
-                        
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Use the slider to set how much you want to darken the image;
+
+                        4. Click "Darken and Download";
+
+                        5. (Optional) Click "To Clipboard" to copy the image to the clipboard.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+
                         This tool darkens your image.
-                        
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

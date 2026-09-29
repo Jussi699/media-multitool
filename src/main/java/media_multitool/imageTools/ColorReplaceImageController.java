@@ -209,18 +209,28 @@ public class ColorReplaceImageController extends AbstractMediaController {
                 "Color Replace",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. Choose target color (new color) from combo or enter HEX.
-                        3. Check 'Replace All Colors' to shift all colors, or leave unchecked to replace specific color.
-                        4. If replacing specific color: choose source color from combo or enter HEX.
-                        5. Adjust intensity (1-100) for replacement strength.
-                        6. Adjust smoothing (0-50) for color transition softness (specific color mode only).
-                        7. Adjust enhancement (1-100) for target color strength.
-                        8. Select output format (JPEG or PNG).
-                        9. Click 'Replace Color and Download'.
-                        
-                        This tool replaces specific color or shifts all colors in your image.
-                        
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Choose target color from the list or enter a HEX code;
+
+                        4. (Optional) Enable "Replace All Colors" to shift all colors, or configure source color;
+
+                        5. Adjust Intensity, Smoothing, and Enhancement settings;
+
+                        6. Select output format (JPEG or PNG);
+
+                        7. Click "Replace Color and Download";
+
+                        8. (Optional) Click "To Clipboard" to copy the image to the clipboard.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+
+                        This tool replaces specific colors or shifts all colors in your image.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

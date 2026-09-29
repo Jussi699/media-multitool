@@ -350,13 +350,19 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             "Images to PDF",
             """
                 How to use:
-                1. Select multiple images using 'Select images' or drag and drop.
-                2. Drag image thumbnails to reorder them.
-                3. Click the X button on any thumbnail to remove it.
-                4. Choose Margin, Orientation and Page Size.
-                5. Click 'Submit and Download' to save the PDF.
-                6. You can cancel the conversion at any time using the 'Cancel Conversion' button.
-                
+                1. Select one or more image files using "Select images" or drag and drop them into the dash-bordered zone;
+
+                2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                    (Default directory: Desktop);
+
+                3. (Optional) Drag image thumbnails to reorder them, or click the remove button to delete an image;
+
+                4. Select the desired margin, page orientation, and page size;
+
+                5. Click "Submit and Download".
+
+                You can cancel the conversion at any time using the "Cancel Conversion" button.
+
                 If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

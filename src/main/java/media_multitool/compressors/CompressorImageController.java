@@ -220,13 +220,17 @@ public class CompressorImageController extends AbstractMediaController {
                 "Compressor Image",
                 """
                         How to use:
-                        1. Select an image file using 'Select image'.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Select Scale and Quality settings.
-                        4. Click 'Convert and Download'.
-                        
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Configure Scale and Quality settings;
+
+                        4. Click "Compress and Download".
+
                         For SVG files, the compressor removes unnecessary metadata to reduce file size.
-                        
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

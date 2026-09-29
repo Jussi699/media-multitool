@@ -406,8 +406,6 @@ public class ProtectPdfController extends AbstractMediaController {
         }
     }
 
-
-
     @FXML
     private void showInfo() {
         Alerts.alertDialog(
@@ -416,17 +414,20 @@ public class ProtectPdfController extends AbstractMediaController {
                 "Protect PDF",
                 """
                         How to use:
-                        1. Select a PDF file using 'Select PDF file' or drag and drop.
-                        2. Enter a password and repeat it to confirm.
-                        3. Click 'Convert and Download' to create a password-protected PDF.
-                        
-                        The protected PDF will be saved with '_protected' suffix.
-                        
+                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Enter a password and repeat it in the fields to confirm;
+
+                        4. Click "Protect and Download".
+
                         Security settings:
                         - 256-bit AES encryption
                         - Printing allowed
-                        - Editing, copying, and form filling disabled
-                        
+                        - Editing, copying, and form filling disabled.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

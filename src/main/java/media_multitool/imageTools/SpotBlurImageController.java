@@ -513,24 +513,30 @@ public class SpotBlurImageController extends AbstractMediaController {
                 "Spot Blur",
                 """
                         How to use:
-                        1. Select an image file using 'Select image' or drag and drop.
-                        2. (Optional) Choose a directory for saving the output.
-                        3. Adjust the blur intensity (0-100%) using the slider.
-                        4. Click 'Rectangle' or 'Ellipse' to select shape type.
-                        5. Click and drag on the image to add blur areas.
-                        6. After adding a shape:
-                           - Drag it to move
-                           - Use white squares on corners/edges to resize
-                        7. Use 'Undo' to remove the last shape.
-                        8. Use the zoom slider for precision.
-                        9. Blur preview updates in real-time.
-                        10. Click 'Download' to save the final image.
-                        
-                        Tips:
-                        - RED outline shows the shape being drawn
-                        - Cyan outline shows already added shapes
-                        - White squares are resize handles
-                        
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Adjust the blur intensity using the slider;
+
+                        4. Click "Rectangle" or "Ellipse" and drag on the image to add blur zones;
+
+                        5. (Optional) Move or resize added shapes, or click "Undo" to remove the last shape;
+
+                        6. (Optional) Use the zoom slider or mouse wheel for precision;
+
+                        7. Click "Download" to apply the effect;
+
+                        8. (Optional) Click "To Clipboard" to copy the image to the clipboard.
+
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+
+                        This tool allows you to blur specific areas of your image.
+
+                        You can cancel the conversion at any time using the "Cancel" button.
+
                         If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }

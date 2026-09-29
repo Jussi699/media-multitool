@@ -398,23 +398,26 @@ public class SplitPdfController extends AbstractMediaController {
     }
 
     @FXML
-    public void showInfo() {
-        Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "How to use Split PDF",
+    private void showInfo() {
+        Alerts.alertDialog(
+                Alert.AlertType.INFORMATION,
+                "Information",
+                "Split PDF",
                 """
-                    How to use:
-                    1. Select a PDF file.
-                    2. Choose split mode:
-                    Range:
-                    a) Custom Range: Enter From and To page numbers.
-                    b) Fixed Range: Enter N, will extract pages 1 to N.
-                    Selected range will be highlighted with a green border.
-                    \s
-                    Pages:
-                    Select pages in the preview area below. Each selected page will be saved as a separate file.
-                    Use Shift + click to select a range of pages.
-                    If multiple pages are selected, they will be packed into a ZIP archive.
-                    \s
-                    3. Click 'Submit and Download' to save.
-                    """);
+                        How to use:
+                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+
+                        3. Choose split mode:
+                            - "Range": Select "Custom Range" to specify From/To pages, or "Fixed Range (1 to N)" to extract pages 1 to N (selected range is highlighted with a green border);
+                            - "Pages": Select pages in the preview area below (use Shift + click to select a range);
+                            (If multiple pages are selected, they will be packed into a ZIP archive);
+
+                        4. Click "Submit and Download".
+
+                        If you have any questions or problems, please go to Info and write to me on Discord."""
+        );
     }
 }

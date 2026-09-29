@@ -319,11 +319,15 @@ public class RemovePagesPdfController extends AbstractMediaController {
             "Remove Pages PDF",
             """
                 How to use:
-                1. Select a PDF file using 'Select PDF file' or drag and drop.
-                2. All pages will be displayed as thumbnails.
-                3. Click the X button on any page thumbnail to remove it from the resulting PDF.
-                4. Click 'Submit and Download' to save the modified PDF.
-                
+                1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
+
+                2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                    (Default directory: Desktop);
+
+                3. (Optional) Click the remove button on any page thumbnail to exclude it from the resulting PDF;
+
+                4. Click "Submit and Download".
+
                 If you have any questions or problems, please go to Info and write to me on Discord."""
         );
     }
