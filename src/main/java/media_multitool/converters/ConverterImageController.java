@@ -34,7 +34,7 @@ public class ConverterImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
     private static final ToggleGroup toggleGroup = new ToggleGroup();
 
-    private File path_folderBatchProcessing;
+    private File pathFolderBatchProcessing;
     private List<File> filesToProcess = new ArrayList<>();
 
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing, btnSubmit;
@@ -144,11 +144,11 @@ public class ConverterImageController extends AbstractMediaController {
     @FXML
     private void onActionBtnBatchFileProcessing() {
         Stage stage = getStage(btnSelectBatchFileProcessing);
-        directoryChooser(stage, path_folderBatchProcessing, "Select directory with image")
+        directoryChooser(stage, pathFolderBatchProcessing, "Select directory with image")
                 .ifPresent(selectedPath -> {
-                    path_folderBatchProcessing = selectedPath;
+                    pathFolderBatchProcessing = selectedPath;
 
-                    List<File> result = Preparation.getFilesFromFolder(path_folderBatchProcessing, Global.getAllSupportedImageFormats());
+                    List<File> result = Preparation.getFilesFromFolder(pathFolderBatchProcessing, Global.getAllSupportedImageFormats());
 
                     filesToProcess = new ArrayList<>(result);
 
@@ -165,14 +165,14 @@ public class ConverterImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, imageViewPreview, progressBar, true, "image(s)"
         );
 
         reset(imageProperties, ctx, "Selected image file: none");
 
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
-        path_folderBatchProcessing = null;
+        pathFolderBatchProcessing = null;
         filesToProcess.clear();
 
         toggleGroup.selectToggle(null);
@@ -207,8 +207,8 @@ public class ConverterImageController extends AbstractMediaController {
         labelSelectFile.setText(batchSelection
                 ? "Batch: " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName()
                 : filesToProcess.size() == 1
-                        ? "Select image file: " + imageProperties.getImage().getName()
-                        : "Selected " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName());
+                ? "Select image file: " + imageProperties.getImage().getName()
+                : "Selected " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName());
         textDragZone.setText((batchSelection ? "Batch: " : "Selected: ") + filesToProcess.size() + " files");
 
         imageViewPreview.setImage(null);

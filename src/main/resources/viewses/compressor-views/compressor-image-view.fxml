@@ -26,7 +26,7 @@
                     mnemonicParsing="false"
                     onAction="#ActionBtnSelectFile"
                     prefWidth="180.0"
-                    text="Select image file"/>
+                    text="Select image"/>
 
             <Button fx:id="btnChoiceDirForSaveImage"
                     mnemonicParsing="false"
@@ -75,7 +75,7 @@
 
             <HBox spacing="5.0" VBox.vgrow="ALWAYS">
                 <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS" maxHeight="Infinity">
-                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image here"/>
+                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image(s) here"/>
                 </StackPane>
             </HBox>
         </VBox>
