@@ -44,6 +44,8 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -125,7 +127,7 @@ public class SpotBlurImageController extends AbstractMediaController {
         });
         
         previewContainer.layoutBoundsProperty().addListener((_, oldVal, newVal) -> {
-            if (!blurShapes.isEmpty() && oldVal != null && !oldVal.equals(newVal)) {
+            if (!blurShapes.isEmpty() && nonNull(oldVal) && !oldVal.equals(newVal)) {
                 Platform.runLater(this::updateShapeVisuals);
             }
         });
@@ -137,7 +139,7 @@ public class SpotBlurImageController extends AbstractMediaController {
     }
 
     private void setupImageViewInteraction() {
-        if (imageViewPreview == null) {
+        if (isNull(imageViewPreview)) {
             return;
         }
 
@@ -176,7 +178,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
       private void setupShapeSelection(double displayX, double displayY, double normalizedX, double normalizedY) {
           selectedShape = getShapeAtPosition(displayX, displayY);
-          if (selectedShape != null) {
+          if (nonNull(selectedShape)) {
               dragOffsetX = normalizedX - selectedShape.startX;
               dragOffsetY = normalizedY - selectedShape.startY;
               selectedShape.isSelected = true;
@@ -185,7 +187,7 @@ public class SpotBlurImageController extends AbstractMediaController {
       }
 
      private void startNewShape(double normalizedX, double normalizedY) {
-         if (selectedShapeType != null) {
+         if (nonNull(selectedShapeType)) {
              isDrawing = true;
              currentShape = new BlurShapeVisual(selectedShapeType, normalizedX, normalizedY, normalizedX, normalizedY);
              updateShapeVisuals();
@@ -193,7 +195,7 @@ public class SpotBlurImageController extends AbstractMediaController {
      }
 
          private void handleMousePressed(MouseEvent event) {
-             if (originalBufferedImage == null || event.getButton() != MouseButton.PRIMARY) {
+             if (isNull(originalBufferedImage) || event.getButton() != MouseButton.PRIMARY) {
                  return;
              }
 
@@ -209,12 +211,12 @@ public class SpotBlurImageController extends AbstractMediaController {
              double normalizedY = (event.getY() - imageBounds.getMinY()) / imageBounds.getHeight();
 
              ResizeHandle handle = getHandleAtPosition(event.getX(), event.getY());
-             if (handle != null) {
+             if (nonNull(handle)) {
                  setupResizeHandle(handle);
                  return;
              }
 
-             if (getShapeAtPosition(event.getX(), event.getY()) != null) {
+             if (nonNull(getShapeAtPosition(event.getX(), event.getY()))) {
                  setupShapeSelection(event.getX(), event.getY(), normalizedX, normalizedY);
                  return;
              }
@@ -238,9 +240,9 @@ public class SpotBlurImageController extends AbstractMediaController {
              double normalizedY = (clampedY - imageBounds.getMinY()) / imageBounds.getHeight();
 
              if (resizeSelectedShape(normalizedX, normalizedY)) { return; }
-             if (moveSelectedShape(normalizedX, normalizedY))    { return; }
+             if (moveSelectedShape(normalizedX, normalizedY))   { return; }
 
-           if (isDrawing && currentShape != null) {
+           if (isDrawing && nonNull(currentShape)) {
                currentShape.endX = normalizedX;
                currentShape.endY = normalizedY;
                updateShapeVisuals();
@@ -248,7 +250,7 @@ public class SpotBlurImageController extends AbstractMediaController {
        }
 
     private boolean moveSelectedShape(double normalizedX, double normalizedY) {
-        if (selectedShape == null || isDrawing) return false;
+        if (isNull(selectedShape) || isDrawing) return false;
 
         double newStartX = normalizedX - dragOffsetX;
         double newStartY = normalizedY - dragOffsetY;
@@ -267,7 +269,7 @@ public class SpotBlurImageController extends AbstractMediaController {
     }
 
     private boolean resizeSelectedShape(double normalizedX, double normalizedY) {
-        if (resizeHandle == null || selectedShape == null) return false;
+        if (isNull(resizeHandle) || isNull(selectedShape)) return false;
 
         double left = originalStartX;
         double top = originalStartY;
@@ -350,7 +352,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
             event.consume();
 
-            if (isDrawing && currentShape != null) {
+            if (isDrawing && nonNull(currentShape)) {
                 isDrawing = false;
 
                 if (Math.abs(currentShape.endX - currentShape.startX) > 0.01 && 
@@ -389,7 +391,8 @@ public class SpotBlurImageController extends AbstractMediaController {
         Bounds imageBounds = imageViewPreview.localToParent(imageViewPreview.getBoundsInLocal());
         for (BlurShapeVisual shape : blurShapes) {
             ResizeHandle handle = shape.getHandleAt(x, y, imageBounds);
-            if (handle != null) { return handle; }
+            if (nonNull(handle))
+                return handle;
         }
         return null;
     }
@@ -401,7 +404,7 @@ public class SpotBlurImageController extends AbstractMediaController {
           for (BlurShapeVisual shape : blurShapes) {
               Shape visual = BlurShapeHelper.createShapeVisual(shape, false, imageBounds);
 
-              if (visual != null) { blurOverlay.getChildren().add(visual); }
+              blurOverlay.getChildren().add(visual);
 
               List<Shape> guides = new ArrayList<>();
               BlurShapeHelper.drawDashedGuides(shape, imageBounds, guides);
@@ -415,14 +418,14 @@ public class SpotBlurImageController extends AbstractMediaController {
               }
           }
 
-          if (currentShape != null) {
+          if (nonNull(currentShape)) {
               Shape visual = BlurShapeHelper.createShapeVisual(currentShape, true, imageBounds);
-              if (visual != null) { blurOverlay.getChildren().add(visual); }
+              blurOverlay.getChildren().add(visual);
           }
       }
 
      private void updateBlurPreview() {
-          if (currentBufferedImage == null || originalBufferedImage == null) {
+          if (isNull(currentBufferedImage) || isNull(originalBufferedImage)) {
               return;
           }
 
@@ -586,7 +589,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
      @FXML
      public void submitAndDownload() {
-         if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
+         if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(originalBufferedImage)) {
              return;
          }
 
@@ -602,7 +605,7 @@ public class SpotBlurImageController extends AbstractMediaController {
                  updateMessage("Applying final blur...");
 
                  BufferedImage finalBlur = applyBlurShapes(originalBufferedImage);
-                 if (finalBlur == null) {
+                 if (isNull(finalBlur)) {
                      return null;
                  }
 
@@ -624,7 +627,7 @@ public class SpotBlurImageController extends AbstractMediaController {
          };
 
          executeMediaTask(currentTask);
-         if (labelSuccess != null) {
+         if (nonNull(labelSuccess)) {
              labelSuccess.setManaged(true);
          }
      }
@@ -673,7 +676,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
     @FXML
     private void cancelTask() {
-        if (currentTask != null && currentTask.isRunning()) {
+        if (nonNull(currentTask) && currentTask.isRunning()) {
             currentTask.cancel();
         }
     }
@@ -684,11 +687,11 @@ public class SpotBlurImageController extends AbstractMediaController {
             currentBufferedImage = bi;
             setImagePreview(currentBufferedImage, imageViewPreview);
             Platform.runLater(() -> {
-                if (progressBar != null) {
+                if (nonNull(progressBar)) {
                     progressBar.setVisible(true);
                     progressBar.setManaged(true);
                 }
-                if (labelSuccess != null) {
+                if (nonNull(labelSuccess)) {
                     labelSuccess.setVisible(true);
                     labelSuccess.setManaged(true);
                 }
@@ -764,20 +767,20 @@ public class SpotBlurImageController extends AbstractMediaController {
 
         supportLoadFile(selectedFile);
 
-        if (textDragZone != null) {
+        if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + selectedFile.getName());
         }
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }
 
     private void supportLoadFile(File selectedFile) {
-        if (imageViewPreview != null) {
+        if (nonNull(imageViewPreview)) {
             try {
                 originalBufferedImage = ImageIO.read(selectedFile);
-                if (originalBufferedImage != null) {
-                    if (labelPreviewPlaceholder != null) {
+                if (nonNull(originalBufferedImage)) {
+                    if (nonNull(labelPreviewPlaceholder)) {
                         labelPreviewPlaceholder.setVisible(false);
                     }
                     currentBufferedImage = new BufferedImage(

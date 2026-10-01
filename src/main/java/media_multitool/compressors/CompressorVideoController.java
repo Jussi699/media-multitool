@@ -27,8 +27,6 @@ import java.util.stream.Stream;
 import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
-import static model.utility.TemplateCheck.isValidFile;
-import static model.utility.TemplateCheck.canRead;
 import static java.util.Objects.isNull;
 import static viewHelp.Message.*;
 import static viewHelp.Utility.getMetadata;
