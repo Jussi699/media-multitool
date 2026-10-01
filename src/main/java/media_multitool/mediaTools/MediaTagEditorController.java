@@ -379,7 +379,7 @@ public class MediaTagEditorController extends AbstractMediaController {
                         .map(DetailsAudioFile.class::cast)
                         .toList();
                 masterFile.setAll(audioFiles);
-                ErrorLogger.info("Loaded " + audioFiles.size() + " files to table.");
+                ErrorLogger.info(getClass(), "Loaded " + audioFiles.size() + " files to table.");
                 enableControls();
             }
             return;
@@ -389,7 +389,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         if (result instanceof Boolean && Boolean.FALSE.equals(result)) {
             return;
         }
-        ErrorLogger.info("Media tags changed successfully!");
+        ErrorLogger.info(getClass(), "Media tags changed successfully!");
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Tags saved successfully!", audioProperties.getHideSuccessMessageTimer());
@@ -448,13 +448,7 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        if (!isValidFile(selectedFile)) {
-            return;
-        }
-
-        ErrorLogger.info("User selected file: " + selectedFile.getAbsolutePath());
-
-        if (!canReadAndWrite(selectedFile)) {
+        if (!validateSelectedFile(selectedFile, true)) {
             return;
         }
 
@@ -579,6 +573,9 @@ public class MediaTagEditorController extends AbstractMediaController {
         Stage stage = (Stage) btnChangeIcon.getScene().getWindow();
         selectImageFile.choiceFile(stage,
                 new FileChooser.ExtensionFilter("Image Files", Global.getSupportedImageFormatsForFileChooser())).ifPresent(file -> {
+            if (!validateSelectedFile(file)) {
+                return;
+            }
             audioProperties.setPathToImage(file);
             AudioEditor.updatePreviewWithPath(audioProperties, imageViewPreview);
         });
@@ -606,7 +603,8 @@ public class MediaTagEditorController extends AbstractMediaController {
                     disableControls();
                     chosenDir = dir;
                     audioProperties.setOutput(dir);
-                    List<String> formats = getFormatsForMediaType(mediaType);
+                            ErrorLogger.info(getClass(), "Batch processing directory selected: " + dir.getAbsolutePath());
+                            List<String> formats = getFormatsForMediaType(mediaType);
 
                     Task<List<DetailsAudioFile>> task = new Task<>() {
                         @Override

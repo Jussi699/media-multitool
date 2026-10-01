@@ -702,7 +702,7 @@ public class SpotBlurImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Spot blur successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Spot blur successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Spot blur image saved!", imageProperties.getHideSuccessMessageTimer());
@@ -744,6 +744,10 @@ public class SpotBlurImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
 
         blurShapes.clear();

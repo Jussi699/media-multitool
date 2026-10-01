@@ -28,7 +28,6 @@ import java.util.Optional;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
-import static model.utility.TemplateCheck.*;
 import static viewHelp.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
@@ -242,7 +241,7 @@ public class CompressorImageController extends AbstractMediaController {
     public void onChoiceScaleImage() {
         Item selectedItem = comboBoxScaleImage.getValue();
         imageProperties.setScale((nonNull(selectedItem)) ? selectedItem.id() : -1);
-        ErrorLogger.info("User select scale: " + imageProperties.getScale());
+        ErrorLogger.info(getClass(), "User selected scale: " + imageProperties.getScale());
         updateEstimatedSize();
     }
 
@@ -250,7 +249,7 @@ public class CompressorImageController extends AbstractMediaController {
     public void onChoiceOutputQuality() {
         Item selectedItem = comboBoxOutputQuality.getValue();
         imageProperties.setQuality(nonNull(selectedItem) ? selectedItem.id() : -1);
-        ErrorLogger.info("User select quality: " + imageProperties.getQuality());
+        ErrorLogger.info(getClass(), "User selected quality: " + imageProperties.getQuality());
         updateEstimatedSize();
     }
 
@@ -275,13 +274,7 @@ public class CompressorImageController extends AbstractMediaController {
 
 
     private void loadFile(File selectedFile) {
-        if(!isValidFile(selectedFile)) {
-            return;
-        }
-
-        ErrorLogger.info("User selected file: " + selectedFile.getAbsolutePath());
-
-        if(!canRead(selectedFile)) {
+        if (!validateSelectedFile(selectedFile)) {
             return;
         }
 

@@ -189,7 +189,7 @@ public class CompressPdfController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Conversion to PDF successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "PDF compression successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
@@ -301,6 +301,10 @@ public class CompressPdfController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         hideSuccessMessage(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 

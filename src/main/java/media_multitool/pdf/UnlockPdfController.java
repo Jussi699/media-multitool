@@ -269,7 +269,7 @@ public class UnlockPdfController extends AbstractMediaController {
         }
         File outputFile = (File) result;
         
-        ErrorLogger.info("PDF unlocked successfully! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "PDF unlocked successfully! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             String message = isFileEncrypted ? "PDF unlocked successfully!" : "PDF copied successfully!";
@@ -352,6 +352,10 @@ public class UnlockPdfController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         if (nonNull(imageViewPdf)) {
             imageViewPdf.setImage(null);
         }
@@ -405,7 +409,7 @@ public class UnlockPdfController extends AbstractMediaController {
                 typePasswordField.setDisable(false);
                 btnShowTypePassword.setDisable(false);
                 enableControls();
-                ErrorLogger.info("Encrypted PDF detected: " + selectedFile.getName());
+                ErrorLogger.info(getClass(), "Encrypted PDF detected: " + selectedFile.getName());
             } else {
                 ErrorLogger.error("Error loading PDF: " + e.getMessage());
                 Platform.runLater(() -> {

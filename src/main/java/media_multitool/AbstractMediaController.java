@@ -16,6 +16,7 @@ import model.properties.MediaProperties;
 import model.utility.DragDropped;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
+import model.utility.TemplateCheck;
 import viewHelp.Alerts;
 import viewHelp.Message;
 
@@ -114,6 +115,7 @@ public abstract class AbstractMediaController {
     protected <T> void executeMediaTask(Task<T> task) {
         currentTask.set(task);
         lockUI();
+        ErrorLogger.info(getClass(), "Operation started.");
         
         if (nonNull(progressBar)) {
             progressBar.setVisible(true);
@@ -136,6 +138,7 @@ public abstract class AbstractMediaController {
             }
             unbindProgress();
             unlockUI();
+            ErrorLogger.info(getClass(), "Operation cancelled.");
             handleTaskCancelled();
         });
 
@@ -146,7 +149,8 @@ public abstract class AbstractMediaController {
             unbindProgress();
             unlockUI();
             Throwable exception = task.getException();
-            ErrorLogger.error("Task failed: " + exception.getMessage());
+            ErrorLogger.log(101, ErrorLogger.Level.ERROR,
+                    getClass().getSimpleName() + " - Task failed", exception);
             handleTaskFailure(exception);
         });
 
@@ -161,6 +165,7 @@ public abstract class AbstractMediaController {
 
     protected void handleTaskSuccess(Object result) {
         if (Boolean.FALSE.equals(result)) {
+            ErrorLogger.warn(getClass(), "Operation failed: the task returned an unsuccessful result.");
             if (nonNull(progressBar)) {
                 progressBar.setProgress(0);
             }
@@ -168,6 +173,7 @@ public abstract class AbstractMediaController {
             startSuccessTimer();
             return;
         }
+        ErrorLogger.info(getClass(), "Operation completed successfully.");
         if (nonNull(labelSuccess)) {
             labelSuccess.setStyle("-fx-text-fill: #32CD32;");
             labelSuccess.setText("Operation successful!");
@@ -222,8 +228,27 @@ public abstract class AbstractMediaController {
         directoryChooser(stage, currentPath, title)
                 .ifPresent(selectedPath -> {
                     propertySetter.accept(selectedPath);
+                    ErrorLogger.info(getClass(), "Output directory selected: " + selectedPath.getAbsolutePath());
                     Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
                 });
+    }
+
+    protected boolean validateSelectedFile(File file) {
+        return validateSelectedFile(file, false);
+    }
+
+    protected boolean validateSelectedFile(File file, boolean requireWriteAccess) {
+        if (!TemplateCheck.isValidFile(file)) {
+            ErrorLogger.warn(getClass(), "Rejected invalid input file.");
+            return false;
+        }
+        if (requireWriteAccess ? !TemplateCheck.canReadAndWrite(file) : !TemplateCheck.canRead(file)) {
+            ErrorLogger.warn(getClass(), "Rejected input file because the required permissions are unavailable: "
+                    + file.getAbsolutePath());
+            return false;
+        }
+        ErrorLogger.info(getClass(), "User selected file: " + file.getAbsolutePath());
+        return true;
     }
 
     protected void setupDragAndDrop(@NonNull StackPane dropZone, @NonNull List<String> supportedFormats, @NonNull Consumer<File> fileProcessor) {

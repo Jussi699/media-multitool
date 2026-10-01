@@ -210,7 +210,7 @@ public class ConverterImageToPdfController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Conversion to PDF successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Image to PDF conversion successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
@@ -284,6 +284,10 @@ public class ConverterImageToPdfController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
 
         try {

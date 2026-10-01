@@ -328,13 +328,7 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        if(!isValidFile(selectedFile)) {
-            return;
-        }
-
-        ErrorLogger.info("User selected file: " + selectedFile.getAbsolutePath());
-
-        if(!canRead(selectedFile)) {
+        if (!validateSelectedFile(selectedFile)) {
             return;
         }
 
@@ -348,7 +342,8 @@ public class CompressorVideoController extends AbstractMediaController {
 
         adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
         if (nonNull(adaptivePresets)) {
-            ErrorLogger.info("Adaptive presets created successfully for: " + videoProperties.getSrcFile().getName());
+            ErrorLogger.info(getClass(), "Adaptive presets created successfully for: "
+                    + videoProperties.getSrcFile().getName());
         } else {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Preset Creation Error",
                     "Could not create presets from video. Check log for details.");

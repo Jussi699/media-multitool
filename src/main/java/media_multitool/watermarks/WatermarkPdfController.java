@@ -269,7 +269,7 @@ public class WatermarkPdfController extends AbstractMediaController {
         }
 
         File outputFile = (File) result;
-        ErrorLogger.info("PDF with watermark saved successfully to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "PDF with watermark saved successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Watermarked PDF saved!", imageProperties.getHideSuccessMessageTimer());
@@ -322,6 +322,9 @@ public class WatermarkPdfController extends AbstractMediaController {
     private void loadFile(File selectedFile) {
         if (isNull(selectedFile) || !selectedFile.getName().toLowerCase().endsWith(".pdf")) {
             showErrorMessage(labelSuccess, "Please select a valid PDF file.", imageProperties.getHideSuccessMessageTimer());
+            return;
+        }
+        if (!validateSelectedFile(selectedFile)) {
             return;
         }
 

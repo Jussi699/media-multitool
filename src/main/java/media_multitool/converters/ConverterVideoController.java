@@ -218,6 +218,10 @@ public class ConverterVideoController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         videoProperties.setSrcFile(selectedFile);
         labelSelectFile.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
@@ -380,7 +384,7 @@ public class ConverterVideoController extends AbstractMediaController {
         if (finalChannels <= 0)     finalChannels = 2;
         if (finalFps <= 0)          finalFps = 30;
 
-        ErrorLogger.info("Video conversion parameters: V-BR=" + finalVideoBitrate
+        ErrorLogger.info(getClass(), "Video conversion parameters: V-BR=" + finalVideoBitrate
                 + ", A-BR=" + finalAudioBitrate + ", CH=" + finalChannels 
                 + ", SR=" + finalSamplingRate + ", FPS=" + finalFps);
 

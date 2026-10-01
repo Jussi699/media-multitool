@@ -194,7 +194,7 @@ public class FindPixelImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Image saved successfully to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Image saved successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Image saved!", imageProperties.getHideSuccessMessageTimer());
@@ -233,6 +233,10 @@ public class FindPixelImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         imageProperties.setImage(selectedFile);
 

@@ -354,7 +354,7 @@ public class MetaDataController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Metadata stripped successfully! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Metadata stripped successfully! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Clean file saved to: " + outputFile.getName(), metaDataProperties.getHideSuccessMessageTimer());
@@ -390,7 +390,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
-        if (isNull(selectedFile) || !selectedFile.exists()) {
+        if (!validateSelectedFile(selectedFile)) {
             return;
         }
 

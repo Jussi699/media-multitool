@@ -335,7 +335,7 @@ public class ProtectPdfController extends AbstractMediaController {
         }
         File outputFile = (File) result;
         
-        ErrorLogger.info("PDF protection successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "PDF protection successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "PDF protected successfully!", imageProperties.getHideSuccessMessageTimer());
@@ -437,6 +437,10 @@ public class ProtectPdfController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         try {
             currentDoc = PdfHelper.closeDocument(currentDoc);
         } catch (IOException e) {

@@ -176,17 +176,19 @@ public class ConverterAudioController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         audioProperties.setSrcFile(selectedFile);
-        ErrorLogger.info("User select file (video/audio): " + audioProperties.getSrcFile().getAbsolutePath());
-
         textDragZone.setText("Selected: " + audioProperties.getSrcFile().getName());
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
 
-        labelSelectFile.setText("Selected audio file: " + audioProperties.getSrcFile().getName());
+        labelSelectFile.setText("Selected audio file: " + selectedFile.getName());
         hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(), true);
     }
 
@@ -263,16 +265,16 @@ public class ConverterAudioController extends AbstractMediaController {
         int finalChannels = audioProperties.getChannel();
         int finalSamplingRate = audioProperties.getSamplingRate();
 
-        ErrorLogger.info("Before conversion: selectedBitrate=" + finalAudioBitrate 
+        ErrorLogger.info(getClass(), "Before conversion: selectedBitrate=" + finalAudioBitrate
                 + ", sourceBitrate=" + parseAudioBitrate(sourceInfo));
 
         if (finalAudioBitrate <= 0) {
             finalAudioBitrate = parseAudioBitrate(sourceInfo);
-            ErrorLogger.info("Bitrate <= 0, using source bitrate: " + finalAudioBitrate);
+            ErrorLogger.info(getClass(), "Bitrate <= 0, using source bitrate: " + finalAudioBitrate);
         }
         if (finalAudioBitrate <= 0) {
             finalAudioBitrate = 320;
-            ErrorLogger.info("Source bitrate invalid, using default: 320");
+            ErrorLogger.info(getClass(), "Source bitrate invalid, using default: 320");
         }
 
         if (finalChannels <= 0) finalChannels = nonNull(sourceInfo) ? parseChannels(sourceInfo) : 2;
@@ -285,7 +287,8 @@ public class ConverterAudioController extends AbstractMediaController {
         audioProperties.setChannel(finalChannels);
         audioProperties.setSamplingRate(finalSamplingRate);
 
-        ErrorLogger.info("Final audio properties set: BR=" + finalAudioBitrate + ", CH=" + finalChannels + ", SR=" + finalSamplingRate);
+        ErrorLogger.info(getClass(), "Final audio properties set: BR=" + finalAudioBitrate
+                + ", CH=" + finalChannels + ", SR=" + finalSamplingRate);
 
         boolean useLossy = checkBoxLossyCompression.isSelected();
         audioProperties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, useLossy));
@@ -321,7 +324,7 @@ public class ConverterAudioController extends AbstractMediaController {
 
         String selectedFormat = getString(tb);
 
-        if (selectedFormat != null) {
+        if (nonNull(selectedFormat)) {
             selectFormat(selectedFormat, audioProperties::setTargetFormat);
             
             boolean supportsChoice = MediaHelper.supportsCodecChoice(selectedFormat);

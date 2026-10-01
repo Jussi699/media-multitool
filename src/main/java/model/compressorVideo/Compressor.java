@@ -46,9 +46,9 @@ public class Compressor {
                 video.setBitRate(null);
                 video.setCrf(crf);
                 video.setPreset("medium");
-                ErrorLogger.info("Using CRF mode: crf=" + crf + ", preset=medium, codec=" + videoCodec);
+                ErrorLogger.info(Compressor.class, "Using CRF mode: crf=" + crf + ", preset=medium, codec=" + videoCodec);
             } else {
-                ErrorLogger.info("Using ABR mode: bitRate=" + video.getBitRate().orElse(-1) + " bps, codec=" + videoCodec);
+                ErrorLogger.info(Compressor.class, "Using ABR mode: bitRate=" + video.getBitRate().orElse(-1) + " bps, codec=" + videoCodec);
             }
 
             EncodingAttributes attrs = new EncodingAttributes();
@@ -63,16 +63,16 @@ public class Compressor {
                     AudioAttributes copyAudio = new AudioAttributes();
                     copyAudio.setCodec("copy");
                     attrs.setAudioAttributes(copyAudio);
-                    ErrorLogger.info("Using copy codec for audio - preserving original audio stream.");
+                    ErrorLogger.info(Compressor.class, "Using copy codec for audio - preserving original audio stream.");
                 }
             } else {
-                ErrorLogger.info("Source video has no audio track. Skipping audio attributes in compressor.");
+                ErrorLogger.info(Compressor.class, "Source video has no audio track. Skipping audio attributes in compressor.");
             }
 
             encoder.encode(multimediaObject, output, attrs, new EncoderProgressListener() {
                 @Override
                 public void sourceInfo(MultimediaInfo info) {
-                    ErrorLogger.info("Source info: " + info.toString());
+                    ErrorLogger.info(Compressor.class, "Source info: " + info);
                 }
 
 
@@ -85,16 +85,16 @@ public class Compressor {
 
                 @Override
                 public void message(String message) {
-                    ErrorLogger.info("FFmpeg: " + message);
+                    ErrorLogger.info(Compressor.class, "FFmpeg: " + message);
                 }
             });
             
-            ErrorLogger.info("Video compression completed successfully: " + output.getAbsolutePath());
+            ErrorLogger.info(Compressor.class, "Video compression completed successfully: " + output.getAbsolutePath());
         } catch (EncoderException e) {
             String msg = e.getMessage();
             boolean isCancelled = nonNull(msg) && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
             if (isCancelled) {
-                ErrorLogger.info("Compression was cancelled by user.");
+                ErrorLogger.info(Compressor.class, "Compression was cancelled by user.");
             } else {
                 throw e;
             }

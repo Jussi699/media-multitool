@@ -275,7 +275,7 @@ public class WatermarkVideoController extends AbstractMediaController {
         }
 
         File outputFile = (File) result;
-        ErrorLogger.info("Video with watermark saved successfully to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Video with watermark saved successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Watermarked video saved!", imageProperties.getHideSuccessMessageTimer());
@@ -316,6 +316,10 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         videoProperties.setSrcFile(selectedFile);
         imageProperties.setImage(selectedFile);

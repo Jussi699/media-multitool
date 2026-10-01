@@ -201,11 +201,15 @@ public class ConverterImageController extends AbstractMediaController {
             return;
         }
 
+        filesToProcess = new ArrayList<>(files.stream().filter(this::validateSelectedFile).toList());
+        if (filesToProcess.isEmpty()) {
+            return;
+        }
+
         enableControls();
-        filesToProcess = new ArrayList<>(files);
         imageProperties.setImage(filesToProcess.getFirst());
 
-        filesToProcess.forEach(file -> ErrorLogger.info("User selected file (image): " + file.getAbsolutePath()));
+        ErrorLogger.info(getClass(), "Selected " + filesToProcess.size() + " image file(s) for conversion.");
         labelSelectFile.setText(batchSelection
                 ? "Batch: " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName()
                 : filesToProcess.size() == 1
@@ -235,7 +239,8 @@ public class ConverterImageController extends AbstractMediaController {
                 dropZone.getStyleClass().add("drop-zone-filled");
             }
 
-            ErrorLogger.info("Preview loaded successfully for: " + imageProperties.getImage().getName());
+            ErrorLogger.info(getClass(), "Preview loaded successfully for: "
+                    + imageProperties.getImage().getName());
         } catch (IOException e) {
             ErrorLogger.log(107, ErrorLogger.Level.ERROR, "Failed load preview", e);
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load preview", "Failed load preview.\nCheck log file for more details!");

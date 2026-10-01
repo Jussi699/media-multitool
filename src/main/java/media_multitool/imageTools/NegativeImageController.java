@@ -134,7 +134,7 @@ public class NegativeImageController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Image negative successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Image negative successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Negative image saved!", imageProperties.getHideSuccessMessageTimer());
@@ -201,6 +201,10 @@ public class NegativeImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));

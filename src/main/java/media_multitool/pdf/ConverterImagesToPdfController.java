@@ -159,6 +159,14 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
     }
 
     private void addImageToList(File file) {
+        if (!validateSelectedFile(file)) {
+            return;
+        }
+        if (!isImageFile(file)) {
+            ErrorLogger.warn(getClass(), "Rejected unsupported image file: " + file.getAbsolutePath());
+            return;
+        }
+
         ImageEntry entry = new ImageEntry(file);
         selectedImages.add(entry);
         createImagePreviewCard(entry);
@@ -300,7 +308,7 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             return;
         }
         File outputFile = (File) result;
-        ErrorLogger.info("Conversion to PDF successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Images to PDF conversion successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             Message.showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());

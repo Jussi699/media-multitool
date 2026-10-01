@@ -163,6 +163,10 @@ public class SplitPdfController extends AbstractMediaController {
     }
 
     private void loadPdfFile(File file) {
+        if (!validateSelectedFile(file)) {
+            return;
+        }
+
         isPressedReset();
         imageProperties.setImage(file);
 

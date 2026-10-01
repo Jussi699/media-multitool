@@ -132,6 +132,10 @@ public class MergePdfController extends AbstractMediaController {
     }
 
     private void loadPdfFile(File file) {
+        if (!validateSelectedFile(file)) {
+            return;
+        }
+
         if (isNull(imageProperties.getImage())) {
             imageProperties.setImage(file);
         }
@@ -296,7 +300,7 @@ public class MergePdfController extends AbstractMediaController {
     protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
         if (result instanceof File outputFile) {
-            ErrorLogger.info("PDF merged successfully! Saved to: " + outputFile.getAbsolutePath());
+            ErrorLogger.info(getClass(), "PDF merged successfully! Saved to: " + outputFile.getAbsolutePath());
 
             Platform.runLater(() -> {
                 Message.showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());

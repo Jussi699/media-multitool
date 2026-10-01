@@ -244,7 +244,7 @@ public class WatermarkImageController extends AbstractMediaController {
         }
 
         File outputFile = (File) result;
-        ErrorLogger.info("Image with watermark saved successfully to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Image with watermark saved successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Watermarked image saved!", imageProperties.getHideSuccessMessageTimer());
@@ -294,6 +294,10 @@ public class WatermarkImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));

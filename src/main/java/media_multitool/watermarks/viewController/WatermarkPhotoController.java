@@ -13,6 +13,7 @@ import media_multitool.watermarks.WatermarkVideoController;
 import model.helper.watermarks.WatermarkSettings;
 import model.logger.ErrorLogger;
 import model.utility.Global;
+import model.utility.TemplateCheck;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -203,10 +204,24 @@ public class WatermarkPhotoController {
     }
 
     private void loadWatermarkImage(File file) {
+        if (!TemplateCheck.isValidFile(file)) {
+            ErrorLogger.warn(getClass(), "Rejected invalid watermark image.");
+            return;
+        }
+        if (!TemplateCheck.canRead(file)) {
+            ErrorLogger.warn(getClass(), "Rejected unreadable watermark image: " + file.getAbsolutePath());
+            return;
+        }
+        if (!isImageFile(file)) {
+            ErrorLogger.warn(getClass(), "Rejected unsupported watermark image: " + file.getAbsolutePath());
+            return;
+        }
+
+        ErrorLogger.info(getClass(), "User selected watermark image: " + file.getAbsolutePath());
         try {
             BufferedImage watermarkImage = ImageIO.read(file);
             if (isNull(watermarkImage)) {
-                ErrorLogger.error("Failed to load watermark image: file returned null");
+                ErrorLogger.error(getClass().getSimpleName() + " - Failed to load watermark image: file returned null");
                 return;
             }
 
@@ -220,9 +235,10 @@ public class WatermarkPhotoController {
 
             settings.setWatermarkImage(watermarkImage);
             updatePreview();
+            ErrorLogger.info(getClass(), "Watermark image loaded successfully: " + file.getAbsolutePath());
             
         } catch (Exception e) {
-            ErrorLogger.error("Failed to load watermark image: " + e.getMessage());
+            ErrorLogger.error(getClass().getSimpleName() + " - Failed to load watermark image: " + e.getMessage());
         }
     }
 

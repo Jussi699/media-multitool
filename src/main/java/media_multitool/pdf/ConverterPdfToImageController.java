@@ -353,7 +353,7 @@ public class ConverterPdfToImageController extends AbstractMediaController {
         File outputFile = (File) result;
         
         String message = isExtract ? "Images saved to ZIP!" : "Image saved!";
-        ErrorLogger.info("Conversion successful! Saved to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "PDF to image conversion successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, message, imageProperties.getHideSuccessMessageTimer());
@@ -448,6 +448,10 @@ public class ConverterPdfToImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         closeCurrentDoc();
         imageProperties.setImage(selectedFile);
         labelSelectFileName.setText("Selected PDF: " + selectedFile.getName());

@@ -211,7 +211,7 @@ public class CropImageController extends AbstractMediaController {
         }
 
         File outputFile = (File) result;
-        ErrorLogger.info("Image cropped successfully to: " + outputFile.getAbsolutePath());
+        ErrorLogger.info(getClass(), "Image cropped successfully to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Cropped image saved!", imageProperties.getHideSuccessMessageTimer());
@@ -248,6 +248,10 @@ public class CropImageController extends AbstractMediaController {
     }
 
     private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
         enableControls();
         imageProperties.setImage(selectedFile);
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
