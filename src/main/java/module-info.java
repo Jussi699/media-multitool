@@ -24,10 +24,10 @@ module media_multitool {
     requires com.sun.jna.platform;
     requires org.lwjgl;
     requires org.lwjgl.nfd;
-    requires org.junit.jupiter.api;
     requires com.imagetools;
     requires metadata.extractor;
     requires com.github.mjeanroy.exiftool;
+    requires static org.jspecify;
 
     opens media_multitool to javafx.fxml;
     exports model.converterImage;

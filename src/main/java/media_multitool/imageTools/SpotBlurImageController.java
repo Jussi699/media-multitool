@@ -153,7 +153,7 @@ public class SpotBlurImageController extends AbstractMediaController {
          ResizeHandle handle = getHandleAtPosition(event.getX(), event.getY());
          if (nonNull(handle)) {
              blurOverlay.setCursor(handle.cursor);
-         } else if (getShapeAtPosition(event.getX(), event.getY()) != null) {
+         } else if (nonNull(getShapeAtPosition(event.getX(), event.getY()))) {
              blurOverlay.setCursor(Cursor.HAND);
          } else {
              blurOverlay.setCursor(Cursor.DEFAULT);
