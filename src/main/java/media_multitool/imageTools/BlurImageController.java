@@ -63,7 +63,7 @@ public class BlurImageController extends AbstractMediaController {
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         sliderBlurry.setMin(0);
-        sliderBlurry.setMax(20);
+        sliderBlurry.setMax(100);
         sliderBlurry.setValue(0);
 
         SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderBlurry, currentValueSlider, 20);
@@ -90,7 +90,7 @@ public class BlurImageController extends AbstractMediaController {
             }
         };
 
-        executeMediaTask(currentTask);
+        executeMediaTask(currentTask, "Blur preview update");
     }
 
     @FXML
@@ -216,7 +216,7 @@ public class BlurImageController extends AbstractMediaController {
             }
         };
 
-        executeMediaTask(currentTask);
+        executeMediaTask(currentTask, "Image blur");
         if (nonNull(labelSuccess)) {
             labelSuccess.setManaged(true);
         }

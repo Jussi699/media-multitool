@@ -90,7 +90,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
         sliderBlurIntensity.setMin(0);
         sliderBlurIntensity.setValue(1);
-        sliderBlurIntensity.setMax(20);
+        sliderBlurIntensity.setMax(100);
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -151,7 +151,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
      private void handleMouseMoved(MouseEvent event) {
          ResizeHandle handle = getHandleAtPosition(event.getX(), event.getY());
-         if (handle != null) {
+         if (nonNull(handle)) {
              blurOverlay.setCursor(handle.cursor);
          } else if (getShapeAtPosition(event.getX(), event.getY()) != null) {
              blurOverlay.setCursor(Cursor.HAND);
@@ -166,7 +166,7 @@ public class SpotBlurImageController extends AbstractMediaController {
      }
 
      private void setupResizeHandle(ResizeHandle handle) {
-         if (handle != null) {
+         if (nonNull(handle)) {
              resizeHandle = handle;
              selectedShape = handle.shape;
              originalStartX = selectedShape.startX;
@@ -363,7 +363,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
                 currentShape = null;
                 updateShapeVisuals();
-            } else if (selectedShape != null) {
+            } else if (nonNull(selectedShape)) {
                 constrainShapeToImageBounds(selectedShape);
                 updateBlurPreview();
                 selectedShape.isSelected = false;
@@ -477,7 +477,7 @@ public class SpotBlurImageController extends AbstractMediaController {
               }
           };
 
-          executeMediaTask(currentTask);
+          executeMediaTask(currentTask, "Spot blur preview update");
       }
 
     @FXML
@@ -626,7 +626,7 @@ public class SpotBlurImageController extends AbstractMediaController {
              }
          };
 
-         executeMediaTask(currentTask);
+         executeMediaTask(currentTask, "Spot blur");
          if (nonNull(labelSuccess)) {
              labelSuccess.setManaged(true);
          }

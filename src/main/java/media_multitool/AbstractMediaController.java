@@ -113,9 +113,13 @@ public abstract class AbstractMediaController {
     }
 
     protected <T> void executeMediaTask(Task<T> task) {
+        executeMediaTask(task, "Operation");
+    }
+
+    protected <T> void executeMediaTask(Task<T> task, String operationName) {
         currentTask.set(task);
         lockUI();
-        ErrorLogger.info(getClass(), "Operation started.");
+        ErrorLogger.info(getClass(), operationName + " started.");
         
         if (nonNull(progressBar)) {
             progressBar.setVisible(true);
@@ -129,6 +133,9 @@ public abstract class AbstractMediaController {
             }
             unbindProgress();
             unlockUI();
+            if (!Boolean.FALSE.equals(task.getValue())) {
+                ErrorLogger.info(getClass(), operationName + " completed successfully.");
+            }
             handleTaskSuccess(task.getValue());
         });
 
@@ -138,7 +145,7 @@ public abstract class AbstractMediaController {
             }
             unbindProgress();
             unlockUI();
-            ErrorLogger.info(getClass(), "Operation cancelled.");
+            ErrorLogger.info(getClass(), operationName + " cancelled.");
             handleTaskCancelled();
         });
 
@@ -150,7 +157,7 @@ public abstract class AbstractMediaController {
             unlockUI();
             Throwable exception = task.getException();
             ErrorLogger.log(101, ErrorLogger.Level.ERROR,
-                    getClass().getSimpleName() + " - Task failed", exception);
+                    getClass().getSimpleName() + " - " + operationName + " failed", exception);
             handleTaskFailure(exception);
         });
 
@@ -173,7 +180,6 @@ public abstract class AbstractMediaController {
             startSuccessTimer();
             return;
         }
-        ErrorLogger.info(getClass(), "Operation completed successfully.");
         if (nonNull(labelSuccess)) {
             labelSuccess.setStyle("-fx-text-fill: #32CD32;");
             labelSuccess.setText("Operation successful!");
