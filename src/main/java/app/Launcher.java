@@ -64,7 +64,8 @@ public class Launcher {
     }
 
     private static Exception checkLogWritable(File logDirFile) {
-        File checkFile = new File(logDirFile, "app.log");
+        String todayLogName = "app." + java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".log";
+        File checkFile = new File(logDirFile, todayLogName);
 
         if (checkFile.exists()) {
             if (!checkFile.canWrite()) {

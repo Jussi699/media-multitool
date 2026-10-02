@@ -1,26 +1,80 @@
 package media_multitool;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
+import model.helper.FileHelper;
 import model.logger.ErrorLogger;
 import model.utility.Clipboards;
 import model.utility.OS;
 import viewHelp.Alerts;
+import viewHelp.AreaView;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class InfoController {
-    @FXML private Button btnGithub;
-    @FXML private Tooltip activeTooltip;
+    @FXML private Spinner<Integer> spinnerFontSize;
+    @FXML private TextArea logArea;
+    @FXML private Button btnGithub, reloadLogArea;
+    @FXML private RadioButton colorDefault, colorGreen;
+
+    private AreaView areaViewHelper;
+
+    @FXML
+    public void initialize() {
+        areaViewHelper = new AreaView(logArea);
+
+        setupSpinner();
+        setupRadioButton();
+
+        updateStringsInLogArea();
+    }
+
+    private void setupSpinner() {
+        spinnerFontSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(6, 20, 10, 1));
+
+        spinnerFontSize.getValueFactory().valueProperty()
+                .addListener((_, _, newValue) -> areaViewHelper.changeFontSize(newValue));
+    }
+
+    private void setupRadioButton() {
+        ToggleGroup group = new ToggleGroup();
+        colorDefault.setToggleGroup(group);
+        colorGreen.setToggleGroup(group);
+
+        group.selectedToggleProperty().addListener((_, _, newToggle) -> {
+            if (nonNull(newToggle)) {
+                RadioButton selected = (RadioButton) newToggle;
+
+                if (selected == colorGreen) {
+                    areaViewHelper.changeTextColor("#2ba82b");
+                } else if (selected == colorDefault) {
+                    areaViewHelper.changeTextColor("#cccccc");
+                }
+            }
+        });
+
+        colorDefault.setSelected(true);
+    }
+
+    private File getTodayLogFile() {
+        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        File logDirFile = new File(OS.getAppConfigDir() + File.separator + "logs");
+        return new File(logDirFile, "app." + todayDate + ".log");
+    }
 
     @FXML
     public void toLogsDir() {
@@ -37,16 +91,35 @@ public class InfoController {
             }
         } catch (IOException e) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Error opening directory", "IO Error", "Could not open logs directory!");
-            ErrorLogger.error("IO Error, Could not open logs directory! | " + e.getMessage());
+            ErrorLogger.error("Could not open logs directory: " + e.getMessage());
         }
     }
 
     @FXML
-    private void handleContactClick(MouseEvent mouseEvent) {
-        if (nonNull(activeTooltip) && activeTooltip.isShowing()) {
-            return;
-        }
+    private void onReloadLogArea() {
+        updateStringsInLogArea();
+    }
 
+    private void updateStringsInLogArea() {
+        CompletableFuture.runAsync(() -> {
+            File currentFile = getTodayLogFile();
+            FileHelper fileHelper = new FileHelper(currentFile);
+            try {
+                ArrayList<String> listStrings = fileHelper.getStringsFromFile();
+                String fullLog = String.join("\n", listStrings);
+                Platform.runLater(() -> {
+                    logArea.setText(fullLog);
+                    logArea.positionCaret(fullLog.length());
+                });
+            } catch (IOException e) {
+                Platform.runLater(() -> logArea.setText("Логи за сегодняшний день отсутствуют или пусты."));
+                ErrorLogger.error("Error reading log file: " + e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void handleContactClick(MouseEvent mouseEvent) {
         String discordId = "jussi6";
 
         Clipboards clipboards = new Clipboards();

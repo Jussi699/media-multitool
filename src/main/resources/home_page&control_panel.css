@@ -278,3 +278,83 @@
 #btnGithub:hover .toGithubSVG {
     -fx-opacity: 1.0;
 }
+
+#reloadLogArea {
+    -fx-padding: 4 8;
+    -fx-background-radius: 6;
+}
+
+#reloadLogArea:pressed {
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+#logArea {
+    -fx-control-inner-background: #1a1a1a;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    -fx-border-color: -main-gradient-color;
+
+    -fx-text-fill: -main-color-label;
+    -fx-text-inner-color: -main-color-label;
+
+    -fx-font-family: "Cascadia Code", "Consolas", monospace;
+    -fx-font-size: 10px;
+}
+
+#logArea .content {
+    -fx-background-color: -dark-gradient-background;
+}
+
+#logArea .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+#logArea .scroll-pane .corner {
+    -fx-background-color: transparent;
+}
+
+#logArea .scroll-bar:vertical {
+    -fx-pref-width: 12px;
+    -fx-padding: 3px;
+}
+
+#logArea .scroll-bar:horizontal {
+    -fx-pref-height: 12px;
+    -fx-padding: 3px;
+}
+
+#logArea .scroll-bar .track {
+    -fx-background-insets: 0;
+}
+
+#logArea .scroll-bar .thumb {
+    -fx-background-insets: 0;
+    -fx-background-radius: 4px;
+}
+
+#colorDefault {
+    -fx-font-size: 12px;
+    -fx-text-fill: -main-color-label;
+}
+
+#colorDefault .dot {
+    -fx-background-color: -main-color-label;
+}
+
+#colorDefault:selected {
+    -fx-effect: -main-effect;
+}
+
+#colorGreen {
+    -fx-font-size: 12px;
+    -fx-text-fill: #2ba82b;
+}
+
+#colorGreen .dot {
+    -fx-background-color: -color-for-active-button-comboBox;
+}
+
+#colorGreen:selected {
+    -fx-effect: -main-effect;
+}

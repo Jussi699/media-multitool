@@ -3,10 +3,8 @@
     <variable name="ACTUAL_LOG_DIR" value="${LOG_DIR:-${DEFAULT_LOG_DIR}}"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${ACTUAL_LOG_DIR}/app.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${ACTUAL_LOG_DIR}/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${ACTUAL_LOG_DIR}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>3</maxHistory>
             <totalSizeCap>20MB</totalSizeCap>
         </rollingPolicy>
