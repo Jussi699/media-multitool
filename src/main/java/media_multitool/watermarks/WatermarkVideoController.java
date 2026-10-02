@@ -33,6 +33,7 @@ import viewHelp.OpenWatermarkWindow;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,12 +55,17 @@ public class WatermarkVideoController extends AbstractMediaController {
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnWatermarkText, btnWatermarkPhoto, btnSubmit, btnCancel;
+    @FXML private Button btnDeleteWatermark;
+    @FXML private Button btnEditWatermark;
+    @FXML private ListView<WatermarkSettings> listWatermarks;
 
     private BufferedImage originalBufferedImage;
     private CropHelper cropHelper;
     private List<Control> listControls;
 
     private WatermarkSettings currentWatermarkSettings;
+    private final List<WatermarkSettings> watermarkSettingsList = new ArrayList<>();
+    private int selectedWatermarkIndex = -1;
     private WatermarkTextController textWatermarkController;
     private WatermarkPhotoController photoWatermarkController;
     private WatermarkOverlayManager overlayManager;
@@ -80,7 +86,8 @@ public class WatermarkVideoController extends AbstractMediaController {
 
         currentWatermarkSettings = new WatermarkSettings();
 
-        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset);
+        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset,
+                listWatermarks, btnDeleteWatermark, btnEditWatermark);
 
         videoProperties.setOutput(getSavedPath());
 
@@ -98,11 +105,14 @@ public class WatermarkVideoController extends AbstractMediaController {
                 overlayManager,
                 () -> originalBufferedImage,
                 () -> currentWatermarkSettings,
+                () -> watermarkSettingsList,
+                this::selectWatermark,
                 this::refreshPreview,
                 this::syncSettingsToSubWindows
         );
 
         isPressedReset();
+        setupWatermarkList();
         setupDragAndDrop(dropZone, Global.getAllSupportedVideoFormats(), this::loadFile);
         interactionSetup.setup();
 
@@ -140,9 +150,9 @@ public class WatermarkVideoController extends AbstractMediaController {
                         2. (Optional) Select where you want to save the result by clicking on "Directory for save".
                             (Default directory: Desktop);
 
-                        3. Click "Text" or "Photo" to configure watermark settings;
+                        3. Click "Add Text" or "Add Photo" to create watermarks; select one to edit or delete it;
 
-                        4. Click or drag on the preview to reposition or resize the watermark;
+                        4. Drag a watermark to move it, or drag its handles to resize it;
 
                         5. Click "Submit and Download".
 
@@ -175,7 +185,11 @@ public class WatermarkVideoController extends AbstractMediaController {
     protected void disableControls() { listControls.forEach(c -> c.setDisable(true)); }
 
     @Override
-    protected void enableControls()  { listControls.forEach(c -> c.setDisable(false)); }
+    protected void enableControls()  {
+        listControls.forEach(c -> c.setDisable(false));
+        updateDeleteButton();
+        updateEditButton();
+    }
 
     @FXML
     private void onActionBtnSelectFile() {
@@ -206,7 +220,7 @@ public class WatermarkVideoController extends AbstractMediaController {
             return false;
         }
 
-        if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.NONE) {
+        if (watermarkSettingsList.stream().noneMatch(this::isConfigured)) {
             showErrorMessage(labelSuccess, "Please configure a watermark first.", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
             return false;
@@ -218,17 +232,20 @@ public class WatermarkVideoController extends AbstractMediaController {
     @FXML
     private void cancelProcessing() {
         cancelFlag.set(true);
-        cancelCurrentTask();
     }
 
     @FXML
     private void submitAndDownload() {
         if(checks()) {
+            List<WatermarkSettings> settingsToApply = copyWatermarkSettings();
             cancelFlag.set(false);
             Task<File> task = new Task<>() {
                 @Override
                 protected File call() {
                     updateProgress(0, 100);
+                    if (cancelFlag.get()) {
+                        return null;
+                    }
 
                     File outputFile = createOutputFile(
                             videoProperties.getSrcFile(),
@@ -237,10 +254,10 @@ public class WatermarkVideoController extends AbstractMediaController {
                             videoProperties.getTargetFormat()
                     );
 
-                        boolean result = WatermarkVideoHelper.applyWatermark(
+                        boolean result = WatermarkVideoHelper.applyWatermarks(
                                 videoProperties.getSrcFile(),
                                 outputFile,
-                                currentWatermarkSettings.copy(),
+                                settingsToApply,
                                 videoProperties.getTargetFormat(),
                                 pct -> updateProgress(pct, 100),
                                 cancelFlag
@@ -252,6 +269,7 @@ public class WatermarkVideoController extends AbstractMediaController {
                         }
 
                         if (!result) {
+                            WatermarkVideoHelper.deleteFile(outputFile);
                             ErrorLogger.error("Failed to apply watermark to image!");
                             throw new ImageProcessingException("Failed to apply watermark to video!");
                         }
@@ -269,10 +287,15 @@ public class WatermarkVideoController extends AbstractMediaController {
 
     @Override
     protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
         if (isNull(result) || Boolean.FALSE.equals(result)) {
+            if (isNull(result)) {
+                handleTaskCancelled();
+            } else {
+                super.handleTaskSuccess(result);
+            }
             return;
         }
+        super.handleTaskSuccess(result);
 
         File outputFile = (File) result;
         ErrorLogger.info(getClass(), "Video with watermark saved successfully to: " + outputFile.getAbsolutePath());
@@ -302,6 +325,12 @@ public class WatermarkVideoController extends AbstractMediaController {
 
         originalBufferedImage = null;
         currentWatermarkSettings = new WatermarkSettings();
+        watermarkSettingsList.clear();
+        listWatermarks.getItems().clear();
+        selectedWatermarkIndex = -1;
+        updateDeleteButton();
+        updateEditButton();
+        updateEditButton();
 
         resetSubWindowControllers();
 
@@ -387,14 +416,19 @@ public class WatermarkVideoController extends AbstractMediaController {
             return;
         }
 
-        Image previewImage = WatermarkRenderer.renderPreview(originalBufferedImage, currentWatermarkSettings);
+        Image previewImage = WatermarkRenderer.renderPreview(originalBufferedImage, watermarkSettingsList);
         if (nonNull(previewImage) && nonNull(imageViewPreview)) {
             imageViewPreview.setImage(previewImage);
         }
     }
 
     public void updateWatermarkPreview(WatermarkSettings settings) {
+        if (selectedWatermarkIndex < 0 || selectedWatermarkIndex >= watermarkSettingsList.size()) {
+            return;
+        }
         this.currentWatermarkSettings = settings.copy();
+        watermarkSettingsList.set(selectedWatermarkIndex, currentWatermarkSettings);
+        listWatermarks.refresh();
         updatePreviewWithWatermark();
         updateWatermarkOverlay();
     }
@@ -409,6 +443,98 @@ public class WatermarkVideoController extends AbstractMediaController {
     }
 
     public void handleOpenWindowWatermarkText() {
+        addWatermark(WatermarkSettings.WatermarkType.TEXT);
+        openTextWatermarkWindow();
+    }
+
+    public void handleOpenWindowWatermarkPhoto() {
+        addWatermark(WatermarkSettings.WatermarkType.IMAGE);
+        openPhotoWatermarkWindow();
+    }
+
+    @FXML
+    private void editSelectedWatermark() {
+        if (currentWatermarkSettings == null) return;
+        if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.TEXT) {
+            openTextWatermarkWindow();
+        } else if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
+            openPhotoWatermarkWindow();
+        }
+    }
+
+    @FXML
+    private void deleteSelectedWatermark() {
+        if (selectedWatermarkIndex < 0 || selectedWatermarkIndex >= watermarkSettingsList.size()) return;
+        int removedIndex = selectedWatermarkIndex;
+        watermarkSettingsList.remove(removedIndex);
+        listWatermarks.getItems().remove(removedIndex);
+        selectedWatermarkIndex = -1;
+        currentWatermarkSettings = new WatermarkSettings();
+        if (!watermarkSettingsList.isEmpty()) {
+            selectWatermark(Math.min(removedIndex, watermarkSettingsList.size() - 1));
+        } else {
+            listWatermarks.getSelectionModel().clearSelection();
+            refreshPreview();
+        }
+        updateDeleteButton();
+        updateEditButton();
+    }
+
+    private void setupWatermarkList() {
+        listWatermarks.setCellFactory(_ -> new ListCell<>() {
+            @Override
+            protected void updateItem(WatermarkSettings item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) setText(null);
+                else if (item.getType() == WatermarkSettings.WatermarkType.TEXT) setText("Text: " + item.getText());
+                else setText("Photo watermark");
+            }
+        });
+        listWatermarks.getSelectionModel().selectedIndexProperty().addListener((_, _, index) -> {
+            if (index.intValue() >= 0 && index.intValue() < watermarkSettingsList.size()) {
+                selectWatermark(index.intValue());
+            }
+        });
+        updateDeleteButton();
+    }
+
+    private void selectWatermark(int index) {
+        if (index < 0 || index >= watermarkSettingsList.size()) return;
+        selectedWatermarkIndex = index;
+        currentWatermarkSettings = watermarkSettingsList.get(index);
+        listWatermarks.getSelectionModel().select(index);
+        updateDeleteButton();
+        updateEditButton();
+        refreshPreview();
+        syncSettingsToSubWindows();
+    }
+
+    private void addWatermark(WatermarkSettings.WatermarkType type) {
+        WatermarkSettings settings = new WatermarkSettings();
+        settings.setType(type);
+        watermarkSettingsList.add(settings);
+        listWatermarks.getItems().add(settings);
+        selectWatermark(watermarkSettingsList.size() - 1);
+    }
+
+    private boolean isConfigured(WatermarkSettings settings) {
+        return settings.getType() == WatermarkSettings.WatermarkType.TEXT
+                || (settings.getType() == WatermarkSettings.WatermarkType.IMAGE && settings.getWatermarkImage() != null);
+    }
+
+    private List<WatermarkSettings> copyWatermarkSettings() {
+        return watermarkSettingsList.stream().map(WatermarkSettings::copy).toList();
+    }
+
+    private void updateDeleteButton() {
+        if (btnDeleteWatermark != null) btnDeleteWatermark.setDisable(watermarkSettingsList.isEmpty());
+    }
+
+    private void updateEditButton() {
+        if (btnEditWatermark != null) btnEditWatermark.setDisable(selectedWatermarkIndex < 0);
+    }
+
+    private void openTextWatermarkWindow() {
         Stage[] holder = {textWatermarkStage};
         RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
@@ -431,11 +557,10 @@ public class WatermarkVideoController extends AbstractMediaController {
         textWatermarkStage = holder[0];
         if (nonNull(ctrl)) {
             textWatermarkController = ctrl;
-            updateWatermarkPreview(ctrl.getSettings());
         }
     }
 
-    public void handleOpenWindowWatermarkPhoto() {
+    private void openPhotoWatermarkWindow() {
         Stage[] holder = {photoWatermarkStage};
         RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
@@ -457,7 +582,6 @@ public class WatermarkVideoController extends AbstractMediaController {
         photoWatermarkStage = holder[0];
         if (nonNull(ctrl)) {
             photoWatermarkController = ctrl;
-            updateWatermarkPreview(ctrl.getSettings());
         }
     }
 }

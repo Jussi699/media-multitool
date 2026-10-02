@@ -152,29 +152,6 @@ public class WatermarkDragHandler {
     }
     
     /**
-     * Handle mouse click - position watermark at click location
-     */
-    public void handleMouseClicked(MouseEvent event) {
-        if (!canDrag() || !event.isStillSincePress()) return;
-        
-        double[] imgCoords = toImageCoords(event);
-        if (imgCoords == null) return;
-        
-        double[] dims = WatermarkDimensionsHelper.calculateDimensions(settings, image);
-        
-        double posX = Math.clamp(imgCoords[0] - dims[0] / 2, 0, Math.max(0, image.getWidth() - dims[0]));
-        double posY = Math.clamp(imgCoords[1] - dims[1] / 2, 0, Math.max(0, image.getHeight() - dims[1]));
-        
-        settings.setPositionX(posX);
-        settings.setPositionY(posY);
-        settings.setUseCustomPosition(true);
-        
-        notifyUpdate();
-        notifyDragComplete();
-        event.consume();
-    }
-    
-    /**
      * Ensure settings have a custom position initialized (centered if not set)
      */
     private void ensureCustomPosition() {

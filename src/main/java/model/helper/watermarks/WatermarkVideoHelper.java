@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Optional;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.LongConsumer;
 
@@ -51,7 +52,37 @@ public class WatermarkVideoHelper {
         return Optional.empty();
     }
 
-    public static boolean applyWatermark(File srcFile, File outputFile, WatermarkSettings settings,
+    private static void closeRecorder(FFmpegFrameRecorder recorder) {
+        if (isNull(recorder)) return;
+        try {
+            recorder.stop();
+        } catch (Exception e) {
+            ErrorLogger.error("Failed to stop video watermark recorder: " + e.getMessage());
+        } finally {
+            try {
+                recorder.release();
+            } catch (Exception e) {
+                ErrorLogger.error("Failed to release video watermark recorder: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void closeGrabber(FFmpegFrameGrabber grabber) {
+        if (isNull(grabber)) return;
+        try {
+            grabber.stop();
+        } catch (Exception e) {
+            ErrorLogger.error("Failed to stop video watermark reader: " + e.getMessage());
+        } finally {
+            try {
+                grabber.release();
+            } catch (Exception e) {
+                ErrorLogger.error("Failed to release video watermark reader: " + e.getMessage());
+            }
+        }
+    }
+
+    public static boolean applyWatermarks(File srcFile, File outputFile, List<WatermarkSettings> settings,
                                           String format, LongConsumer progressCallback,
                                           AtomicBoolean cancelFlag) {
         FFmpegFrameGrabber grabber = null;
@@ -59,28 +90,23 @@ public class WatermarkVideoHelper {
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
             grabber = new FFmpegFrameGrabber(srcFile.getAbsolutePath());
             grabber.start();
-
             long totalFrames = grabber.getLengthInFrames();
-
             recorder = buildRecorder(grabber, outputFile, format);
             recorder.start();
-
             WatermarkOverlayCache overlayCache = WatermarkOverlayCache.build(
                     settings, grabber.getImageWidth(), grabber.getImageHeight());
-
             boolean completed = processFrames(grabber, recorder, converter, overlayCache,
                     totalFrames, progressCallback, cancelFlag);
-
             if (completed) {
-                ErrorLogger.info("Watermark applied successfully!");
+                ErrorLogger.info("Watermarks applied successfully!");
             }
             return completed;
         } catch (Exception e) {
-            ErrorLogger.log(2002, ErrorLogger.Level.ERROR, "Failed to apply watermark to video", e);
+            ErrorLogger.log(2002, ErrorLogger.Level.ERROR, "Failed to apply watermarks to video", e);
             return false;
         } finally {
-            try { if (nonNull(recorder)) recorder.stop(); } catch (Exception _) {}
-            try { if (nonNull(grabber)) grabber.stop();   } catch (Exception _) {}
+            closeRecorder(recorder);
+            closeGrabber(grabber);
         }
     }
 
@@ -207,23 +233,24 @@ public class WatermarkVideoHelper {
     public static void deleteFile(File path) {
         if (isNull(path)) return;
 
-        Thread.ofVirtual().start(() -> {
-            for (int i = 0; i < 5; i++) {
-                if (!path.exists()) return;
-                path.delete();
-                if (!path.exists()) return;
+        for (int i = 0; i < 5; i++) {
+            try {
+                java.nio.file.Files.deleteIfExists(path.toPath());
+                return;
+            } catch (java.io.IOException e) {
+                if (i == 4) {
+                    ErrorLogger.error("Could not delete partial video file: "
+                            + path.getAbsolutePath() + " (" + e.getMessage() + ")");
+                    return;
+                }
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException _) {
+                } catch (InterruptedException interruptedException) {
                     Thread.currentThread().interrupt();
+                    ErrorLogger.error("Interrupted while deleting partial video file: " + path.getAbsolutePath());
                     return;
                 }
             }
-            if (path.exists()) {
-                ErrorLogger.error("Could not delete partial file after 5 attempts: " + path.getAbsolutePath());
-            }
-        });
+        }
     }
 }
-
-

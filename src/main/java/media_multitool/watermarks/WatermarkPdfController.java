@@ -36,6 +36,7 @@ import viewHelp.OpenWatermarkWindow;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.isNull;
@@ -54,6 +55,9 @@ public class WatermarkPdfController extends AbstractMediaController {
     @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
     @FXML private ImageView imageViewPreview;
     @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnWatermarkText, btnWatermarkPhoto, btnSubmit;
+    @FXML private Button btnDeleteWatermark;
+    @FXML private Button btnEditWatermark;
+    @FXML private ListView<WatermarkSettings> listWatermarks;
 
     private BufferedImage firstPagePreviewImage;
     private File pdfFile;
@@ -61,6 +65,8 @@ public class WatermarkPdfController extends AbstractMediaController {
     private List<Control> listControls;
 
     private WatermarkSettings currentWatermarkSettings;
+    private final List<WatermarkSettings> watermarkSettingsList = new ArrayList<>();
+    private int selectedWatermarkIndex = -1;
     private WatermarkTextController textWatermarkController;
     private WatermarkPhotoController photoWatermarkController;
     private WatermarkOverlayManager overlayManager;
@@ -80,7 +86,8 @@ public class WatermarkPdfController extends AbstractMediaController {
 
         currentWatermarkSettings = new WatermarkSettings();
 
-        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset);
+        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset,
+                listWatermarks, btnDeleteWatermark, btnEditWatermark);
 
         imageProperties.setOutput(getSavedPath());
 
@@ -98,11 +105,14 @@ public class WatermarkPdfController extends AbstractMediaController {
                 overlayManager,
                 () -> firstPagePreviewImage,
                 () -> currentWatermarkSettings,
+                () -> watermarkSettingsList,
+                this::selectWatermark,
                 this::refreshPreview,
                 this::syncSettingsToSubWindows
         );
 
         isPressedReset();
+        setupWatermarkList();
         setupDragAndDrop(dropZone, List.of(".pdf"), this::loadFile);
         interactionSetup.setup();
     }
@@ -134,9 +144,9 @@ public class WatermarkPdfController extends AbstractMediaController {
                         2. (Optional) Select where you want to save the result by clicking on "Directory for save".
                             (Default directory: Desktop);
 
-                        3. Click "Text" or "Photo" to configure watermark settings;
+                        3. Click "Add Text" or "Add Photo" to create watermarks; select one to edit or delete it;
 
-                        4. Click or drag on the preview to reposition or resize the watermark;
+                        4. Drag a watermark to move it, or drag its handles to resize it;
 
                         5. Click "Submit and Download".
 
@@ -168,6 +178,8 @@ public class WatermarkPdfController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
+        updateDeleteButton();
+        updateEditButton();
     }
 
     @FXML
@@ -188,7 +200,7 @@ public class WatermarkPdfController extends AbstractMediaController {
             return false;
         }
 
-        if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.NONE) {
+        if (watermarkSettingsList.stream().noneMatch(this::isConfigured)) {
             showErrorMessage(labelSuccess, "Please configure a watermark first.", imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
             return false;
@@ -200,6 +212,7 @@ public class WatermarkPdfController extends AbstractMediaController {
     @FXML
     private void submitAndDownload() {
         if (checks()) {
+        List<WatermarkSettings> settingsToApply = copyWatermarkSettings();
 
         Task<File> task = new Task<>() {
             @Override
@@ -225,10 +238,12 @@ public class WatermarkPdfController extends AbstractMediaController {
                         float exportDpi = 300f;
                         BufferedImage pageImage = renderer.renderImageWithDPI(i, exportDpi);
 
-                        WatermarkSettings scaledSettings =
-                                WatermarkRenderer.scaleSettingsForExport(currentWatermarkSettings.copy(), firstPagePreviewImage, pageImage);
-
-                        BufferedImage watermarkedPage = WatermarkRenderer.applyWatermark(pageImage, scaledSettings);
+                        List<WatermarkSettings> scaledSettings = settingsToApply.stream()
+                                .map(WatermarkSettings::copy)
+                                .map(settings -> WatermarkRenderer.scaleSettingsForExport(
+                                        settings, firstPagePreviewImage, pageImage))
+                                .toList();
+                        BufferedImage watermarkedPage = WatermarkRenderer.applyWatermarks(pageImage, scaledSettings);
 
                         PDPage newPage = new PDPage(mediaBox);
                         outputDoc.addPage(newPage);
@@ -297,6 +312,12 @@ public class WatermarkPdfController extends AbstractMediaController {
         firstPagePreviewImage = null;
         pdfFile = null;
         currentWatermarkSettings = new WatermarkSettings();
+        watermarkSettingsList.clear();
+        listWatermarks.getItems().clear();
+        selectedWatermarkIndex = -1;
+        updateDeleteButton();
+        updateEditButton();
+        updateEditButton();
 
         resetSubWindowControllers();
 
@@ -374,14 +395,19 @@ public class WatermarkPdfController extends AbstractMediaController {
             return;
         }
 
-        Image previewImage = WatermarkRenderer.renderPreview(firstPagePreviewImage, currentWatermarkSettings);
+        Image previewImage = WatermarkRenderer.renderPreview(firstPagePreviewImage, watermarkSettingsList);
         if (nonNull(previewImage) && nonNull(imageViewPreview)) {
             imageViewPreview.setImage(previewImage);
         }
     }
 
     public void updateWatermarkPreview(WatermarkSettings settings) {
+        if (selectedWatermarkIndex < 0 || selectedWatermarkIndex >= watermarkSettingsList.size()) {
+            return;
+        }
         this.currentWatermarkSettings = settings.copy();
+        watermarkSettingsList.set(selectedWatermarkIndex, currentWatermarkSettings);
+        listWatermarks.refresh();
         updatePreviewWithWatermark();
         updateWatermarkOverlay();
     }
@@ -396,6 +422,98 @@ public class WatermarkPdfController extends AbstractMediaController {
     }
 
     public void handleOpenWindowWatermarkText() {
+        addWatermark(WatermarkSettings.WatermarkType.TEXT);
+        openTextWatermarkWindow();
+    }
+
+    public void handleOpenWindowWatermarkPhoto() {
+        addWatermark(WatermarkSettings.WatermarkType.IMAGE);
+        openPhotoWatermarkWindow();
+    }
+
+    @FXML
+    private void editSelectedWatermark() {
+        if (currentWatermarkSettings == null) return;
+        if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.TEXT) {
+            openTextWatermarkWindow();
+        } else if (currentWatermarkSettings.getType() == WatermarkSettings.WatermarkType.IMAGE) {
+            openPhotoWatermarkWindow();
+        }
+    }
+
+    @FXML
+    private void deleteSelectedWatermark() {
+        if (selectedWatermarkIndex < 0 || selectedWatermarkIndex >= watermarkSettingsList.size()) return;
+        int removedIndex = selectedWatermarkIndex;
+        watermarkSettingsList.remove(removedIndex);
+        listWatermarks.getItems().remove(removedIndex);
+        selectedWatermarkIndex = -1;
+        currentWatermarkSettings = new WatermarkSettings();
+        if (!watermarkSettingsList.isEmpty()) {
+            selectWatermark(Math.min(removedIndex, watermarkSettingsList.size() - 1));
+        } else {
+            listWatermarks.getSelectionModel().clearSelection();
+            refreshPreview();
+        }
+        updateDeleteButton();
+        updateEditButton();
+    }
+
+    private void setupWatermarkList() {
+        listWatermarks.setCellFactory(_ -> new ListCell<>() {
+            @Override
+            protected void updateItem(WatermarkSettings item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) setText(null);
+                else if (item.getType() == WatermarkSettings.WatermarkType.TEXT) setText("Text: " + item.getText());
+                else setText("Photo watermark");
+            }
+        });
+        listWatermarks.getSelectionModel().selectedIndexProperty().addListener((_, _, index) -> {
+            if (index.intValue() >= 0 && index.intValue() < watermarkSettingsList.size()) {
+                selectWatermark(index.intValue());
+            }
+        });
+        updateDeleteButton();
+    }
+
+    private void selectWatermark(int index) {
+        if (index < 0 || index >= watermarkSettingsList.size()) return;
+        selectedWatermarkIndex = index;
+        currentWatermarkSettings = watermarkSettingsList.get(index);
+        listWatermarks.getSelectionModel().select(index);
+        updateDeleteButton();
+        updateEditButton();
+        refreshPreview();
+        syncSettingsToSubWindows();
+    }
+
+    private void addWatermark(WatermarkSettings.WatermarkType type) {
+        WatermarkSettings settings = new WatermarkSettings();
+        settings.setType(type);
+        watermarkSettingsList.add(settings);
+        listWatermarks.getItems().add(settings);
+        selectWatermark(watermarkSettingsList.size() - 1);
+    }
+
+    private boolean isConfigured(WatermarkSettings settings) {
+        return settings.getType() == WatermarkSettings.WatermarkType.TEXT
+                || (settings.getType() == WatermarkSettings.WatermarkType.IMAGE && settings.getWatermarkImage() != null);
+    }
+
+    private void updateDeleteButton() {
+        if (btnDeleteWatermark != null) btnDeleteWatermark.setDisable(watermarkSettingsList.isEmpty());
+    }
+
+    private void updateEditButton() {
+        if (btnEditWatermark != null) btnEditWatermark.setDisable(selectedWatermarkIndex < 0);
+    }
+
+    private List<WatermarkSettings> copyWatermarkSettings() {
+        return watermarkSettingsList.stream().map(WatermarkSettings::copy).toList();
+    }
+
+    private void openTextWatermarkWindow() {
         Stage[] holder = {textWatermarkStage};
         RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
                 holder,
@@ -420,11 +538,10 @@ public class WatermarkPdfController extends AbstractMediaController {
         textWatermarkStage = holder[0];
         if (nonNull(ctrl)) {
             textWatermarkController = ctrl;
-            updateWatermarkPreview(ctrl.getSettings());
         }
     }
 
-    public void handleOpenWindowWatermarkPhoto() {
+    private void openPhotoWatermarkWindow() {
         Stage[] holder = {photoWatermarkStage};
 
         RecordOpenWatermarkWindow watermarkSettings = new RecordOpenWatermarkWindow(
@@ -448,7 +565,6 @@ public class WatermarkPdfController extends AbstractMediaController {
         photoWatermarkStage = holder[0];
         if (nonNull(ctrl)) {
             photoWatermarkController = ctrl;
-            updateWatermarkPreview(ctrl.getSettings());
         }
     }
 }

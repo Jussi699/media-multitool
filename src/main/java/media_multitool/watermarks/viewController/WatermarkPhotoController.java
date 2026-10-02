@@ -89,6 +89,14 @@ public class WatermarkPhotoController {
             if (nonNull(watermarkDropZone) && !watermarkDropZone.getStyleClass().contains(DROP_ZONE_FILLED)) {
                 watermarkDropZone.getStyleClass().add(DROP_ZONE_FILLED);
             }
+        } else {
+            labelWatermarkName.setText("None selected");
+            if (nonNull(textDragZone)) {
+                textDragZone.setText("Drag watermark here");
+            }
+            if (nonNull(watermarkDropZone)) {
+                watermarkDropZone.getStyleClass().remove(DROP_ZONE_FILLED);
+            }
         }
     }
 

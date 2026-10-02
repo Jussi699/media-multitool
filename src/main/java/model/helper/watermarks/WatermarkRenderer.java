@@ -6,6 +6,7 @@ import javafx.scene.image.Image;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -18,6 +19,7 @@ public class WatermarkRenderer {
         if (isNull(settings) || settings.getType() == WatermarkSettings.WatermarkType.NONE) {
             return baseImage;
         }
+
         if (isNull(baseImage)) {
             return null;
         }
@@ -34,6 +36,21 @@ public class WatermarkRenderer {
             System.err.println("Error applying watermark: " + e.getMessage());
         }
         
+        return result;
+    }
+
+    public static BufferedImage applyWatermarks(BufferedImage baseImage, List<WatermarkSettings> settingsList) {
+        if (isNull(baseImage)) {
+            return null;
+        }
+        BufferedImage result = copyImage(baseImage);
+        if (nonNull(settingsList)) {
+            for (WatermarkSettings settings : settingsList) {
+                if (nonNull(settings) && settings.getType() != WatermarkSettings.WatermarkType.NONE) {
+                    applyWatermarkInPlace(result, settings);
+                }
+            }
+        }
         return result;
     }
 
@@ -319,6 +336,13 @@ public class WatermarkRenderer {
     public static Image renderPreview(BufferedImage baseImage, WatermarkSettings settings) {
         if (isNull(baseImage)) return null;
         BufferedImage result = applyWatermark(baseImage, settings);
+        if (isNull(result)) return null;
+        return SwingFXUtils.toFXImage(result, null);
+    }
+
+    public static Image renderPreview(BufferedImage baseImage, List<WatermarkSettings> settingsList) {
+        if (isNull(baseImage)) return null;
+        BufferedImage result = applyWatermarks(baseImage, settingsList);
         if (isNull(result)) return null;
         return SwingFXUtils.toFXImage(result, null);
     }

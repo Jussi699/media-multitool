@@ -5,6 +5,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.util.Objects.isNull;
@@ -35,6 +37,8 @@ public class WatermarkInteractionSetup {
 
     private final Supplier<BufferedImage> imageSupplier;
     private final Supplier<WatermarkSettings> settingsSupplier;
+    private final Supplier<List<WatermarkSettings>> settingsListSupplier;
+    private final Consumer<Integer> selectionCallback;
 
     private final Runnable onUpdate;
     private final Runnable onComplete;
@@ -48,6 +52,8 @@ public class WatermarkInteractionSetup {
             WatermarkOverlayManager overlayManager,
             Supplier<BufferedImage> imageSupplier,
             Supplier<WatermarkSettings> settingsSupplier,
+            Supplier<List<WatermarkSettings>> settingsListSupplier,
+            Consumer<Integer> selectionCallback,
             Runnable onUpdate,
             Runnable onComplete
     ) {
@@ -59,6 +65,8 @@ public class WatermarkInteractionSetup {
         this.overlayManager = overlayManager;
         this.imageSupplier = imageSupplier;
         this.settingsSupplier = settingsSupplier;
+        this.settingsListSupplier = settingsListSupplier;
+        this.selectionCallback = selectionCallback;
         this.onUpdate = onUpdate;
         this.onComplete = onComplete;
     }
@@ -128,17 +136,32 @@ public class WatermarkInteractionSetup {
     /** Attach mouse-pressed / dragged / released / moved / clicked to the imageView. */
     private void setupMouseEvents() {
         imageView.setOnMousePressed(event -> {
-            dragHandler.setContext(imageSupplier.get(), settingsSupplier.get());
+            BufferedImage image = imageSupplier.get();
+            if (nonNull(image) && imageView.getBoundsInLocal().getWidth() > 0) {
+                double scaleX = image.getWidth() / imageView.getBoundsInLocal().getWidth();
+                double scaleY = image.getHeight() / imageView.getBoundsInLocal().getHeight();
+                double x = event.getX() * scaleX;
+                double y = event.getY() * scaleY;
+                List<WatermarkSettings> allSettings = settingsListSupplier.get();
+                for (int i = allSettings.size() - 1; i >= 0; i--) {
+                    WatermarkSettings candidate = allSettings.get(i);
+                    if (!WatermarkDimensionsHelper.canDrag(candidate, image)) {
+                        continue;
+                    }
+                    double[] bounds = WatermarkDimensionsHelper.getCurrentPosition(candidate, image);
+                    if (x >= bounds[0] && x <= bounds[0] + bounds[2]
+                            && y >= bounds[1] && y <= bounds[1] + bounds[3]) {
+                        selectionCallback.accept(i);
+                        break;
+                    }
+                }
+            }
+            dragHandler.setContext(image, settingsSupplier.get());
             dragHandler.handleMousePressed(event);
         });
         imageView.setOnMouseDragged(dragHandler::handleMouseDragged);
         imageView.setOnMouseReleased(dragHandler::handleMouseReleased);
         imageView.setOnMouseMoved(dragHandler::handleMouseMoved);
-        imageView.setOnMouseClicked(event -> {
-            dragHandler.setContext(imageSupplier.get(), settingsSupplier.get());
-            dragHandler.handleMouseClicked(event);
-        });
-
         attachAllResizeHandlers();
     }
 

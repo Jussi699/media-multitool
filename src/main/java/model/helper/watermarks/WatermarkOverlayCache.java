@@ -2,6 +2,7 @@ package model.helper.watermarks;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 /**
  * Pre-renders the watermark onto a transparent ARGB canvas the size of the video frame.
@@ -22,6 +23,17 @@ public record WatermarkOverlayCache(BufferedImage overlay) {
 
         BufferedImage canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         WatermarkRenderer.applyWatermarkInPlace(canvas, settings);
+        return new WatermarkOverlayCache(canvas);
+    }
+
+    public static WatermarkOverlayCache build(List<WatermarkSettings> settingsList, int width, int height) {
+        if (settingsList == null || settingsList.isEmpty() || width <= 0 || height <= 0) {
+            return new WatermarkOverlayCache(null);
+        }
+        BufferedImage canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        for (WatermarkSettings settings : settingsList) {
+            WatermarkRenderer.applyWatermarkInPlace(canvas, settings);
+        }
         return new WatermarkOverlayCache(canvas);
     }
 }
