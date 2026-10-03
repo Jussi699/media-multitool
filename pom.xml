@@ -25,6 +25,16 @@
             <version>2.19.0</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-imaging</artifactId>
+            <version>1.0.0-alpha6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.18.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-core</artifactId>
             <version>1.4.0</version>
@@ -48,11 +58,6 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/ImageTools.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.github.mjeanroy</groupId>
-            <artifactId>exiftool-lib</artifactId>
-            <version>3.3.0</version>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>

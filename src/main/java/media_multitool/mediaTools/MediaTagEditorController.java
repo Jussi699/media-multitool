@@ -16,7 +16,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import media_multitool.AbstractMediaController;
 import model.preprocessing.AudioPreprocessing;
-import model.preprocessing.MediaTagPreprocessing;
+import model.preprocessing.PhotoTagPreprocessing;
+import model.preprocessing.VideoTagPreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
@@ -117,7 +118,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
 
         onResetPressed();
-        setupDragAndDrop(dropZone, Global.getAllSupportedMediaFormats(), this::loadFile);
+        setupDragAndDrop(dropZone, getSupportedTagEditorFormats(), this::loadFile);
     }
 
     private void initLists() {
@@ -293,7 +294,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         SelectFile selectAudioFile = new SelectFile();
         Stage stage = (Stage) btnSelectImage.getScene().getWindow();
         selectAudioFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Media Files", Global.getSupportedMediaFormatsForFileChooser())).ifPresent(this::loadFile);
+                new FileChooser.ExtensionFilter("Supported media files", getSupportedTagEditorFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 
     @FXML
@@ -318,8 +319,10 @@ public class MediaTagEditorController extends AbstractMediaController {
                             ? audioProperties.getPathToImage().getPath()
                             : null;
                     AudioPreprocessing.applyTags(audioProperties.getSrcFile(), tags, imagePath);
+                } else if (PhotoTagPreprocessing.supports(audioProperties.getSrcFile())) {
+                    PhotoTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
                 } else {
-                    MediaTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
+                    VideoTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
                 }
                 updateProgress(100, 100);
                 return true;
@@ -452,7 +455,16 @@ public class MediaTagEditorController extends AbstractMediaController {
             return;
         }
 
-        configureEditableFields(selectedMediaType(selectedFile), getEditableTags(selectedFile));
+        String mediaType;
+        try {
+            mediaType = selectedMediaType(selectedFile);
+        } catch (IllegalArgumentException exception) {
+            ErrorLogger.warn(getClass(), exception.getMessage());
+            showErrorMessage(labelSuccess, exception.getMessage(), audioProperties.getHideSuccessMessageTimer());
+            return;
+        }
+
+        configureEditableFields(mediaType, getEditableTags(mediaType));
         enableControls();
         audioProperties.setSrcFile(selectedFile);
         labelSelectImageName.setText("Selected: " + selectedFile.getName());
@@ -464,12 +476,18 @@ public class MediaTagEditorController extends AbstractMediaController {
                                 () -> AudioEditor.loadDefaultPreview(imageViewPreview));
                 populateFields(AudioPreprocessing.getTags(selectedFile));
             } else {
-                populateMediaFields(MediaTagPreprocessing.getTags(selectedFile));
+                if (PhotoTagPreprocessing.supports(selectedFile)) {
+                    populateMediaFields(PhotoTagPreprocessing.getTags(selectedFile));
+                } else {
+                    populateMediaFields(VideoTagPreprocessing.getTags(selectedFile));
+                }
                 AudioEditor.loadDefaultPreview(imageViewPreview);
             }
 
         } catch (Exception e) {
             ErrorLogger.error("Failed to load tags: " + e.getMessage());
+            showErrorMessage(labelSuccess, "Failed to load tags: " + e.getMessage(),
+                    audioProperties.getHideSuccessMessageTimer());
         }
 
         textDragZone.setText("Selected: " + selectedFile.getName());
@@ -518,22 +536,38 @@ public class MediaTagEditorController extends AbstractMediaController {
             return "audio";
         }
         String fileName = file.getName().toLowerCase(Locale.ROOT);
-        if (Global.getAllSupportedImageFormats().stream().anyMatch(fileName::endsWith)) {
+        if (PhotoTagPreprocessing.supports(file)) {
             return "photo";
         }
         if (Global.getAllSupportedVideoFormats().stream().anyMatch(fileName::endsWith)) {
             return "video";
         }
+        if (Global.getAllSupportedImageFormats().stream().anyMatch(fileName::endsWith)) {
+            throw new IllegalArgumentException("Photo tag editing supports JPEG and TIFF files only.");
+        }
         throw new IllegalArgumentException("Unsupported media file: " + file.getName());
     }
 
-    private Set<String> getEditableTags(File file) {
-        return switch (selectedMediaType(file)) {
+    private Set<String> getEditableTags(String mediaType) {
+        return switch (mediaType) {
             case "audio" -> AUDIO_EDITABLE_TAGS;
             case "photo" -> PHOTO_EDITABLE_TAGS;
             case "video" -> VIDEO_EDITABLE_TAGS;
-            default -> throw new IllegalArgumentException("Unsupported media type for file: " + file.getName());
+            default -> throw new IllegalArgumentException("Unsupported media type: " + mediaType);
         };
+    }
+
+    private static List<String> getSupportedTagEditorFormats() {
+        List<String> formats = new ArrayList<>(Global.getAllSupportedAudioFormats());
+        formats.addAll(Global.getAllSupportedVideoFormats());
+        formats.addAll(List.of(".jpg", ".jpeg", ".tif", ".tiff"));
+        return formats;
+    }
+
+    private static List<String> getSupportedTagEditorFormatsForFileChooser() {
+        return getSupportedTagEditorFormats().stream()
+                .map(format -> "*" + format)
+                .toList();
     }
 
     private void configureEditableFields(String mediaType, Set<String> editableTags) {
@@ -628,10 +662,10 @@ public class MediaTagEditorController extends AbstractMediaController {
 
     private List<String> getFormatsForMediaType(String mediaType) {
         return switch (mediaType) {
-            case "Photos" -> Global.getAllSupportedImageFormats();
+            case "Photos" -> List.of(".jpg", ".jpeg", ".tif", ".tiff");
             case "Videos" -> Global.getAllSupportedVideoFormats();
             case "Audio" -> Global.getAllSupportedAudioFormats();
-            case "All media" -> Global.getAllSupportedMediaFormats();
+            case "All media" -> getSupportedTagEditorFormats();
             default -> throw new IllegalArgumentException("Unsupported media type: " + mediaType);
         };
     }

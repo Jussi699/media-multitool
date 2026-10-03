@@ -70,8 +70,9 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 ### 🎵 Media Tag Editor
 - **Type-aware Metadata Editing:** Available tag fields vary by audio, photo, or video; unsupported fields are locked and marked
 - **Audio Metadata:** Title, Artist, Album, Album Artist, Composer, Genre, Year, Track, Disc Number, Comment
-- **Photo Metadata:** Title, Artist, Comment, Description, Keywords, Copyright, Rating
+- **Photo Metadata:** Title, Artist, Comment, Description, Keywords, Copyright, Rating (JPEG and TIFF files)
 - **Video Metadata:** Title, Artist, Album, Album Artist, Composer, Genre, Year, Track, Disc Number, Comment, Description, Keywords, Copyright, Rating
+- **Photo tags:** Edited with Apache Commons Imaging; video tags are written through FFmpeg using stream copy without re-encoding.
 - **Cover Art:** View, change, or remove album artwork
 - **Batch Editing:** Edit multiple audio files at once
 - **Search/Filter:** Find files in loaded batch by filename or metadata
@@ -99,8 +100,8 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 
 ## 📋 Prerequisites
 
-- **Java Development Kit (JDK) 25** or higher.
-- **Maven** 3.8 or higher.
+- **For users:** Download and run the packaged application from the [latest release](https://github.com/Jussi699/media-multitool/releases/latest). **JRE is required!!!**
+- **For development:** Java Development Kit (JDK) 25 or higher and Maven 3.8 or higher.
 
 ## 📥 Installation & Running
 

@@ -26,7 +26,8 @@ module media_multitool {
     requires org.lwjgl.nfd;
     requires com.imagetools;
     requires metadata.extractor;
-    requires com.github.mjeanroy.exiftool;
+    requires org.apache.commons.imaging;
+    requires org.apache.commons.lang3;
     requires static org.jspecify;
 
     opens media_multitool to javafx.fxml;
