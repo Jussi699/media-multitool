@@ -24,14 +24,19 @@ import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.utility.TemplateCheck.canRead;
+import static model.utility.TemplateCheck.canReadAndWrite;
 
 public class InfoController {
     @FXML private Spinner<Integer> spinnerFontSize;
     @FXML private TextArea logArea;
-    @FXML private Button btnGithub, reloadLogArea;
+    @FXML private Button btnGithub, reloadLogArea, clearLogArea;
     @FXML private RadioButton colorDefault, colorGreen;
 
     private AreaView areaViewHelper;
+    private FileHelper fileHelper;
+
+    private final File currentFile = getTodayLogFile();
 
     @FXML
     public void initialize() {
@@ -41,6 +46,8 @@ public class InfoController {
         setupRadioButton();
 
         updateStringsInLogArea();
+
+        fileHelper = new FileHelper(currentFile);
     }
 
     private void setupSpinner() {
@@ -97,23 +104,58 @@ public class InfoController {
 
     @FXML
     private void onReloadLogArea() {
-        updateStringsInLogArea();
+        if(canRead(currentFile)) {
+            updateStringsInLogArea();
+        }
+    }
+
+    @FXML
+    private void onClearLogArea() {
+        if(canReadAndWrite(currentFile)) {
+            clearLogArea();
+        }
     }
 
     private void updateStringsInLogArea() {
         CompletableFuture.runAsync(() -> {
-            File currentFile = getTodayLogFile();
-            FileHelper fileHelper = new FileHelper(currentFile);
+            fileHelper = new FileHelper(currentFile);
             try {
                 ArrayList<String> listStrings = fileHelper.getStringsFromFile();
-                String fullLog = String.join("\n", listStrings);
+
+                if(listStrings.isEmpty()) {
+                    Platform.runLater(() -> logArea.setText("Logs for today are missing or empty."));
+                }
+                else {
+                    String fullLog = String.join("\n", listStrings);
+                    Platform.runLater(() -> {
+                        logArea.setText(fullLog);
+                        logArea.positionCaret(fullLog.length());
+                    });
+                }
+            } catch (IOException e) {
+                ErrorLogger.error("Error reading log file: " + e.getMessage());
+                Platform.runLater(() ->
+                        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Error reading",
+                                "Error reading the log file.\nCheck log file for more details!")
+                );
+            }
+        });
+    }
+
+    private void clearLogArea() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                fileHelper.clearAllStringsFromFile();
                 Platform.runLater(() -> {
-                    logArea.setText(fullLog);
-                    logArea.positionCaret(fullLog.length());
+                    logArea.setText("Logs for today are missing or empty.");
+                    logArea.positionCaret(0);
                 });
             } catch (IOException e) {
-                Platform.runLater(() -> logArea.setText("Логи за сегодняшний день отсутствуют или пусты."));
-                ErrorLogger.error("Error reading log file: " + e.getMessage());
+                ErrorLogger.error("Error clearing the log file: " + currentFile.getAbsolutePath() + "\n" + e.getMessage());
+                Platform.runLater(() ->
+                        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Error clearing",
+                                "Error clearing the log file.\nCheck log file for more details!")
+                );
             }
         });
     }
