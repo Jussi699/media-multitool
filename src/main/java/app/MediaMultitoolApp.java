@@ -16,7 +16,11 @@ import viewHelp.WindowsDwmUtils;
 import java.io.IOException;
 import java.util.Objects;
 
+import static java.util.Objects.nonNull;
+
 public class MediaMultitoolApp extends Application {
+    private static final String PATH_MAIN_ICON = "/img/mainIcon.png";
+
     @Override
     public void start(Stage loadingStage) throws IOException {
         if(!Launcher.isCanWriteInLog()) {
@@ -35,14 +39,12 @@ public class MediaMultitoolApp extends Application {
         loadingStage.setScene(loadingScene);
 
         try {
-            loadingStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));
+            loadingStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(PATH_MAIN_ICON))));
         } catch (NullPointerException e) {
-            ErrorLogger.error("The icon for the application is missing or damaged: " + e);
+            ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
         }
 
-        loadingStage.setOnCloseRequest(_ -> {
-            Platform.exit();
-        });
+        loadingStage.setOnCloseRequest(_ -> Platform.exit());
 
         WindowsDwmUtils.enableDarkMode(loadingStage);
         loadingStage.show();
@@ -68,9 +70,9 @@ public class MediaMultitoolApp extends Application {
             Stage mainStage = new Stage();
 
             try {
-                mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainImage.png"))));
+                mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainIcon.png"))));
             } catch (NullPointerException e) {
-                ErrorLogger.error("The icon for the application is missing or damaged: " + e);
+                ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
             }
 
             mainStage.setResizable(true);
@@ -86,8 +88,10 @@ public class MediaMultitoolApp extends Application {
 
         loadAppTask.setOnFailed(_ -> {
             Throwable ex = loadAppTask.getException();
-            if (ex != null) {
-                ErrorLogger.error("Failed to load application: " + ex);
+            if (nonNull(ex)) {
+                ErrorLogger.error("Failed to load application: " + ex.getMessage() + ex.getCause());
+                Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load app",
+                        "Failed to load application: " + ex.getMessage() + ex.getCause());
             }
             loadingStage.close();
             Platform.exit();
