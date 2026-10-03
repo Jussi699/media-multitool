@@ -107,12 +107,6 @@ public class MediaTagEditorController extends AbstractMediaController {
         initTextFieldFind();
         initComboBoxes();
 
-//        genreComboBox.showingProperty().addListener((_, _, isShowing) -> {
-//            if (Boolean.TRUE.equals(isShowing)) {
-//                bindComboBoxPopupWidth(genreComboBox);
-//            }
-//        });
-
         audioProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
@@ -262,8 +256,15 @@ public class MediaTagEditorController extends AbstractMediaController {
                         6. Click "Save Changes" to apply all changes.
 
                         This tool allows you to edit audio, photo and video tags.
+                        Supported audio formats: %s
+                        Supported video formats: %s
+                        Supported photo formats: JPEG (.jpg, .jpeg) and TIFF (.tif, .tiff).
 
                         If you have any questions or problems, please go to Info and write to me on Discord."""
+                        .formatted(
+                                String.join(", ", Global.getAllSupportedAudioFormats()),
+                                String.join(", ", Global.getAllSupportedVideoFormats())
+                        )
         );
     }
 
@@ -492,7 +493,7 @@ public class MediaTagEditorController extends AbstractMediaController {
 
         textDragZone.setText("Selected: " + selectedFile.getName());
 
-        if (dropZone != null && !dropZone.getStyleClass().contains("drop-zone-filled")) {
+        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
     }
