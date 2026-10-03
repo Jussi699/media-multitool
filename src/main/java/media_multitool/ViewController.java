@@ -43,7 +43,7 @@ public class ViewController {
     @FXML
     public void initialize() {
         listSubBtn.addAll(List.of(navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
-                navCompressorImage, navCompressorVideo, navMediaEditorTag, navMetaData));
+                navCompressorImage, navCompressorVideo, navCompressorPdf, navMediaEditorTag, navMetaData));
 
         if (nonNull(homeViewController)) {
             homeViewController.setMainController(this);
