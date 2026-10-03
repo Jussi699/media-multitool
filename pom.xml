@@ -9,6 +9,13 @@
     <version>1.0-SNAPSHOT</version>
     <name>Media-Multitool</name>
 
+    <repositories>
+        <repository>
+            <id>in-project-repo</id>
+            <url>file://${project.basedir}/repo</url>
+        </repository>
+    </repositories>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.1.3</junit.version>
@@ -56,8 +63,6 @@
             <groupId>com.imagetools</groupId>
             <artifactId>imagetools</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/ImageTools.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
