@@ -101,7 +101,7 @@ public class SpotBlurImageController extends AbstractMediaController {
 
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
-        SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderBlurIntensity, labelBlurIntensity, 20);
+        SliderSetup.bindPercentageLabel(sliderBlurIntensity, labelBlurIntensity, 20);
 
         sliderBlurIntensity.setOnMouseReleased(_ -> {
             if (!blurShapes.isEmpty()) {

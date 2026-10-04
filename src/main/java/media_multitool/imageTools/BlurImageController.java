@@ -66,7 +66,7 @@ public class BlurImageController extends AbstractMediaController {
         sliderBlurry.setMax(100);
         sliderBlurry.setValue(0);
 
-        SliderSetup.setupListenerInSliderForUpdateNewValueInLabelInTheFromPercentages(sliderBlurry, currentValueSlider, 20);
+        SliderSetup.bindPercentageLabel(sliderBlurry, currentValueSlider, 20);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
