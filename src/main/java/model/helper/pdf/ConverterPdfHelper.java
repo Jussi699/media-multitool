@@ -46,7 +46,7 @@ public class ConverterPdfHelper {
             }
 
             return Optional.of(doc);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             ErrorLogger.error("Error processing image conversion: " + e.getMessage());
             try {
                 doc.close();

@@ -1,11 +1,11 @@
 package model.helper.pdf;
 
 import model.logger.ErrorLogger;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 
@@ -94,7 +94,7 @@ public class ConvertImagesToPdfHelper {
             String pageSize,
             String orientation,
             IntConsumer progressCallback
-    ) {
+    ) throws IOException {
         
         if (isNull(imageFiles) || imageFiles.isEmpty()) {
             throw new IllegalArgumentException("Image files list is empty");
@@ -102,10 +102,9 @@ public class ConvertImagesToPdfHelper {
 
         PDDocument finalDoc = new PDDocument();
         ConverterPdfHelper pdfHelper = new ConverterPdfHelper();
+        PDFMergerUtility merger = new PDFMergerUtility();
         
         int totalImages = imageFiles.size();
-        List<PDDocument> tempDocuments = new ArrayList<>();
-        
         try {
             for (int i = 0; i < totalImages; i++) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -119,47 +118,30 @@ public class ConvertImagesToPdfHelper {
                     continue;
                 }
                 
-                pdfHelper.getDocumentFromImage(
-                    imageFile.getAbsolutePath(),
-                    margin,
-                    pageSize,
-                    orientation
-                ).ifPresent(tempDocuments::add);
-                
-                if (nonNull(progressCallback)) {
-                    int progress = 30 + (50 * (i + 1) / totalImages);
-                    progressCallback.accept(progress);
-                }
-            }
-            
-            for (int i = 0; i < tempDocuments.size(); i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new RuntimeException(new InterruptedException("Conversion cancelled"));
-                }
-
-                PDDocument tempDoc = tempDocuments.get(i);
-                try {
-                    for (int pageIndex = 0; pageIndex < tempDoc.getNumberOfPages(); pageIndex++) {
-                        finalDoc.addPage(tempDoc.getPage(pageIndex));
-                    }
-                } catch (Exception e) {
-                    ErrorLogger.error("Error adding page from document " + i + ": " + e.getMessage());
+                PDDocument imageDocument = pdfHelper.getDocumentFromImage(
+                        imageFile.getAbsolutePath(),
+                        margin,
+                        pageSize,
+                        orientation
+                ).orElseThrow(() -> new IOException("Unable to convert image: " + imageFile.getName()));
+                try (imageDocument) {
+                    merger.appendDocument(finalDoc, imageDocument);
                 }
                 
                 if (nonNull(progressCallback)) {
-                    int progress = 80 + (10 * (i + 1) / tempDocuments.size());
+                    int progress = 30 + (60 * (i + 1) / totalImages);
                     progressCallback.accept(progress);
                 }
             }
-        } catch (Exception e) {
-            for (PDDocument d : tempDocuments) {
-                try {
-                    d.close();
-                } catch (Exception _) {}
+            if (finalDoc.getNumberOfPages() == 0) {
+                throw new IOException("No images could be converted to PDF.");
             }
+        } catch (IOException | RuntimeException e) {
             try {
                 finalDoc.close();
-            } catch (Exception _) {}
+            } catch (IOException closeException) {
+                e.addSuppressed(closeException);
+            }
             throw e;
         }
         

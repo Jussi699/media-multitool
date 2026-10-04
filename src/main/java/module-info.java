@@ -67,4 +67,7 @@ module media_multitool {
     opens model.converterImage;
     opens media_multitool.mediaTools to javafx.fxml;
     exports media_multitool.mediaTools;
+
+    opens model.preprocessing to org.junit.platform.commons;
+    opens model.helper.pdf to org.junit.platform.commons;
 }

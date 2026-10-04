@@ -37,6 +37,9 @@ import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 
 public class RemovePagesPdfController extends AbstractMediaController {
+    private static final float PREVIEW_MAX_WIDTH = 230;
+    private static final float PREVIEW_MAX_HEIGHT = 260;
+
     private final ImageProperties imageProperties = new ImageProperties();
     private final List<PageEntry> selectedPages = new ArrayList<>();
     private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
@@ -151,7 +154,17 @@ public class RemovePagesPdfController extends AbstractMediaController {
                     PDFRenderer renderer = new PDFRenderer(document);
                     int pageCount = document.getNumberOfPages();
                     for (int i = 0; i < pageCount; i++) {
-                        BufferedImage image = renderer.renderImageWithDPI(i, 72);
+                        var pageSize = document.getPage(i).getMediaBox();
+                        float width = pageSize.getWidth();
+                        float height = pageSize.getHeight();
+                        int rotation = Math.floorMod(document.getPage(i).getRotation(), 360);
+                        if (rotation == 90 || rotation == 270) {
+                            float temp = width;
+                            width = height;
+                            height = temp;
+                        }
+                        float scale = Math.min(PREVIEW_MAX_WIDTH / width, PREVIEW_MAX_HEIGHT / height);
+                        BufferedImage image = renderer.renderImage(i, scale);
                         images.add(image);
                         updateProgress(i + 1, pageCount);
                     }
@@ -165,6 +178,7 @@ public class RemovePagesPdfController extends AbstractMediaController {
             List<BufferedImage> pageImages = loadTask.getValue();
             for (int i = 0; i < pageImages.size(); i++) {
                 addPageToList(i, pageImages.get(i));
+                pageImages.set(i, null);
             }
             enableControls();
             
