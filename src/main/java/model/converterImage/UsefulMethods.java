@@ -13,15 +13,19 @@ import static java.util.Objects.isNull;
 
 public class UsefulMethods {
     public static Optional<BufferedImage> readPreviewImage(File imageFile) throws IOException {
+        return Optional.ofNullable(readImage(imageFile));
+    }
+
+    public static BufferedImage readImage(File imageFile) throws IOException {
         if ("ico".equals(getFileExtension(imageFile))) {
             List<BufferedImage> images = ICODecoder.read(imageFile);
             if (images.isEmpty()) {
-                return Optional.empty();
+                return null;
             }
 
-            return Optional.of(getLargestImage(images));
+            return getLargestImage(images);
         }
-        return Optional.ofNullable(ImageIO.read(imageFile));
+        return ImageIO.read(imageFile);
     }
 
     public static BufferedImage getLargestImage(List<BufferedImage> images) {

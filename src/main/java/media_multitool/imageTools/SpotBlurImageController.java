@@ -20,6 +20,7 @@ import javafx.scene.Cursor;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
+import model.converterImage.UsefulMethods;
 import model.helper.images.BlurShapeHelper;
 import model.helper.images.BlurShapeHelper.BlurShapeVisual;
 import model.helper.images.BlurShapeHelper.ResizeHandle;
@@ -36,7 +37,6 @@ import viewHelp.Alerts;
 import viewHelp.SliderSetup;
 import viewHelp.ZoomControlHelper;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -778,7 +778,7 @@ public class SpotBlurImageController extends AbstractMediaController {
     private void supportLoadFile(File selectedFile) {
         if (nonNull(imageViewPreview)) {
             try {
-                originalBufferedImage = ImageIO.read(selectedFile);
+                originalBufferedImage = UsefulMethods.readImage(selectedFile);
                 if (nonNull(originalBufferedImage)) {
                     if (nonNull(labelPreviewPlaceholder)) {
                         labelPreviewPlaceholder.setVisible(false);

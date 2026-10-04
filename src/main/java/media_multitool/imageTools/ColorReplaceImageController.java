@@ -10,6 +10,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.converterImage.UsefulMethods;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -20,7 +21,6 @@ import model.helper.images.ColorReplaceHelper;
 import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -384,7 +384,7 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
         if (nonNull(imageViewPreview)) {
             try {
-                originalBufferedImage = ImageIO.read(selectedFile);
+                originalBufferedImage = UsefulMethods.readImage(selectedFile);
                 currentBufferedImage = originalBufferedImage;
                 if (nonNull(currentBufferedImage)) {
                     updatePreview();

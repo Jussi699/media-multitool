@@ -85,6 +85,15 @@ A lightweight, powerful cross-platform media multitool built with Java and JavaF
 - **Progress Tracking:** Real-time progress bars for all operations
 - **Detailed Logging:** Built-in logging for troubleshooting and monitoring
 
+## 🔒 Privacy & Transparency
+
+Media Multitool processes your media files locally on your computer. We take your privacy seriously:
+
+- **No telemetry:** The application code contains no analytics or telemetry collection.
+- **Local processing:** Image, audio, video, and PDF operations run on your device; files are not uploaded to a processing service.
+- **No automatic network requests:** The application does not make network requests for processing or update checks. Links such as GitHub and GPS map links open externally only when you choose to visit them.
+- **Open source:** The project is available under the MIT License, so its code can be inspected and audited.
+
 ## 🛠️ Tech Stack
 
 - **Java 25** (OpenJDK)

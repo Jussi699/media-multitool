@@ -15,6 +15,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.converterImage.UsefulMethods;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
@@ -24,7 +25,6 @@ import model.utility.*;
 import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -232,7 +232,7 @@ public class RotateImageController extends AbstractMediaController {
 
         if (nonNull(imageViewPreview)) {
             try {
-                currentBufferedImage = ImageIO.read(selectedFile);
+                currentBufferedImage = UsefulMethods.readImage(selectedFile);
                 if (nonNull(currentBufferedImage)) {
                     setImagePreview(currentBufferedImage, imageViewPreview);
                         labelPreviewPlaceholder.setVisible(false);

@@ -2,6 +2,7 @@ package model.preprocessing;
 
 import javafx.scene.control.Alert;
 import model.logger.ErrorLogger;
+import net.ifok.image.image4j.codec.ico.ICOEncoder;
 import viewHelp.Alerts;
 
 import javax.imageio.ImageIO;
@@ -35,7 +36,10 @@ public class ImagePreprocessing {
 
         ErrorLogger.info("Attempting to save image. Format: " + formatFile + ", Path: " + output.getAbsolutePath());
 
-        if (ImageIO.write(image, formatFile, output)) {
+        if (formatFile.equalsIgnoreCase("ico")) {
+            ICOEncoder.write(image, output);
+            ErrorLogger.info("ICO image saved. File size: " + output.length() + " bytes");
+        } else if (ImageIO.write(image, formatFile, output)) {
             ErrorLogger.info("ImageIO.write returned true. File size: " + output.length() + " bytes");
         } else {
             ErrorLogger.error("ImageIO.write returned false! This usually means no appropriate writer was found for format: " + formatFile);

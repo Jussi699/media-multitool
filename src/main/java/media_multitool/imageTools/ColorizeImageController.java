@@ -12,6 +12,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.converterImage.UsefulMethods;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -23,7 +24,6 @@ import viewHelp.Alerts;
 import com.bric.colorpicker.ColorPicker;
 import viewHelp.WorkColors;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -224,7 +224,7 @@ public class ColorizeImageController extends AbstractMediaController {
 
         if (nonNull(imageViewPreview)) {
             try {
-                originalBufferedImage = ImageIO.read(selectedFile);
+                originalBufferedImage = UsefulMethods.readImage(selectedFile);
                 currentBufferedImage = originalBufferedImage;
                 if (nonNull(currentBufferedImage)) {
                     setImagePreview(currentBufferedImage, imageViewPreview);

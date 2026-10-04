@@ -14,6 +14,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.converterImage.UsefulMethods;
 import model.helper.images.PixelHelper;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
@@ -26,7 +27,6 @@ import viewHelp.Alerts;
 import viewHelp.ImageZoomHelper;
 import viewHelp.ZoomControlHelper;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -245,7 +245,7 @@ public class FindPixelImageController extends AbstractMediaController {
 
         if (nonNull(imageViewPreview)) {
             try {
-                originalBufferedImage = ImageIO.read(selectedFile);
+                originalBufferedImage = UsefulMethods.readImage(selectedFile);
                 if (nonNull(originalBufferedImage)) {
                     if (nonNull(labelPreviewPlaceholder)) {
                         labelPreviewPlaceholder.setVisible(false);

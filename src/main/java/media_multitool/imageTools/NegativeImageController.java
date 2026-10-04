@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.converterImage.UsefulMethods;
 import model.preprocessing.ImagePreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
@@ -212,7 +213,7 @@ public class NegativeImageController extends AbstractMediaController {
 
         if (nonNull(imageViewPreview)) {
             try {
-                originalBufferedImage = javax.imageio.ImageIO.read(selectedFile);
+                originalBufferedImage = UsefulMethods.readImage(selectedFile);
                 updatePreview();
                 if (nonNull(currentBufferedImage)) {
                     labelPreviewPlaceholder.setVisible(false);

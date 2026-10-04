@@ -13,6 +13,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.converterImage.UsefulMethods;
 import model.helper.images.CropHelper;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
@@ -24,7 +25,6 @@ import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.ZoomControlHelper;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -260,7 +260,7 @@ public class CropImageController extends AbstractMediaController {
         textDragZone.setText("Select image: " + selectedFile.getName());
 
         try {
-            originalBufferedImage = ImageIO.read(selectedFile);
+            originalBufferedImage = UsefulMethods.readImage(selectedFile);
             if (isNull(originalBufferedImage)) {
                 showErrorMessage(labelSuccess, "Unsupported image format.", imageProperties.getHideSuccessMessageTimer());
                 return;
