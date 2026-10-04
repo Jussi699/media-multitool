@@ -34,6 +34,8 @@ public class ViewController {
     @FXML private VBox imageToolsContent, pdfToolsContent, watermarkContent, mediaToolsContent;
     @FXML private ToggleButton btnConverters, btnCompressors, btnImageTools, btnPdfTools, btnWatermark, btnMediaTools;
 
+    @FXML private InfoController infoPageController;
+
     private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
     private final Map<Integer, StackPane> stackPaneMapPdfTools = new HashMap<>();
     private final Map<Integer, StackPane> stackPaneMapWatermark = new HashMap<>();
@@ -157,6 +159,9 @@ public class ViewController {
     @FXML
     public void showInfoPage() {
         setActive(infoPage, navInfo);
+        if (nonNull(infoPageController)) {
+            infoPageController.callReloadLogArea();
+        }
     }
 
     @FXML
@@ -261,7 +266,7 @@ public class ViewController {
         };
 
         for (StackPane page : allPages) {
-            if (page != null) {
+            if (nonNull(page)) {
                 page.setVisible(page == pageToShow);
                 page.setManaged(page == pageToShow);
             }
@@ -270,7 +275,7 @@ public class ViewController {
         navHomeButton.getStyleClass().remove("standalone-btn-active");
         navInfo.getStyleClass().remove("standalone-btn-active");
 
-        if (activeButton != null) {
+        if (nonNull(activeButton)) {
             activeButton.getStyleClass().add("standalone-btn-active");
             setActiveSubButton(null);
         }
@@ -290,7 +295,10 @@ public class ViewController {
             case "navCompressorPdf"        -> setActive(compressPdfPage, navCompressorPdf, btnCompressors);
             case "navMediaEditorTag"       -> setActive(mediaTagEditorPage, navMediaEditorTag, btnMediaTools);
             case "navMetaData"             -> setActive(metaDataPage, navMetaData, btnMediaTools);
-            case "navInfo"                 -> setActive(infoPage, navInfo);
+            case "navInfo"                 ->  {
+                setActive(infoPage, navInfo);
+                showInfoPage();
+            }
         }
     }
 }

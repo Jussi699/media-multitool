@@ -84,7 +84,7 @@ public class InfoController {
     }
 
     @FXML
-    public void toLogsDir() {
+    private void toLogsDir() {
         String logPath = OS.getAppConfigDir() + File.separator + "logs";
         File dirLog = new File(logPath);
 
@@ -100,6 +100,10 @@ public class InfoController {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Error opening directory", "IO Error", "Could not open logs directory!");
             ErrorLogger.error("Could not open logs directory: " + e.getMessage());
         }
+    }
+
+    public void callReloadLogArea() {
+        onReloadLogArea();
     }
 
     @FXML
