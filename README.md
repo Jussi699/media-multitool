@@ -1,8 +1,18 @@
-# Media Multitool
+<p align="center">
+  <a href="https://github.com/Jussi699/media-multitool/releases/latest"><img src="https://github.com/Jussi699/media-multitool/blob/master/src/main/resources/img/mainIcon.png" alt="Media-Multitol" width="128" /></a>
+</p>
 
-A lightweight, powerful cross-platform media multitool built with Java and JavaFX. This application provides comprehensive tools for converting, compressing, and editing images, audio, video files, and PDFs with an intuitive drag-and-drop interface.
+<h1 align="center">Media-Multitool</h1>
 
-## 🚀 Features
+<p align="center">
+  A lightweight, cross-platform multimedia toolkit for converting, compressing, and editing video, audio, images, and PDFs
+</p>
+
+<p align="center">
+  <a href="https://github.com/Jussi699/media-multitool/releases/latest"><b>Download</b></a>
+</p>
+
+## Overview
 
 ### 🖼️ Image Conversion
 - **Supported Formats:** PNG, JPEG, WEBP, TIFF, BMP, ICO, SVG, PPM, PGM, PAM
