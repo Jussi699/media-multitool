@@ -145,7 +145,7 @@ public class ConverterImageController extends AbstractMediaController {
 
     @FXML
     private void onActionBtnBatchFileProcessing() {
-        Stage stage = getStage(btnSelectBatchFileProcessing);
+        Stage stage = (Stage) btnSelectBatchFileProcessing.getScene().getWindow();
         directoryChooser(stage, pathFolderBatchProcessing, "Select directory with image")
                 .ifPresent(selectedPath -> {
                     pathFolderBatchProcessing = selectedPath;

@@ -164,7 +164,7 @@ public abstract class AbstractMediaController {
         PathWorker.IO_EXECUTOR.execute(task);
     }
 
-    private void unbindProgress() {
+    protected void unbindProgress() {
         if (nonNull(progressBar)) {
             progressBar.progressProperty().unbind();
         }
@@ -230,7 +230,7 @@ public abstract class AbstractMediaController {
     }
 
     protected void selectOutputDirectory(Button triggerButton, File currentPath, Consumer<File> propertySetter, String title) {
-        Stage stage = getStage(triggerButton);
+        Stage stage = (Stage) triggerButton.getScene().getWindow();
         directoryChooser(stage, currentPath, title)
                 .ifPresent(selectedPath -> {
                     propertySetter.accept(selectedPath);
@@ -265,7 +265,7 @@ public abstract class AbstractMediaController {
                 .ifPresent(fileProcessor));
     }
 
-    public static void showProgressBar(ProgressBar bar, PauseTransition timer) {
+    protected static void showProgressBar(ProgressBar bar, PauseTransition timer) {
         if (nonNull(bar)) {
             bar.setVisible(true);
             bar.setManaged(true);
@@ -274,12 +274,7 @@ public abstract class AbstractMediaController {
         if (nonNull(timer)) timer.playFromStart();
     }
 
-    public static Stage getStage(@NonNull Control control) {
-        return (Stage) control.getScene().getWindow();
-    }
-
-
-    public static void reset(@NonNull MediaProperties properties, @NonNull ResetContext ctx, String defaultText) {
+    protected static void reset(@NonNull MediaProperties properties, @NonNull ResetContext ctx, String defaultText) {
         properties.reset();
 
         if (nonNull(ctx.labelSelectFileName())) {
@@ -304,13 +299,13 @@ public abstract class AbstractMediaController {
     }
 
 
-    public static void resetDropZone(@NonNull Label textDragZone, @NonNull StackPane dropZone, String text) {
+    protected static void resetDropZone(@NonNull Label textDragZone, @NonNull StackPane dropZone, String text) {
         textDragZone.setText("Drag " +  text + " here");
 
         dropZone.getStyleClass().removeAll(java.util.Collections.singleton("drop-zone-filled"));
     }
 
-    public static void bindingImageViewToPreviewContainer(ImageView imageViewPreview, StackPane previewContainer) {
+    protected static void bindingImageViewToPreviewContainer(ImageView imageViewPreview, StackPane previewContainer) {
         if(nonNull(imageViewPreview) && nonNull(previewContainer)) {
             if (!imageViewPreview.fitWidthProperty().isBound()) {
                 imageViewPreview.fitWidthProperty().bind(previewContainer.widthProperty().subtract(10));

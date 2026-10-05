@@ -27,7 +27,7 @@ public class HomeViewController {
     @FXML
     public void onOpenPagePressed(ActionEvent actionEvent) {
         if (nonNull(mainController)) {
-            Button button = (Button) actionEvent.getSource();
+           Button button = (Button) actionEvent.getSource();
 
             switch (button.getId()) {
                 // Converters
