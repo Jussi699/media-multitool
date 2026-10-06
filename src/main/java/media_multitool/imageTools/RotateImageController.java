@@ -3,54 +3,47 @@ package media_multitool.imageTools;
 import com.imagetools.ImageTools;
 import com.imagetools.RotateSide;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
-import model.preprocessing.ImagePreprocessing;
+import media_multitool.AbstractImageToolController;
 import model.logger.ErrorLogger;
-import model.properties.MediaProperties;
 import model.properties.ImageProperties;
-import model.select.SelectFile;
-import model.utility.*;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class RotateImageController extends AbstractMediaController {
+public class RotateImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
-
-    private BufferedImage currentBufferedImage;
-
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSave, btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit;
-    @FXML private Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
+    @FXML private Button btnFlipHorizontally, btnFlipVertically;
+    @FXML private Button btnRotateImageRight, btnRotateImageLeft, btnSubmit;
+    @FXML private StackPane previewContainer;
     @FXML private ImageView imageViewPreview;
 
     private List<Button> listControls;
+    private RotateSide rotateSide;
+
+    @Override
+    protected ImageProperties getImageProperties() {
+        return imageProperties;
+    }
+
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
+    }
 
     @FXML
     public void initialize() {
@@ -59,7 +52,7 @@ public class RotateImageController extends AbstractMediaController {
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(() -> currentBufferedImage, "Rotated");
+        setupImageClipboardButton(() -> processedImage, "Rotated");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
@@ -68,43 +61,57 @@ public class RotateImageController extends AbstractMediaController {
 
     @FXML
     private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Rotate",
+        InfoAlert.showToolInfo(
+                "Rotate Image",
                 """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
                         3. Select which direction you want to rotate or flip the image by clicking the corresponding button;
-
+                        
                         4. Click "Rotate and Download";
-
-                        5. (Optional) Click "To Clipboard" to copy the image to the clipboard.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool rotates or flips your image.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+                        """
         );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
+        );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        processedImage = null;
+        originalImage = null;
+        disableControls();
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(processedImage)) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imageViewPreview);
+            return;
+        }
+
+        if (nonNull(rotateSide)) {
+            ImageTools.rotateImage(processedImage, rotateSide).ifPresent(rotated -> {
+                processedImage = rotated;
+                setImagePreview(processedImage, imageViewPreview);
+            });
+            rotateSide = null;
+        }
     }
 
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
-        btnChoiceFolderForSave.setDisable(true);
+        btnChooseSaveDirectory.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
-        btnChoiceFolderForSave.setDisable(false);
+        btnChooseSaveDirectory.setDisable(false);
         btnReset.setDisable(false);
     }
 
@@ -116,72 +123,6 @@ public class RotateImageController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-    }
-
-    @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void btnChoiceFolderForSave() {
-        selectOutputDirectory(btnChoiceFolderForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    private void onActionRotateImage(ActionEvent event) {
-        if (isNull(currentBufferedImage)) {
-            return;
-        }
-
-        Button source = (Button) event.getSource();
-
-        RotateSide side = switch (source.getId()) {
-            case "btnFlipHorizontally" -> RotateSide.HORIZONTALLY;
-            case "btnFlipVertically"   -> RotateSide.VERTICALLY;
-            case "btnRotateImageRight" -> RotateSide.RIGHT;
-            case "btnRotateImageLeft"  -> RotateSide.LEFT;
-
-            default -> throw new IllegalStateException("Unexpected value: " + source.getId());
-        };
-
-        ImageTools.rotateImage(currentBufferedImage, side).ifPresent(rotated -> {
-            currentBufferedImage = rotated;
-            setImagePreview(currentBufferedImage, imageViewPreview);
-        });
-    }
-
-    @FXML
-    public void submitRotateAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
-            return;
-        }
-
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        imageProperties.getTypeImage()
-                );
-
-                updateProgress(50, 100);
-
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
     }
 
     @Override
@@ -208,45 +149,17 @@ public class RotateImageController extends AbstractMediaController {
         });
     }
 
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
+    public void onActionRotate(ActionEvent actionEvent) {
+        Button button = (Button) actionEvent.getSource();
 
-        currentBufferedImage = null;
-        disableControls();
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
+        switch (button.getId()) {
+            case "btnRotateImageLeft"  -> rotateSide = RotateSide.LEFT;
+            case "btnRotateImageRight" -> rotateSide = RotateSide.RIGHT;
+            case "btnFlipHorizontally" -> rotateSide = RotateSide.HORIZONTALLY;
+            case "btnFlipVertically"   -> rotateSide = RotateSide.VERTICALLY;
+            default -> throw new IllegalStateException("Unexpected value: " + button.getId());
         }
 
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectFile.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
-            try {
-                currentBufferedImage = UsefulMethods.readImage(selectedFile);
-                if (nonNull(currentBufferedImage)) {
-                    setImagePreview(currentBufferedImage, imageViewPreview);
-                        labelPreviewPlaceholder.setVisible(false);
-                }
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            }
-        }
-
-        textDragZone.setText("Selected: " + selectedFile.getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
+        generatePreview();
+     }
 }

@@ -2,50 +2,46 @@ package media_multitool.imageTools;
 
 import com.imagetools.ImageTools;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
-import model.preprocessing.ImagePreprocessing;
+import media_multitool.AbstractImageToolController;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
-import model.utility.*;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class NegativeImageController extends AbstractMediaController {
+public class NegativeImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
+    @FXML private Button btnSubmit;
+    @FXML private ImageView imageViewPreview;
+    @FXML private StackPane previewContainer;
+    @FXML private Label labelSelectFileName;
+
+    private List<Control> listControls;
+
     @Override
-    protected MediaProperties getProperties() {
+    protected ImageProperties getImageProperties() {
         return imageProperties;
     }
 
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
-    @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder;
-    @FXML private ImageView imageViewPreview;
-
-    private BufferedImage originalBufferedImage, currentBufferedImage;
-    private List<Control> listControls;
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
+    }
 
     @FXML
     public void initialize() {
@@ -54,24 +50,48 @@ public class NegativeImageController extends AbstractMediaController {
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(() -> currentBufferedImage, "Negative");
+        setupImageClipboardButton(() -> processedImage, "Negative");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfo(
+                "Negative Image",
+                """
+                        3. Use the slider to set how much you want to lighten the image;
+                        
+                        4. Click "Negative and Download";
+                        """
+        );
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            return;
+        }
+
+        ImageTools.toNegative(originalImage).ifPresent(negative -> {
+            processedImage = negative;
+            setImagePreview(processedImage, imageViewPreview);
+        });
+    }
+
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
+        btnChooseSaveDirectory.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
+        btnChooseSaveDirectory.setDisable(false);
         btnReset.setDisable(false);
     }
 
@@ -83,49 +103,6 @@ public class NegativeImageController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-    }
-
-    @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    public void submitNegativeAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || currentBufferedImage == null) {
-            return;
-        }
-
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        imageProperties.getTypeImage()
-                );
-
-                updateProgress(50, 100);
-
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
     }
 
     @Override
@@ -159,75 +136,8 @@ public class NegativeImageController extends AbstractMediaController {
                 dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
-        originalBufferedImage = null;
-        currentBufferedImage = null;
+        originalImage = null;
+        processedImage = null;
         disableControls();
     }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Negative Image",
-                """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Click "Negative and Download";
-
-                        4. (Optional) Click "To Clipboard" to copy the image to the clipboard.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool creates a negative version of your image.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
-    }
-
-    private void updatePreview() {
-        if (isNull(originalBufferedImage)) {
-            return;
-        }
-
-        ImageTools.toNegative(originalBufferedImage).ifPresent(negative -> {
-            currentBufferedImage = negative;
-            setImagePreview(currentBufferedImage, imageViewPreview);
-        });
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectFileName.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
-            try {
-                originalBufferedImage = UsefulMethods.readImage(selectedFile);
-                updatePreview();
-                if (nonNull(currentBufferedImage)) {
-                    labelPreviewPlaceholder.setVisible(false);
-                }
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            }
-        }
-
-        textDragZone.setText("Selected: " + selectedFile.getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
 }
