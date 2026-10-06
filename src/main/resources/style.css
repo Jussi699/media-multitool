@@ -4,6 +4,10 @@
     -fx-font-weight: bold;
 }
 
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
 .button, .toggle-button {
     -fx-font-weight: bold;
     -fx-text-fill: WHITE;
