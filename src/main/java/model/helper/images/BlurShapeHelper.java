@@ -3,11 +3,12 @@ package model.helper.images;
 import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import javafx.scene.paint.Color;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -196,6 +197,30 @@ public class BlurShapeHelper {
         
         double normalizedX = (displayX - imageBounds.getMinX()) / imageWidth;
         double normalizedY = (displayY - imageBounds.getMinY()) / imageHeight;
+
+        double minX = Math.min(shape.startX, shape.endX);
+        double maxX = Math.max(shape.startX, shape.endX);
+        double minY = Math.min(shape.startY, shape.endY);
+        double maxY = Math.max(shape.startY, shape.endY);
+
+        if (shape.type == ShapeType.RECTANGLE) {
+            return normalizedX >= minX && normalizedX <= maxX && normalizedY >= minY && normalizedY <= maxY;
+        } else {
+            double centerX = (minX + maxX) / 2;
+            double centerY = (minY + maxY) / 2;
+            double radiusX = (maxX - minX) / 2;
+            double radiusY = (maxY - minY) / 2;
+
+            if (radiusX == 0 || radiusY == 0) return false;
+            double dx = (normalizedX - centerX) / radiusX;
+            double dy = (normalizedY - centerY) / radiusY;
+            return (dx * dx + dy * dy) <= 1;
+        }
+    }
+
+    public static boolean isPointInShapeImage(int imageX, int imageY, BlurShapeVisual shape, double imageWidth, double imageHeight) {
+        double normalizedX = imageX / imageWidth;
+        double normalizedY = imageY / imageHeight;
 
         double minX = Math.min(shape.startX, shape.endX);
         double maxX = Math.max(shape.startX, shape.endX);
