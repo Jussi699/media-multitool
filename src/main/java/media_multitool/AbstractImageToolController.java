@@ -10,10 +10,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.checks.Checking;
 import model.converterImage.UsefulMethods;
-import model.interfaces.ImageFilterStrategy;
 import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
 import model.properties.ImageProperties;
+import model.properties.MediaProperties;
 import model.select.SelectFile;
 import model.utility.DetermineType;
 import model.utility.Global;
@@ -42,14 +42,9 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     protected abstract ImageView getImageView();
 
-    protected void applyTransformation(ImageFilterStrategy strategy) {
-        if (isNull(originalImage)) return;
-        try {
-            processedImage = strategy.process(originalImage);
-            setImagePreview(processedImage, getImageView());
-        } catch (Exception e) {
-            ErrorLogger.error("Filter failed: " + e.getMessage());
-        }
+    @Override
+    protected MediaProperties getProperties() {
+        return getImageProperties();
     }
 
     protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
@@ -60,6 +55,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
     @FXML
     protected void submitAndDownload() {
         if (Checking.checkImageAndOutputOnNull(getImageProperties()) || isNull(processedImage)) {
+            ErrorLogger.warn("Cannot submit task: input image, output directory or processed image is null");
             return;
         }
 

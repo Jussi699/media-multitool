@@ -12,7 +12,6 @@ import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
-import model.properties.MediaProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -36,11 +35,6 @@ public class LightenImageController extends AbstractImageToolController {
     @FXML private Label labelSelectImageName, currentValueSlider;
 
     private List<Control> listControls;
-
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
 
     @Override
     protected ImageProperties getImageProperties() {

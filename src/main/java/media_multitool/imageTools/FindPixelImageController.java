@@ -12,7 +12,6 @@ import media_multitool.AbstractImageToolController;
 import model.helper.images.PixelHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
-import model.properties.MediaProperties;
 import model.utility.Clipboards;
 import model.utility.Global;
 import model.utility.ResetContext;
@@ -43,11 +42,6 @@ public class FindPixelImageController extends AbstractImageToolController {
 
     private ZoomControlHelper zoomControlHelper;
     private List<Control> listControls;
-
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
 
     @Override
     protected ImageProperties getImageProperties() {
