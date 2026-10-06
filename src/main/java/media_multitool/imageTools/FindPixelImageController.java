@@ -18,6 +18,7 @@ import model.utility.Global;
 import model.utility.ResetContext;
 import viewHelp.Alerts;
 import viewHelp.ImageZoomHelper;
+import viewHelp.InfoAlert;
 import viewHelp.ZoomControlHelper;
 
 import java.util.List;
@@ -86,7 +87,7 @@ public class FindPixelImageController extends AbstractImageToolController {
 
     @FXML
     private void showInfo() {
-        showToolInfoSimple(
+        InfoAlert.showToolInfoSimple(
                 "Find Color Pixel",
                 """
                         1. Click on any pixel with the left mouse button to view its RGB and HEX color values;

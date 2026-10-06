@@ -16,6 +16,7 @@ import model.properties.MediaProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
+import viewHelp.InfoAlert;
 import viewHelp.SliderSetup;
 
 import java.awt.image.BufferedImage;
@@ -109,7 +110,7 @@ public class BlurImageController extends AbstractImageToolController {
 
     @FXML
     private void showInfo() {
-        showToolInfo(
+        InfoAlert.showToolInfo(
                 "Blur Image",
 
                 "3. Use the slider to set the blur intensity;" +
