@@ -1,53 +1,50 @@
 package media_multitool.imageTools;
 
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
+import media_multitool.AbstractImageToolController;
 import model.helper.images.PixelHelper;
 import model.logger.ErrorLogger;
-import model.preprocessing.ImagePreprocessing;
-import model.properties.MediaProperties;
 import model.properties.ImageProperties;
-import model.select.SelectFile;
-import model.utility.*;
-import org.jspecify.annotations.NonNull;
+import model.properties.MediaProperties;
+import model.utility.Clipboards;
+import model.utility.Global;
+import model.utility.ResetContext;
 import viewHelp.Alerts;
 import viewHelp.ImageZoomHelper;
 import viewHelp.ZoomControlHelper;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.List;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static viewHelp.Message.setupClearMessageTimer;
 
-public class FindPixelImageController extends AbstractMediaController {
+public class FindPixelImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
+    @FXML
+    private Button btnSaveRGB, btnSaveHex;
+    @FXML
+    private ImageView imageViewPreview;
+    @FXML
+    private StackPane previewContainer;
+    @FXML
+    private ScrollPane scrollPaneImage;
     @FXML private Slider imageScaleSlider;
-    @FXML private ScrollPane scrollPaneImage;
-    @FXML private BufferedImage originalBufferedImage;
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnSaveRGB, btnSaveHex;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, labelHex;
-    @FXML private ImageView imageViewPreview;
-    @FXML private TextField textFieldR, textFieldG, textFieldB, textFieldHEX, textFieldRGB;
+    @FXML
+    private TextField textFieldR, textFieldG, textFieldB;
+    @FXML
+    private TextField textFieldHEX, textFieldRGB;
+    @FXML
+    private Label labelHex;
     @FXML private Rectangle colorPreview;
 
     private ZoomControlHelper zoomControlHelper;
@@ -58,15 +55,25 @@ public class FindPixelImageController extends AbstractMediaController {
         return imageProperties;
     }
 
+    @Override
+    protected ImageProperties getImageProperties() {
+        return imageProperties;
+    }
+
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
+    }
+
     @FXML
     public void initialize() {
         listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX,
-                textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnSubmitAndCopy, btnReset);
+                textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(() -> originalBufferedImage, "Selected");
+        setupImageClipboardButton(() -> originalImage, "Selected");
 
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
@@ -76,7 +83,7 @@ public class FindPixelImageController extends AbstractMediaController {
         }
         else {
             Alerts.alertDialog(Alert.AlertType.WARNING, "ImageView", "ImageView is not loaded!",
-                    "Something wrong with ImageView! Maybe his (null).\nTry restarting the application.");
+                    "Something wrong with ImageView!");
             ErrorLogger.error("ImageView not loaded (null)!");
             return;
         }
@@ -84,47 +91,55 @@ public class FindPixelImageController extends AbstractMediaController {
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
-    private void handlePixelSelection(MouseEvent e) {
-        if (e.getButton() != MouseButton.PRIMARY) return;
-
-        PixelHelper.pixelSelection(e, imageViewPreview).ifPresent(this::updatePixelInfo);
-    }
-
-    private void updatePixelInfo(Color color) {
-        textFieldR.setText(String.valueOf((int) (color.getRed() * 255)));
-        textFieldG.setText(String.valueOf((int) (color.getGreen() * 255)));
-        textFieldB.setText(String.valueOf((int) (color.getBlue() * 255)));
-        textFieldRGB.setText((int) (color.getRed() * 255) + " " + (int) (color.getGreen() * 255) + " " + (int) (color.getBlue() * 255));
-        textFieldHEX.setText(PixelHelper.toHexString(color));
-        colorPreview.setFill(color);
-        labelHex.setTextFill(color);
+    @FXML
+    private void showInfo() {
+        showToolInfoSimple(
+                "Find Color Pixel",
+                """
+                        1. Click on any pixel with the left mouse button to view its RGB and HEX color values;
+                        
+                        2. (Optional) Drag with the right mouse button to move the image;
+                        
+                        3. (Optional) Use the slider or mouse wheel to zoom in for better precision;
+                        
+                        4. (Optional) Click "Save HEX" or "Save RGB" to copy color values.
+                        """
+        );
     }
 
     @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Find Color Pixel",
-                """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. Click on any pixel with the left mouse button to view its RGB and HEX color values;
-
-                        3. (Optional) Drag with the right mouse button to move the image;
-
-                        4. (Optional) Use the slider or mouse wheel to zoom in for better precision;
-
-                        5. (Optional) Click "Save HEX" or "Save RGB" to copy color values, or "To Clipboard" to copy the image.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool helps you find the exact color and position of pixels in your image.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        originalImage = null;
+        processedImage = null;
+        zoomControlHelper.resetZoom();
+
+        textFieldR.setText("");
+        textFieldG.setText("");
+        textFieldB.setText("");
+        textFieldRGB.setText("");
+        textFieldHEX.setText("");
+        colorPreview.setFill(Color.WHITE);
+        labelHex.setTextFill(Color.WHITE);
+        disableControls();
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            ErrorLogger.warn("Cannot generate preview: originalImage is null");
+            return;
+        }
+
+        processedImage = originalImage;
+        zoomControlHelper.resetZoom();
+        setImagePreview(processedImage, imageViewPreview);
+        zoomControlHelper.updateImageSize();
     }
 
     @Override
@@ -149,121 +164,6 @@ public class FindPixelImageController extends AbstractMediaController {
         listControls.forEach(c -> c.setDisable(false));
     }
 
-    @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(originalBufferedImage)) {
-            return;
-        }
-
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        imageProperties.getTypeImage()
-                );
-
-                updateProgress(50, 100);
-
-                ImagePreprocessing.downloadImage(originalBufferedImage, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
-    }
-
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result)) {
-            return;
-        }
-        File outputFile = (File) result;
-        ErrorLogger.info(getClass(), "Image saved successfully to: " + outputFile.getAbsolutePath());
-
-        Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "Image saved!", imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-        });
-    }
-
-    @Override
-    protected void handleTaskFailure(@NonNull Throwable exception) {
-        super.handleTaskFailure(exception);
-        Platform.runLater(() -> {
-            showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-        });
-    }
-
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-
-        originalBufferedImage = null;
-        zoomControlHelper.resetZoom();
-
-        textFieldR.setText("");
-        textFieldG.setText("");
-        textFieldB.setText("");
-        textFieldRGB.setText("");
-        textFieldHEX.setText("");
-        colorPreview.setFill(Color.WHITE);
-        labelHex.setTextFill(Color.WHITE);
-        disableControls();
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
-        textDragZone.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
-            try {
-                originalBufferedImage = UsefulMethods.readImage(selectedFile);
-                if (nonNull(originalBufferedImage)) {
-                    if (nonNull(labelPreviewPlaceholder)) {
-                        labelPreviewPlaceholder.setVisible(false);
-                    }
-                    zoomControlHelper.resetZoom();
-                    setImagePreview(originalBufferedImage, imageViewPreview);
-                    zoomControlHelper.updateImageSize();
-                }
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            }
-        }
-
-        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
     public void onClickSaveHex(MouseEvent event) {
         saveToClipboard(textFieldHEX.getText(), "HEX copied successfully!", 2, event);
     }
@@ -276,4 +176,21 @@ public class FindPixelImageController extends AbstractMediaController {
         Clipboards clipboards = new Clipboards();
         clipboards.clip(copyText, textSuccess, showSecond, event);
     }
+
+    private void handlePixelSelection(MouseEvent e) {
+        if (e.getButton() != MouseButton.PRIMARY) return;
+
+        PixelHelper.pixelSelection(e, imageViewPreview).ifPresent(this::updatePixelInfo);
+    }
+
+    private void updatePixelInfo(Color color) {
+        textFieldR.setText(String.valueOf((int) (color.getRed() * 255)));
+        textFieldG.setText(String.valueOf((int) (color.getGreen() * 255)));
+        textFieldB.setText(String.valueOf((int) (color.getBlue() * 255)));
+        textFieldRGB.setText((int) (color.getRed() * 255) + " " + (int) (color.getGreen() * 255) + " " + (int) (color.getBlue() * 255));
+        textFieldHEX.setText(PixelHelper.toHexString(color));
+        colorPreview.setFill(color);
+        labelHex.setTextFill(color);
+    }
+
 }

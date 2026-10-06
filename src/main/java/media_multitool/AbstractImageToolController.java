@@ -39,7 +39,9 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
     @FXML protected Button btnSelectFile;
 
     protected abstract void generatePreview();
+
     protected abstract ImageProperties getImageProperties();
+
     protected abstract ImageView getImageView();
 
     protected void applyTransformation(ImageFilterStrategy strategy) {
@@ -59,7 +61,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     @FXML
     protected void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(getImageProperties()) || isNull(processedImage)){
+        if (Checking.checkImageAndOutputOnNull(getImageProperties()) || isNull(processedImage)) {
             return;
         }
 
@@ -109,11 +111,16 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
             return;
         }
 
+        if (isNull(getImageView())) {
+            ErrorLogger.warn("Cannot generate preview: imageView is not initialized");
+            return;
+        }
+
         originalImage = null;
         processedImage = null;
-        if (nonNull(getImageView())) {
-            getImageView().setImage(null);
-        }
+
+        getImageView().setImage(null);
+
         if (nonNull(labelPreviewPlaceholder)) {
             labelPreviewPlaceholder.setVisible(true);
         }
@@ -125,28 +132,27 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
         if (nonNull(labelSelectFile)) labelSelectFile.setText("Select image: " + file.getName());
 
-        if (nonNull(getImageView())) {
-            try {
-                originalImage = UsefulMethods.readImage(file);
-                if (isNull(originalImage)) throw new IllegalArgumentException("Unsupported image format.");
+        try {
+            originalImage = UsefulMethods.readImage(file);
+            if (isNull(originalImage)) throw new IllegalArgumentException("Unsupported image format.");
 
-                generatePreview();
+            generatePreview();
 
-                if (nonNull(processedImage) && nonNull(labelPreviewPlaceholder)) {
-                    labelPreviewPlaceholder.setVisible(false);
-                }
-
-                if (nonNull(processedImage)) {
-                    enableControls();
-                } else {
-                    throw new IllegalStateException("Failed to create image preview.");
-                }
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-                showErrorMessage(labelSuccess, "Failed to load image: " + e.getMessage(), getImageProperties().getHideSuccessMessageTimer());
-                labelSuccess.setManaged(true);
+            if (nonNull(processedImage) && nonNull(labelPreviewPlaceholder)) {
+                labelPreviewPlaceholder.setVisible(false);
             }
+
+            if (nonNull(processedImage)) {
+                enableControls();
+            } else {
+                throw new IllegalStateException("Failed to create image preview.");
+            }
+        } catch (Exception e) {
+            ErrorLogger.error("Failed to load preview: " + e.getMessage());
+            showErrorMessage(labelSuccess, "Failed to load image: " + e.getMessage(), getImageProperties().getHideSuccessMessageTimer());
+            labelSuccess.setManaged(true);
         }
+
 
         if (nonNull(textDragZone)) {
             textDragZone.setText("Selected: " + file.getName());
@@ -158,24 +164,39 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     protected void showToolInfo(String toolName, String toolSpecificInstructions, String toolDescription) {
         String text = String.format("""
-            How to use:
-            1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-            
-            2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                (Default directory: Desktop);
-            
-            %s
-            
-            (Optional) Click "To Clipboard" to copy the image to the clipboard.
-            Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-            However, the image is still in the clipboard and can be pasted as usual.
-            
-            %s
-            
-            If you have any questions or problems, please go to Info and write to me on Discord.""",
+                        How to use:
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+                        
+                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
+                            (Default directory: Desktop);
+                        
+                        %s
+                        
+                        (Optional) Click "To Clipboard" to copy the image to the clipboard.
+                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
+                        However, the image is still in the clipboard and can be pasted as usual.
+                        
+                        %s
+                        
+                        If you have any questions or problems, please go to Info and write to me on Discord.""",
 
                 toolSpecificInstructions,
                 toolDescription
+        );
+
+        Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", toolName, text);
+    }
+
+    protected void showToolInfoSimple(String toolName, String toolSpecificInstructions) {
+        String text = String.format("""
+                        How to use:
+                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+                        
+                        %s
+                        
+                        If you have any questions or problems, please go to Info and write to me on Discord.""",
+
+                toolSpecificInstructions
         );
 
         Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", toolName, text);

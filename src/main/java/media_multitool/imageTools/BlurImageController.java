@@ -3,14 +3,18 @@ package media_multitool.imageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
-import model.utility.*;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
 import viewHelp.SliderSetup;
 
@@ -79,7 +83,7 @@ public class BlurImageController extends AbstractImageToolController {
             return;
         }
 
-        int radius = (int) sliderBlurry.getValue();
+        int radius = getSliderValue();
 
         if (radius == 0) {
             processedImage = originalImage;
@@ -153,11 +157,9 @@ public class BlurImageController extends AbstractImageToolController {
 
     @Override
     protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
-        int radius = (int) sliderBlurry.getValue();
-
         Optional<BufferedImage> blurred = com.imagetools.ImageTools.blurryImage(
                 originalImage,
-                radius,
+                getSliderValue(),
                 progressUpdater
         );
 
@@ -233,5 +235,9 @@ public class BlurImageController extends AbstractImageToolController {
         sliderBlurry.setValue(0);
         currentValueSlider.setText("100%");
         disableControls();
+    }
+
+    private int getSliderValue() {
+        return (int) sliderBlurry.getValue();
     }
 }

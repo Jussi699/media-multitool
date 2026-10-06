@@ -2,10 +2,9 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.TextFlow?>
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.imageTools.FindPixelImageController">
@@ -19,7 +18,7 @@
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0"
+            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#selectImages" prefWidth="180.0"
                     text="Select image"/>
         </HBox>
 
@@ -126,12 +125,11 @@
                 <Label text="+"  style="-fx-font-size: 14; -fx-text-fill: -color-for-active-button-comboBox"/>
             </HBox>
 
-            <Label fx:id="labelSelectImageName"
+            <Label fx:id="labelSelectFile"
                    styleClass="labelSelect"
                    text="Selected image file: none"/>
 
             <Label fx:id="labelSuccess" styleClass="labelSuccess" visible="false"/>
-            <Button fx:id="btnSubmitAndCopy" prefWidth="240.0" text="Copy Image to Clipboard"/>
             <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset"/>
         </VBox>
 

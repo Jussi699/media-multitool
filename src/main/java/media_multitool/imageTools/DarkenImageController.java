@@ -3,49 +3,59 @@ package media_multitool.imageTools;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
-import model.preprocessing.ImagePreprocessing;
+import media_multitool.AbstractImageToolController;
 import model.logger.ErrorLogger;
-import model.properties.MediaProperties;
 import model.properties.ImageProperties;
-import model.select.SelectFile;
-import model.utility.*;
+import model.properties.MediaProperties;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
 import viewHelp.SliderSetup;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
+import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class DarkenImageController extends AbstractMediaController {
+public class DarkenImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
-    @FXML private BufferedImage originalBufferedImage, currentBufferedImage;
+    @FXML
+    private Button btnSubmit;
+    @FXML
+    private ImageView imageViewPreview;
+    @FXML
+    private StackPane previewContainer;
     @FXML private Slider sliderDarken;
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, currentValueSlider;
-    @FXML private ImageView imageViewPreview;
+    @FXML
+    private Label currentValueSlider;
 
     private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
         return imageProperties;
+    }
+
+    @Override
+    protected ImageProperties getImageProperties() {
+        return imageProperties;
+    }
+
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
     }
 
     @FXML
@@ -55,71 +65,111 @@ public class DarkenImageController extends AbstractMediaController {
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(() -> currentBufferedImage, "Darkened");
+        setupImageClipboardButton(() -> processedImage, "Darkened");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         sliderDarken.setMin(0);
         sliderDarken.setMax(255);
         sliderDarken.setValue(0);
-        sliderDarken.valueProperty().addListener((_, _, newValue) -> updatePreview(- newValue.intValue()));
 
         SliderSetup.bindPercentageLabel(sliderDarken, currentValueSlider, 255);
-
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
-    private void updatePreview(int offset) {
-        if (isNull(originalBufferedImage)) {
-            return;
-        }
+    @FXML
+    private void showInfo() {
+        showToolInfo(
+                "Darken Image",
 
-        com.imagetools.ImageTools.brightnessImage(originalBufferedImage, offset).ifPresent(darkened -> {
-            currentBufferedImage = darkened;
-            setImagePreview(currentBufferedImage, imageViewPreview);
-        });
+                "3. Use the slider to set how much you want to darken the image;" +
+                        "4. Click \"Darken and Download\";",
+
+                "The effect may take a long time to complete.\n" +
+                        "You can cancel the conversion at any time using the \"Cancel\" button."
+        );
     }
 
     @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Darken Image",
-                """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Use the slider to set how much you want to darken the image;
-
-                        4. Click "Darken and Download";
-
-                        5. (Optional) Click "To Clipboard" to copy the image to the clipboard.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool darkens your image.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        originalImage = null;
+        processedImage = null;
+        sliderDarken.setValue(0);
+        currentValueSlider.setText("100%");
+        disableControls();
+    }
+
+    @FXML
+    private void handleSliderRelease() {
+        generatePreview();
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            return;
+        }
+
+        int value = getSliderValue();
+
+        if (value == 0) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imageViewPreview);
+            return;
+        }
+
+        if (isNull(processedImage)) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imageViewPreview);
+        }
+
+        Task<BufferedImage> task = new Task<>() {
+            @Override
+            protected BufferedImage call() throws Exception {
+                updateMessage("Updating preview...");
+                return com.imagetools.ImageTools.brightnessImage(
+                        originalImage,
+                        (-value)
+                ).orElseThrow(() -> new Exception("Preview generation failed"));
+            }
+        };
+
+        executeMediaTask(task, "Preview update");
+    }
+
+    @Override
+    protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
+        var darkened = com.imagetools.ImageTools.brightnessImage(
+                originalImage,
+                getSliderValue()
+        );
+
+        if (darkened.isEmpty()) {
+            throw new IllegalStateException("Darkening failed: processed image is empty");
+        }
+
+        processedImage = darkened.get();
+        return processedImage;
     }
 
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
-        btnChoiceFolderForSaveFile.setDisable(true);
+        btnChooseSaveDirectory.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
-        btnChoiceFolderForSaveFile.setDisable(false);
+        btnChooseSaveDirectory.setDisable(false);
         btnReset.setDisable(false);
     }
 
@@ -133,60 +183,30 @@ public class DarkenImageController extends AbstractMediaController {
         listControls.forEach(c -> c.setDisable(false));
     }
 
-    @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    private void handleSliderRelease() {
-        updatePreview(- (int) sliderDarken.getValue());
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        if (result instanceof BufferedImage bi) {
+            processedImage = bi;
+            setImagePreview(processedImage, imageViewPreview);
+            Platform.runLater(() -> {
+                if (nonNull(progressBar)) {
+                    progressBar.setVisible(true);
+                    progressBar.setManaged(true);
+                }
+                if (nonNull(labelSuccess)) {
+                    labelSuccess.setVisible(true);
+                    labelSuccess.setManaged(true);
+                }
+            });
             return;
         }
 
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        imageProperties.getTypeImage()
-                );
-
-                updateProgress(50, 100);
-
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
-    }
-
-    @Override
-    protected void handleTaskSuccess(Object result) {
         super.handleTaskSuccess(result);
+
         if (Boolean.FALSE.equals(result)) {
             return;
         }
+
         File outputFile = (File) result;
         ErrorLogger.info(getClass(), "Image darkening successful! Saved to: " + outputFile.getAbsolutePath());
 
@@ -205,49 +225,7 @@ public class DarkenImageController extends AbstractMediaController {
         });
     }
 
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-
-        currentBufferedImage = null;
-        originalBufferedImage = null;
-        sliderDarken.setValue(0);
-        currentValueSlider.setText("100%");
-        disableControls();
+    private int getSliderValue() {
+        return (int) sliderDarken.getValue();
     }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
-            try {
-                originalBufferedImage = UsefulMethods.readImage(selectedFile);
-                if (nonNull(originalBufferedImage)) {
-                    updatePreview(- (int) sliderDarken.getValue());
-                        labelPreviewPlaceholder.setVisible(false);
-                }
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            }
-        }
-
-        if (nonNull(textDragZone)) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
-        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
 }
