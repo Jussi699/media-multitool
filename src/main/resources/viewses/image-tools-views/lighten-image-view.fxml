@@ -83,7 +83,7 @@
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectImageName" styleClass="labelSelect"
+            <Label fx:id="labelSelectFile" styleClass="labelSelect"
                    text="Selected image file: none"/>
 
             <Button fx:id="btnReset"

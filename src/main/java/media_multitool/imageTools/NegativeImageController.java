@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
@@ -29,7 +28,6 @@ public class NegativeImageController extends AbstractImageToolController {
     @FXML private Button btnSubmit;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer;
-    @FXML private Label labelSelectFileName;
 
     private List<Control> listControls;
 
@@ -67,6 +65,18 @@ public class NegativeImageController extends AbstractImageToolController {
                         4. Click "Negative and Download";
                         """
         );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
+        );
+        reset(imageProperties, ctx, "Selected image file: none");
+        originalImage = null;
+        processedImage = null;
+        disableControls();
     }
 
     @Override
@@ -127,17 +137,5 @@ public class NegativeImageController extends AbstractImageToolController {
             showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
-    }
-
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-        originalImage = null;
-        processedImage = null;
-        disableControls();
     }
 }

@@ -32,7 +32,7 @@ public class LightenImageController extends AbstractImageToolController {
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane previewContainer;
     @FXML private Slider sliderLighten;
-    @FXML private Label labelSelectImageName, currentValueSlider;
+    @FXML private Label currentValueSlider;
 
     private List<Control> listControls;
 
@@ -83,7 +83,7 @@ public class LightenImageController extends AbstractImageToolController {
     @FXML
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
                 dropZone, imageViewPreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
