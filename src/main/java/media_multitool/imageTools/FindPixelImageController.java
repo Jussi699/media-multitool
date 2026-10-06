@@ -30,21 +30,14 @@ import static viewHelp.Message.setupClearMessageTimer;
 public class FindPixelImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
-    @FXML
-    private Button btnSaveRGB, btnSaveHex;
-    @FXML
-    private ImageView imageViewPreview;
-    @FXML
-    private StackPane previewContainer;
-    @FXML
-    private ScrollPane scrollPaneImage;
+    @FXML private Button btnSaveRGB, btnSaveHex;
+    @FXML private ImageView imageViewPreview;
+    @FXML private StackPane previewContainer;
+    @FXML private ScrollPane scrollPaneImage;
     @FXML private Slider imageScaleSlider;
-    @FXML
-    private TextField textFieldR, textFieldG, textFieldB;
-    @FXML
-    private TextField textFieldHEX, textFieldRGB;
-    @FXML
-    private Label labelHex;
+    @FXML private TextField textFieldR, textFieldG, textFieldB;
+    @FXML private TextField textFieldHEX, textFieldRGB;
+    @FXML private Label labelHex;
     @FXML private Rectangle colorPreview;
 
     private ZoomControlHelper zoomControlHelper;

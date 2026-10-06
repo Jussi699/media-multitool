@@ -2,52 +2,55 @@ package media_multitool.imageTools;
 
 import com.imagetools.ImageTools;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
-import model.preprocessing.ImagePreprocessing;
+import media_multitool.AbstractImageToolController;
 import model.logger.ErrorLogger;
-import model.properties.MediaProperties;
 import model.properties.ImageProperties;
-import model.select.SelectFile;
-import model.utility.*;
+import model.properties.MediaProperties;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 import viewHelp.SliderSetup;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class LightenImageController extends AbstractMediaController {
+public class LightenImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
+
+    @FXML private Button btnSubmit;
+    @FXML private ImageView imageViewPreview;
+    @FXML private StackPane previewContainer;
+    @FXML private Slider sliderLighten;
+    @FXML private Label labelSelectImageName, currentValueSlider;
+
+    private List<Control> listControls;
 
     @Override
     protected MediaProperties getProperties() {
         return imageProperties;
     }
 
-    @FXML private Slider sliderLighten;
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceFolderForSave, btnSubmit;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder, currentValueSlider;
-    @FXML private ImageView imageViewPreview;
+    @Override
+    protected ImageProperties getImageProperties() {
+        return imageProperties;
+    }
 
-    private List<Control> listControls;
-    private BufferedImage originalBufferedImage, currentBufferedImage;
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
+    }
 
     @FXML
     public void initialize() {
@@ -56,14 +59,14 @@ public class LightenImageController extends AbstractMediaController {
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(() -> currentBufferedImage, "Lightened");
+        setupImageClipboardButton(() -> processedImage, "Lightened");
+        sliderLighten.valueProperty().addListener((_, _, _) -> generatePreview());
 
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         sliderLighten.setMin(0);
         sliderLighten.setMax(255);
         sliderLighten.setValue(0);
-        sliderLighten.valueProperty().addListener((_, _, newValue) -> updatePreview(newValue.intValue()));
 
         SliderSetup.bindPercentageLabel(sliderLighten, currentValueSlider, 255);
 
@@ -71,56 +74,65 @@ public class LightenImageController extends AbstractMediaController {
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
-    private void updatePreview(int offset) {
-        if (isNull(originalBufferedImage)) {
-            return;
-        }
-
-        ImageTools.brightnessImage(originalBufferedImage, offset).ifPresent(lightened -> {
-            currentBufferedImage = lightened;
-            setImagePreview(currentBufferedImage, imageViewPreview);
-        });
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfo(
+                "Lighten Image",
+                """
+                        3. Use the slider to set how much you want to lighten the image;
+                        
+                        4. Click "Lighten and Download";
+                        """
+        );
     }
 
     @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Lighten Image",
-                """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Use the slider to set how much you want to lighten the image;
-
-                        4. Click "Lighten and Download";
-
-                        5. (Optional) Click "To Clipboard" to copy the image to the clipboard.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool will lighten your image.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        processedImage = null;
+        originalImage = null;
+        sliderLighten.setValue(0);
+        currentValueSlider.setText("100%");
+        disableControls();
     }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            return;
+        }
+
+        int value = getSliderValue();
+
+        if (value == 0) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imageViewPreview);
+            return;
+        }
+
+        ImageTools.brightnessImage(originalImage, value).ifPresent(lightened -> {
+            processedImage = lightened;
+            setImagePreview(processedImage, imageViewPreview);
+        });
+    }
+
 
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
-        btnChoiceFolderForSave.setDisable(true);
+        btnChooseSaveDirectory.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
-        btnChoiceFolderForSave.setDisable(false);
+        btnChooseSaveDirectory.setDisable(false);
         btnReset.setDisable(false);
     }
 
@@ -135,51 +147,8 @@ public class LightenImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void btnChoiceFolderForSave() {
-        selectOutputDirectory(btnChoiceFolderForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
     private void handleSliderRelease() {
-        updatePreview((int) sliderLighten.getValue());
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
-            return;
-        }
-
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        imageProperties.getTypeImage()
-                );
-
-                updateProgress(50, 100);
-
-                ImagePreprocessing.downloadImage(currentBufferedImage, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
+        generatePreview();
     }
 
     @Override
@@ -206,49 +175,7 @@ public class LightenImageController extends AbstractMediaController {
         });
     }
 
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-
-        currentBufferedImage = null;
-        originalBufferedImage = null;
-        sliderLighten.setValue(0);
-        currentValueSlider.setText("100%");
-        disableControls();
+    private int getSliderValue() {
+        return (int) sliderLighten.getValue();
     }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
-            try {
-                originalBufferedImage = UsefulMethods.readImage(selectedFile);
-                if (nonNull(originalBufferedImage)) {
-                    updatePreview((int) sliderLighten.getValue());
-                        labelPreviewPlaceholder.setVisible(false);
-                }
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            }
-        }
-
-        if (nonNull(textDragZone)) {
-            textDragZone.setText("Selected: " + selectedFile.getName());
-        }
-        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-    }
-
 }
