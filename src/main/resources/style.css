@@ -1021,3 +1021,31 @@
 .progress-indicator {
     -fx-progress-color: #2ba82b;
 }
+
+.eye-protect {
+    -fx-scale-x: 1.3;
+    -fx-scale-y: 1.3;
+    -fx-stroke: -main-color;
+    -fx-stroke-width: 2px;
+}
+
+.btn-turn-show-password .eye-open {
+    -fx-opacity: 0;
+}
+.btn-turn-show-password .eye-closed {
+    -fx-opacity: 1;
+}
+
+.btn-turn-show-password:selected .eye-open {
+    -fx-opacity: 1;
+}
+.btn-turn-show-password:selected .eye-closed {
+    -fx-opacity: 0;
+}
+
+.stack-pane-icon {
+    -fx-pref-width: 24px;
+    -fx-pref-height: 24px;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+}

@@ -17,12 +17,15 @@
             <Insets top="10.0"/>
         </padding>
 
-        <Label text="Media-Multitool" styleClass="main-label-name-page"/>
+        <Label text="Media-Multitool"
+               styleClass="main-label-name-page"/>
 
         <Separator/>
 
         <ProgressIndicator fx:id="progressLoading"/>
-        <Label text="Loading..." styleClass="main-label-name-page"/>
+
+        <Label text="Loading..."
+               styleClass="main-label-name-page"/>
     </VBox>
 </StackPane>
 

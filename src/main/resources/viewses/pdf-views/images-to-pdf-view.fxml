@@ -5,72 +5,140 @@
 <?import javafx.scene.layout.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="media_multitool.pdf.ConverterImagesToPdfController">
-    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" styleClass="gradient-background">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="12.0"
+          styleClass="gradient-background">
 
-        <Label styleClass="main-label-name-page" text="Image(s) To PDF">
+        <Label styleClass="main-label-name-page"
+               text="Image(s) To PDF">
+
             <VBox.margin>
                 <Insets top="8.0" />
             </VBox.margin>
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectFiles" mnemonicParsing="false" onAction="#onActionBtnSelectFiles" prefWidth="180.0" text="Select image(s)" />
+            <Button fx:id="btnSelectFiles"
+                    mnemonicParsing="false"
+                    onAction="#onActionBtnSelectFiles"
+                    prefWidth="180.0"
+                    text="Select image(s)"/>
 
-            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onActionChoiceDirForSaveFile" prefWidth="180.0" text="Directory for save">
+            <Button fx:id="btnChoiceDirForSaveFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionChoiceDirForSaveFile"
+                    prefWidth="180.0"
+                    text="Directory for save">
+
                 <tooltip>
                     <Tooltip text="Default directory: Desktop" />
                 </tooltip>
             </Button>
         </HBox>
 
-        <VBox alignment="CENTER" spacing="10.0" style="-fx-padding: 5; -fx-background-color: transparent; ">
+        <VBox alignment="CENTER"
+              spacing="10.0"
+              style="-fx-padding: 5; -fx-background-color: transparent; ">
+
             <HBox alignment="CENTER" spacing="15.0">
                 <VBox alignment="TOP_CENTER" spacing="5.0">
-                    <Label text="Margin:" styleClass="label-h" />
-                    <ComboBox fx:id="comboMargin" prefWidth="120.0" />
+                    <Label text="Margin:"
+                           styleClass="label-h"/>
+
+                    <ComboBox fx:id="comboMargin"
+                              prefWidth="120.0"/>
                 </VBox>
+
                 <VBox alignment="TOP_CENTER" spacing="5.0">
-                    <Label text="Orientation:" styleClass="label-h"/>
-                    <ComboBox fx:id="comboOrientation" prefWidth="120.0" />
+                    <Label text="Orientation:"
+                           styleClass="label-h"/>
+
+                    <ComboBox fx:id="comboOrientation"
+                              prefWidth="120.0"/>
                 </VBox>
+
                 <VBox alignment="TOP_CENTER" spacing="5.0">
-                    <Label text="Page Size:" styleClass="label-h"/>
-                    <ComboBox fx:id="comboPageSize" prefWidth="160.0" />
+                    <Label text="Page Size:"
+                           styleClass="label-h"/>
+
+                    <ComboBox fx:id="comboPageSize"
+                              prefWidth="160.0"/>
                 </VBox>
             </HBox>
         </VBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Conversion status: success" visible="false" />
-            <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0" visible="false" managed="false" />
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   text="Conversion status: success"
+                   visible="false" />
+
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="240.0"
+                         progress="0.0"
+                         visible="false"
+                         managed="false"/>
+
             <HBox alignment="CENTER" spacing="16.0">
-                <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0" text="Submit and Download" />
-                <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#cancelProcessing" prefWidth="240.0" text="Cancel Conversion" disable="true" />
+                <Button fx:id="btnSubmit"
+                        mnemonicParsing="false"
+                        onAction="#submitAndDownload"
+                        prefWidth="240.0"
+                        text="Submit and Download" />
+
+                <Button fx:id="btnCancel"
+                        mnemonicParsing="false"
+                        onAction="#cancelProcessing"
+                        prefWidth="240.0"
+                        text="Cancel Conversion"
+                        disable="true"/>
             </HBox>
         </VBox>
 
         <VBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="CENTER">
             <padding>
-                <Insets left="4.0" right="4.0" />
+                <Insets left="4.0" right="4.0"/>
             </padding>
+
             <VBox.margin>
-                <Insets top="2.0" />
+                <Insets top="2.0"/>
             </VBox.margin>
             
-            <Label text="Images preview (drag to reorder):" styleClass="label-h"/>
+            <Label text="Images preview (drag to reorder):"
+                   styleClass="label-h"/>
             
-            <ScrollPane fx:id="scrollPanePreview" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="scroll-pane-preview">
-                <FlowPane fx:id="imagesFlowPane" hgap="10.0" vgap="10.0" minHeight="200.0"/>
+            <ScrollPane fx:id="scrollPanePreview"
+                        fitToWidth="true"
+                        VBox.vgrow="ALWAYS"
+                        styleClass="scroll-pane-preview">
+
+                <FlowPane fx:id="imagesFlowPane"
+                          hgap="10.0"
+                          vgap="10.0"
+                          minHeight="200.0"/>
             </ScrollPane>
 
-            <StackPane fx:id="dropZone" styleClass="drop-zone" minHeight="80.0">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image(s) here" />
+            <StackPane fx:id="dropZone"
+                       styleClass="drop-zone"
+                       minHeight="80.0">
+
+                <Label fx:id="textDragZone"
+                       styleClass="label-drag-zone"
+                       text="Drag image(s) here" />
             </StackPane>
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectFileName" styleClass="labelSelect" text="Selected images: 0" />
-            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset" />
+            <Label fx:id="labelSelectFileName"
+                   styleClass="labelSelect"
+                   text="Selected images: 0"/>
+
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0" text="Reset"/>
         </VBox>
 
         <padding>
@@ -78,7 +146,11 @@
         </padding>
     </VBox>
 
-    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+    <Button onAction="#showInfo"
+            styleClass="info-button"
+            text="?"
+            StackPane.alignment="TOP_LEFT">
+
         <StackPane.margin>
             <Insets left="10.0" top="10.0" />
         </StackPane.margin>

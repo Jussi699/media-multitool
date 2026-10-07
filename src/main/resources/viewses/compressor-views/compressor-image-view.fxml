@@ -16,6 +16,7 @@
 
         <Label styleClass="main-label-name-page"
                text="Compressor Image">
+
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
@@ -33,6 +34,7 @@
                     onAction="#btnChoiceDirForSaveImage"
                     prefWidth="180.0"
                     text="Directory for save">
+
                 <tooltip>
                     <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
@@ -42,19 +44,23 @@
         <HBox alignment="CENTER" spacing="20.0">
             <ComboBox fx:id="comboBoxScaleImage"
                       onAction="#onChoiceScaleImage"
-                      prefWidth="140.0" styleClass="combo-box-140-width"/>
+                      prefWidth="140.0"
+                      styleClass="combo-box-140-width"/>
 
             <ComboBox fx:id="comboBoxOutputQuality"
                       onAction="#onChoiceOutputQuality"
-                      prefWidth="140.0" styleClass="combo-box-140-width"/>
+                      prefWidth="140.0"
+                      styleClass="combo-box-140-width"/>
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess"
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
                    text="Compression status"
                    wrapText="true"/>
 
-            <Button fx:id="btnSubmit" mnemonicParsing="false"
+            <Button fx:id="btnSubmit"
+                    mnemonicParsing="false"
                     onAction="#submitCompressAndDownload"
                     prefWidth="240.0"
                     text="Compress and Download"/>
@@ -64,29 +70,45 @@
             <padding>
                 <Insets left="4.0" right="4.0"/>
             </padding>
+
             <VBox.margin>
                 <Insets top="2.0"/>
             </VBox.margin>
 
-            <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
-                <ImageView fx:id="imageViewPreview" preserveRatio="true"/>
-                <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
+            <StackPane fx:id="previewContainer"
+                       VBox.vgrow="ALWAYS"
+                       minWidth="200">
+
+                <ImageView fx:id="imageViewPreview"
+                           preserveRatio="true"/>
+
+                <Label fx:id="labelPreviewPlaceholder"
+                       text="Preview"/>
             </StackPane>
 
             <HBox spacing="5.0" VBox.vgrow="ALWAYS">
-                <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS" maxHeight="Infinity">
-                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image(s) here"/>
+                <StackPane fx:id="dropZone"
+                           styleClass="drop-zone"
+                           HBox.hgrow="ALWAYS"
+                           maxHeight="Infinity">
+
+                    <Label fx:id="textDragZone"
+                           styleClass="label-drag-zone"
+                           text="Drag image(s) here"/>
                 </StackPane>
             </HBox>
         </VBox>
 
         <VBox alignment="CENTER" spacing="6.0">
-            <Label fx:id="labelSelectFile" styleClass="labelSelect"
+            <Label fx:id="labelSelectFile"
+                   styleClass="labelSelect"
                    text="Selected file: none"/>
 
-            <Button fx:id="btnReset" styleClass="btn-reset"
+            <Button fx:id="btnReset"
+                    styleClass="btn-reset"
                     mnemonicParsing="false"
-                    onAction="#isPressedReset" text="Reset"/>
+                    onAction="#isPressedReset"
+                    text="Reset"/>
         </VBox>
 
         <padding>
@@ -98,6 +120,7 @@
             onAction="#showInfo"
             styleClass="info-button"
             StackPane.alignment="TOP_LEFT">
+
         <StackPane.margin>
             <Insets top="10.0" left="10.0"/>
         </StackPane.margin>

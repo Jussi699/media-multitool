@@ -7,20 +7,33 @@
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.pdf.CompressPdfController">
-    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" styleClass="gradient-background">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="12.0"
+          styleClass="gradient-background">
 
-        <Label styleClass="main-label-name-page" text="Compress PDF">
+        <Label styleClass="main-label-name-page"
+               text="Compress PDF">
+
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0"
+            <Button fx:id="btnSelectFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionBtnSelectFile"
+                    prefWidth="180.0"
                     text="Select PDF"/>
 
-            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onActionChoiceDirForSaveFile"
-                    prefWidth="180.0" text="Directory for save">
+            <Button fx:id="btnChoiceDirForSaveFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionChoiceDirForSaveFile"
+                    prefWidth="180.0"
+                    text="Directory for save">
+
                 <tooltip>
                     <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
@@ -31,37 +44,66 @@
             <fx:define>
                 <ToggleGroup fx:id="compressionLevelGroup"/>
             </fx:define>
-            <ToggleButton fx:id="btnLowCompression" onAction="#onCompressionLevelChanged" selected="true" text="Low"
+
+            <ToggleButton fx:id="btnLowCompression"
+                          onAction="#onCompressionLevelChanged"
+                          selected="true"
+                          text="Low"
                           toggleGroup="$compressionLevelGroup">
+
                 <tooltip>
                     <Tooltip text="Fast optimization"/>
                 </tooltip>
             </ToggleButton>
-            <ToggleButton fx:id="btnMediumCompression" onAction="#onCompressionLevelChanged" text="Medium"
+
+            <ToggleButton fx:id="btnMediumCompression"
+                          onAction="#onCompressionLevelChanged"
+                          text="Medium"
                           toggleGroup="$compressionLevelGroup">
+
                 <tooltip>
                     <Tooltip text="Balanced"/>
                 </tooltip>
             </ToggleButton>
-            <ToggleButton fx:id="btnHighCompression" onAction="#onCompressionLevelChanged" text="High"
+
+            <ToggleButton fx:id="btnHighCompression"
+                          onAction="#onCompressionLevelChanged"
+                          text="High"
                           toggleGroup="$compressionLevelGroup">
+
                 <tooltip>
                     <Tooltip text="Strong compression"/>
                 </tooltip>
             </ToggleButton>
         </HBox>
 
-        <Label fx:id="labelEstimatedSize" styleClass="labelSuccess" text="Estimated size: Waiting load PDF"/>
-
+        <Label fx:id="labelEstimatedSize"
+               styleClass="labelSuccess"
+               text="Estimated size: Waiting load PDF"/>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Compression status" visible="false"/>
-            <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0"/>
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   text="Compression status"
+                   visible="false"/>
+
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="240.0"
+                         progress="0.0"/>
+
             <HBox alignment="CENTER" spacing="16.0">
-                <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0"
+                <Button fx:id="btnSubmit"
+                        mnemonicParsing="false"
+                        onAction="#submitAndDownload"
+                        prefWidth="240.0"
                         text="Compress and Download"/>
-                <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#cancelProcessing" prefWidth="240.0"
-                        text="Cancel Compression" disable="true"/>
+
+                <Button fx:id="btnCancel"
+                        mnemonicParsing="false"
+                        onAction="#cancelProcessing"
+                        prefWidth="240.0"
+                        text="Cancel Compression"
+                        disable="true"/>
             </HBox>
         </VBox>
 
@@ -69,22 +111,43 @@
             <padding>
                 <Insets left="4.0" right="4.0"/>
             </padding>
+
             <VBox.margin>
                 <Insets top="2.0"/>
             </VBox.margin>
-            <StackPane fx:id="previewContainer" minWidth="200" VBox.vgrow="ALWAYS">
-                <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
-                <ImageView fx:id="imageViewPdf" pickOnBounds="true" preserveRatio="true"/>
+
+            <StackPane fx:id="previewContainer"
+                       minWidth="200"
+                       VBox.vgrow="ALWAYS">
+
+                <Label fx:id="labelPreviewPlaceholder"
+                       text="Preview"/>
+
+                <ImageView fx:id="imageViewPdf"
+                           pickOnBounds="true"
+                           preserveRatio="true"/>
             </StackPane>
 
-            <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag PDF here"/>
+            <StackPane fx:id="dropZone"
+                       styleClass="drop-zone"
+                       HBox.hgrow="ALWAYS">
+
+                <Label fx:id="textDragZone"
+                       styleClass="label-drag-zone"
+                       text="Drag PDF here"/>
             </StackPane>
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectFileName" styleClass="labelSelect" text="Selected PDF file: none"/>
-            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset"/>
+            <Label fx:id="labelSelectFileName"
+                   styleClass="labelSelect"
+                   text="Selected PDF file: none"/>
+
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
         </VBox>
 
         <padding>
@@ -92,7 +155,11 @@
         </padding>
     </VBox>
 
-    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+    <Button onAction="#showInfo"
+            styleClass="info-button"
+            text="?"
+            StackPane.alignment="TOP_LEFT">
+        
         <StackPane.margin>
             <Insets left="10.0" top="10.0"/>
         </StackPane.margin>

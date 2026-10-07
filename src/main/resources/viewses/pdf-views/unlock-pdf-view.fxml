@@ -4,10 +4,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.*?>
+<?import javafx.scene.shape.SVGPath?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.pdf.UnlockPdfController">
-    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" styleClass="gradient-background">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="12.0"
+          styleClass="gradient-background">
 
         <Label styleClass="main-label-name-page" text="Unlock PDF">
             <VBox.margin>
@@ -16,11 +21,17 @@
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#onActionBtnSelectFile" prefWidth="180.0"
+            <Button fx:id="btnSelectFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionBtnSelectFile"
+                    prefWidth="180.0"
                     text="Select PDF"/>
 
-            <Button fx:id="btnChoiceDirForSaveFile" mnemonicParsing="false" onAction="#onActionChoiceDirForSaveFile"
+            <Button fx:id="btnChoiceDirForSaveFile"
+                    mnemonicParsing="false"
+                    onAction="#onActionChoiceDirForSaveFile"
                     prefWidth="180.0" text="Directory for save">
+
                 <tooltip>
                     <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
@@ -28,26 +39,59 @@
         </HBox>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <VBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="CENTER">
-                <Label fx:id="labelFileEncrypted" styleClass="labelSuccess"
+            <VBox spacing="10.0"
+                  VBox.vgrow="ALWAYS"
+                  alignment="CENTER">
+
+                <Label fx:id="labelFileEncrypted"
+                       styleClass="labelSuccess"
                        text="Encrypted status: (waiting for load PDF file...)"/>
+
                 <HBox alignment="CENTER" spacing="2.0">
                     <StackPane>
-                        <PasswordField fx:id="typePasswordField" promptText="Password for unlock"
+                        <PasswordField fx:id="typePasswordField"
+                                       promptText="Password for unlock"
                                        styleClass="password-field-with-button"/>
-                        <TextField fx:id="typePasswordTextField" promptText="Password for unlock"
-                                   styleClass="password-field-with-button" visible="false" managed="false"/>
+
+                        <TextField fx:id="typePasswordTextField"
+                                   promptText="Password for unlock"
+                                   styleClass="password-field-with-button"
+                                   visible="false"
+                                   managed="false"/>
                     </StackPane>
-                    <ToggleButton fx:id="btnShowTypePassword" text="👁" onAction="#turnShowPassword"
-                                  styleClass="btn-turn-show-password"/>
+
+                    <ToggleButton fx:id="btnShowTypePassword"
+                                  onAction="#turnShowPassword"
+                                  styleClass="btn-turn-show-password">
+
+                        <graphic>
+                            <StackPane>
+                                <SVGPath styleClass="eye-protect,eye-closed"
+                                         content="M14 18a2 2 0 0 0-4 0 M19 11l-2.11-6.657a2 2 0 0 0-2.752-1.148l-1.276.61A2 2 0 0 1 12 4H8.5a2 2 0 0 0-1.925 1.456L5 11 M2 11h20 M14 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M4 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+
+                                <SVGPath styleClass="eye-protect,eye-open"
+                                         content="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0 M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                            </StackPane>
+                        </graphic>
+                    </ToggleButton>
                 </HBox>
             </VBox>
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Unlock PDF status" visible="false"/>
-            <ProgressBar fx:id="progressBar" prefWidth="240.0" progress="0.0"/>
-            <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0"
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   text="Unlock PDF status"
+                   visible="false"/>
+
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="240.0"
+                         progress="0.0"/>
+
+            <Button fx:id="btnSubmit"
+                    mnemonicParsing="false"
+                    onAction="#submitAndDownload"
+                    prefWidth="240.0"
                     text="Unlock and Download"/>
         </VBox>
 
@@ -55,22 +99,43 @@
             <padding>
                 <Insets left="4.0" right="4.0"/>
             </padding>
+
             <VBox.margin>
                 <Insets top="2.0"/>
             </VBox.margin>
-            <StackPane fx:id="previewContainer" minWidth="200" VBox.vgrow="ALWAYS">
-                <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
-                <ImageView fx:id="imageViewPdf" pickOnBounds="true" preserveRatio="true"/>
+
+            <StackPane fx:id="previewContainer"
+                       minWidth="200"
+                       VBox.vgrow="ALWAYS">
+
+                <Label fx:id="labelPreviewPlaceholder"
+                       text="Preview"/>
+
+                <ImageView fx:id="imageViewPdf"
+                           pickOnBounds="true"
+                           preserveRatio="true"/>
             </StackPane>
 
-            <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag PDF here"/>
+            <StackPane fx:id="dropZone"
+                       styleClass="drop-zone"
+                       HBox.hgrow="ALWAYS">
+
+                <Label fx:id="textDragZone"
+                       styleClass="label-drag-zone"
+                       text="Drag PDF here"/>
             </StackPane>
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectFileName" styleClass="labelSelect" text="Selected PDF file: none"/>
-            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset"/>
+            <Label fx:id="labelSelectFileName"
+                   styleClass="labelSelect"
+                   text="Selected PDF file: none"/>
+
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
         </VBox>
 
         <padding>
@@ -78,7 +143,11 @@
         </padding>
     </VBox>
 
-    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+    <Button onAction="#showInfo"
+            styleClass="info-button"
+            text="?"
+            StackPane.alignment="TOP_LEFT">
+
         <StackPane.margin>
             <Insets left="10.0" top="10.0"/>
         </StackPane.margin>

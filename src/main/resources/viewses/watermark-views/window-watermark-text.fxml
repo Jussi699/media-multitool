@@ -6,86 +6,168 @@
 
 <StackPane alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.watermarks.viewController.WatermarkTextController">
-    <VBox alignment="TOP_CENTER" prefWidth="350.0" spacing="12.0" minHeight="-Infinity"
+    <VBox alignment="TOP_CENTER"
+          prefWidth="350.0"
+          spacing="12.0"
+          minHeight="-Infinity"
           styleClass="gradient-background">
 
-        <Label fx:id="labelTitle" text="Text Watermark Settings" styleClass="main-label-name-page">
+        <Label fx:id="labelTitle"
+               text="Text Watermark Settings"
+               styleClass="main-label-name-page">
+
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
         </Label>
 
-        <VBox spacing="12.0" style="-fx-background-color: -dark-gradient-background; -fx-padding: 12;" VBox.vgrow="ALWAYS">
+        <VBox spacing="12.0"
+              style="-fx-background-color: -dark-gradient-background; -fx-padding: 12;"
+              VBox.vgrow="ALWAYS">
+
             <VBox spacing="5.0">
-                <Label text="Your Text" styleClass="label-h"/>
-                <TextField fx:id="fieldText" promptText="Enter watermark text" maxWidth="310"/>
+                <Label text="Your Text"
+                       styleClass="label-h"/>
+
+                <TextField fx:id="fieldText"
+                           promptText="Enter watermark text"
+                           maxWidth="310"/>
             </VBox>
 
             <VBox spacing="5.0">
-                <Label text="Font" styleClass="label-h"/>
-                <ComboBox fx:id="comboBoxFont" styleClass="combo-box-310-width" prefWidth="310.0"/>
+                <Label text="Font"
+                       styleClass="label-h"/>
+
+                <ComboBox fx:id="comboBoxFont"
+                          styleClass="combo-box-310-width"
+                          prefWidth="310.0"/>
             </VBox>
 
             <VBox spacing="5.0">
-                <Label text="Size" styleClass="label-h"/>
-                <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <Slider fx:id="sliderSizeText" prefWidth="250.0"/>
-                    <Label fx:id="labelSizeX" text="2.5x" minWidth="50.0" styleClass="label-watermark"/>
+                <Label text="Size"
+                       styleClass="label-h"/>
+
+                <HBox spacing="8.0"
+                      alignment="CENTER_LEFT">
+
+                    <Slider fx:id="sliderSizeText"
+                            prefWidth="250.0"/>
+
+                    <Label fx:id="labelSizeX"
+                           text="2.5x"
+                           minWidth="50.0"
+                           styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
             <VBox spacing="5.0">
-                <Label text="Color" styleClass="label-h"/>
-                <HBox prefHeight="40.0" alignment="CENTER_LEFT" maxWidth="Infinity">
-                    <Button fx:id="btnColorPicker" maxWidth="Infinity" prefWidth="310" mnemonicParsing="false" onAction="#handleColorChange" text="Select Color"/>
+                <Label text="Color"
+                       styleClass="label-h"/>
+
+                <HBox prefHeight="40.0"
+                      alignment="CENTER_LEFT"
+                      maxWidth="Infinity">
+
+                    <Button fx:id="btnColorPicker"
+                            maxWidth="Infinity"
+                            prefWidth="310"
+                            mnemonicParsing="false"
+                            onAction="#handleColorChange"
+                            text="Select Color"/>
                 </HBox>
             </VBox>
 
             <Separator/>
 
             <VBox spacing="5.0">
-                <Label text="Tile Mode" styleClass="label-h"/>
+                <Label text="Tile Mode"
+                       styleClass="label-h"/>
+
                 <HBox spacing="8.0">
-                    <ToggleButton fx:id="tileSingle" text="Single" prefWidth="95.0"/>
-                    <ToggleButton fx:id="tileEvenGrid" text="Grid" prefWidth="95.0"/>
-                    <ToggleButton fx:id="tileDiamondMesh" text="Diamond" prefWidth="95.0"/>
+                    <ToggleButton fx:id="tileSingle"
+                                  text="Single"
+                                  prefWidth="95.0"/>
+
+                    <ToggleButton fx:id="tileEvenGrid"
+                                  text="Grid"
+                                  prefWidth="95.0"/>
+
+                    <ToggleButton fx:id="tileDiamondMesh"
+                                  text="Diamond"
+                                  prefWidth="95.0"/>
                 </HBox>
             </VBox>
 
             <VBox spacing="5.0">
-                <Label text="Spacing" styleClass="label-h"/>
-                <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <Slider fx:id="sliderSpacing" max="5.0" prefWidth="250.0"/>
-                    <Label fx:id="labelSpacingX" text="0x" minWidth="50.0" styleClass="label-watermark"/>
+                <Label text="Spacing"
+                       styleClass="label-h"/>
+
+                <HBox spacing="8.0"
+                      alignment="CENTER_LEFT">
+
+                    <Slider fx:id="sliderSpacing"
+                            max="5.0"
+                            prefWidth="250.0"/>
+
+                    <Label fx:id="labelSpacingX"
+                           text="0x"
+                           minWidth="50.0"
+                           styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
             <Separator/>
 
             <VBox spacing="8.0">
-                <Label text="Opacity" styleClass="label-h"/>
-                <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <Slider fx:id="sliderOpacity" value="100" prefWidth="250.0"/>
-                    <Label fx:id="labelOpacityPercent" text="100%" minWidth="50.0" styleClass="label-watermark"/>
+                <Label text="Opacity"
+                       styleClass="label-h"/>
+
+                <HBox spacing="8.0"
+                      alignment="CENTER_LEFT">
+
+                    <Slider fx:id="sliderOpacity"
+                            value="100"
+                            prefWidth="250.0"/>
+
+                    <Label fx:id="labelOpacityPercent"
+                           text="100%"
+                           minWidth="50.0"
+                           styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
             <VBox spacing="8.0">
-                <Label text="Rotation" styleClass="label-h"/>
-                <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <Slider fx:id="sliderRotation" max="360" prefWidth="250.0"/>
-                    <Label fx:id="labelRotationDegree" text="0°" minWidth="50.0" styleClass="label-watermark"/>
+                <Label text="Rotation"
+                       styleClass="label-h"/>
+
+                <HBox spacing="8.0"
+                      alignment="CENTER_LEFT">
+
+                    <Slider fx:id="sliderRotation"
+                            max="360"
+                            prefWidth="250.0"/>
+
+                    <Label fx:id="labelRotationDegree"
+                           text="0°"
+                           minWidth="50.0"
+                           styleClass="label-watermark"/>
                 </HBox>
             </VBox>
 
             <Separator/>
 
             <VBox spacing="8.0">
-                <Label text="Effect" styleClass="label-h"/>
-                <ComboBox fx:id="comboBoxEffect" styleClass="combo-box-310-width" prefWidth="310.0"/>
+                <Label text="Effect"
+                       styleClass="label-h"/>
+
+                <ComboBox fx:id="comboBoxEffect"
+                          styleClass="combo-box-310-width"
+                          prefWidth="310.0"/>
             </VBox>
 
-            <Button text="Reset Settings" onAction="#handleResetSettings" prefWidth="310.0"/>
+            <Button text="Reset Settings"
+                    onAction="#handleResetSettings"
+                    prefWidth="310.0"/>
         </VBox>
 
         <padding>

@@ -18,53 +18,96 @@
             <Insets top="30.0" left="40.0" right="40.0" bottom="20.0"/>
         </padding>
 
-        <Label text="Application Info" styleClass="main-label-name-page"/>
+        <Label text="Application Info"
+               styleClass="main-label-name-page"/>
 
         <VBox spacing="15.0" styleClass="info-card">
-            <Label text="Log Files Location" styleClass="section-header"/>
+            <Label text="Log Files Location"
+                   styleClass="section-header"/>
 
             <HBox alignment="CENTER_LEFT" spacing="20.0">
-                <Button onAction="#toLogsDir" styleClass="button-open-log" text="Open Logs Folder"/>
-                <Label text="Quick access to app logs" style="-fx-font-size: 13px; -fx-text-fill: -main-color-label"/>
+                <Button onAction="#toLogsDir"
+                        styleClass="button-open-log"
+                        text="Open Logs Folder"/>
+
+                <Label text="Quick access to app logs"
+                       style="-fx-font-size: 13px; -fx-text-fill: -main-color-label"/>
             </HBox>
 
             <Separator opacity="0.1"/>
 
             <GridPane hgap="20.0" vgap="10.0">
                 <columnConstraints>
-                    <ColumnConstraints minWidth="100" prefWidth="120"/>
+                    <ColumnConstraints minWidth="100"
+                                       prefWidth="120"/>
+
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label text="Windows:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <Label text="\%APPDATA%\media-multitool\logs" styleClass="path-label" GridPane.columnIndex="1"
+                <Label text="Windows:"
+                       styleClass="os-label"
+                       GridPane.columnIndex="0"
                        GridPane.rowIndex="0"/>
 
-                <Label text="Linux:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <VBox GridPane.columnIndex="1" GridPane.rowIndex="1" spacing="2">
-                    <Label text="~/.local/share/media-multitool (or)" styleClass="path-label"/>
-                    <Label text="ㅤ$XDG_DATA_HOME/media-multitool" styleClass="path-label"/>
+                <Label text="\%APPDATA%\media-multitool\logs"
+                       styleClass="path-label"
+                       GridPane.columnIndex="1"
+                       GridPane.rowIndex="0"/>
+
+                <Label text="Linux:"
+                       styleClass="os-label"
+                       GridPane.columnIndex="0"
+                       GridPane.rowIndex="1"/>
+
+                <VBox GridPane.columnIndex="1"
+                      GridPane.rowIndex="1"
+                      spacing="2">
+
+                    <Label text="~/.local/share/media-multitool (or)"
+                           styleClass="path-label"/>
+
+                    <Label text="ㅤ$XDG_DATA_HOME/media-multitool"
+                           styleClass="path-label"/>
                 </VBox>
 
-                <Label text="macOS:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <Label text="~/Library/Application Support/media-multitool" styleClass="path-label"
-                       GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                <Label text="macOS:"
+                       styleClass="os-label"
+                       GridPane.columnIndex="0"
+                       GridPane.rowIndex="2"/>
 
-                <Label text="Other OS:" styleClass="os-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <Label text="~/.media-multitool" styleClass="path-label" GridPane.columnIndex="1"
+                <Label text="~/Library/Application Support/media-multitool"
+                       styleClass="path-label"
+                       GridPane.columnIndex="1"
+                       GridPane.rowIndex="2"/>
+
+                <Label text="Other OS:"
+                       styleClass="os-label"
+                       GridPane.columnIndex="0"
+                       GridPane.rowIndex="3"/>
+
+                <Label text="~/.media-multitool"
+                       styleClass="path-label"
+                       GridPane.columnIndex="1"
                        GridPane.rowIndex="3"/>
             </GridPane>
         </VBox>
 
         <VBox spacing="8.0" VBox.vgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label text="Application Logs" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -main-color;"/>
+                <Label text="Application Logs"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -main-color;"/>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <HBox alignment="CENTER" spacing="6.0">
-                    <Label text="Size:" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -main-color-label;"/>
-                    <Spinner fx:id="spinnerFontSize" prefWidth="65.0" minWidth="65.0" maxWidth="75.0">
+                    <Label text="Size:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -main-color-label;"/>
+
+                    <Spinner fx:id="spinnerFontSize"
+                             prefWidth="65.0"
+                             minWidth="65.0"
+                             maxWidth="75.0">
+
                         <tooltip>
                             <Tooltip text="Font Size"/>
                         </tooltip>
@@ -72,56 +115,92 @@
                 </HBox>
 
                 <HBox alignment="CENTER" spacing="8.0">
-                    <Label text="Color:" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -main-color-label;"/>
-                    <RadioButton fx:id="colorGreen" text="Green">
+                    <Label text="Color:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -main-color-label;"/>
+
+                    <RadioButton fx:id="colorGreen"
+                                 text="Green">
+
                         <tooltip>
                             <Tooltip text="Green text"/>
                         </tooltip>
                     </RadioButton>
-                    <RadioButton fx:id="colorDefault" text="Default">
+
+                    <RadioButton fx:id="colorDefault"
+                                 text="Default">
+
                         <tooltip>
                             <Tooltip text="Default text"/>
                         </tooltip>
                     </RadioButton>
                 </HBox>
 
-                <Button fx:id="clearLogArea" onAction="#onClearLogArea" styleClass="sub-btn" focusTraversable="false">
+                <Button fx:id="clearLogArea"
+                        onAction="#onClearLogArea"
+                        styleClass="sub-btn"
+                        focusTraversable="false">
+
                     <tooltip>
                         <Tooltip text="Clear Logs"/>
                     </tooltip>
+
                     <graphic>
-                        <SVGPath styleClass="section-icon" content="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21 M5.082 11.09l8.828 8.828"/>
+                        <SVGPath styleClass="section-icon"
+                                 content="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21 M5.082 11.09l8.828 8.828"/>
                     </graphic>
                 </Button>
 
-                <Button fx:id="reloadLogArea" onAction="#onReloadLogArea" styleClass="sub-btn" focusTraversable="false">
+                <Button fx:id="reloadLogArea"
+                        onAction="#onReloadLogArea"
+                        styleClass="sub-btn"
+                        focusTraversable="false">
+
                     <tooltip>
                         <Tooltip text="Reload Logs"/>
                     </tooltip>
+
                     <graphic>
-                        <SVGPath styleClass="section-icon" content="M21 5H3 M7 12H3 M7 19H3 M12 18a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L11 14 M11 10v4h4"/>
+                        <SVGPath styleClass="section-icon"
+                                 content="M21 5H3 M7 12H3 M7 19H3 M12 18a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L11 14 M11 10v4h4"/>
                     </graphic>
                 </Button>
             </HBox>
 
-            <TextArea VBox.vgrow="ALWAYS" fx:id="logArea" editable="false"/>
+            <TextArea VBox.vgrow="ALWAYS"
+                      fx:id="logArea"
+                      editable="false"/>
         </VBox>
 
         <VBox spacing="10.0" alignment="CENTER">
             <padding>
                 <Insets bottom="20.0"/>
             </padding>
-            <Label text="Need help or have suggestions?" style="-fx-font-size: 14px; -fx-text-fill: -main-color-label"/>
 
-            <VBox onMouseClicked="#handleContactClick" styleClass="contact-box" alignment="CENTER" spacing="5">
-                <Label text="Copy Discord Contact" style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: -main-color"/>
-                <Label text="jussi6" style="-fx-font-size: 15px; -fx-text-fill: -main-color-label"/>
+            <Label text="Need help or have suggestions?"
+                   style="-fx-font-size: 14px; -fx-text-fill: -main-color-label"/>
+
+            <VBox onMouseClicked="#handleContactClick"
+                  styleClass="contact-box"
+                  alignment="CENTER"
+                  spacing="5">
+
+                <Label text="Copy Discord Contact"
+                       style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: -main-color"/>
+
+                <Label text="jussi6"
+                       style="-fx-font-size: 15px; -fx-text-fill: -main-color-label"/>
             </VBox>
         </VBox>
     </VBox>
 
-    <HBox alignment="BOTTOM_RIGHT" VBox.vgrow="ALWAYS" pickOnBounds="false">
-        <Button fx:id="btnGithub" focusTraversable="false" onAction="#redirectToGithub" >
+    <HBox alignment="BOTTOM_RIGHT"
+          VBox.vgrow="ALWAYS"
+          pickOnBounds="false">
+
+        <Button fx:id="btnGithub"
+                focusTraversable="false"
+                onAction="#redirectToGithub" >
+
             <graphic>
                 <SVGPath styleClass="toGithubSVG"
                          content="M41.4395 69.3848C28.8066 67.8535 19.9062 58.7617 19.9062 46.9902C19.9062 42.2051 21.6289 37.0371 24.5 33.5918C23.2559 30.4336 23.4473 23.7344 24.8828 20.959C28.7109 20.4805 33.8789 22.4902 36.9414 25.2656C40.5781 24.1172 44.4062 23.543 49.0957 23.543C53.7852 23.543 57.6133 24.1172 61.0586 25.1699C64.0254 22.4902 69.2891 20.4805 73.1172 20.959C74.457 23.543 74.6484 30.2422 73.4043 33.4961C76.4668 37.1328 78.0937 42.0137 78.0937 46.9902C78.0937 58.7617 69.1934 67.6621 56.3691 69.2891C59.623 71.3945 61.8242 75.9883 61.8242 81.252L61.8242 91.2051C61.8242 94.0762 64.2168 95.7031 67.0879 94.5547C84.4102 87.9512 98 70.6289 98 49.1914C98 22.1074 75.9883 6.69539e-07 48.9043 4.309e-07C21.8203 1.92261e-07 -1.9479e-07 22.1074 -4.3343e-07 49.1914C-6.20631e-07 70.4375 13.4941 88.0469 31.6777 94.6504C34.2617 95.6074 36.75 93.8848 36.75 91.3008L36.75 83.6445C35.4102 84.2188 33.6875 84.6016 32.1562 84.6016C25.8398 84.6016 22.1074 81.1563 19.4277 74.7441C18.375 72.1602 17.2266 70.6289 15.0254 70.3418C13.877 70.2461 13.4941 69.7676 13.4941 69.1934C13.4941 68.0449 15.4082 67.1836 17.3223 67.1836C20.0977 67.1836 22.4902 68.9063 24.9785 72.4473C26.8926 75.2227 28.9023 76.4668 31.2949 76.4668C33.6875 76.4668 35.2187 75.6055 37.4199 73.4043C39.0469 71.7773 40.291 70.3418 41.4395 69.3848Z"/>

@@ -13,14 +13,16 @@
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.HomeViewController">
-
     <VBox alignment="TOP_CENTER"
           styleClass="gradient-background">
 
-        <VBox alignment="CENTER" spacing="8.0"
+        <VBox alignment="CENTER"
+              spacing="8.0"
               style="-fx-padding: 30 40 20 40; -fx-background-color: linear-gradient(to bottom, #2d2d2d, #1a1a1a);">
+
             <Label alignment="CENTER"
-                   styleClass="main-label-name-page" style="-fx-font-size: 36"
+                   styleClass="main-label-name-page"
+                   style="-fx-font-size: 36"
                    text="Media Multitool"/>
 
             <Label alignment="CENTER"
@@ -29,10 +31,14 @@
                    wrapText="true"/>
         </VBox>
 
-        <ScrollPane fitToWidth="true" fitToHeight="true"
+        <ScrollPane fitToWidth="true"
+                    fitToHeight="true"
                     styleClass="gradient-background"
                     VBox.vgrow="ALWAYS">
-            <VBox spacing="20.0" styleClass="gradient-background" style="-fx-padding: 20 40 30 40;">
+
+            <VBox spacing="20.0"
+                  styleClass="gradient-background"
+                  style="-fx-padding: 20 40 30 40;">
 
                 <VBox spacing="12.0" styleClass="section-container">
                     <Label text="Converter"
@@ -40,12 +46,17 @@
                            styleClass="section-title"
                            xmlns="http://javafx.com/javafx"
                            xmlns:fx="http://javafx.com/fxml">
+
                         <graphic>
                             <SVGPath styleClass="section-icon"
                                      content="M12.296 3.464 l3.02 3.956 M20.2 6 L3 11 l-0.9 -2.4 c-0.3 -1.1 0.3 -2.2 1.3 -2.5 l13.5 -4 c1.1 -0.3 2.2 0.3 2.5 1.3 z M3 11 h18 v8 a2 2 0 0 1 -2 2 H5 a2 2 0 0 1 -2 -2 z M6.18 5.276 l3.1 3.899"/>
                         </graphic>
                     </Label>
-                    <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
+
+                    <FlowPane hgap="14.0"
+                              vgap="14.0"
+                              styleClass="flowpane-home-page">
+
                         <Button fx:id="btnImageConverter"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
@@ -75,12 +86,17 @@
                            styleClass="section-title"
                            xmlns="http://javafx.com/javafx"
                            xmlns:fx="http://javafx.com/fxml">
+
                         <graphic>
                             <SVGPath styleClass="section-icon"
                                      content="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21 M14 19 l3 3 v-5.5 M17 22 l3 -3 M9 7 a2 2 0 1 0 0.001 0 Z"/>
                         </graphic>
                     </Label>
-                    <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
+
+                    <FlowPane hgap="14.0"
+                              vgap="14.0"
+                              styleClass="flowpane-home-page">
+
                         <Button fx:id="btnCompressImage"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
@@ -111,7 +127,11 @@
                                      content="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M9 7a2 2 0 1 0 0.001 0z M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
                         </graphic>
                     </Label>
-                    <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
+
+                    <FlowPane hgap="14.0"
+                              vgap="14.0"
+                              styleClass="flowpane-home-page">
+
                         <Button fx:id="btnNegative"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
@@ -198,7 +218,11 @@
                                  content="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z M14 2v5a1 1 0 0 0 1 1h5 M10 9H8 M16 13H8 M16 17H8"/>
                     </graphic>
                 </Label>
-                    <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
+
+                    <FlowPane hgap="14.0"
+                              vgap="14.0"
+                              styleClass="flowpane-home-page">
+
                         <Button fx:id="btnImageToPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
@@ -271,7 +295,11 @@
                                      content="M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3 M14 2v5a1 1 0 0 0 1 1h5 M9 17v-2a2 2 0 0 0-4 0v2 M4 17h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1z"/>
                         </graphic>
                     </Label>
-                    <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
+
+                    <FlowPane hgap="14.0"
+                              vgap="14.0"
+                              styleClass="flowpane-home-page">
+
                         <Button fx:id="btnWatermarkImage"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
@@ -302,7 +330,11 @@
                                      content="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20 M8 12v-2a4 4 0 0 1 8 0v2 M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
                         </graphic>
                     </Label>
-                    <FlowPane hgap="14.0" vgap="14.0" styleClass="flowpane-home-page">
+
+                    <FlowPane hgap="14.0"
+                              vgap="14.0"
+                              styleClass="flowpane-home-page">
+
                         <Button fx:id="btnMediaTagEditor"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
@@ -337,6 +369,7 @@
             onAction="#showInfo"
             styleClass="info-button"
             StackPane.alignment="TOP_LEFT">
+
         <StackPane.margin>
             <Insets top="10.0" left="10.0"/>
         </StackPane.margin>
