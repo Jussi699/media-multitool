@@ -2,6 +2,7 @@ package viewHelp;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextField;
 import model.logger.ErrorLogger;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
@@ -51,5 +52,13 @@ public class Utility {
                 );
             }
         }
+    }
+
+    public static void setTextToTextField(TextField field, String color) {
+        field.setText(color);
+    }
+
+    public static void setVoidToTextField(TextField field) {
+        field.setText("");
     }
 }

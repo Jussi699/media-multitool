@@ -1,74 +1,74 @@
 package media_multitool.imageTools;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
-import model.preprocessing.ImagePreprocessing;
+import media_multitool.AbstractImageToolController;
+import model.helper.images.ColorReplaceHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
-import model.utility.*;
-import model.helper.images.ColorReplaceHelper;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
+import static viewHelp.Utility.setTextToTextField;
 
-public class ColorReplaceImageController extends AbstractMediaController {
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSubmit;
-    @FXML private Label textDragZone, labelPreviewPlaceholder, labelSelectImageName;
+public class ColorReplaceImageController extends AbstractImageToolController {
+    private final ImageProperties imageProperties = new ImageProperties();
+
+    @FXML private Button btnSubmit;
+    @FXML private ToggleButton toggleJPEG, togglePNG;
     @FXML private ImageView imageViewPreview;
-    @FXML private StackPane previewContainer, dropZone;
-    
-    @FXML private ComboBox<String> comboSourceColor, comboTargetColor;
-    @FXML private TextField textSourceColorHex, textTargetColorHex;
+    @FXML private StackPane previewContainer;
     @FXML private Spinner<Double> spinnerIntensity;
     @FXML private Spinner<Integer> spinnerSmoothing, spinnerEnhancement;
-    @FXML private ToggleButton toggleJPEG, togglePNG;
+    @FXML private ComboBox<String> comboSourceColor, comboTargetColor;
     @FXML private CheckBox checkBoxReplaceAllColors;
-
-    private final ImageProperties imageProperties = new ImageProperties();
-    private BufferedImage originalBufferedImage, currentBufferedImage;
+    @FXML private TextField textSourceColorHex, textTargetColorHex;
 
     private List<Control> listControls;
 
     @Override
-    protected MediaProperties getProperties() {
+    protected ImageProperties getImageProperties() {
         return imageProperties;
+    }
+
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
     }
 
     @FXML
     public void initialize() {
         listControls = List.of(
-            comboSourceColor, comboTargetColor, textSourceColorHex, textTargetColorHex,
-            spinnerIntensity, spinnerSmoothing, spinnerEnhancement,
-            toggleJPEG, togglePNG, checkBoxReplaceAllColors, btnSubmit, btnSubmitAndCopy, btnReset
+            comboSourceColor, comboTargetColor, textSourceColorHex,
+            textTargetColorHex, spinnerIntensity, spinnerSmoothing,
+            spinnerEnhancement, toggleJPEG, togglePNG, btnSubmit,
+            checkBoxReplaceAllColors, btnSubmitAndCopy, btnReset
         );
-        
-        btnChoiceFolderForSaveFile.setTooltip(new Tooltip("Default directory: Desktop"));
+
+        btnChooseSaveDirectory.setTooltip(new Tooltip("Default directory: Desktop"));
         imageProperties.setOutput(getSavedPath());
+
+        togglePNG.setSelected(true);
+        imageProperties.setTypeImage("png");
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(() -> currentBufferedImage, "Color-replaced");
+        setupImageClipboardButton(() -> processedImage, "Color-replaced");
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         initializeColorCombos();
@@ -80,143 +80,11 @@ public class ColorReplaceImageController extends AbstractMediaController {
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
-    private void initializeColorCombos() {
-        String[] colors = ColorReplaceHelper.getAvailableColorNames();
-        
-        comboSourceColor.getItems().addAll(colors);
-        comboTargetColor.getItems().addAll(colors);
-        
-        comboSourceColor.setValue("Red");
-        comboTargetColor.setValue("Blue");
-        
-        comboSourceColor.setOnAction(_ -> updateSourceColorFromCombo());
-        comboTargetColor.setOnAction(_ -> updateTargetColorFromCombo());
-        
-        textSourceColorHex.setText("#FF0000");
-        textTargetColorHex.setText("#0000FF");
-        
-        textSourceColorHex.textProperty().addListener((_, _, newValue) -> {
-            if (ColorReplaceHelper.isValidHex(newValue)) {
-                updatePreview();
-            }
-        });
-        
-        textTargetColorHex.textProperty().addListener((_, _, newValue) -> {
-            if (ColorReplaceHelper.isValidHex(newValue)) {
-                updatePreview();
-            }
-        });
-    }
-
-    private void initializeSpinners() {
-        SpinnerValueFactory<Double> intensityFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(1.0, 100.0, 50.0, 1.0);
-        spinnerIntensity.setValueFactory(intensityFactory);
-        spinnerIntensity.setEditable(true);
-        
-        SpinnerValueFactory<Integer> smoothingFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 50, 5, 1);
-        spinnerSmoothing.setValueFactory(smoothingFactory);
-        spinnerSmoothing.setEditable(true);
-        
-        SpinnerValueFactory<Integer> enhancementFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 50, 1);
-        spinnerEnhancement.setValueFactory(enhancementFactory);
-        spinnerEnhancement.setEditable(true);
-        
-        spinnerIntensity.valueProperty().addListener((_, _, _) -> updatePreview());
-        spinnerSmoothing.valueProperty().addListener((_, _, _) -> updatePreview());
-        spinnerEnhancement.valueProperty().addListener((_, _, _) -> updatePreview());
-    }
-
-    private void initializeToggleGroup() {
-        ToggleGroup formatGroup = new ToggleGroup();
-        toggleJPEG.setToggleGroup(formatGroup);
-        togglePNG.setToggleGroup(formatGroup);
-        togglePNG.setSelected(true);
-        
-        formatGroup.selectedToggleProperty().addListener((_, _, newToggle) -> {
-            if (newToggle == toggleJPEG) {
-                imageProperties.setTypeImage("jpeg");
-            } else if (newToggle == togglePNG) {
-                imageProperties.setTypeImage("png");
-            }
-        });
-    }
-
-    private void initializeCheckBox() {
-        checkBoxReplaceAllColors.setSelected(false);
-        checkBoxReplaceAllColors.selectedProperty().addListener((_, _, newValue) -> {
-            comboSourceColor.setDisable(newValue);
-            textSourceColorHex.setDisable(newValue);
-            spinnerSmoothing.setDisable(newValue);
-            updatePreview();
-        });
-    }
-
-    private void updateSourceColorFromCombo() {
-        String color = comboSourceColor.getValue();
-        if (nonNull(color)) {
-            textSourceColorHex.setText(ColorReplaceHelper.getHexFromColorName(color));
-            updatePreview();
-        }
-    }
-
-    private void updateTargetColorFromCombo() {
-        String color = comboTargetColor.getValue();
-        if (nonNull(color)) {
-            textTargetColorHex.setText(ColorReplaceHelper.getHexFromColorName(color));
-            updatePreview();
-        }
-    }
-
-    private void updatePreview() {
-        if (isNull(originalBufferedImage)) {
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> {
-            try {
-                String targetHex = textTargetColorHex.getText();
-                
-                if (!ColorReplaceHelper.isValidHex(targetHex)) {
-                    return;
-                }
-                
-                BufferedImage processed;
-
-                double intensity = spinnerIntensity.getValue();
-                int enhancement = spinnerEnhancement.getValue();
-
-                if (checkBoxReplaceAllColors.isSelected()) {
-                    processed = ColorReplaceHelper.replaceAllColors(originalBufferedImage, targetHex, intensity, enhancement);
-                } else {
-                    String sourceHex = textSourceColorHex.getText();
-                    if (!ColorReplaceHelper.isValidHex(sourceHex)) {
-                        return;
-                    }
-                    int smoothing = spinnerSmoothing.getValue();
-                    processed = ColorReplaceHelper.replaceColor(originalBufferedImage, sourceHex, targetHex, intensity, smoothing, enhancement);
-                }
-                
-                currentBufferedImage = processed;
-                setPreview(currentBufferedImage);
-            } catch (Exception e) {
-                ErrorLogger.error("Error updating preview: " + e.getMessage());
-            }
-        });
-    }
-
     @FXML
     private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
+        InfoAlert.showToolInfo(
                 "Color Replace",
                 """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
                         3. Choose target color from the list or enter a HEX code;
 
                         4. (Optional) Enable "Replace All Colors" to shift all colors, or configure source color;
@@ -225,30 +93,77 @@ public class ColorReplaceImageController extends AbstractMediaController {
 
                         6. Select output format (JPEG or PNG);
 
-                        7. Click "Replace Color and Download";
-
-                        8. (Optional) Click "To Clipboard" to copy the image to the clipboard.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool replaces specific colors or shifts all colors in your image.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+                        7. Click "Replace and Download";
+                        """
         );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
+        );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        processedImage = null;
+        originalImage = null;
+
+        comboSourceColor.setValue("Red");
+        comboTargetColor.setValue("Blue");
+        setTextToTextField(textSourceColorHex, "#FF0000");
+        setTextToTextField(textTargetColorHex, "#0000FF");
+
+        spinnerIntensity.getValueFactory().setValue(50.0);
+        spinnerSmoothing.getValueFactory().setValue(5);
+        spinnerEnhancement.getValueFactory().setValue(50);
+
+        togglePNG.setSelected(true);
+        toggleJPEG.setSelected(false);
+        checkBoxReplaceAllColors.setSelected(false);
+
+        disableControls();
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            return;
+        }
+
+        if (isNull(processedImage)) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imageViewPreview);
+        }
+
+        String targetHex = getTargetColorHex();
+        if (!ColorReplaceHelper.isValidHex(targetHex)) {
+            return;
+        }
+
+        executeReplaceColor();
+    }
+
+    @Override
+    protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
+        BufferedImage finalImage = processColorReplacement();
+        if (isNull(finalImage)) {
+            throw new IllegalStateException("Original image is null or color replacement failed");
+        }
+        return finalImage;
     }
 
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
-        btnChoiceFolderForSaveFile.setDisable(true);
+        btnChooseSaveDirectory.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
-        btnChoiceFolderForSaveFile.setDisable(false);
+        btnChooseSaveDirectory.setDisable(false);
         btnReset.setDisable(false);
     }
 
@@ -260,66 +175,6 @@ public class ColorReplaceImageController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-    }
-
-    @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    public void submitReplaceColorAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(currentBufferedImage)) {
-            return;
-        }
-
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                String targetHex = textTargetColorHex.getText();
-                double intensity = spinnerIntensity.getValue();
-                int enhancement = spinnerEnhancement.getValue();
-
-                BufferedImage processedImage;
-                
-                if (checkBoxReplaceAllColors.isSelected()) {
-                    processedImage = ColorReplaceHelper.replaceAllColors(originalBufferedImage, targetHex, intensity, enhancement);
-                } else {
-                    String sourceHex = textSourceColorHex.getText();
-                    int smoothing = spinnerSmoothing.getValue();
-                    processedImage = ColorReplaceHelper.replaceColor(originalBufferedImage, sourceHex, targetHex, intensity, smoothing, enhancement);
-                }
-
-                updateProgress(50, 100);
-
-                String outputFormat = toggleJPEG.isSelected() ? "jpeg" : "png";
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        outputFormat
-                );
-
-                updateProgress(80, 100);
-
-                ImagePreprocessing.downloadImage(processedImage, outputFormat, outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
     }
 
     @Override
@@ -346,65 +201,136 @@ public class ColorReplaceImageController extends AbstractMediaController {
         });
     }
 
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-
-        currentBufferedImage = null;
-        originalBufferedImage = null;
-        
-        comboSourceColor.setValue("Red");
-        comboTargetColor.setValue("Blue");
-        textSourceColorHex.setText("#FF0000");
-        textTargetColorHex.setText("#0000FF");
-        spinnerIntensity.getValueFactory().setValue(50.0);
-        spinnerSmoothing.getValueFactory().setValue(5);
-        spinnerEnhancement.getValueFactory().setValue(50);
-        togglePNG.setSelected(false);
-        toggleJPEG.setSelected(false);
-        checkBoxReplaceAllColors.setSelected(false);
-        
-        previewContainer.setEffect(null);
-        disableControls();
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
+    private void executeReplaceColor() {
+        CompletableFuture.runAsync(() -> {
             try {
-                originalBufferedImage = UsefulMethods.readImage(selectedFile);
-                currentBufferedImage = originalBufferedImage;
-                if (nonNull(currentBufferedImage)) {
-                    updatePreview();
-                    labelPreviewPlaceholder.setVisible(false);
+                BufferedImage result = processColorReplacement();
+                if (nonNull(result)) {
+                    processedImage = result;
+                    Platform.runLater(() -> setImagePreview(processedImage, imageViewPreview));
                 }
             } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
+                ErrorLogger.error("Error updating preview: " + e.getMessage());
             }
+        });
+    }
+
+    private BufferedImage processColorReplacement() {
+        if (isNull(originalImage)) {
+            return null;
         }
 
-        textDragZone.setText("Selected: " + selectedFile.getName());
+        String targetHex = getTargetColorHex();
+        if (!ColorReplaceHelper.isValidHex(targetHex)) {
+            return originalImage;
+        }
 
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
+        double intensity = getSpinnerValueIntensity();
+        int enhancement = getSpinnerValueEnhancement();
+
+        if (checkBoxReplaceAllColors.isSelected()) {
+            return ColorReplaceHelper.replaceAllColors(originalImage, targetHex, intensity, enhancement);
+        } else {
+            String sourceHex = textSourceColorHex.getText();
+            if (!ColorReplaceHelper.isValidHex(sourceHex)) {
+                return originalImage;
+            }
+            int smoothing = spinnerSmoothing.getValue();
+            return ColorReplaceHelper.replaceColor(originalImage, sourceHex, targetHex, intensity, smoothing, enhancement);
         }
     }
 
-    private void setPreview(BufferedImage bi) {
-        if (nonNull(bi) && nonNull(imageViewPreview)) {
-            Platform.runLater(() -> setImagePreview(bi, imageViewPreview));
-        }
+    private void initializeColorCombos() {
+        String[] colors = ColorReplaceHelper.getAvailableColorNames();
+
+        comboSourceColor.getItems().addAll(colors);
+        comboTargetColor.getItems().addAll(colors);
+
+        comboSourceColor.setValue("Red");
+        comboTargetColor.setValue("Blue");
+
+        setTextToTextField(textSourceColorHex, "#FF0000");
+        setTextToTextField(textTargetColorHex, "#0000FF");
+
+        comboSourceColor.setOnAction(_ -> {
+            String color = comboSourceColor.getValue();
+            if (nonNull(color)) {
+                textSourceColorHex.setText(ColorReplaceHelper.getHexFromColorName(color));
+            }
+        });
+
+        comboTargetColor.setOnAction(_ -> {
+            String color = comboTargetColor.getValue();
+            if (nonNull(color)) {
+                textTargetColorHex.setText(ColorReplaceHelper.getHexFromColorName(color));
+            }
+        });
+
+        textSourceColorHex.textProperty().addListener((_, _, newValue) -> {
+            if (ColorReplaceHelper.isValidHex(newValue)) {
+                generatePreview();
+            }
+        });
+
+        textTargetColorHex.textProperty().addListener((_, _, newValue) -> {
+            if (ColorReplaceHelper.isValidHex(newValue)) {
+                generatePreview();
+            }
+        });
+    }
+
+    private void initializeSpinners() {
+        SpinnerValueFactory<Double> intensityFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(1.0, 100.0, 50.0, 1.0);
+        spinnerIntensity.setValueFactory(intensityFactory);
+        spinnerIntensity.setEditable(true);
+
+        SpinnerValueFactory<Integer> smoothingFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 50, 5, 1);
+        spinnerSmoothing.setValueFactory(smoothingFactory);
+        spinnerSmoothing.setEditable(true);
+
+        SpinnerValueFactory<Integer> enhancementFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 50, 1);
+        spinnerEnhancement.setValueFactory(enhancementFactory);
+        spinnerEnhancement.setEditable(true);
+
+        spinnerIntensity.valueProperty().addListener((_, _, _) -> generatePreview());
+        spinnerSmoothing.valueProperty().addListener((_, _, _) -> generatePreview());
+        spinnerEnhancement.valueProperty().addListener((_, _, _) -> generatePreview());
+    }
+
+    private void initializeToggleGroup() {
+        ToggleGroup formatGroup = new ToggleGroup();
+        toggleJPEG.setToggleGroup(formatGroup);
+        togglePNG.setToggleGroup(formatGroup);
+        togglePNG.setSelected(true);
+
+        formatGroup.selectedToggleProperty().addListener((_, _, newToggle) -> {
+            if (newToggle == toggleJPEG) {
+                imageProperties.setTypeImage("jpeg");
+            } else if (newToggle == togglePNG) {
+                imageProperties.setTypeImage("png");
+            }
+        });
+    }
+
+    private void initializeCheckBox() {
+        checkBoxReplaceAllColors.setSelected(false);
+        checkBoxReplaceAllColors.selectedProperty().addListener((_, _, newValue) -> {
+            comboSourceColor.setDisable(newValue);
+            textSourceColorHex.setDisable(newValue);
+            spinnerSmoothing.setDisable(newValue);
+            generatePreview();
+        });
+    }
+
+    private String getTargetColorHex() {
+        return textTargetColorHex.getText();
+    }
+
+    private double getSpinnerValueIntensity() {
+        return spinnerIntensity.getValue();
+    }
+
+    private int getSpinnerValueEnhancement() {
+        return spinnerEnhancement.getValue();
     }
 }

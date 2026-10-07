@@ -15,10 +15,7 @@ import model.properties.ImageProperties;
 import model.utility.Clipboards;
 import model.utility.Global;
 import model.utility.ResetContext;
-import viewHelp.Alerts;
-import viewHelp.ImageZoomHelper;
-import viewHelp.InfoAlert;
-import viewHelp.ZoomControlHelper;
+import viewHelp.*;
 
 import java.util.List;
 
@@ -26,6 +23,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.setupClearMessageTimer;
+import static viewHelp.Utility.setTextToTextField;
 
 public class FindPixelImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -55,8 +53,10 @@ public class FindPixelImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(textFieldR, textFieldG, textFieldB, textFieldHEX,
-                textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnReset);
+        listControls = List.of(textFieldR, textFieldG, textFieldB,
+                textFieldHEX, textFieldRGB, imageScaleSlider,
+                btnSaveRGB, btnSaveHex, btnReset);
+
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -70,8 +70,7 @@ public class FindPixelImageController extends AbstractImageToolController {
             ImageZoomHelper.applyZoomEffect(imageViewPreview, previewContainer);
         }
         else {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "ImageView", "ImageView is not loaded!",
-                    "Something wrong with ImageView!");
+            Alerts.alertDialog(Alert.AlertType.WARNING, "ImageView", "Preview", "Preview was not initialized!");
             ErrorLogger.error("ImageView not loaded (null)!");
             return;
         }
@@ -107,11 +106,9 @@ public class FindPixelImageController extends AbstractImageToolController {
         processedImage = null;
         zoomControlHelper.resetZoom();
 
-        textFieldR.setText("");
-        textFieldG.setText("");
-        textFieldB.setText("");
-        textFieldRGB.setText("");
-        textFieldHEX.setText("");
+        List.of(textFieldR, textFieldG, textFieldB, textFieldRGB, textFieldHEX)
+                .forEach(Utility::setVoidToTextField);
+
         colorPreview.setFill(Color.WHITE);
         labelHex.setTextFill(Color.WHITE);
         disableControls();
@@ -153,16 +150,11 @@ public class FindPixelImageController extends AbstractImageToolController {
     }
 
     public void onClickSaveHex(MouseEvent event) {
-        saveToClipboard(textFieldHEX.getText(), "HEX copied successfully!", 2, event);
+        Clipboards.clip(textFieldHEX.getText(), "HEX copied successfully!", 2, event);
     }
 
     public void onClickSaveRGB(MouseEvent event) {
-        saveToClipboard(textFieldRGB.getText(), "RBG copied successfully!", 2, event);
-    }
-
-    public void saveToClipboard(String copyText, String textSuccess, int showSecond, MouseEvent event) {
-        Clipboards clipboards = new Clipboards();
-        clipboards.clip(copyText, textSuccess, showSecond, event);
+        Clipboards.clip(textFieldRGB.getText(), "RBG copied successfully!", 2, event);
     }
 
     private void handlePixelSelection(MouseEvent e) {
@@ -172,13 +164,19 @@ public class FindPixelImageController extends AbstractImageToolController {
     }
 
     private void updatePixelInfo(Color color) {
-        textFieldR.setText(String.valueOf((int) (color.getRed() * 255)));
-        textFieldG.setText(String.valueOf((int) (color.getGreen() * 255)));
-        textFieldB.setText(String.valueOf((int) (color.getBlue() * 255)));
-        textFieldRGB.setText((int) (color.getRed() * 255) + " " + (int) (color.getGreen() * 255) + " " + (int) (color.getBlue() * 255));
-        textFieldHEX.setText(PixelHelper.toHexString(color));
+        setTextToTextField(textFieldR, parseRgbColorToString(color.getRed()   * 255));
+        setTextToTextField(textFieldG, parseRgbColorToString(color.getGreen() * 255));
+        setTextToTextField(textFieldB, parseRgbColorToString(color.getBlue()  * 255));
+
+        String textRGB = (int) (color.getRed() * 255) + " " + (int) (color.getGreen() * 255) + " " + (int) (color.getBlue() * 255);
+        setTextToTextField(textFieldRGB, textRGB);
+        setTextToTextField(textFieldHEX , PixelHelper.toHexString(color));
+
         colorPreview.setFill(color);
         labelHex.setTextFill(color);
     }
 
+    private String parseRgbColorToString(double values) {
+        return String.valueOf((int) values);
+    }
 }

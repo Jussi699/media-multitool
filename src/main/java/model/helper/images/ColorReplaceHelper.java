@@ -1,10 +1,13 @@
 package model.helper.images;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 public class ColorReplaceHelper {
     private ColorReplaceHelper() {}
@@ -33,7 +36,7 @@ public class ColorReplaceHelper {
     }
 
     public static boolean isValidHex(String hex) {
-        return hex != null && hex.matches("#[0-9A-Fa-f]{6}");
+        return nonNull(hex) && hex.matches("#[0-9A-Fa-f]{6}");
     }
     
     /**
@@ -187,7 +190,7 @@ public class ColorReplaceHelper {
      * Convert java.awt.Color to HEX color string
      */
     public static String rgbToHex(java.awt.Color color) {
-        if (color == null) {
+        if (isNull(color)) {
             return "#FFFFFF";
         }
         return rgbToHex(color.getRed(), color.getGreen(), color.getBlue());
@@ -197,7 +200,7 @@ public class ColorReplaceHelper {
      * Convert javafx.scene.paint.Color to HEX color string
      */
     public static String rgbToHex(javafx.scene.paint.Color color) {
-        if (color == null) {
+        if (isNull(color)) {
             return "#FFFFFF";
         }
         return rgbToHex((int) Math.round(color.getRed() * 255),

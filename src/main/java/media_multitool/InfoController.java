@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -78,7 +79,7 @@ public class InfoController {
     }
 
     private File getTodayLogFile() {
-        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String todayDate = LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         File logDirFile = new File(OS.getAppConfigDir() + File.separator + "logs");
         return new File(logDirFile, "app." + todayDate + ".log");
     }
@@ -168,8 +169,7 @@ public class InfoController {
     private void handleContactClick(MouseEvent mouseEvent) {
         String discordId = "jussi6";
 
-        Clipboards clipboards = new Clipboards();
-        clipboards.clip(discordId,"Discord ID copied to clipboard!\nNow you can paste it.", 2, mouseEvent);
+        Clipboards.clip(discordId,"Discord ID copied to clipboard!\nNow you can paste it.", 2, mouseEvent);
     }
 
     @FXML

@@ -6,7 +6,11 @@ import javafx.scene.input.MouseEvent;
 import viewHelp.Tooltips;
 
 public class Clipboards {
-    public void clip(String copyText, String textSuccess, int showSecond, MouseEvent event) {
+    private Clipboards() {
+        /* This utility class should not be instantiated */
+    }
+
+    public static void clip(String copyText, String textSuccess, int showSecond, MouseEvent event) {
         final Clipboard clipboard = Clipboard.getSystemClipboard();
         final ClipboardContent content = new ClipboardContent();
         content.putString(copyText);
@@ -15,7 +19,7 @@ public class Clipboards {
         showSuccessTooltip(event, textSuccess, showSecond);
     }
 
-    private void showSuccessTooltip(MouseEvent mouseEvent, String copyText, int showSecond) {
+    private static void showSuccessTooltip(MouseEvent mouseEvent, String copyText, int showSecond) {
         Tooltips.setupTooltip(mouseEvent, copyText, showSecond);
     }
 }
