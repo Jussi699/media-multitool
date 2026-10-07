@@ -26,7 +26,7 @@ public class BlackWhiteImageController extends AbstractImageToolController {
 
     @FXML private StackPane previewContainer;
     @FXML private Button btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
 
     private List<Control> listControls;
 
@@ -37,7 +37,7 @@ public class BlackWhiteImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -49,7 +49,7 @@ public class BlackWhiteImageController extends AbstractImageToolController {
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Black-white");
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -63,7 +63,7 @@ public class BlackWhiteImageController extends AbstractImageToolController {
 
         com.imagetools.ImageTools.blackAndWhiteImage(originalImage).ifPresent(bw -> {
             processedImage = bw;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
         });
     }
 
@@ -128,7 +128,7 @@ public class BlackWhiteImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 

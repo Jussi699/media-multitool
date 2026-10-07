@@ -48,7 +48,7 @@
             <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" pannable="true" prefWidth="562.0"
                         styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
                 <StackPane fx:id="previewContainer" minHeight="200.0">
-                    <ImageView fx:id="imageViewPreview" preserveRatio="true"/>
+                    <ImageView fx:id="preview" preserveRatio="true"/>
                     <Pane fx:id="cropOverlay">
                         <Rectangle fx:id="cropRect" visible="false"/>
                     </Pane>

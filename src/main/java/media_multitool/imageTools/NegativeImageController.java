@@ -26,7 +26,7 @@ public class NegativeImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Button btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
 
     private List<Control> listControls;
@@ -38,7 +38,7 @@ public class NegativeImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -49,7 +49,7 @@ public class NegativeImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Negative");
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -71,7 +71,7 @@ public class NegativeImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
         originalImage = null;
@@ -87,7 +87,7 @@ public class NegativeImageController extends AbstractImageToolController {
 
         ImageTools.toNegative(originalImage).ifPresent(negative -> {
             processedImage = negative;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
         });
     }
 

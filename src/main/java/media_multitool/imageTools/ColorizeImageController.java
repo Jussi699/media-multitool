@@ -34,7 +34,7 @@ public class ColorizeImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Button btnColorPicker, btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
 
     private javafx.scene.paint.Color selectedColorFX;
@@ -49,7 +49,7 @@ public class ColorizeImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -70,7 +70,7 @@ public class ColorizeImageController extends AbstractImageToolController {
                 },
                 "Colorized"
         );
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -92,7 +92,7 @@ public class ColorizeImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -124,7 +124,7 @@ public class ColorizeImageController extends AbstractImageToolController {
             return;
         }
         processedImage = originalImage;
-        setImagePreview(processedImage, imageViewPreview);
+        setImagePreview(processedImage, preview);
 
         if (nonNull(newColor)) {
             this.selectedColorFX = WorkColors.toFxColor(newColor);

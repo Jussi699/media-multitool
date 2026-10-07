@@ -31,7 +31,7 @@ public class DarkenImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Button btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
     @FXML private Slider sliderDarken;
     @FXML private Label currentValueSlider;
@@ -45,7 +45,7 @@ public class DarkenImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -56,7 +56,7 @@ public class DarkenImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Darkened");
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
         sliderDarken.valueProperty().addListener((_, _, _) -> generatePreview());
 
         sliderDarken.setMin(0);
@@ -85,7 +85,7 @@ public class DarkenImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -111,18 +111,18 @@ public class DarkenImageController extends AbstractImageToolController {
 
         if (value == 0) {
             processedImage = originalImage;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             return;
         }
 
         if (isNull(processedImage)) {
             processedImage = originalImage;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
         }
 
         com.imagetools.ImageTools.brightnessImage(originalImage, -value).ifPresent(darkened -> {
             processedImage = darkened;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
         });
     }
 
@@ -169,7 +169,7 @@ public class DarkenImageController extends AbstractImageToolController {
     protected void handleTaskSuccess(Object result) {
         if (result instanceof BufferedImage bi) {
             processedImage = bi;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             Platform.runLater(() -> {
                 if (nonNull(progressBar)) {
                     progressBar.setVisible(true);

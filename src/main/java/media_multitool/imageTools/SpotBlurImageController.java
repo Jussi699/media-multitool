@@ -48,7 +48,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
     @FXML private Button btnSubmit, btnCancel, btnUndo;
     @FXML private Button btnAddRect, btnAddOval;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
     @FXML private ScrollPane scrollPaneImage;
     @FXML private Slider sliderBlurIntensity, imageScaleSlider;
@@ -73,7 +73,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -89,7 +89,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> blurShapes.isEmpty() ? null : processedImage, "Spot-blurred");
 
-        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
+        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, preview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
         SliderSetup.bindPercentageLabel(sliderBlurIntensity, labelBlurIntensity, 20);
 
@@ -125,7 +125,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -194,7 +194,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
             g2d.drawImage(originalImage, 0, 0, null);
             g2d.dispose();
 
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             if (nonNull(zoomControlHelper)) {
                 zoomControlHelper.resetZoom();
                 zoomControlHelper.updateImageSize();
@@ -202,8 +202,8 @@ public class SpotBlurImageController extends AbstractImageToolController {
             return;
         }
 
-        double imgWidth = imageViewPreview.getImage().getWidth();
-        double imgHeight = imageViewPreview.getImage().getHeight();
+        double imgWidth = preview.getImage().getWidth();
+        double imgHeight = preview.getImage().getHeight();
 
         Task<BufferedImage> task = new Task<>() {
             @Override
@@ -228,8 +228,8 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
     @Override
     protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
-        double imgWidth = imageViewPreview.getImage().getWidth();
-        double imgHeight = imageViewPreview.getImage().getHeight();
+        double imgWidth = preview.getImage().getWidth();
+        double imgHeight = preview.getImage().getHeight();
 
         BufferedImage blurred = SpotBlurHelper.applyBlurShapes(
                 originalImage, blurShapes,
@@ -278,7 +278,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
     protected void handleTaskSuccess(Object result) {
         if (result instanceof BufferedImage bi) {
             processedImage = bi;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             Platform.runLater(() -> {
                 if (nonNull(progressBar)) {
                     progressBar.setProgress(1.0);
@@ -374,7 +374,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
     }
 
     private void setupImageViewInteraction() {
-        if (isNull(imageViewPreview)) {
+        if (isNull(preview)) {
             return;
         }
 
@@ -388,7 +388,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
          ResizeHandle handle = getHandleAtPosition(event.getX(), event.getY());
          if (nonNull(handle)) {
              blurOverlay.setCursor(handle.cursor);
-         } else if (nonNull(SpotBlurHelper.getShapeAtPosition(event.getX(), event.getY(), imageViewPreview, blurShapes))) {
+         } else if (nonNull(SpotBlurHelper.getShapeAtPosition(event.getX(), event.getY(), preview, blurShapes))) {
              blurOverlay.setCursor(Cursor.HAND);
          } else {
              blurOverlay.setCursor(Cursor.DEFAULT);
@@ -407,7 +407,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
      }
 
       private void setupShapeSelection(double displayX, double displayY, double normalizedX, double normalizedY) {
-          selectedShape = SpotBlurHelper.getShapeAtPosition(displayX, displayY, imageViewPreview, blurShapes);
+          selectedShape = SpotBlurHelper.getShapeAtPosition(displayX, displayY, preview, blurShapes);
           if (nonNull(selectedShape)) {
               dragOffsetX = normalizedX - selectedShape.startX;
               dragOffsetY = normalizedY - selectedShape.startY;
@@ -425,7 +425,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
      }
 
     private ResizeHandle getHandleAtPosition(double x, double y) {
-        Bounds imageBounds = imageViewPreview.localToParent(imageViewPreview.getBoundsInLocal());
+        Bounds imageBounds = preview.localToParent(preview.getBoundsInLocal());
         for (BlurShapeVisual shape : blurShapes) {
             ResizeHandle handle = shape.getHandleAt(x, y, imageBounds);
             if (nonNull(handle))
@@ -441,7 +441,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
         event.consume();
 
-        Bounds imageBounds = imageViewPreview.localToParent(imageViewPreview.getBoundsInLocal());
+        Bounds imageBounds = preview.localToParent(preview.getBoundsInLocal());
 
         double clampedX = Math.clamp(event.getX(), imageBounds.getMinX(), imageBounds.getMaxX());
         double clampedY = Math.clamp(event.getY(), imageBounds.getMinY(), imageBounds.getMaxY());
@@ -485,7 +485,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
         event.consume();
 
-        Bounds imageBounds = imageViewPreview.localToParent(imageViewPreview.getBoundsInLocal());
+        Bounds imageBounds = preview.localToParent(preview.getBoundsInLocal());
 
         if (!SpotBlurHelper.isPointInsideImage(event.getX(), event.getY(), imageBounds)) {
             return;
@@ -500,7 +500,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
             return;
         }
 
-        if (nonNull(SpotBlurHelper.getShapeAtPosition(event.getX(), event.getY(), imageViewPreview, blurShapes))) {
+        if (nonNull(SpotBlurHelper.getShapeAtPosition(event.getX(), event.getY(), preview, blurShapes))) {
             setupShapeSelection(event.getX(), event.getY(), normalizedX, normalizedY);
             return;
         }
@@ -580,7 +580,7 @@ public class SpotBlurImageController extends AbstractImageToolController {
         }
 
     private void updateShapeVisuals() {
-        SpotBlurHelper.updateShapeVisuals(blurOverlay, imageViewPreview, blurShapes, currentShape, HANDLE_SIZE);
+        SpotBlurHelper.updateShapeVisuals(blurOverlay, preview, blurShapes, currentShape, HANDLE_SIZE);
     }
 
     private int getSliderValues() {

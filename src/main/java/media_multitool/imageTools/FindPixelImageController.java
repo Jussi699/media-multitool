@@ -29,7 +29,7 @@ public class FindPixelImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Button btnSaveRGB, btnSaveHex;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
     @FXML private ScrollPane scrollPaneImage;
     @FXML private Slider imageScaleSlider;
@@ -48,7 +48,7 @@ public class FindPixelImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -63,11 +63,11 @@ public class FindPixelImageController extends AbstractImageToolController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> originalImage, "Selected");
 
-        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
+        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, preview, imageScaleSlider, previewContainer, 1.0, 3.0);
 
-        if(nonNull(imageViewPreview)) {
-            imageViewPreview.setOnMouseClicked(this::handlePixelSelection);
-            ImageZoomHelper.applyZoomEffect(imageViewPreview, previewContainer);
+        if(nonNull(preview)) {
+            preview.setOnMouseClicked(this::handlePixelSelection);
+            ImageZoomHelper.applyZoomEffect(preview, previewContainer);
         }
         else {
             Alerts.alertDialog(Alert.AlertType.WARNING, "ImageView", "Preview", "Preview was not initialized!");
@@ -98,7 +98,7 @@ public class FindPixelImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -123,7 +123,7 @@ public class FindPixelImageController extends AbstractImageToolController {
 
         processedImage = originalImage;
         zoomControlHelper.resetZoom();
-        setImagePreview(processedImage, imageViewPreview);
+        setImagePreview(processedImage, preview);
         zoomControlHelper.updateImageSize();
     }
 
@@ -160,7 +160,7 @@ public class FindPixelImageController extends AbstractImageToolController {
     private void handlePixelSelection(MouseEvent e) {
         if (e.getButton() != MouseButton.PRIMARY) return;
 
-        PixelHelper.pixelSelection(e, imageViewPreview).ifPresent(this::updatePixelInfo);
+        PixelHelper.pixelSelection(e, preview).ifPresent(this::updatePixelInfo);
     }
 
     private void updatePixelInfo(Color color) {

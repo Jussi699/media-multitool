@@ -35,7 +35,7 @@ public class BlurImageController extends AbstractImageToolController {
     @FXML private Slider sliderBlurry;
     @FXML private Button btnSubmit, btnCancelBlurring;
     @FXML private Label currentValueSlider;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
 
     private Task<?> currentTask;
@@ -48,7 +48,7 @@ public class BlurImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -60,7 +60,7 @@ public class BlurImageController extends AbstractImageToolController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Blurred");
 
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         sliderBlurry.setMin(0);
         sliderBlurry.setMax(100);
@@ -82,7 +82,7 @@ public class BlurImageController extends AbstractImageToolController {
 
         if (radius == 0) {
             processedImage = originalImage;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             return;
         }
 
@@ -178,7 +178,7 @@ public class BlurImageController extends AbstractImageToolController {
     protected void handleTaskSuccess(Object result) {
         if (result instanceof BufferedImage bi) {
             processedImage = bi;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             Platform.runLater(() -> {
                 if (nonNull(progressBar)) {
                     progressBar.setVisible(true);
@@ -221,7 +221,7 @@ public class BlurImageController extends AbstractImageToolController {
 
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 

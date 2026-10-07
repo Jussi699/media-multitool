@@ -89,7 +89,7 @@
             <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" pannable="true"
                         styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
                 <StackPane fx:id="previewContainer" minHeight="200.0">
-                    <ImageView fx:id="imageViewPreview" preserveRatio="true"/>
+                    <ImageView fx:id="preview" preserveRatio="true"/>
                     <Pane fx:id="blurOverlay"/>
                     <Label fx:id="labelPreviewPlaceholder" style="-fx-font-size: 16px;" text="Preview"
                            textFill="WHITE"/>

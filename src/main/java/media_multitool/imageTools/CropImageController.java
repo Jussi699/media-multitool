@@ -40,7 +40,7 @@ public class CropImageController extends AbstractImageToolController {
     @FXML private Button btnAspectRatio4x3, btnAspectRatio2x3, btnAspectRatio3x2;
     @FXML private Button btnAspectRatio5x7,btnAspectRatio7x5, btnAspectRatio1x2;
     @FXML private Button btnAspectRatio2x1, btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
     @FXML private ScrollPane scrollPaneImage;
     @FXML private Slider imageScaleSlider;
@@ -58,7 +58,7 @@ public class CropImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -82,8 +82,8 @@ public class CropImageController extends AbstractImageToolController {
                 "Cropped"
         );
 
-        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
-        cropHelper = new CropHelper(cropOverlay, imageViewPreview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
+        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, preview, imageScaleSlider, previewContainer, 1.0, 3.0);
+        cropHelper = new CropHelper(cropOverlay, preview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -107,7 +107,7 @@ public class CropImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -131,7 +131,7 @@ public class CropImageController extends AbstractImageToolController {
         }
 
         processedImage = originalImage;
-        setImagePreview(processedImage, imageViewPreview);
+        setImagePreview(processedImage, preview);
 
         if (nonNull(zoomControlHelper)) {
             zoomControlHelper.resetZoom();

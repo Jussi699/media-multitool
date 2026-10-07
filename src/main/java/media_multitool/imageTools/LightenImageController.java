@@ -29,7 +29,7 @@ public class LightenImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Button btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
     @FXML private Slider sliderLighten;
     @FXML private Label currentValueSlider;
@@ -43,7 +43,7 @@ public class LightenImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -56,7 +56,7 @@ public class LightenImageController extends AbstractImageToolController {
         setupImageClipboardButton(() -> processedImage, "Lightened");
         sliderLighten.valueProperty().addListener((_, _, _) -> generatePreview());
 
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         sliderLighten.setMin(0);
         sliderLighten.setMax(255);
@@ -84,7 +84,7 @@ public class LightenImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -105,13 +105,13 @@ public class LightenImageController extends AbstractImageToolController {
 
         if (value == 0) {
             processedImage = originalImage;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             return;
         }
 
         ImageTools.brightnessImage(originalImage, value).ifPresent(lightened -> {
             processedImage = lightened;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
         });
     }
 

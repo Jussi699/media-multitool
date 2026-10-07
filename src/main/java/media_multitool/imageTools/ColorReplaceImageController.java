@@ -31,7 +31,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
 
     @FXML private Button btnSubmit;
     @FXML private ToggleButton toggleJPEG, togglePNG;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
     @FXML private StackPane previewContainer;
     @FXML private Spinner<Double> spinnerIntensity;
     @FXML private Spinner<Integer> spinnerSmoothing, spinnerEnhancement;
@@ -48,7 +48,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -69,7 +69,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Color-replaced");
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         initializeColorCombos();
         initializeSpinners();
@@ -102,7 +102,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -133,7 +133,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
 
         if (isNull(processedImage)) {
             processedImage = originalImage;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
         }
 
         String targetHex = getTargetColorHex();
@@ -207,7 +207,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
                 BufferedImage result = processColorReplacement();
                 if (nonNull(result)) {
                     processedImage = result;
-                    Platform.runLater(() -> setImagePreview(processedImage, imageViewPreview));
+                    Platform.runLater(() -> setImagePreview(processedImage, preview));
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Error updating preview: " + e.getMessage());

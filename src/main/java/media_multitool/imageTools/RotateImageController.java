@@ -30,7 +30,7 @@ public class RotateImageController extends AbstractImageToolController {
     @FXML private Button btnFlipHorizontally, btnFlipVertically;
     @FXML private Button btnRotateImageRight, btnRotateImageLeft, btnSubmit;
     @FXML private StackPane previewContainer;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView preview;
 
     private List<Button> listControls;
     private RotateSide rotateSide;
@@ -42,7 +42,7 @@ public class RotateImageController extends AbstractImageToolController {
 
     @Override
     protected ImageView getImageView() {
-        return imageViewPreview;
+        return preview;
     }
 
     @FXML
@@ -53,7 +53,7 @@ public class RotateImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Rotated");
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(preview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -75,7 +75,7 @@ public class RotateImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, preview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -88,14 +88,14 @@ public class RotateImageController extends AbstractImageToolController {
     protected void generatePreview() {
         if (isNull(processedImage)) {
             processedImage = originalImage;
-            setImagePreview(processedImage, imageViewPreview);
+            setImagePreview(processedImage, preview);
             return;
         }
 
         if (nonNull(rotateSide)) {
             ImageTools.rotateImage(processedImage, rotateSide).ifPresent(rotated -> {
                 processedImage = rotated;
-                setImagePreview(processedImage, imageViewPreview);
+                setImagePreview(processedImage, preview);
             });
             rotateSide = null;
         }
