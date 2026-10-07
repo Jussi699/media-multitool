@@ -7,20 +7,33 @@
 <?import javafx.scene.shape.Rectangle?>
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="media_multitool.imageTools.CropImageController">
-    <VBox alignment="TOP_CENTER" prefHeight="820.0" prefWidth="630.0" spacing="12.0" styleClass="gradient-background">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="12.0"
+          styleClass="gradient-background">
 
-        <Label styleClass="main-label-name-page" text="Crop Image">
+        <Label styleClass="main-label-name-page"
+               text="Crop Image">
+
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectFile" mnemonicParsing="false" onAction="#selectImages" prefWidth="180.0"
+            <Button fx:id="btnSelectFile"
+                    mnemonicParsing="false"
+                    onAction="#selectImages"
+                    prefWidth="180.0"
                     text="Select image"/>
 
-            <Button fx:id="btnChooseSaveDirectory" mnemonicParsing="false" onAction="#chooseSaveDirectory"
-                    prefWidth="180.0" text="Directory for save">
+            <Button fx:id="btnChooseSaveDirectory"
+                    mnemonicParsing="false"
+                    onAction="#chooseSaveDirectory"
+                    prefWidth="180.0"
+                    text="Directory for save">
+
                 <tooltip>
                     <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
@@ -28,12 +41,21 @@
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess" text="Crop image status: success" visible="false"/>
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   text="Crop image status: success"
+                   visible="false"/>
 
             <HBox alignment="CENTER" spacing="10.0">
-                <Button fx:id="btnSubmit" mnemonicParsing="false" onAction="#submitAndDownload" prefWidth="240.0"
+                <Button fx:id="btnSubmit"
+                        mnemonicParsing="false"
+                        onAction="#submitAndDownload"
+                        prefWidth="240.0"
                         text="Crop and Download"/>
-                <Button fx:id="btnSubmitAndCopy" prefWidth="180.0" text="To Clipboard"/>
+
+                <Button fx:id="btnSubmitAndCopy"
+                        prefWidth="180.0"
+                        text="To Clipboard"/>
             </HBox>
         </VBox>
 
@@ -41,26 +63,44 @@
             <padding>
                 <Insets left="4.0" right="4.0"/>
             </padding>
+
             <VBox.margin>
                 <Insets top="2.0"/>
             </VBox.margin>
 
-            <ScrollPane fx:id="scrollPaneImage" fitToHeight="true" fitToWidth="true" pannable="true" prefWidth="562.0"
-                        styleClass="scroll-pane-image" VBox.vgrow="ALWAYS">
-                <StackPane fx:id="previewContainer" minHeight="200.0">
-                    <ImageView fx:id="preview" preserveRatio="true"/>
+            <ScrollPane fx:id="scrollPaneImage"
+                        fitToHeight="true"
+                        fitToWidth="true"
+                        pannable="true"
+                        prefWidth="562.0"
+                        styleClass="scroll-pane-image"
+                        VBox.vgrow="ALWAYS">
+
+                <StackPane fx:id="previewContainer"
+                           minHeight="200.0">
+
+                    <ImageView fx:id="preview"
+                               preserveRatio="true"/>
+
                     <Pane fx:id="cropOverlay">
-                        <Rectangle fx:id="cropRect" visible="false"/>
+                        <Rectangle fx:id="cropRect"
+                                   visible="false"/>
                     </Pane>
-                    <Label fx:id="labelPreviewPlaceholder" style="-fx-font-size: 16px;" text="Preview"
+
+                    <Label fx:id="labelPreviewPlaceholder"
+                           style="-fx-font-size: 16px;"
+                           text="Preview"
                            textFill="WHITE"/>
                 </StackPane>
             </ScrollPane>
 
             <HBox spacing="12.0">
-                <StackPane maxHeight="120.0" minHeight="120.0" prefHeight="120.0"
+                <StackPane maxHeight="120.0"
+                           minHeight="120.0"
+                           prefHeight="120.0"
                            styleClass="custom-stack-panel"
                            HBox.hgrow="ALWAYS">
+
                     <HBox alignment="CENTER" spacing="12.0">
                         <padding>
                             <Insets bottom="5.0" left="10.0" right="10.0" top="5.0"/>
@@ -68,79 +108,127 @@
 
                         <VBox alignment="CENTER" spacing="8.0">
                             <HBox alignment="CENTER" spacing="12.0">
-                                <Button fx:id="btnAspectRatioSquare" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatioSquare"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="Square"/>
 
-                                <Button fx:id="btnAspectRatio9x16" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio9x16"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="9 : 16"/>
 
-                                <Button fx:id="btnAspectRatio16x9" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio16x9"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="16 : 9"/>
 
-                                <Button fx:id="btnAspectRatio4x5" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio4x5"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="4 : 5"/>
 
-                                <Button fx:id="btnAspectRatio5x4" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio5x4"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="5 : 4"/>
 
-                                <Button fx:id="btnAspectRatio3x4" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio3x4"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="3 : 4"/>
                             </HBox>
                             <HBox alignment="CENTER" spacing="12.0">
-                                <Button fx:id="btnAspectRatio4x3" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio4x3"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="4 : 3"/>
 
-                                <Button fx:id="btnAspectRatio2x3" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio2x3"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="2 : 3"/>
 
-                                <Button fx:id="btnAspectRatio3x2" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio3x2"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="3 : 2"/>
 
-                                <Button fx:id="btnAspectRatio5x7" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio5x7"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="5 : 7"/>
 
-                                <Button fx:id="btnAspectRatio7x5" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio7x5"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="7 : 5"/>
 
-                                <Button fx:id="btnAspectRatio1x2" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio1x2"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="1 : 2"/>
 
-                                <Button fx:id="btnAspectRatio2x1" mnemonicParsing="false"
-                                        onAction="#onActionSelectAspectRatio" styleClass="btn-aspect-ratio"
+                                <Button fx:id="btnAspectRatio2x1"
+                                        mnemonicParsing="false"
+                                        onAction="#onActionSelectAspectRatio"
+                                        styleClass="btn-aspect-ratio"
                                         text="2 : 1"/>
                             </HBox>
                         </VBox>
                     </HBox>
                 </StackPane>
-                <StackPane fx:id="dropZone" maxHeight="120.0" minHeight="120.0" prefHeight="120.0"
-                           styleClass="drop-zone, drop-zone-crop" HBox.hgrow="ALWAYS">
-                    <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag files here" textFill="WHITE"/>
+                <StackPane fx:id="dropZone"
+                           maxHeight="120.0"
+                           minHeight="120.0"
+                           prefHeight="120.0"
+                           styleClass="drop-zone, drop-zone-crop"
+                           HBox.hgrow="ALWAYS">
+
+                    <Label fx:id="textDragZone"
+                           styleClass="label-drag-zone"
+                           text="Drag files here"
+                           textFill="WHITE"/>
                 </StackPane>
             </HBox>
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
             <HBox alignment="CENTER" spacing="10.0">
-                <Label text="-" style="-fx-font-size: 14; -fx-text-fill: -color-for-active-button-comboBox"/>
-                <Slider fx:id="imageScaleSlider" max="3.0" min="1.0" prefWidth="300.0" value="1.0"/>
-                <Label text="+" style="-fx-font-size: 14; -fx-text-fill: -color-for-active-button-comboBox"/>
+                <Label text="-"
+                       style="-fx-font-size: 14; -fx-text-fill: -color-for-active-button-comboBox"/>
+
+                <Slider fx:id="imageScaleSlider"
+                        max="3.0"
+                        min="1.0"
+                        prefWidth="300.0"
+                        value="1.0"/>
+
+                <Label text="+"
+                       style="-fx-font-size: 14; -fx-text-fill: -color-for-active-button-comboBox"/>
             </HBox>
 
-            <Label fx:id="labelSelectFile" styleClass="labelSelect" text="Selected image file: none"/>
+            <Label fx:id="labelSelectFile"
+                   styleClass="labelSelect"
+                   text="Selected image file: none"/>
 
-            <Button fx:id="btnReset" mnemonicParsing="false" onAction="#isPressedReset" prefWidth="240.0" text="Reset"/>
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
         </VBox>
 
         <padding>
@@ -148,7 +236,11 @@
         </padding>
     </VBox>
 
-    <Button onAction="#showInfo" styleClass="info-button" text="?" StackPane.alignment="TOP_LEFT">
+    <Button onAction="#showInfo"
+            styleClass="info-button"
+            text="?"
+            StackPane.alignment="TOP_LEFT">
+
         <StackPane.margin>
             <Insets left="10.0" top="10.0"/>
         </StackPane.margin>

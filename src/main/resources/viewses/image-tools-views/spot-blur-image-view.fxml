@@ -47,7 +47,7 @@
 
             <Label style="-fx-font-size: 14" styleClass="labelSuccess" GridPane.columnIndex="0">0%</Label>
             <Slider fx:id="sliderBlurIntensity" onMouseReleased="#handleBlurIntensityChange" prefWidth="400" GridPane.columnIndex="1"/>
-            <Label fx:id="labelBlurIntensity" style="-fx-font-size: 14" styleClass="labelSuccess" GridPane.columnIndex="2">100%</Label>
+            <Label fx:id="labelBlurIntensity" style="-fx-font-size: 14" styleClass="labelSuccess" GridPane.columnIndex="2">500%</Label>
         </GridPane>
 
         <VBox alignment="CENTER" spacing="8.0">

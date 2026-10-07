@@ -15,6 +15,7 @@
 
         <Label styleClass="main-label-name-page"
                text="Black-White Image">
+
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
@@ -32,6 +33,7 @@
                     onAction="#chooseSaveDirectory"
                     prefWidth="180.0"
                     text="Directory for save">
+
                 <tooltip>
                     <Tooltip text="Default directory: Desktop"/>
                 </tooltip>
@@ -39,17 +41,20 @@
         </HBox>
 
         <VBox alignment="CENTER" spacing="8.0">
-            <Label fx:id="labelSuccess" styleClass="labelSuccess"
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
                    visible="false"
                    text="Black-White status: success"/>
 
             <HBox alignment="CENTER" spacing="10.0">
-                <Button fx:id="btnSubmit" mnemonicParsing="false"
+                <Button fx:id="btnSubmit"
+                        mnemonicParsing="false"
                         onAction="#submitAndDownload"
                         prefWidth="240.0"
                         text="Download"/>
 
-                <Button fx:id="btnSubmitAndCopy" mnemonicParsing="false"
+                <Button fx:id="btnSubmitAndCopy"
+                        mnemonicParsing="false"
                         prefWidth="240.0"
                         text="To Clipboard"/>
             </HBox>
@@ -59,21 +64,32 @@
             <padding>
                 <Insets left="4.0" right="4.0"/>
             </padding>
+
             <VBox.margin>
                 <Insets top="2.0"/>
             </VBox.margin>
-            <StackPane fx:id="previewContainer" VBox.vgrow="ALWAYS" minWidth="200">
+
+            <StackPane fx:id="previewContainer"
+                       VBox.vgrow="ALWAYS"
+                       minWidth="200">
+
                 <ImageView fx:id="preview" preserveRatio="true"/>
                 <Label fx:id="labelPreviewPlaceholder" text="Preview"/>
             </StackPane>
 
-            <StackPane fx:id="dropZone" styleClass="drop-zone" HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone" styleClass="label-drag-zone" text="Drag image here"/>
+            <StackPane fx:id="dropZone"
+                       styleClass="drop-zone"
+                       HBox.hgrow="ALWAYS">
+
+                <Label fx:id="textDragZone"
+                       styleClass="label-drag-zone"
+                       text="Drag image here"/>
             </StackPane>
         </VBox>
 
         <VBox alignment="CENTER" spacing="4.0">
-            <Label fx:id="labelSelectFile" styleClass="labelSelect"
+            <Label fx:id="labelSelectFile"
+                   styleClass="labelSelect"
                    text="Selected image file: none"/>
 
             <Button fx:id="btnReset"
@@ -92,6 +108,7 @@
             onAction="#showInfo"
             styleClass="info-button"
             StackPane.alignment="TOP_LEFT">
+
         <StackPane.margin>
             <Insets top="10.0" left="10.0"/>
         </StackPane.margin>
