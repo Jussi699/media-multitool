@@ -1,62 +1,64 @@
 package media_multitool.imageTools;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.checks.Checking;
-import model.converterImage.UsefulMethods;
+import media_multitool.AbstractImageToolController;
+import model.enums.AspectRatio;
 import model.helper.images.CropHelper;
 import model.logger.ErrorLogger;
-import model.preprocessing.ImagePreprocessing;
 import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
-import model.utility.*;
+import model.utility.Global;
+import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 import viewHelp.ZoomControlHelper;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
+import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.*;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class CropImageController extends AbstractMediaController {
+public class CropImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
 
-    @FXML private Slider imageScaleSlider;
-    @FXML private ScrollPane scrollPaneImage;
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Pane cropOverlay;
-    @FXML private Label labelSelectImageName, textDragZone, labelPreviewPlaceholder;
+    @FXML private Button btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9;
+    @FXML private Button btnAspectRatio4x5, btnAspectRatio5x4, btnAspectRatio3x4;
+    @FXML private Button btnAspectRatio4x3, btnAspectRatio2x3, btnAspectRatio3x2;
+    @FXML private Button btnAspectRatio5x7,btnAspectRatio7x5, btnAspectRatio1x2;
+    @FXML private Button btnAspectRatio2x1, btnSubmit;
     @FXML private ImageView imageViewPreview;
+    @FXML private StackPane previewContainer;
+    @FXML private ScrollPane scrollPaneImage;
+    @FXML private Slider imageScaleSlider;
     @FXML private Rectangle cropRect;
+    @FXML private Pane cropOverlay;
 
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnAspectRatioSquare, btnAspectRatio9x16;
-    @FXML private Button btnAspectRatio16x9, btnAspectRatio4x5, btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3;
-    @FXML private Button btnAspectRatio2x3, btnAspectRatio3x2,btnAspectRatio5x7,btnAspectRatio7x5, btnAspectRatio1x2,btnAspectRatio2x1, btnSubmit;
-
-    private BufferedImage originalBufferedImage;
     private ZoomControlHelper zoomControlHelper;
     private CropHelper cropHelper;
     private List<Control> listControls;
 
     @Override
-    protected MediaProperties getProperties() {
+    protected ImageProperties getImageProperties() {
         return imageProperties;
+    }
+
+    @Override
+    protected ImageView getImageView() {
+        return imageViewPreview;
     }
 
     @FXML
@@ -72,7 +74,14 @@ public class CropImageController extends AbstractMediaController {
 
         setupTooltips();
         setupClearMessageTimer(labelSuccess, imageProperties.getHideSuccessMessageTimer(), true);
-        setupImageClipboardButton(this::createSelectedCrop, "Cropped");
+        setupImageClipboardButton(
+                () -> {
+                    CropHelper.CropArea cropArea = isNull(cropHelper) ? null : cropHelper.getCropArea();
+                    return isNull(cropArea) ? null : createCroppedImage(cropArea);
+                },
+                "Cropped"
+        );
+
         zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imageViewPreview, imageScaleSlider, previewContainer, 1.0, 3.0);
         cropHelper = new CropHelper(cropOverlay, imageViewPreview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
 
@@ -82,45 +91,89 @@ public class CropImageController extends AbstractMediaController {
 
     @FXML
     private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
+        InfoAlert.showToolInfo(
                 "Crop Image",
                 """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+                        3. Drag and resize the crop box on the image, or select an aspect ratio preset;
 
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Adjust the crop area by dragging the frame or corners, or select an aspect ratio;
-
-                        4. (Optional) Use the slider or mouse wheel to zoom in for precision;
+                        4. (Optional) Use the zoom slider or mouse wheel for precision;
 
                         5. Click "Crop and Download";
-
-                        6. (Optional) Click "To Clipboard" to copy the image to the clipboard.
-
-                        Certain copied images may not show a preview in the Windows clipboard menu (Win + V).
-                        However, the image is still in the clipboard and can be pasted as usual.
-
-                        This tool helps you crop your images.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+                        """
         );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
+        );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        originalImage  = null;
+        processedImage = null;
+
+        if (nonNull(cropHelper)) {
+            cropHelper.reset();
+        }
+
+        if (nonNull(zoomControlHelper)) {
+            zoomControlHelper.resetZoom();
+        }
+        disableControls();
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            return;
+        }
+
+        processedImage = originalImage;
+        setImagePreview(processedImage, imageViewPreview);
+
+        if (nonNull(zoomControlHelper)) {
+            zoomControlHelper.resetZoom();
+        }
+
+        Platform.runLater(() -> {
+            if (nonNull(zoomControlHelper)) {
+                zoomControlHelper.updateImageSize();
+            }
+            if (nonNull(cropHelper)) {
+                cropHelper.setOriginalBufferedImage(originalImage);
+                cropHelper.createDefaultCrop();
+                cropHelper.updateCropOverlay();
+            }
+        });
+    }
+
+    @Override
+    protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
+        if (isNull(originalImage)) {
+            throw new IllegalStateException("Original image is null");
+        }
+
+        CropHelper.CropArea cropArea = cropHelper.getCropArea();
+        if (isNull(cropArea)) {
+            throw new IllegalStateException("Select crop area first.");
+        }
+
+        return createCroppedImage(cropArea);
     }
 
     @Override
     protected void lockUI() {
         btnSelectFile.setDisable(true);
-        btnChoiceFolderForSaveFile.setDisable(true);
+        btnChooseSaveDirectory.setDisable(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         btnSelectFile.setDisable(false);
-        btnChoiceFolderForSaveFile.setDisable(false);
+        btnChooseSaveDirectory.setDisable(false);
         btnReset.setDisable(false);
     }
 
@@ -132,75 +185,6 @@ public class CropImageController extends AbstractMediaController {
     @Override
     protected void enableControls() {
         listControls.forEach(c -> c.setDisable(false));
-    }
-
-    @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
-    }
-
-    @FXML
-    public void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties) || originalBufferedImage == null) {
-            return;
-        }
-
-        CropHelper.CropArea cropArea = cropHelper.getCropArea();
-        if (cropArea == null) {
-            showErrorMessage(labelSuccess, "Select crop area first.", imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-            return;
-        }
-
-        CropHelper.CropArea cropToSave = cropArea.copy();
-        Task<File> task = new Task<>() {
-            @Override
-            protected File call() throws Exception {
-                updateProgress(10, 100);
-
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        imageProperties.getTypeImage()
-                );
-
-                updateProgress(50, 100);
-
-                BufferedImage cropped = createCroppedImage(cropToSave);
-                ImagePreprocessing.downloadImage(cropped, imageProperties.getTypeImage(), outputFile);
-                updateProgress(100, 100);
-
-                return outputFile;
-            }
-        };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
-    }
-
-    private BufferedImage createSelectedCrop() {
-        CropHelper.CropArea cropArea = cropHelper.getCropArea();
-        return isNull(cropArea) ? null : createCroppedImage(cropArea);
-    }
-
-    private BufferedImage createCroppedImage(CropHelper.CropArea cropArea) {
-        if (isNull(originalBufferedImage) || isNull(cropArea)) {
-            return null;
-        }
-
-        int x = Math.clamp((int) Math.floor(cropArea.x()), 0, originalBufferedImage.getWidth() - 1);
-        int y = Math.clamp((int) Math.floor(cropArea.y()), 0, originalBufferedImage.getHeight() - 1);
-        int width = Math.clamp((int) Math.round(cropArea.width()), 1, originalBufferedImage.getWidth() - x);
-        int height = Math.clamp((int) Math.round(cropArea.height()), 1, originalBufferedImage.getHeight() - y);
-        return copyImage(originalBufferedImage.getSubimage(x, y, width, height));
     }
 
     @Override
@@ -228,65 +212,16 @@ public class CropImageController extends AbstractMediaController {
         });
     }
 
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, null, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-
-        originalBufferedImage = null;
-        if (nonNull(cropHelper)) {
-            cropHelper.reset();
+    private BufferedImage createCroppedImage(CropHelper.CropArea cropArea) {
+        if (isNull(originalImage) || isNull(cropArea)) {
+            return null;
         }
 
-        if (nonNull(zoomControlHelper)) {
-            zoomControlHelper.resetZoom();
-        }
-        disableControls();
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-
-        labelSelectImageName.setText("Select image: " + selectedFile.getName());
-        textDragZone.setText("Select image: " + selectedFile.getName());
-
-        try {
-            originalBufferedImage = UsefulMethods.readImage(selectedFile);
-            if (isNull(originalBufferedImage)) {
-                showErrorMessage(labelSuccess, "Unsupported image format.", imageProperties.getHideSuccessMessageTimer());
-                return;
-            }
-
-            zoomControlHelper.resetZoom();
-            setImagePreview(originalBufferedImage, imageViewPreview);
-
-            if (nonNull(labelPreviewPlaceholder)) {
-                labelPreviewPlaceholder.setVisible(false);
-            }
-
-            Platform.runLater(() -> {
-                zoomControlHelper.updateImageSize();
-                cropHelper.setOriginalBufferedImage(originalBufferedImage);
-                cropHelper.createDefaultCrop();
-                cropHelper.updateCropOverlay();
-            });
-        } catch (Exception e) {
-            ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            showErrorMessage(labelSuccess, "Failed to load image.", imageProperties.getHideSuccessMessageTimer());
-        }
-
-        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
+        int x      = Math.clamp((int) Math.floor(cropArea.x()), 0, originalImage.getWidth() - 1);
+        int y      = Math.clamp((int) Math.floor(cropArea.y()), 0, originalImage.getHeight() - 1);
+        int width  = Math.clamp((int) Math.round(cropArea.width()), 1, originalImage.getWidth() - x);
+        int height = Math.clamp((int) Math.round(cropArea.height()), 1, originalImage.getHeight() - y);
+        return copyImage(originalImage.getSubimage(x, y, width, height));
     }
 
     private BufferedImage copyImage(BufferedImage source) {
@@ -300,20 +235,23 @@ public class CropImageController extends AbstractMediaController {
     public void onActionSelectAspectRatio(ActionEvent event) {
         Button btn = (Button) event.getSource();
 
-        switch (btn.getId()) {
-            case "btnAspectRatioSquare" -> cropHelper.setupAspectRatio(1.0, 1.0);
-            case "btnAspectRatio9x16"   -> cropHelper.setupAspectRatio(9.0, 16.0);
-            case "btnAspectRatio16x9"   -> cropHelper.setupAspectRatio(16.0, 9.0);
-            case "btnAspectRatio4x5"    -> cropHelper.setupAspectRatio(4.0, 5.0);
-            case "btnAspectRatio5x4"    -> cropHelper.setupAspectRatio(5.0, 4.0);
-            case "btnAspectRatio3x4"    -> cropHelper.setupAspectRatio(3.0, 4.0);
-            case "btnAspectRatio4x3"    -> cropHelper.setupAspectRatio(4.0, 3.0);
-            case "btnAspectRatio2x3"    -> cropHelper.setupAspectRatio(2.0, 3.0);
-            case "btnAspectRatio3x2"    -> cropHelper.setupAspectRatio(3.0, 2.0);
-            case "btnAspectRatio5x7"    -> cropHelper.setupAspectRatio(5.0, 7.0);
-            case "btnAspectRatio7x5"    -> cropHelper.setupAspectRatio(7.0, 5.0);
-            case "btnAspectRatio1x2"    -> cropHelper.setupAspectRatio(1.0, 2.0);
-            case "btnAspectRatio2x1"    -> cropHelper.setupAspectRatio(2.0, 1.0);
-        }
+        AspectRatio ratio = switch (btn.getId()) {
+            case "btnAspectRatioSquare" -> AspectRatio.TO_SQUARE;
+            case "btnAspectRatio9x16"   -> AspectRatio.TO_9X16;
+            case "btnAspectRatio16x9"   -> AspectRatio.TO_16X9;
+            case "btnAspectRatio4x5"    -> AspectRatio.TO_4X5;
+            case "btnAspectRatio5x4"    -> AspectRatio.TO_5X4;
+            case "btnAspectRatio3x4"    -> AspectRatio.TO_3X4;
+            case "btnAspectRatio4x3"    -> AspectRatio.TO_4X3;
+            case "btnAspectRatio2x3"    -> AspectRatio.TO_2X3;
+            case "btnAspectRatio3x2"    -> AspectRatio.TO_3X2;
+            case "btnAspectRatio5x7"    -> AspectRatio.TO_5X7;
+            case "btnAspectRatio7x5"    -> AspectRatio.TO_7X5;
+            case "btnAspectRatio1x2"    -> AspectRatio.TO_1X2;
+            case "btnAspectRatio2x1"    -> AspectRatio.TO_2X1;
+            default -> throw new IllegalArgumentException("Unexpected value: " + btn.getId());
+        };
+
+        cropHelper.setupAspectRatio(ratio);
     }
 }

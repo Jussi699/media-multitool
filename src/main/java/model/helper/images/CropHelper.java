@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import lombok.Getter;
 import lombok.Setter;
+import model.enums.AspectRatio;
 
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -25,7 +26,8 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.enums.EnumCrop.*;
+import static model.enums.EnumCrop.DragMode;
+import static model.enums.EnumCrop.HandlePosition;
 
 public class CropHelper {
     private static final double MIN_CROP_SIZE = 10.0;
@@ -182,7 +184,7 @@ public class CropHelper {
     }
 
     private boolean canEditCrop(MouseEvent event) {
-        return event.getButton() == MouseButton.PRIMARY && originalBufferedImage != null && imageViewPreview.getImage() != null;
+        return event.getButton() == MouseButton.PRIMARY && nonNull(originalBufferedImage) && nonNull(imageViewPreview.getImage());
     }
 
     private Optional<Point2D> imagePointFromOverlay(MouseEvent event) {
@@ -349,8 +351,11 @@ public class CropHelper {
         positionHandles(cropBounds);
     }
 
-    public void setupAspectRatio(double ratioWidth, double ratioHeight) {
-        if (isNull(cropArea) || isNull(originalBufferedImage) || ratioWidth <= 0 || ratioHeight <= 0) return;
+    public void setupAspectRatio(AspectRatio aspectRatio) {
+        double ratioWidth = aspectRatio.getRatioWidth();
+        double ratioHeight = aspectRatio.getRatioHeight();
+
+        if (isNull(cropArea) || isNull(originalBufferedImage) || aspectRatio.getRatioWidth() <= 0 || ratioHeight <= 0) return;
 
         double imageWidth = originalBufferedImage.getWidth();
         double imageHeight = originalBufferedImage.getHeight();

@@ -157,7 +157,7 @@ public class RotateImageController extends AbstractImageToolController {
             case "btnRotateImageRight" -> rotateSide = RotateSide.RIGHT;
             case "btnFlipHorizontally" -> rotateSide = RotateSide.HORIZONTALLY;
             case "btnFlipVertically"   -> rotateSide = RotateSide.VERTICALLY;
-            default -> throw new IllegalStateException("Unexpected value: " + button.getId());
+            default -> throw new IllegalArgumentException("Unexpected value: " + button.getId());
         }
 
         generatePreview();
