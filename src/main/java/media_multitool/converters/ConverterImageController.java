@@ -1,70 +1,45 @@
 package media_multitool.converters;
 
-import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.stage.FileChooser;
-import media_multitool.AbstractMediaController;
-import model.converterImage.ConvertImageTask;
-import model.properties.ImageProperties;
-import model.logger.ErrorLogger;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
-import javafx.scene.layout.StackPane;
-import model.utility.*;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
+import media_multitool.AbstractImageConverterController;
+import model.helper.MediaHelper;
+import model.logger.ErrorLogger;
+import model.utility.DragDropped;
+import model.utility.Global;
+import model.utility.ResetContext;
 import viewHelp.Alerts;
 import viewHelp.Cells;
+import viewHelp.InfoAlert;
+
+import java.io.File;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static viewHelp.Message.*;
-import static model.utility.PathWorker.*;
-import static model.converterImage.UsefulMethods.*;
+import static viewHelp.Message.hideSuccessMessage;
+import static viewHelp.Message.setupClearMessageTimer;
 
-public class ConverterImageController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
-    private static final ToggleGroup toggleGroup = new ToggleGroup();
-
-    private File pathFolderBatchProcessing;
-    private List<File> filesToProcess = new ArrayList<>();
-
-    @FXML private Button btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing, btnSubmit;
-    @FXML private Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
-    @FXML private ToggleButton btnToSVG, btnToWEBP, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM;
-    @FXML private ComboBox<String> comboBoxIcoSize;
-    @FXML private ImageView imageViewPreview;
-    @FXML private StackPane dropZone, previewContainer;
-
-    private List<Control> listControls;
+public class ConverterImageController extends AbstractImageConverterController {
     private static final String TO_ICO = "to ICO";
 
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
+    @FXML private ToggleButton btnToSVG, btnToWEBP, btnToJPEG;
+    @FXML private ToggleButton btnToPNG, btnToTIFF, btnToBMP;
+    @FXML private ToggleButton btnToPPM, btnToPGM, btnToPAM;
+    @FXML private ComboBox<String> icoSizeComboBox;
 
     @FXML
     public void initialize() {
-        initLists();
+        initToggleGroup();
         initComboBoxes();
-
-        imageProperties.setOutput(getSavedPath());
 
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         isPressedReset();
+
         List<String> supportedFormats = Global.getAllSupportedImageFormats();
         dropZone.setOnDragOver(e -> DragDropped.handleDragOver(e, supportedFormats, dropZone));
         dropZone.setOnDragDropped(e -> {
@@ -75,95 +50,22 @@ public class ConverterImageController extends AbstractMediaController {
         });
     }
 
-    private void initLists() {
-        List<ToggleButton> listToggleBtn = List.of(
-                btnToSVG, btnToWEBP, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Converter Image",
+                "1. Select an image file using \"Select image\" or drag and drop it into the dash-bordered zone",
+                """
+                        3. (Optional) To convert an entire folder, click the "Batch file processing" button and select the folder;
+                        
+                        4. Select the target image format (PNG, JPEG, WEBP, etc.) or ICO size;
+
+                        5. Click "Convert and Download".
+                        """
         );
-
-        listControls = new ArrayList<>(listToggleBtn);
-        listControls.addAll(List.of(comboBoxIcoSize, btnSubmit, btnReset));
-
-        listToggleBtn.forEach(btn -> btn.setToggleGroup(toggleGroup));
-    }
-
-    private void initComboBoxes() {
-        comboBoxIcoSize.getItems().addAll("16", "32", "64", "128", "256", "512", "768");
-        comboBoxIcoSize.setValue(TO_ICO);
-
-        Cells.comboBoxIcoSizeButtonCell(comboBoxIcoSize, TO_ICO);
-        Cells.comboBoxIcoSizeSetCellFactory(comboBoxIcoSize, TO_ICO);
-
-        comboBoxIcoSize.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
-            if (nonNull(newVal) && !newVal.equals(TO_ICO) && nonNull(imageViewPreview.getImage())) {
-                if (imageProperties.getImage() != null && imageProperties.getImage().getName().toLowerCase().endsWith(".ico")) {
-                    try {
-                        double size = Double.parseDouble(newVal);
-                        imageViewPreview.fitHeightProperty().unbind();
-                        imageViewPreview.fitWidthProperty().unbind();
-                        imageViewPreview.setFitHeight(size);
-                        imageViewPreview.setFitWidth(size);
-                    } catch (NumberFormatException _) {
-                        Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Invalid size value!");
-                    }
-                }
-            }
-        });
-    }
-
-    @Override
-    protected void lockUI() {
-        disableControls();
-        btnSelectFile.setDisable(true);
-        btnChoiceFolderForSaveFile.setDisable(true);
-        btnSelectBatchFileProcessing.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        enableControls();
-        btnSelectFile.setDisable(false);
-        btnChoiceFolderForSaveFile.setDisable(false);
-        btnSelectBatchFileProcessing.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
-    }
-
-    @Override
-    protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
     }
 
     @FXML
-    public void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceFolderForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
-    }
-
-    @FXML
-    private void onActionBtnBatchFileProcessing() {
-        Stage stage = (Stage) btnSelectBatchFileProcessing.getScene().getWindow();
-        directoryChooser(stage, pathFolderBatchProcessing, "Select directory with image")
-                .ifPresent(selectedPath -> {
-                    pathFolderBatchProcessing = selectedPath;
-
-                    List<File> result = Preparation.getFilesFromFolder(pathFolderBatchProcessing, Global.getAllSupportedImageFormats());
-
-                    filesToProcess = new ArrayList<>(result);
-
-                    if (filesToProcess.isEmpty()) {
-                        Alerts.alertDialog(Alert.AlertType.WARNING, "No matching files found", "No matching files found",
-                                "No matching files were found in the selected directory.\nPerhaps it only contains unsupported images!");
-                        return;
-                    }
-
-                    loadImages(filesToProcess, true);
-                });
-    }
-
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
@@ -171,153 +73,34 @@ public class ConverterImageController extends AbstractMediaController {
         );
 
         reset(imageProperties, ctx, "Selected image file: none");
-
         bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
 
         pathFolderBatchProcessing = null;
         filesToProcess.clear();
 
-        toggleGroup.selectToggle(null);
+        icoSizeComboBox.setValue(TO_ICO);
 
-        comboBoxIcoSize.setValue(TO_ICO);
+        toggleGroup.selectToggle(null);
         disableControls();
     }
 
     @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.showOpenMultipleDialog(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()))
-                .ifPresent(files -> {
-                    if (!files.isEmpty()) {
-                        loadImages(files, false);
-                    }
-                });
-    }
-
-    private void loadImages(List<File> files, boolean batchSelection) {
-        if (files.isEmpty()) {
-            return;
-        }
-
-        filesToProcess = new ArrayList<>(files.stream().filter(this::validateSelectedFile).toList());
-        if (filesToProcess.isEmpty()) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(filesToProcess.getFirst());
-
-        ErrorLogger.info(getClass(), "Selected " + filesToProcess.size() + " image file(s) for conversion.");
-        labelSelectFile.setText(batchSelection
-                ? "Batch: " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName()
-                : filesToProcess.size() == 1
-                ? "Select image file: " + imageProperties.getImage().getName()
-                : "Selected " + filesToProcess.size() + " images; preview: " + imageProperties.getImage().getName());
-        textDragZone.setText((batchSelection ? "Batch: " : "Selected: ") + filesToProcess.size() + " files");
-
-        imageViewPreview.setImage(null);
-        labelPreviewPlaceholder.setVisible(true);
-
-        try {
-            Optional<BufferedImage> biOpt = readPreviewImage(imageProperties.getImage());
-            if (biOpt.isEmpty()) {
-                ErrorLogger.warn("Failed to read preview for file: " + imageProperties.getImage().getName());
-                Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Format", "Unsupported image format!");
-                return;
-            }
-
-            Image fxImage = SwingFXUtils.toFXImage(biOpt.get(), null);
-
-            bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
-
-            imageViewPreview.setImage(fxImage);
-            labelPreviewPlaceholder.setVisible(false);
-
-            if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-                dropZone.getStyleClass().add("drop-zone-filled");
-            }
-
-            ErrorLogger.info(getClass(), "Preview loaded successfully for: "
-                    + imageProperties.getImage().getName());
-        } catch (IOException e) {
-            ErrorLogger.log(107, ErrorLogger.Level.ERROR, "Failed load preview", e);
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load preview", "Failed load preview.\nCheck log file for more details!");
-        }
-    }
-
-    private boolean checks() {
-        if (isNull(imageProperties.getImage())) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "File missing!",
-                    "Select image first.");
-            return false;
-        }
-
-        if(isNull(imageProperties.getOutput())) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Output missing!",
-                    "Select output directory!.");
-            return false;
-        }
-
-        if (isNull(imageProperties.getTypeImage())) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Format missing!",
-                    "Select photo format!");
-            return false;
-        }
-
-        return true;
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if(!checks()) {
-            return;
-        }
-
-        List<File> snapshot = filesToProcess.isEmpty() ? List.of(imageProperties.getImage()) : new ArrayList<>(filesToProcess);
-        
-        ConvertImageTask task = new ConvertImageTask(
-                snapshot, 
-                imageProperties.getOutput(), 
-                imageProperties.getTypeImage(), 
-                imageProperties.getSizeIcoImage()
-        );
-
-        task.messageProperty().addListener((_, _, newVal) -> Platform.runLater(() -> labelSuccess.setText(newVal)));
-        
-        executeMediaTask(task);
-    }
-
-    @FXML
     private void onActionClickToggleBtnFormat(ActionEvent e) {
-        comboBoxIcoSize.setValue(TO_ICO);
-        viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
-
-        ToggleButton tb = (ToggleButton) e.getSource();
-
-        if (!tb.isSelected()) {
-            imageProperties.setTypeImage(null);
-            return;
+        if (nonNull(icoSizeComboBox)) {
+            icoSizeComboBox.setValue(TO_ICO);
         }
+        hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
 
-        switch (tb.getId()) {
-            case "btnToPNG"  -> selectFormat("png",  imageProperties::setTypeImage);
-            case "btnToJPEG" -> selectFormat("jpeg", imageProperties::setTypeImage);
-            case "btnToWEBP" -> selectFormat("webp", imageProperties::setTypeImage);
-            case "btnToTIFF" -> selectFormat("tif",  imageProperties::setTypeImage);
-            case "btnToBMP"  -> selectFormat("bmp",  imageProperties::setTypeImage);
-            case "btnToPPM"  -> selectFormat("ppm",  imageProperties::setTypeImage);
-            case "btnToPAM"  -> selectFormat("pam",  imageProperties::setTypeImage);
-            case "btnToPGM"  -> selectFormat("pgm",  imageProperties::setTypeImage);
-            case "btnToSVG"  -> selectFormat("svg",  imageProperties::setTypeImage);
-        }
+        MediaHelper.selectFormat(e).ifPresentOrElse(
+                format -> selectFormat(format.getExtension(), imageProperties::setTypeImage),
+                () -> imageProperties.setTypeImage(null)
+        );
     }
 
     @FXML
     private void onActionChoiceIcoSize() {
-        viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
-        String selected = comboBoxIcoSize.getValue();
+        hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
+        String selected = icoSizeComboBox.getValue();
 
         if (isNull(selected) || selected.equals(TO_ICO)) {
             if ("ico".equals(imageProperties.getTypeImage())) {
@@ -327,32 +110,70 @@ public class ConverterImageController extends AbstractMediaController {
         }
 
         imageProperties.setSizeIcoImage(Integer.parseInt(selected));
-
         toggleGroup.selectToggle(null);
-
         imageProperties.setTypeImage("ico");
     }
 
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Converter Image",
-                """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
 
-                        2. (Optional) To convert an entire folder, click the "Batch file processing" button and then select the folder containing the photos you want to convert;
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+    }
 
-                        3. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
 
-                        4. Select the target image format (PNG, JPEG, WEBP, etc.);
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+    }
 
-                        5. Click "Convert and Download".
+    private void initToggleGroup() {
+        Stream.of(btnToSVG, btnToWEBP, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM)
+                .forEach(btn -> btn.setToggleGroup(toggleGroup));
+    }
 
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
+    private void toggleControls(boolean flag) {
+        Stream.of(parametersContainer, btnSubmit, btnReset)
+                .forEach(c -> c.setDisable(flag));
+    }
+
+    private void toggleUI(boolean flag) {
+        Stream.of(parametersContainer, btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing, btnSubmit, btnReset)
+                .forEach(c -> c.setDisable(flag));
+    }
+
+    private void initComboBoxes() {
+        final String[] sizeIco = new String[] {"16", "32", "64", "128", "256", "512", "768"};
+
+        icoSizeComboBox.getItems().addAll(sizeIco);
+        icoSizeComboBox.setValue(TO_ICO);
+
+        Cells.comboBoxIcoSizeButtonCell(icoSizeComboBox, TO_ICO);
+        Cells.comboBoxIcoSizeSetCellFactory(icoSizeComboBox, TO_ICO);
+
+        icoSizeComboBox.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
+            final boolean firstCheck = nonNull(newVal) && !newVal.equals(TO_ICO) && nonNull(imageViewPreview.getImage());
+            final boolean secondCheck = nonNull(imageProperties.getImage()) && imageProperties.getImage().getName().toLowerCase().endsWith(".ico");
+
+            if (firstCheck && secondCheck) {
+                    try {
+                        double size = Double.parseDouble(newVal);
+                        imageViewPreview.fitHeightProperty().unbind();
+                        imageViewPreview.fitWidthProperty().unbind();
+                        imageViewPreview.setFitHeight(size);
+                        imageViewPreview.setFitWidth(size);
+                    } catch (NumberFormatException e) {
+                        Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Invalid size value!");
+                        ErrorLogger.warn("Invalid size value: " + e.getMessage());
+                    }
+                }
+        });
     }
 }

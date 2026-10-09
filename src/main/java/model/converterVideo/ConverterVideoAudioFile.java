@@ -1,6 +1,6 @@
 package model.converterVideo;
 
-import model.enums.TypeMedia;
+import model.enums.MediaType;
 import model.logger.ErrorLogger;
 import model.properties.VideoAndAudioProperties;
 import model.utility.EncoderUtility;
@@ -26,7 +26,7 @@ public class ConverterVideoAudioFile {
 
     public File nameFileAfter;
 
-    public boolean convert(VideoAndAudioProperties properties, TypeMedia typeConvert, DoubleConsumer progressConsumer) {
+    public boolean convert(VideoAndAudioProperties properties, MediaType typeConvert, DoubleConsumer progressConsumer) {
         File file = properties.getSrcFile();
         if (!checkingFile(file)) {
             return false;
@@ -93,7 +93,7 @@ public class ConverterVideoAudioFile {
         return format;
     }
 
-    private EncodingAttributes createEncodingAttributes(VideoAndAudioProperties properties, TypeMedia type, MultimediaInfo sourceInfo) {
+    private EncodingAttributes createEncodingAttributes(VideoAndAudioProperties properties, MediaType type, MultimediaInfo sourceInfo) {
         EncodingAttributes attrs = new EncodingAttributes();
         String outputFormat = properties.getFfmpegFormat();
         String normalizedFormat = outputFormat;
@@ -102,7 +102,7 @@ public class ConverterVideoAudioFile {
 
         attrs.setOutputFormat(normalizedFormat);
 
-        boolean isVideo = (type == TypeMedia.VIDEO);
+        boolean isVideo = (type == MediaType.VIDEO);
         boolean hasAudio = (nonNull(sourceInfo) && nonNull(sourceInfo.getAudio()));
         
         ErrorLogger.info(ConverterVideoAudioFile.class, "Creating encoding attributes - Format: " + normalizedFormat + ", IsVideo: " + isVideo + ", HasAudio: " + hasAudio);

@@ -2,7 +2,7 @@ package model.converterVideo;
 
 import model.compressorVideo.Compressor;
 import model.compressorVideo.VideoPresets;
-import model.enums.TypeMedia;
+import model.enums.MediaType;
 import model.properties.VideoAndAudioProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,7 +27,7 @@ public class VideoOperationsTest {
 
         VideoAndAudioProperties properties = getVideoAndAudioProperties(source);
 
-        boolean success = converter.convert(properties, TypeMedia.VIDEO , _  -> {});
+        boolean success = converter.convert(properties, MediaType.VIDEO , _  -> {});
 
         assertTrue(success);
         File result = converter.nameFileAfter;

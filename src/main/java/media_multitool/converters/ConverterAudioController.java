@@ -1,388 +1,85 @@
 package media_multitool.converters;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import lombok.NonNull;
-import media_multitool.AbstractMediaController;
+import javafx.scene.layout.VBox;
+import media_multitool.AbstractAudioVideoConverterController;
 import model.converterVideo.ConverterVideoAudioFile;
 import model.converterVideo.ConvertVideoAudioTask;
-import model.enums.TypeMedia;
+import model.enums.MediaFormat;
+import model.enums.MediaType;
 import model.helper.MediaHelper;
-import model.logger.ErrorLogger;
-import model.properties.MediaProperties;
-import model.properties.VideoAndAudioProperties;
-import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.ResetContext;
 import viewHelp.ComboBoxes;
+import viewHelp.InfoAlert;
 import ws.schild.jave.info.MultimediaInfo;
-import viewHelp.Alerts;
-import java.io.File;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.IO_EXECUTOR;
-import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
 import static model.utility.Parsers.*;
-import static viewHelp.Utility.getMetadata;
+import static viewHelp.Message.hideSuccessMessage;
+import static viewHelp.Message.setupClearMessageTimer;
 
-public class ConverterAudioController extends AbstractMediaController {
-    private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
-    private static final ToggleGroup toggleGroup = new ToggleGroup();
-    private ConvertVideoAudioTask currentTask;
-
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectAudioVideoFile, btnChoiceDirForSave, btnSubmitAndDownload, btnCancelConversion;
-    @FXML private Label textDragZone, labelSelectFile;
-    @FXML private ComboBox<String> comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate;
-    @FXML private ToggleButton btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF;
-    @FXML private CheckBox checkBoxLossyCompression;
-
-    private List<Control> listControls;
-    private List<Control> listModifiableControls;
+public class ConverterAudioController extends AbstractAudioVideoConverterController {
+    @FXML private Button btnSelectAudioVideoFile, btnChoiceDirForSave;
+    @FXML private ToggleButton btnToMP3, btnToAAC, btnToOggVorbis;
+    @FXML private ToggleButton btnToOPUS, btnToFLAC, btnToALAC;
+    @FXML private ToggleButton btnToWAV, btnToAIFF;
+    @FXML private ComboBox<String> bitRateComboBox, channelComboBox, samplingRateComboBox;
+    @FXML private CheckBox lossyCompresionCheckBox;
+    @FXML private VBox parametersContainer;
 
     @Override
-    protected MediaProperties getProperties() {
-        return audioProperties;
+    protected String getFileFilterDescription() {
+        return "All Media Files";
+    }
+
+    @Override
+    protected MediaType getFileCategoryName() {
+        return MediaType.AUDIO;
+    }
+
+    @Override
+    protected List<String> getSupportedInputFormats() {
+        return Stream.of(Global.getAllSupportedAudioFormats(), Global.getAllSupportedVideoFormats())
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
+    @Override
+    protected List<String> getSupportedFileChooserFormats() {
+        List<String> allFilters = new ArrayList<>(Global.getSupportedAudioFormatsForFileChooser());
+        allFilters.addAll(Global.getSupportedVideoFormatsForFileChooser());
+        return allFilters;
     }
 
     @FXML
     public void initialize() {
-        initLists();
+        initToggleGroup();
         initComboBoxes();
 
-        audioProperties.setOutput(getSavedPath());
-        setupClearMessageTimer(labelSuccess, progressBar, audioProperties.getHideSuccessMessageTimer(), true);
-        
-        checkBoxLossyCompression.setSelected(false);
-        checkBoxLossyCompression.setDisable(true);
+        setupClearMessageTimer(labelSuccess, progressBar, properties.getHideSuccessMessageTimer(), true);
+
+        lossyCompresionCheckBox.setSelected(false);
+        lossyCompresionCheckBox.setDisable(true);
 
         isPressedReset();
 
-        List<String> allFormats = new ArrayList<>(Global.getAllSupportedAudioFormats());
-        allFormats.addAll(Global.getAllSupportedVideoFormats());
-        setupDragAndDrop(dropZone, allFormats, this::loadFile);
-    }
-
-    private void initLists() {
-        List<ToggleButton> listToggleBtn = new ArrayList<>(List.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF));
-        List<ComboBox<String>> listComboBox = new ArrayList<>(List.of(comboBoxChoiceBitRate, comboBoxChoiceChannels, comboBoxChoiceSamplingRate));
-
-        listToggleBtn.forEach(tb -> tb.setToggleGroup(toggleGroup));
-
-        listControls = new ArrayList<>(listToggleBtn);
-        listControls.addAll(listComboBox);
-        listControls.addAll(List.of(btnSubmitAndDownload, btnCancelConversion, btnReset));
-
-        listModifiableControls = new ArrayList<>(listToggleBtn);
-        listModifiableControls.addAll(listComboBox);
-        listModifiableControls.addAll(List.of(btnSelectAudioVideoFile, btnChoiceDirForSave, checkBoxLossyCompression));
-    }
-
-    private void initComboBoxes() {
-        ComboBoxes.setupStringComboBox(comboBoxChoiceBitRate);
-        ComboBoxes.setupStringComboBox(comboBoxChoiceChannels);
-        ComboBoxes.setupStringComboBox(comboBoxChoiceSamplingRate);
-
-        comboBoxChoiceBitRate.getItems().addAll("128 kbps", "192 kbps", "256 kbps", "320 kbps");
-        comboBoxChoiceChannels.getItems().addAll("1 Channels", "2 Channels");
-        comboBoxChoiceSamplingRate.getItems().addAll("8000 Hz", "11025 Hz", "12000 Hz", "16000 Hz",
-                "22050 Hz", "24000 Hz", "32000 Hz",
-                "44100 Hz", "48000 Hz");
-    }
-
-    private void resetToDefaults() {
-        ResetContext ctx = new ResetContext(
-                labelSelectFile, labelSuccess, textDragZone, null,
-                dropZone, null, progressBar, true, "audio/video"
-        );
-        reset(audioProperties, ctx, "Selected media file: none");
-
-        comboBoxChoiceBitRate.setValue("320 kbps");
-        comboBoxChoiceChannels.setValue("2 Channels");
-        comboBoxChoiceSamplingRate.setValue("48000 Hz");
-        audioProperties.setAudioBitRate(320);
-        audioProperties.setChannel(2);
-        audioProperties.setSamplingRate(48000);
-        progressBar.setProgress(0);
-
-        toggleGroup.selectToggle(null);
-        
-        checkBoxLossyCompression.setSelected(false);
-        checkBoxLossyCompression.setDisable(true);
-    }
-
-    @Override
-    protected void lockUI() {
-        btnSelectAudioVideoFile.setDisable(true);
-        btnSubmitAndDownload.setDisable(true);
-        btnReset.setDisable(true);
-        listModifiableControls.forEach(tb -> tb.setDisable(true));
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectAudioVideoFile.setDisable(false);
-        btnSubmitAndDownload.setDisable(false);
-        btnReset.setDisable(false);
-        listModifiableControls.forEach(tb -> tb.setDisable(false));
-    }
-
-    @Override
-    protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
-        checkBoxLossyCompression.setDisable(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
-        if (nonNull(audioProperties.getTargetFormat())) {
-            boolean supportsChoice = MediaHelper.supportsCodecChoice(audioProperties.getTargetFormat());
-            checkBoxLossyCompression.setDisable(!supportsChoice);
-        } else {
-            checkBoxLossyCompression.setDisable(true);
-        }
-    }
-
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (Boolean.TRUE.equals(result)) {
-            showSuccessMessage(labelSuccess, audioProperties.getTargetFormat(), audioProperties.getHideSuccessMessageTimer());
-            showProgressBar(progressBar, audioProperties.getHideSuccessMessageTimer());
-        }
-    }
-
-    @FXML
-    public void onSelectAudioVideoPressed() {
-        SelectFile selectAudioVideoFile = new SelectFile();
-        Stage stage = (Stage) btnSelectAudioVideoFile.getScene().getWindow();
-
-        List<String> allFilters = new ArrayList<>(Global.getSupportedAudioFormatsForFileChooser());
-        allFilters.addAll(Global.getSupportedVideoFormatsForFileChooser());
-
-        selectAudioVideoFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("All Media Files", allFilters)).ifPresent(this::loadFile);
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        audioProperties.setSrcFile(selectedFile);
-        textDragZone.setText("Selected: " + audioProperties.getSrcFile().getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-
-        labelSelectFile.setText("Selected audio file: " + selectedFile.getName());
-        hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(), true);
-    }
-
-    @FXML
-    public void onSelectOutputDirectoryPressed() {
-        selectOutputDirectory(btnChoiceDirForSave, audioProperties.getOutput(), audioProperties::setOutput, "Select directory for save audio");
-    }
-
-    private boolean checkAudioTrack(MultimediaInfo sourceInfo) {
-        if(nonNull(sourceInfo) && isNull(sourceInfo.getAudio())) {
-            Platform.runLater(() -> Alerts.alertDialog(
-                    Alert.AlertType.WARNING,
-                    "No Audio Track Detected",
-                    "The selected file does not have an audio track.",
-                    "Audio conversion is not possible for this file. Please select a file with audio."
-            ));
-            return false;
-        }
-        return true;
-    }
-
-    private boolean checks(@NonNull VideoAndAudioProperties audioProperties) {
-        if(isNull(audioProperties.getOutput())){
-            Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Output path missing!", "Select output directory!");
-            return false;
-        }
-
-        if (isNull((audioProperties.getSrcFile()))) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "File missing!", "Select audio or video file!");
-            return false;
-        }
-
-        if(isNull(audioProperties.getTargetFormat())){
-            Alerts.alertDialog(Alert.AlertType.WARNING, "WARN", "Format missing!", "Select audio format!");
-            return false;
-        }
-
-        return true;
-    }
-
-    @FXML
-    public void onStartConversionPressed() {
-        if(!checks(audioProperties)) {
-            return;
-        }
-
-        CompletableFuture.supplyAsync(() -> getMetadata(audioProperties.getSrcFile()), IO_EXECUTOR)
-            .thenAccept(sourceInfoOpt -> {
-                MultimediaInfo sourceInfo = sourceInfoOpt.orElse(null);
-                if(!checkAudioTrack(sourceInfo)) {
-                    return;
-                }
-
-                int originalChannels = parseChannels(sourceInfo);
-                if (originalChannels == 1 && audioProperties.getChannel() == 2) {
-                    Platform.runLater(() -> {
-                        boolean proceed = Alerts.confirmationDialog(
-                                "Mono to Stereo Confirmation",
-                                "The source file is mono (1 channel).",
-                                "Do you want to convert it to stereo (2 channels) anyway?"
-                        );
-                        if (proceed) continueWithConversion(sourceInfo);
-                    });
-                } else {
-                    Platform.runLater(() -> continueWithConversion(sourceInfo));
-                }
-            });
-    }
-
-    private void continueWithConversion(MultimediaInfo sourceInfo) {
-        String targetFormat = audioProperties.getTargetFormat().toLowerCase();
-
-        int finalAudioBitrate = audioProperties.getAudioBitRate();
-        int finalChannels = audioProperties.getChannel();
-        int finalSamplingRate = audioProperties.getSamplingRate();
-
-        ErrorLogger.info(getClass(), "Before conversion: selectedBitrate=" + finalAudioBitrate
-                + ", sourceBitrate=" + parseAudioBitrate(sourceInfo));
-
-        if (finalAudioBitrate <= 0) {
-            finalAudioBitrate = parseAudioBitrate(sourceInfo);
-            ErrorLogger.info(getClass(), "Bitrate <= 0, using source bitrate: " + finalAudioBitrate);
-        }
-        if (finalAudioBitrate <= 0) {
-            finalAudioBitrate = 320;
-            ErrorLogger.info(getClass(), "Source bitrate invalid, using default: 320");
-        }
-
-        if (finalChannels <= 0) finalChannels = nonNull(sourceInfo) ? parseChannels(sourceInfo) : 2;
-        if (finalChannels <= 0) finalChannels = 2;
-
-        if (finalSamplingRate <= 0) finalSamplingRate = nonNull(sourceInfo) ? parseSamplingRate(sourceInfo) : 48000;
-        if (finalSamplingRate <= 0) finalSamplingRate = 48000;
-
-        audioProperties.setAudioBitRate(finalAudioBitrate);
-        audioProperties.setChannel(finalChannels);
-        audioProperties.setSamplingRate(finalSamplingRate);
-
-        ErrorLogger.info(getClass(), "Final audio properties set: BR=" + finalAudioBitrate
-                + ", CH=" + finalChannels + ", SR=" + finalSamplingRate);
-
-        boolean useLossy = checkBoxLossyCompression.isSelected();
-        audioProperties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, useLossy));
-        audioProperties.setFfmpegFormat(MediaHelper.getFFmpegFormat(targetFormat));
-        audioProperties.setTypeMedia(TypeMedia.AUDIO);
-
-        ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
-        currentTask = new ConvertVideoAudioTask(converter, audioProperties, TypeMedia.AUDIO);
-        
-        executeMediaTask(currentTask);
-    }
-
-    @FXML
-    public void isPressedReset() {
-        onCancelConversion();
-        resetToDefaults();
-        audioProperties.setOutput(getSavedPath());
-        hideSuccessMessage(labelSuccess, audioProperties.getHideSuccessMessageTimer(),true);
-        disableControls();
-    }
-
-    @FXML
-    private void onActionClickToggleBtnFormat(ActionEvent e) {
-        viewHelp.Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
-
-        ToggleButton tb = (ToggleButton) e.getSource();
-
-        if (!tb.isSelected()) {
-            audioProperties.setTargetFormat(null);
-            checkBoxLossyCompression.setDisable(true);
-            return;
-        }
-
-        String selectedFormat = getString(tb);
-
-        if (nonNull(selectedFormat)) {
-            selectFormat(selectedFormat, audioProperties::setTargetFormat);
-            
-            boolean supportsChoice = MediaHelper.supportsCodecChoice(selectedFormat);
-            checkBoxLossyCompression.setDisable(!supportsChoice);
-            if (supportsChoice) {
-                checkBoxLossyCompression.setSelected(false);
-            }
-        }
-    }
-
-    private static String getString(ToggleButton tb) {
-        if (isNull(tb) || isNull(tb.getId())) {
-            return null;
-        }
-        return switch (tb.getId()) {
-            case "btnToMP3"       -> "mp3";
-            case "btnToAAC"       -> "aac";
-            case "btnToOggVorbis" -> "ogg";
-            case "btnToOPUS"      -> "opus";
-            case "btnToFLAC"      -> "flac";
-            case "btnToALAC"      -> "m4a";
-            case "btnToWAV"       -> "wav";
-            case "btnToAIFF"      -> "aiff";
-            default               -> null;
-        };
-    }
-
-    @FXML
-    public void onChoiceComboBox(ActionEvent event) {
-        if (!(event.getSource() instanceof ComboBox<?> source)) {
-            return;
-        }
-
-        switch (source.getId()) {
-            case "comboBoxChoiceBitRate"      -> audioProperties.setAudioBitRate(parseComboBoxStringToInt(comboBoxChoiceBitRate));
-            case "comboBoxChoiceChannels"     -> audioProperties.setChannel(parseComboBoxStringToInt(comboBoxChoiceChannels));
-            case "comboBoxChoiceSamplingRate" -> audioProperties.setSamplingRate(parseComboBoxStringToInt(comboBoxChoiceSamplingRate));
-        }
-    }
-
-    @FXML
-    public void onCancelConversion() {
-        if (nonNull(currentTask)) currentTask.cancelConversion();
+        setupDragAndDrop(dropZone, getSupportedInputFormats(), this::loadFile);
     }
 
     @FXML
     private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
+        InfoAlert.showToolInfoWithoutClipboard(
                 "Converter Audio",
+                "1. Select an audio or video file using \"Select audio/video\" or drag and drop it into the dash-bordered zone;",
                 """
-                        How to use:
-                        1. Select an audio or video file using "Select audio/video" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
                         3. Select the target audio format (MP3, AAC, OGG, etc.);
 
                         4. Configure quality settings (Bitrate, Channels, Sampling Rate);
@@ -390,10 +87,159 @@ public class ConverterAudioController extends AbstractMediaController {
                         5. (Optional) Enable "Use Lossy Compression (AAC)" if needed;
 
                         6. Click "Convert and Download".
-
+                        
                         You can cancel the conversion at any time using the "Cancel Conversion" button.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
+                        """
         );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        onCancelConversion();
+
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true, "audio/video"
+        );
+        reset(properties, ctx, "Selected media file: none");
+
+        hideSuccessMessage(labelSuccess, properties.getHideSuccessMessageTimer(), true);
+        disableControls();
+
+        bitRateComboBox.setValue("320 kbps");
+        channelComboBox.setValue("2 Channels");
+        samplingRateComboBox.setValue("48000 Hz");
+        properties.setAudioBitRate(320);
+        properties.setChannel(2);
+        properties.setSamplingRate(48000);
+        progressBar.setProgress(0);
+
+        toggleGroup.selectToggle(null);
+
+        lossyCompresionCheckBox.setSelected(false);
+        lossyCompresionCheckBox.setDisable(true);
+    }
+
+    @FXML
+    public void onChoiceComboBox(ActionEvent event) {
+        ComboBox<?> comboBox = (ComboBox<?>) event.getSource();
+
+        switch (comboBox.getId()) {
+            case "bitRateComboBox"      -> properties.setAudioBitRate(parseComboBoxStringToInt(bitRateComboBox));
+            case "channelComboBox"     -> properties.setChannel(parseComboBoxStringToInt(channelComboBox));
+            case "samplingRateComboBox" -> properties.setSamplingRate(parseComboBoxStringToInt(samplingRateComboBox));
+            default -> throw new IllegalArgumentException("Unknown id: " + comboBox);
+        }
+    }
+
+    @FXML
+    private void onActionClickToggleBtnFormat(ActionEvent e) {
+        hideSuccessMessage(labelSuccess, properties.getHideSuccessMessageTimer(), true);
+
+        MediaHelper.selectFormat(e).ifPresentOrElse(format -> {
+            selectFormat(format.getExtension(), properties::setTargetFormat);
+
+            boolean supportsChoice = MediaHelper.supportsCodecChoice(format);
+            lossyCompresionCheckBox.setDisable(!supportsChoice);
+            if (supportsChoice) {
+                lossyCompresionCheckBox.setSelected(false);
+            }
+        }, () -> {
+            properties.setTargetFormat(null);
+            lossyCompresionCheckBox.setDisable(true);
+        });
+    }
+
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+        updateLossyCheckboxState();
+    }
+
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+        updateLossyCheckboxState();
+    }
+
+    @Override
+    protected void toggleUI(boolean flag) {
+        Stream.of(parametersContainer, btnSelectAudioVideoFile, btnChoiceDirForSave, btnSubmitAndDownload, btnReset)
+                .forEach(c -> c.setDisable(flag));
+        btnCancelConversion.setDisable(!flag);
+    }
+
+    @Override
+    protected void toggleControls(boolean flag) {
+        Stream.of(parametersContainer, btnSubmitAndDownload, btnCancelConversion, btnReset)
+                .forEach(c -> c.setDisable(flag));
+    }
+
+
+    @Override
+    protected void executeConversion(MultimediaInfo sourceInfo) {
+        MediaFormat targetFormat = MediaFormat.fromExtension(properties.getTargetFormat())
+                .orElse(MediaFormat.MP3);
+
+        int finalAudioBitrate = properties.getAudioBitRate();
+        int finalChannels     = properties.getChannel();
+        int finalSamplingRate = properties.getSamplingRate();
+
+        if (finalAudioBitrate <= 0) finalAudioBitrate = parseAudioBitrate(sourceInfo);
+        if (finalAudioBitrate <= 0) finalAudioBitrate = 320;
+
+        if (finalChannels <= 0) finalChannels = nonNull(sourceInfo) ? parseChannels(sourceInfo) : 2;
+        if (finalChannels <= 0) finalChannels = 2;
+
+        if (finalSamplingRate <= 0) finalSamplingRate = nonNull(sourceInfo) ? parseSamplingRate(sourceInfo) : 48000;
+        if (finalSamplingRate <= 0) finalSamplingRate = 48000;
+
+        properties.setAudioBitRate(finalAudioBitrate);
+        properties.setChannel(finalChannels);
+        properties.setSamplingRate(finalSamplingRate);
+
+        properties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, lossyCompresionCheckBox.isSelected()));
+        properties.setFfmpegFormat(MediaHelper.getFFmpegFormat(targetFormat));
+        properties.setMediaType(MediaType.AUDIO);
+
+        ConverterVideoAudioFile converter = new ConverterVideoAudioFile();
+        currentTask = new ConvertVideoAudioTask(converter, properties, MediaType.AUDIO);
+
+        executeMediaTask(currentTask);
+    }
+
+    private void updateLossyCheckboxState() {
+        MediaFormat.fromExtension(properties.getTargetFormat()).ifPresentOrElse(
+                format -> lossyCompresionCheckBox.setDisable(!MediaHelper.supportsCodecChoice(format)),
+                () -> lossyCompresionCheckBox.setDisable(true)
+        );
+    }
+
+    private void initToggleGroup() {
+        Stream.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF)
+                .forEach(tb -> tb.setToggleGroup(toggleGroup));
+    }
+
+    private void initComboBoxes() {
+        ComboBoxes.setupStringComboBox(bitRateComboBox);
+        ComboBoxes.setupStringComboBox(channelComboBox);
+        ComboBoxes.setupStringComboBox(samplingRateComboBox);
+
+        bitRateComboBox.getItems().addAll("128 kbps", "192 kbps", "256 kbps", "320 kbps");
+        channelComboBox.getItems().addAll("1 Channels", "2 Channels");
+        samplingRateComboBox.getItems().addAll(
+                "8000 Hz", "11025 Hz", "12000 Hz",
+                "16000 Hz", "22050 Hz", "24000 Hz",
+                "32000 Hz", "44100 Hz", "48000 Hz");
     }
 }

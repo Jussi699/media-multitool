@@ -69,7 +69,7 @@ public class InfoAlert {
         Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", toolName, text);
     }
 
-    public static void showToolInfo(String toolName, String firstInstructions, String secondInstructions, String threeInstructions) {
+    public static void showToolInfoWithoutClipboard(String toolName, String firstInstructions, String secondInstructions) {
         String text = String.format("""
                         How to use:
                         %s;
@@ -79,11 +79,9 @@ public class InfoAlert {
                         
                         %s
                         
-                        %s
-                        
                         If you have any questions or problems, please go to Info and write to me on Discord.""",
 
-                firstInstructions, secondInstructions, threeInstructions
+                firstInstructions, secondInstructions
         );
 
         Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", toolName, text);

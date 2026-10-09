@@ -253,13 +253,13 @@
     -fx-border-color: -color-for-active-button-comboBox;
 }
 
-#comboBoxIcoSize .list-view {
+#icoSizeComboBox .list-view {
     -fx-pref-width: 100px;
     -fx-min-width: 100px;
     -fx-max-width: 100px;
 }
 
-#comboBoxIcoSize .list-view .list-cell {
+#icoSizeComboBox .list-view .list-cell {
     -fx-alignment: center;
 }
 

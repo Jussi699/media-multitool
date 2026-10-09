@@ -112,6 +112,12 @@ public abstract class AbstractMediaController {
         }
     }
 
+    protected void cancelCurrentTask(Task<?> task) {
+        if (nonNull(task) && task.isRunning()) {
+            task.cancel(true);
+        }
+    }
+
     protected <T> void executeMediaTask(Task<T> task) {
         executeMediaTask(task, "Operation");
     }
@@ -223,7 +229,7 @@ public abstract class AbstractMediaController {
         }
     }
 
-    protected void selectFormat(String format , @NonNull Consumer<String> propertySetter) {
+    protected void selectFormat(String format, @NonNull Consumer<String> propertySetter) {
         propertySetter.accept(format);
 
         Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);

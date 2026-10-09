@@ -18,6 +18,8 @@ import javafx.scene.shape.Rectangle;
 import lombok.Getter;
 import lombok.Setter;
 import model.enums.AspectRatio;
+import model.enums.DragMode;
+import model.enums.HandlePosition;
 
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -26,8 +28,6 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.enums.EnumCrop.DragMode;
-import static model.enums.EnumCrop.HandlePosition;
 
 public class CropHelper {
     private static final double MIN_CROP_SIZE = 10.0;

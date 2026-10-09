@@ -4,7 +4,7 @@ import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
-import model.enums.TypeMedia;
+import model.enums.MediaType;
 
 import java.io.File;
 
@@ -28,7 +28,7 @@ public class VideoAndAudioProperties implements MediaProperties {
     private String videoCodec;
     private String audioCodec;
     private String ffmpegFormat;
-    private TypeMedia typeMedia;
+    private MediaType mediaType;
     private final PauseTransition hideSuccessMessageTimer = new PauseTransition(Duration.seconds(seconds));
 
     @Override
@@ -50,7 +50,7 @@ public class VideoAndAudioProperties implements MediaProperties {
         this.videoCodec = null;
         this.audioCodec = null;
         this.ffmpegFormat = null;
-        this.typeMedia = null;
+        this.mediaType = null;
         this.useGPU = false;
     }
 }

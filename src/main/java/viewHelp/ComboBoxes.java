@@ -3,12 +3,19 @@ package viewHelp;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.util.StringConverter;
+import model.utility.Item;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import static java.util.Objects.isNull;
 
 public class ComboBoxes {
+    private ComboBoxes() {
+        /* This utility class should not be instantiated */
+    }
+
     public static <T> void setupComboBox(ComboBox<T> comboBox, Function<T, String> textProvider) {
         comboBox.setConverter(new StringConverter<>() {
             @Override
@@ -43,5 +50,23 @@ public class ComboBoxes {
                 }
             }
         });
+    }
+
+    public static List<Item> createItems(String matchSourceTitle, String suffix, int... values) {
+        List<Item> list = new ArrayList<>();
+        list.add(new Item(-1, matchSourceTitle));
+        for (int val : values) {
+            list.add(new Item(val, val + " " + suffix));
+        }
+        return list;
+    }
+
+    public static List<Item> createItems(String matchSourceTitle, String prefix, String suffix, int... values) {
+        List<Item> list = new ArrayList<>();
+        list.add(new Item(-1, matchSourceTitle));
+        for (int val : values) {
+            list.add(new Item(val, prefix + val + " " + suffix));
+        }
+        return list;
     }
 }
