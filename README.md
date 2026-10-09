@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/Jussi699/media-multitool/releases/latest"><img src="https://github.com/Jussi699/media-multitool/blob/master/src/main/resources/img/mainIcon.png" alt="Media-Multitol" width="128" /></a>
+  <a href="https://github.com/Jussi699/media-multitool/releases/latest"><img src="https://github.com/Jussi699/media-multitool/blob/master/src/main/resources/img/tools.png" alt="Media-Multitol" width="128" /></a>
 </p>
 
 <h1 align="center">Media-Multitool</h1>
