@@ -19,7 +19,7 @@ import java.util.Objects;
 import static java.util.Objects.nonNull;
 
 public class MediaMultitoolApp extends Application {
-    private static final String PATH_MAIN_ICON = "/img/mainIcon.png";
+    private static final String PATH_MAIN_ICON = "/img/tools.png";
 
     @Override
     public void start(Stage loadingStage) throws IOException {
@@ -70,7 +70,7 @@ public class MediaMultitoolApp extends Application {
             Stage mainStage = new Stage();
 
             try {
-                mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/mainIcon.png"))));
+                mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(PATH_MAIN_ICON))));
             } catch (NullPointerException e) {
                 ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
             }
