@@ -9,6 +9,8 @@ import ws.schild.jave.info.MultimediaInfo;
 import java.io.File;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static viewHelp.Utility.getMetadata;
 
 public class VideoPresets {
@@ -106,5 +108,12 @@ public class VideoPresets {
         } catch (Exception _) {
             return resolution;
         }
+    }
+
+    public static double calculateEstimatedSizeMB(Preset preset, long durationMillis, boolean hasAudio) {
+        if (isNull(preset) || durationMillis <= 0) return 0;
+        int vBitrate = preset.video().getBitRate().orElse(0);
+        int aBitrate = (hasAudio && nonNull(preset.audio())) ? preset.audio().getBitRate().orElse(0) : 0;
+        return ((vBitrate + aBitrate) * (durationMillis / 1000.0) / 8.0) / (1024.0 * 1024.0);
     }
 }

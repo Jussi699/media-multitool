@@ -5,6 +5,7 @@ import model.properties.ImageProperties;
 import model.utility.DetermineType;
 import net.coobird.thumbnailator.Thumbnails;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -12,6 +13,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Locale;
@@ -19,12 +21,15 @@ import java.util.Optional;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import static java.util.Objects.isNull;
 import static model.utility.PathWorker.createOutputFile;
 
 public class Compressor {
@@ -125,47 +130,49 @@ public class Compressor {
 
     private String normalizeSvg(File file) throws IOException {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setIgnoringComments(true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            
-            try {
-                factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            } catch (Exception _) {
-                ErrorLogger.info("XML feature 'disallow-doctype-decl' not supported in this JDK version");
-            }
-            
-            try {
-                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            } catch (Exception _) {
-                ErrorLogger.info("XML feature 'external-general-entities' not supported in this JDK version");
-            }
-            
-            try {
-                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            } catch (Exception _) {
-                ErrorLogger.info("XML feature 'external-parameter-entities' not supported in this JDK version");
-            }
-
-            DocumentBuilder builder = factory.newDocumentBuilder();
+            DocumentBuilder builder = createDocumentBuilderFactory().newDocumentBuilder();
             Document document = builder.parse(file);
             removeMetadataNodes(document);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-            transformer.setOutputProperty(OutputKeys.ENCODING, StandardCharsets.UTF_8.name());
-            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+            Transformer transformer = setupTransformer(transformerFactory);
 
-            java.io.StringWriter writer = new java.io.StringWriter();
+            StringWriter writer = new java.io.StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(writer));
             return writer.toString().trim();
         } catch (Exception e) {
-            ErrorLogger.log(119, ErrorLogger.Level.ERROR, "Failed to normalize SVG before compression", e);
-            throw new IOException("Failed to process SVG", e);
+            ErrorLogger.error("Failed to normalize SVG before compression: " + e);
+            throw new IOException("Failed to normalize SVG", e);
+        }
+    }
+
+    private DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setIgnoringComments(true);
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+        setXmlFeatureSafe(factory, "http://apache.org/xml/features/disallow-doctype-decl", true);
+        setXmlFeatureSafe(factory, "http://xml.org/sax/features/external-general-entities", false);
+        setXmlFeatureSafe(factory, "http://xml.org/sax/features/external-parameter-entities", false);
+        return factory;
+    }
+
+    private Transformer setupTransformer(TransformerFactory factory) throws TransformerConfigurationException {
+        Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.ENCODING, StandardCharsets.UTF_8.name());
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        return transformer;
+    }
+
+    private void setXmlFeatureSafe(DocumentBuilderFactory factory, String feature, boolean value) {
+        try {
+            factory.setFeature(feature, value);
+        } catch (Exception _) {
+            ErrorLogger.info("XML feature '" + feature + "' not supported in this JDK version");
         }
     }
 
@@ -186,14 +193,16 @@ public class Compressor {
 
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 String name = child.getNodeName().toLowerCase(Locale.ROOT);
-                if (name.contains("metadata") || name.contains("sodipodi") ||
-                        name.contains("inkscape") || name.contains("foreignobject") ||
-                        name.equals("desc") || name.equals("title")) {
+                final boolean checkContainFirst   = name.contains("metadata") || name.contains("sodipodi");
+                final boolean checkContainSecond  = name.contains("inkscape") || name.contains("foreignobject");
+                final boolean checkContainsThird  = name.equals("desc")       || name.equals("title");
+
+                if (checkContainFirst || checkContainSecond || checkContainsThird) {
                     node.removeChild(child);
                     continue;
                 }
 
-                org.w3c.dom.NamedNodeMap attributes = child.getAttributes();
+                NamedNodeMap attributes = child.getAttributes();
                 for (int j = attributes.getLength() - 1; j >= 0; j--) {
                     Node attr = attributes.item(j);
                     String attrName = attr.getNodeName().toLowerCase(Locale.ROOT);
@@ -209,5 +218,21 @@ public class Compressor {
                 }
             }
         }
+    }
+
+    public static double calculateEstimatedSizeMB(ImageProperties properties) {
+        if (isNull(properties.getImage())) return 0;
+
+        float scale = properties.getScale();
+        float quality = properties.getQuality();
+
+        float effectiveScale = (scale > 0) ? scale : 1.0f;
+        float effectiveQuality = (quality > 0) ? quality : 1.0f;
+
+        long originalSizeBytes = properties.getImage().length();
+
+        double estimatedBytes = originalSizeBytes * Math.pow(effectiveScale, 2) * effectiveQuality;
+
+        return estimatedBytes / (1024.0 * 1024.0);
     }
 }

@@ -559,11 +559,6 @@
     -fx-text-fill: -main-gradient-color;
 }
 
-.label-drag-zone {
-    -fx-font-size: 18px;
-    -fx-text-fill: WHITE;
-}
-
 #previewContainer {
     -fx-border-color: -main-gradient-color !important;
     -fx-effect: -main-effect;
@@ -1048,4 +1043,9 @@
     -fx-pref-height: 24px;
     -fx-min-width: 24px;
     -fx-min-height: 24px;
+}
+
+#textDragZone {
+    -fx-font-size: 18px;
+    -fx-text-fill: WHITE;
 }

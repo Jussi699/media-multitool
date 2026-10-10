@@ -56,7 +56,16 @@ public class ComboBoxes {
         List<Item> list = new ArrayList<>();
         list.add(new Item(-1, matchSourceTitle));
         for (int val : values) {
-            list.add(new Item(val, val + " " + suffix));
+            list.add(new Item(val, val + suffix));
+        }
+        return list;
+    }
+
+    public static List<Item> createItemsRound(String matchSourceTitle, String suffix, float... values) {
+        List<Item> list = new ArrayList<>();
+        list.add(new Item(-1f, matchSourceTitle));
+        for (float val : values) {
+            list.add(new Item(val, Math.round(val * 100) + suffix));
         }
         return list;
     }

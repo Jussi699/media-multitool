@@ -1,12 +1,12 @@
 package media_multitool.compressors;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.compressorImage.Compressor;
 import model.compressorImage.CompressionResult;
@@ -15,40 +15,42 @@ import model.converterImage.UsefulMethods;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.ImageProperties;
-import model.select.SelectFile;
 import model.utility.*;
 import viewHelp.Alerts;
 import viewHelp.ComboBoxes;
+import viewHelp.InfoAlert;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.compressorImage.Compressor.calculateEstimatedSizeMB;
 import static model.utility.PathWorker.getSavedPath;
+import static viewHelp.ComboBoxes.*;
 import static viewHelp.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
+
+    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
+    @FXML private ImageView imageViewPreview;
+    @FXML private StackPane dropZone, previewContainer;
+    @FXML private Label textDragZone, labelSelectFile, labelPreviewPlaceholder;
+    @FXML private ComboBox<Item> qualityComboBox, scaleComboBox;
+
+    private Control[] controls;
 
     @Override
     protected MediaProperties getProperties() {
         return imageProperties;
     }
 
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private ComboBox<Item> comboBoxOutputQuality, comboBoxScaleImage;
-    @FXML private Button btnSelectImageFile, btnChoiceDirForSaveImage, btnSubmit;
-    @FXML private Label textDragZone, labelSelectFile, labelPreviewPlaceholder;
-    @FXML private ImageView imageViewPreview;
-
-    private List<Control> listControls;
-
     @FXML
     public void initialize() {
-        listControls = List.of(comboBoxOutputQuality, comboBoxScaleImage, btnSubmit, btnReset);
+        controls = new Control[] {qualityComboBox, scaleComboBox, btnSubmit, btnReset };
 
         imageProperties.setOutput(getSavedPath());
 
@@ -61,54 +63,121 @@ public class CompressorImageController extends AbstractMediaController {
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
     }
 
-    private void initComboBoxes() {
-        comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
-        comboBoxScaleImage.setValue(new Item(-1, "Scale"));
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Compressor Image",
+                "Select an image file using \"Select image\" or drag and drop it into the dash-bordered zone",
+                """
+                       3. Configure Scale and Quality settings;
 
-        ComboBoxes.setupComboBox(comboBoxOutputQuality, Item::title);
-        ComboBoxes.setupComboBox(comboBoxScaleImage, Item::title);
+                       4. Click "Compress and Download".
 
-        comboBoxOutputQuality.getItems().addAll(
-                new Item(-1f, "Quality"),
-                new Item(1.0f, "100%"), new Item(0.9f, "90%"),
-                new Item(0.85f, "85%"), new Item(0.75f, "75%"),
-                new Item(0.6f, "60%"), new Item(0.5f, "50%"),
-                new Item(0.25f, "25%"), new Item(0.15f, "15%"),
-                new Item(0.10f, "10%"), new Item(0.05f, "5%")
+                       For SVG files, the compressor removes unnecessary metadata to reduce file size.
+
+                       You can cancel the conversion at any time using the "Cancel Conversion" button.
+                       """
         );
+    }
 
-        comboBoxScaleImage.getItems().addAll(
-                new Item(-1f, "Scale"),
-                new Item(1.0f, "100%"), new Item(0.9f, "90%"),
-                new Item(0.85f, "85%"), new Item(0.75f, "75%"),
-                new Item(0.6f, "60%"), new Item(0.5f, "50%"),
-                new Item(0.25f, "25%"), new Item(0.15f, "15%"),
-                new Item(0.10f, "10%"), new Item(0.05f, "5%")
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, null, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPreview, progressBar, true, "image"
         );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        labelSuccess.setText("Estimated size: Waiting load image");
+        scaleComboBox.getSelectionModel().selectFirst();
+        qualityComboBox.getSelectionModel().selectFirst();
+        disableControls();
+    }
+
+    @FXML
+    public void selectFile() {
+        selectInputFile(btnSelectFile,
+                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()), this::loadFile);
+    }
+
+    @FXML
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    }
+
+    @FXML
+    public void submitAndDownload() {
+        String targetFormat = UsefulMethods.normalizeFormat(imageProperties.getTypeImage());
+        boolean isSvg = "svg".equalsIgnoreCase(targetFormat);
+
+        if(!validateImageFormat(isSvg, targetFormat)) {
+            return;
+        }
+
+        Compressor compressor = new Compressor();
+        CompressImageTask task = new CompressImageTask(compressor, imageProperties, isSvg);
+        executeMediaTask(task);
+    }
+
+    private boolean validateImageFormat(boolean isSvg, String targetFormat) {
+        boolean qualityRequired = "jpeg".equalsIgnoreCase(targetFormat)
+                || "jpg".equalsIgnoreCase(targetFormat)
+                || "webp".equalsIgnoreCase(targetFormat);
+
+        return checks(isSvg, qualityRequired);
+    }
+
+    @FXML
+    public void onChoiceSettingCompressImage(ActionEvent event) {
+        ComboBox<Item> source = (ComboBox<Item>) event.getSource();
+
+        String id = source.getId();
+
+        if(isNull(id)) {
+            ErrorLogger.error("Source id is null");
+            return;
+        }
+
+        Item selectedItem;
+
+        switch (id) {
+            case "qualityComboBox" -> {
+                selectedItem = qualityComboBox.getValue();
+                imageProperties.setQuality(nonNull(selectedItem) ? selectedItem.id() : -1);
+                ErrorLogger.info(getClass(), "User selected quality: " + imageProperties.getQuality());
+                updateEstimatedSize();
+            }
+            case "scaleComboBox" -> {
+                selectedItem = scaleComboBox.getValue();
+                imageProperties.setScale((nonNull(selectedItem)) ? selectedItem.id() : -1);
+                ErrorLogger.info(getClass(), "User selected scale: " + imageProperties.getScale());
+            }
+            default -> throw new IllegalStateException("Unexpected id: " + id);
+        }
+
+        updateEstimatedSize();
     }
 
     @Override
     protected void lockUI() {
-        btnSelectImageFile.setDisable(true);
-        btnChoiceDirForSaveImage.setDisable(true);
+        toggleUI(true);
         btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectImageFile.setDisable(false);
-        btnChoiceDirForSaveImage.setDisable(false);
+        toggleUI(false);
         btnReset.setDisable(false);
     }
 
     @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        toggleControls(true);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        toggleControls(false);
     }
 
     @Override
@@ -119,46 +188,83 @@ public class CompressorImageController extends AbstractMediaController {
             return;
         }
 
-        if (result instanceof Optional<?> opt) {
-            if (opt.isPresent() && opt.get() instanceof CompressionResult compressionResult) {
-
-                imageProperties.setCompressedImage(compressionResult.outputFile());
-
-                if (!compressionResult.sizeReduced()) {
-                    imageProperties.setCompressedImage(null);
-                    String warningMessage = String.format(Locale.US,
-                            "Compression skipped: file would not shrink (%s -> %s)",
-                            formatBytes(compressionResult.originalSizeBytes()),
-                            formatBytes(compressionResult.compressedSizeBytes()));
-
-                    showErrorMessage(labelSuccess, warningMessage, imageProperties.getHideSuccessMessageTimer());
-
-                    Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
-                            "The compressed file would be larger than the original, so it was not kept.");
-                    return;
-                }
-
-                showSuccessText(labelSuccess, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
-                showProgressBar(progressBar, imageProperties.getHideSuccessMessageTimer());
-
-            } else {
-                showErrorMessage(labelSuccess, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
-                ErrorLogger.warn("Compressed image result is empty or invalid! " + getClass().getName());
-            }
+        if (result instanceof Optional<?> opt && opt.orElse(null) instanceof CompressionResult compressionResult) {
+            processCompressionResult(compressionResult);
+        } else {
+            handleInvalidResult();
         }
     }
-    
-    @FXML
-    public void ActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectImageFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
+
+    private void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
+        enableControls();
+        imageProperties.setImage(selectedFile);
+        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
+        labelSelectFile.setText("Select image: " + selectedFile.getName());
+
+        if (nonNull(imageViewPreview)) {
+            try {
+                imageViewPreview.setImage(new Image(selectedFile.toURI().toString()));
+                labelPreviewPlaceholder.setVisible(false);
+            } catch (Exception e) {
+                ErrorLogger.error("Failed to load preview: " + e.getMessage());
+            }
+        }
+
+        markDropZoneLoaded(dropZone, textDragZone, selectedFile.getName());
+        updateEstimatedSize();
     }
 
-    @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSaveImage, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    private void initComboBoxes() {
+        qualityComboBox.setValue(new Item(-1, "Quality"));
+        scaleComboBox.setValue(new Item(-1, "Scale"));
+
+        ComboBoxes.setupComboBox(qualityComboBox, Item::title);
+        ComboBoxes.setupComboBox(scaleComboBox, Item::title);
+
+        qualityComboBox.getItems().addAll(createItemsRound("Quality", "%",
+                1.0f, 0.9f, 0.85f,
+                0.75f, 0.6f, 0.5f, 0.25f,
+                0.15f, 0.10f, 0.05f));
+
+        scaleComboBox.getItems().addAll(createItemsRound("Scale", "%",
+                1.0f, 0.9f, 0.85f,
+                0.75f, 0.6f, 0.5f, 0.25f,
+                0.15f, 0.10f, 0.05f));
+    }
+
+    private void processCompressionResult(CompressionResult compressionResult) {
+        imageProperties.setCompressedImage(compressionResult.outputFile());
+
+        if (!compressionResult.sizeReduced()) {
+            handleSkippedCompression(compressionResult);
+            return;
+        }
+
+        showSuccessText(labelSuccess, buildSuccessMessage(compressionResult), imageProperties.getHideSuccessMessageTimer());
+        showProgressBar(progressBar, imageProperties.getHideSuccessMessageTimer());
+    }
+
+    private void handleSkippedCompression(CompressionResult compressionResult) {
+        imageProperties.setCompressedImage(null);
+
+        String warningMessage = String.format(Locale.US,
+                "Compression skipped: file would not shrink (%s -> %s)",
+                formatBytes(compressionResult.originalSizeBytes()),
+                formatBytes(compressionResult.compressedSizeBytes()));
+
+        showErrorMessage(labelSuccess, warningMessage, imageProperties.getHideSuccessMessageTimer());
+
+        Alerts.alertDialog(Alert.AlertType.INFORMATION, "Information", "Compression skipped",
+                "The compressed file would be larger than the original, so it was not kept.");
+    }
+
+    private void handleInvalidResult() {
+        showErrorMessage(labelSuccess, "So close, yet no success", imageProperties.getHideSuccessMessageTimer());
+        ErrorLogger.warn("Compressed image result is empty or invalid! " + getClass().getName());
     }
 
     private boolean checks(boolean isSvg, boolean qualityRequired) {
@@ -184,75 +290,6 @@ public class CompressorImageController extends AbstractMediaController {
         return true;
     }
 
-    @FXML
-    public void submitCompressAndDownload() {
-        String targetFormat = UsefulMethods.normalizeFormat(imageProperties.getTypeImage());
-        boolean isSvg = "svg".equalsIgnoreCase(targetFormat);
-        boolean qualityRequired = "jpeg".equalsIgnoreCase(targetFormat) || "jpg".equalsIgnoreCase(targetFormat) || "webp".equalsIgnoreCase(targetFormat);
-
-        if(!checks(isSvg, qualityRequired)) {
-            return;
-        }
-
-        Compressor compressor = new Compressor();
-        CompressImageTask task = new CompressImageTask(compressor, imageProperties, isSvg);
-        executeMediaTask(task);
-    }
-
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectFile, null, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
-        );
-        reset(imageProperties, ctx, "Selected image file: none");
-
-        labelSuccess.setText("Estimated size: Waiting load image");
-
-        comboBoxOutputQuality.setValue(new Item(-1, "Quality"));
-        comboBoxScaleImage.setValue(new Item(-1, "Scale"));
-        disableControls();
-    }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Compressor Image",
-                """
-                        How to use:
-                        1. Select an image file using "Select image" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Configure Scale and Quality settings;
-
-                        4. Click "Compress and Download".
-
-                        For SVG files, the compressor removes unnecessary metadata to reduce file size.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
-    }
-
-    @FXML
-    public void onChoiceScaleImage() {
-        Item selectedItem = comboBoxScaleImage.getValue();
-        imageProperties.setScale((nonNull(selectedItem)) ? selectedItem.id() : -1);
-        ErrorLogger.info(getClass(), "User selected scale: " + imageProperties.getScale());
-        updateEstimatedSize();
-    }
-
-    @FXML
-    public void onChoiceOutputQuality() {
-        Item selectedItem = comboBoxOutputQuality.getValue();
-        imageProperties.setQuality(nonNull(selectedItem) ? selectedItem.id() : -1);
-        ErrorLogger.info(getClass(), "User selected quality: " + imageProperties.getQuality());
-        updateEstimatedSize();
-    }
-
     private String buildSuccessMessage(CompressionResult result) {
         return String.format(Locale.US,
                 "Compressed to %s | saved %.1f%% (%s -> %s)",
@@ -273,36 +310,6 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
 
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectFile.setText("Select image: " + selectedFile.getName());
-
-        if (nonNull(imageViewPreview)) {
-            try {
-                Image image = new Image(selectedFile.toURI().toString());
-                imageViewPreview.setImage(image);
-
-                labelPreviewPlaceholder.setVisible(false);
-            } catch (Exception e) {
-                ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            }
-        }
-
-        textDragZone.setText("Selected: " + selectedFile.getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-
-        updateEstimatedSize();
-    }
-
     private void updateEstimatedSize() {
         if (isNull(imageProperties.getImage())) {
             return;
@@ -312,29 +319,22 @@ public class CompressorImageController extends AbstractMediaController {
             if (nonNull(imageProperties.getHideSuccessMessageTimer())) {
                 imageProperties.getHideSuccessMessageTimer().stop();
             }
-        } catch (Exception _) {}
+        } catch (Exception _) {
+            // Ignored
+        }
 
-        double estimatedMB = calculateEstimatedSizeMB();
+        double estimatedMB = calculateEstimatedSizeMB(imageProperties);
         if (estimatedMB <= 0) return;
 
-        labelSuccess.setStyle("-fx-text-fill: #32CD32;");
-        labelSuccess.setText(String.format(Locale.US, "Estimated size: ~%.2f MB", estimatedMB));
-        labelSuccess.setVisible(true);
+        showEstimatedSize(labelSuccess, estimatedMB);
     }
 
-    private double calculateEstimatedSizeMB() {
-        if (isNull(imageProperties.getImage())) return 0;
+    private void toggleControls(boolean disabled) {
+        Stream.of(controls).forEach(c -> c.setDisable(disabled));
+    }
 
-        float scale = imageProperties.getScale();
-        float quality = imageProperties.getQuality();
-
-        float effectiveScale = (scale > 0) ? scale : 1.0f;
-        float effectiveQuality = (quality > 0) ? quality : 1.0f;
-
-        long originalSizeBytes = imageProperties.getImage().length();
-
-        double estimatedBytes = originalSizeBytes * Math.pow(effectiveScale, 2) * effectiveQuality;
-
-        return estimatedBytes / (1024.0 * 1024.0);
+    private void toggleUI(boolean disabled) {
+        btnSelectFile.setDisable(disabled);
+        btnChoiceDirForSaveFile.setDisable(disabled);
     }
 }

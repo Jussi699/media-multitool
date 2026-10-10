@@ -268,9 +268,9 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
         ComboBoxes.setupComboBox(samplingRateComboBox, Item::title);
         ComboBoxes.setupComboBox(fpsComboBox,          Item::title);
 
-        samplingRateComboBox.getItems().addAll(createItems("Match source", "Hz", 8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000));
-        fpsComboBox.getItems().addAll(createItems("Match source", "fps", 24, 30, 60));
-        channelsComboBox.getItems().addAll(createItems("Match source", "Channels", 1, 2));
+        samplingRateComboBox.getItems().addAll(createItems("Match source", " Hz", 8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000));
+        fpsComboBox.getItems().addAll(createItems("Match source", " fps", 24, 30, 60));
+        channelsComboBox.getItems().addAll(createItems("Match source", " Channels", 1, 2));
 
         videoBitRateComboBox.getItems().addAll(
                 new Item(-1, "V: Match source"),

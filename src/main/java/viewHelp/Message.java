@@ -7,6 +7,10 @@ import javafx.scene.control.ProgressBar;
 import static java.util.Objects.nonNull;
 
 public class Message {
+    private Message() {
+        /* This utility class should not be instantiated */
+    }
+
     public static void setupClearMessageTimer(Label label, PauseTransition timer, boolean manage) {
         setupClearMessageTimer(label, null, timer, manage);
     }
@@ -58,5 +62,11 @@ public class Message {
         label.setVisible(true);
         label.setManaged(true);
         timer.playFromStart();
+    }
+
+    public static void showEstimatedSize(Label label, double estimatedMB) {
+        label.setStyle("-fx-text-fill: #32CD32;");
+        label.setText(String.format("Estimated size: ~%.2f MB", estimatedMB));
+        label.setVisible(true);
     }
 }

@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.compressorVideo.Compressor;
 import model.compressorVideo.VideoPresets;
@@ -14,13 +13,14 @@ import model.compressorVideo.CompressVideoTask;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
-import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.ResetContext;
 import viewHelp.Alerts;
+import viewHelp.InfoAlert;
+import viewHelp.Message;
 
 import java.io.File;
-import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -32,92 +32,148 @@ import static viewHelp.Message.*;
 import static viewHelp.Utility.getMetadata;
 
 public class CompressorVideoController extends AbstractMediaController {
+    private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
+    private final ToggleGroup toggleGroup = new ToggleGroup();
+
+    @FXML private Button btnChoiceDirForSaveFile, btnSelectFile;
+    @FXML private Button btnCancelCompression, btnCompress;
+    @FXML private ToggleButton btnBasicCompress, btnStrongCompress, btnSuperCompress;
+    @FXML private StackPane dropZone;
+    @FXML private Label labelSelectFile,textDragZone;
+    @FXML private CheckBox chkUseGPU, chkCompressAudio;
+
     private VideoPresets.Preset[] adaptivePresets;
     private VideoPresets.Preset selectedPreset;
-    private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
-    private static final ToggleGroup toggleGroup = new ToggleGroup();
     private CompressVideoTask currentTask;
+    private Control[] controlsUI;
+    private Control[] controls;
+
+    private long durationMillis = 0;
+    private boolean hasAudio = false;
 
     @Override
     protected MediaProperties getProperties() {
         return videoProperties;
     }
 
-    @FXML private Label labelSelectFile,textDragZone;
-    @FXML private Button btnChoiceDirForSaveFile, btnSelectFile, btnCancelConversion, btnCompress;
-    @FXML private ToggleButton btnBasicCompress, btnStrongCompress, btnSuperCompress;
-    @FXML private StackPane dropZone;
-    @FXML private CheckBox chkUseGPU, chkCompressAudio;
-
-    private List<Control> listControls;
-
-    private long durationMillis = 0;
-    private boolean hasAudio = false;
-
     @FXML
     public void initialize() {
-        listControls = List.of(btnBasicCompress, btnStrongCompress, btnSuperCompress, chkUseGPU, chkCompressAudio, btnCompress, btnCancelConversion, btnReset);
+        controlsUI = new Control[] {
+                btnSelectFile, btnChoiceDirForSaveFile, btnReset,
+                btnBasicCompress, btnSuperCompress, btnStrongCompress,
+                chkUseGPU, chkCompressAudio, btnCompress,
+        };
+
+        controls = new Control[] {
+                btnBasicCompress, btnSuperCompress, btnStrongCompress,
+                chkUseGPU, chkCompressAudio, btnCompress, btnReset
+        };
 
         videoProperties.setOutput(getSavedPath());
 
-        btnBasicCompress.setToggleGroup(toggleGroup);
-        btnStrongCompress.setToggleGroup(toggleGroup);
-        btnSuperCompress.setToggleGroup(toggleGroup);
+        Stream.of(btnBasicCompress, btnStrongCompress, btnSuperCompress)
+                        .forEach(btn -> btn.setToggleGroup(toggleGroup));
 
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
-
         setupDragAndDrop(dropZone, Global.getAllSupportedVideoFormats(), this::loadFile);
-        
-        chkCompressAudio.setSelected(true);
-        
+
         isPressedReset();
     }
 
-    @Override
-    protected void lockUI() {
-        Stream.of(btnSelectFile, btnChoiceDirForSaveFile, btnReset, btnCompress, chkCompressAudio, chkUseGPU,
-                        btnSuperCompress, btnBasicCompress, btnStrongCompress)
-                .forEach(btn -> btn.setDisable(true));
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Compressor Video",
+                "Select a video file using \"Select video\" or drag and drop it into the dash-bordered zone;",
+                """
+                       3. Select a compression preset:
+                           - Basic: Balanced size and quality.
+                           - Strong: Maximum compression, lower quality.
+                           - Super: Optimized high quality with smaller size;
+
+                       4. (Optional) Enable "Use GPU" if your hardware supports it;
+
+                       5. (Optional) Toggle "Compress Audio" if needed;
+
+                       6. Click "Compress and Download".
+
+                       You can cancel the conversion at any time using the "Cancel Conversion" button.
+                       """
+        );
     }
 
-    @Override
-    protected void unlockUI() {
-        Stream.of(btnSelectFile, btnChoiceDirForSaveFile, btnReset, btnCompress, chkCompressAudio, chkUseGPU,
-                        btnSuperCompress, btnBasicCompress, btnStrongCompress)
-                .forEach(btn -> btn.setDisable(false));
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true, "video"
+        );
+        reset(videoProperties, ctx, "Select video file: none");
+
+        cancelCompress();
+
+        adaptivePresets = null;
+        selectedPreset = null;
+        durationMillis = 0;
+        toggleGroup.selectToggle(null);
+        chkUseGPU.setSelected(false);
+        chkCompressAudio.setSelected(true);
+
+        setDefaultProgressBar();
+        disableControls();
     }
 
-    @Override
-    protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+    @FXML
+    public void submitAndDownload() {
+        if(!checks()) return;
+        if(!validateCompressionSize()) return;
+
+        executeCompression();
     }
 
-    @Override
-    protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+    @FXML
+    private void selectFile() {
+        selectInputFile(btnSelectFile,
+                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()), this::loadFile);
     }
 
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (Boolean.TRUE.equals(result)) {
-            showSuccessText(labelSuccess, "Compression successful!", videoProperties.getHideSuccessMessageTimer());
-            showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
+    @FXML
+    public void onChoiceFolderForSaveFile() {
+        selectOutputDirectory(btnChoiceDirForSaveFile, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
+    }
+
+    @FXML
+    private void onActionCancelOperation() {
+        btnCancelCompression.setDisable(true);
+        cancelCompress();
+    }
+
+    @FXML
+    private void onAudioCompressionSelected() {
+        if (nonNull(videoProperties.getSrcFile()) && nonNull(adaptivePresets)) {
+            adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
+            selectedPreset = getPresetByButton((ToggleButton) toggleGroup.getSelectedToggle());
+            updateEstimatedSize();
         }
     }
 
     @FXML
-    public void onActionBtnSelectVideoFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser()))
-                .ifPresent(this::loadFile);
-    }
+    public void onActionSelectPreset(ActionEvent actionEvent) {
+        ToggleButton tb = (ToggleButton) actionEvent.getSource();
+        if (isNull(adaptivePresets) || adaptivePresets.length < 3) {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "No presets available!",
+                    "No presets available!",
+                    "Please load a video file first to create presets.");
 
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
+            tb.setSelected(false);
+            return;
+        }
+
+        selectedPreset = tb.isSelected() ? getPresetByButton(tb) : null;
+        if (nonNull(selectedPreset)) {
+            ErrorLogger.info("Selected preset: " + selectedPreset.name());
+        }
+        updateEstimatedSize();
     }
 
     @FXML
@@ -133,29 +189,105 @@ public class CompressorVideoController extends AbstractMediaController {
                         "GPU not supported for WebM",
                         "GPU acceleration ignored",
                         "The WebM format uses libvpx which does not support NVENC GPU acceleration. " +
-                        "Encoding will proceed using the CPU (libvpx).");
+                                "Encoding will proceed using the CPU (libvpx).");
             }
         }
     }
 
-    @FXML
-    private void onAudioCompressionSelected() {
-        // Recreate presets when audio compression setting changes
-        if (nonNull(videoProperties.getSrcFile()) && nonNull(adaptivePresets)) {
-            adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
+    @Override
+    protected void lockUI() {
+        setControlsDisabled(true, controlsUI);
+        btnCancelCompression.setDisable(false);
+    }
 
-            if (nonNull(adaptivePresets) && adaptivePresets.length >= 3 && nonNull(selectedPreset)) {
-                ToggleButton selected = (ToggleButton) toggleGroup.getSelectedToggle();
-                if      (selected == btnBasicCompress)   {selectedPreset = adaptivePresets[0];}
-                else if (selected == btnStrongCompress)  {selectedPreset = adaptivePresets[1];}
-                else if (selected == btnSuperCompress)   {selectedPreset = adaptivePresets[2];}
+    @Override
+    protected void unlockUI() {
+        setControlsDisabled(false, controlsUI);
+        btnCancelCompression.setDisable(true);
+    }
 
-                updateEstimatedSize();
-            } else if (isNull(adaptivePresets)) {
-                selectedPreset = null;
-                updateEstimatedSize();
-            }
+    @Override
+    protected void disableControls() {
+        setControlsDisabled(true, controls);
+        btnCancelCompression.setDisable(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        setControlsDisabled(false, controls);
+        btnCancelCompression.setDisable(true);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.TRUE.equals(result)) {
+            showSuccessText(labelSuccess, "Compression successful!", videoProperties.getHideSuccessMessageTimer());
+            showProgressBar(progressBar, videoProperties.getHideSuccessMessageTimer());
         }
+    }
+
+    private void processPresetResult(VideoPresets.Preset[] adaptivePresets, File file) {
+        if (nonNull(adaptivePresets)) {
+            ErrorLogger.info(getClass(), "Adaptive presets created successfully for: "
+                    + file.getName());
+        } else {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Preset Creation Error",
+                    "Could not create presets from video. Check log for details.");
+        }
+    }
+
+    private VideoPresets.Preset getPresetByButton(ToggleButton button) {
+        if (isNull(adaptivePresets) || adaptivePresets.length < 3 || isNull(button)) return null;
+        if (button == btnBasicCompress) return adaptivePresets[0];
+        if (button == btnStrongCompress) return adaptivePresets[1];
+        if (button == btnSuperCompress) return adaptivePresets[2];
+        return null;
+    }
+
+    private void executeCompression() {
+        Compressor compressor = new Compressor();
+        videoProperties.setUseGPU(nonNull(chkUseGPU) && chkUseGPU.isSelected());
+        compressor.setUseGPU(videoProperties.isUseGPU());
+        compressor.setCompressAudio(nonNull(chkCompressAudio) && chkCompressAudio.isSelected());
+
+        currentTask = new CompressVideoTask(compressor, videoProperties.getSrcFile(), videoProperties.getOutput(), selectedPreset);
+
+        executeMediaTask(currentTask);
+    }
+
+    private boolean validateCompressionSize() {
+        double estimatedMB = calculateEstimatedSizeMB();
+        long originalSizeBytes = videoProperties.getSrcFile().length();
+        double originalMB = originalSizeBytes / (1024.0 * 1024.0);
+
+        if (estimatedMB > originalMB && estimatedMB > 0) {
+            return Alerts.confirmationDialog(
+                    "Compression Warning",
+                    String.format(Locale.US, "Estimated size (~%.2f MB) is larger than original (%.2f MB).", estimatedMB, originalMB),
+                    "Do you want to proceed anyway?"
+            );
+        }
+        return true;
+    }
+
+    private void updateEstimatedSize() {
+        if (!canCalculateEstimatedSize()) {
+            return;
+        }
+
+        try {
+            if (nonNull(videoProperties.getHideSuccessMessageTimer())) {
+                videoProperties.getHideSuccessMessageTimer().stop();
+            }
+        } catch (Exception _) {
+            // Ignored
+        }
+
+        double estimatedMB = calculateEstimatedSizeMB();
+        if (estimatedMB <= 0) return;
+
+        Message.showEstimatedSize(labelSuccess, estimatedMB);
     }
 
     private boolean checks() {
@@ -180,151 +312,6 @@ public class CompressorVideoController extends AbstractMediaController {
         return true;
     }
 
-    @FXML
-    public void submitAndDownload() {
-        if(!checks()) {
-            return;
-        }
-
-        double estimatedMB = calculateEstimatedSizeMB();
-        long originalSizeBytes = videoProperties.getSrcFile().length();
-        double originalMB = originalSizeBytes / (1024.0 * 1024.0);
-
-        if (estimatedMB > originalMB && estimatedMB > 0) {
-            boolean proceed = Alerts.confirmationDialog(
-                    "Compression Warning",
-                    "Estimated size (~" + String.format("%.2f", estimatedMB) + " MB) is larger than original (" + String.format("%.2f", originalMB) + " MB).",
-                    "Do you want to proceed anyway?"
-            );
-            if (!proceed) return;
-        }
-
-        Compressor compressor = new Compressor();
-        videoProperties.setUseGPU(nonNull(chkUseGPU) && chkUseGPU.isSelected());
-        compressor.setUseGPU(videoProperties.isUseGPU());
-        compressor.setCompressAudio(nonNull(chkCompressAudio) && chkCompressAudio.isSelected());
-        
-        currentTask = new CompressVideoTask(compressor, videoProperties.getSrcFile(), videoProperties.getOutput(), selectedPreset);
-        
-        executeMediaTask(currentTask);
-    }
-
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectFile, labelSuccess, textDragZone, null,
-                dropZone, null, progressBar, true, "video"
-        );
-        reset(videoProperties, ctx, "Select video file: none");
-
-        if (nonNull(currentTask)) currentTask.cancelCompress();
-
-        adaptivePresets = null;
-        selectedPreset = null;
-        durationMillis = 0;
-
-        progressBar.setVisible(true);
-        progressBar.setManaged(true);
-        progressBar.setProgress(0);
-
-        chkUseGPU.setSelected(false);
-        chkCompressAudio.setSelected(true);
-        
-        disableControls();
-    }
-
-    @FXML
-    public void onActionSelectPreset(ActionEvent actionEvent) {
-        Object source = actionEvent.getSource();
-        ToggleButton tb = (ToggleButton) source;
-
-        if (isNull(adaptivePresets) || adaptivePresets.length < 3) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "No presets available!", "No presets available!",
-                    "Please load a video file first to create presets.");
-            tb.setSelected(false);
-            return;
-        }
-
-        String selectPreset = "Selected preset: ";
-
-        if (!tb.isSelected()) {
-            selectedPreset = null;
-        } else if (source == btnBasicCompress) {
-            selectedPreset = adaptivePresets[0];
-            ErrorLogger.info(selectPreset + selectedPreset.name());
-        } else if (source == btnStrongCompress) {
-            selectedPreset = adaptivePresets[1];
-            ErrorLogger.info(selectPreset + selectedPreset.name());
-        } else if (source == btnSuperCompress) {
-            selectedPreset = adaptivePresets[2];
-            ErrorLogger.info(selectPreset + selectedPreset.name());
-        }
-        updateEstimatedSize();
-    }
-
-    private void updateEstimatedSize() {
-        if (isNull(selectedPreset) || durationMillis <= 0 || isNull(videoProperties.getSrcFile())) {
-            labelSuccess.setVisible(false);
-            return;
-        }
-
-        try {
-            if (nonNull(videoProperties.getHideSuccessMessageTimer())) {
-                videoProperties.getHideSuccessMessageTimer().stop();
-            }
-        } catch (Exception _) {}
-
-        double estimatedMB = calculateEstimatedSizeMB();
-        if (estimatedMB <= 0) return;
-
-        labelSuccess.setStyle("-fx-text-fill: #32CD32;");
-        labelSuccess.setText(String.format("Estimated size: ~%.2f MB", estimatedMB));
-        labelSuccess.setVisible(true);
-    }
-
-    private double calculateEstimatedSizeMB() {
-        if (isNull(selectedPreset) || durationMillis <= 0) return 0;
-
-        int vBitrate = selectedPreset.video().getBitRate().orElse(0);
-        int aBitrate = (hasAudio && nonNull(selectedPreset.audio())) ? selectedPreset.audio().getBitRate().orElse(0) : 0;
-
-        double totalBitrateBps = vBitrate + aBitrate;
-        double durationSeconds = durationMillis / 1000.0;
-
-        double sizeBytes = (totalBitrateBps * durationSeconds) / 8.0;
-        return sizeBytes / (1024.0 * 1024.0);
-    }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Compressor Video",
-                """
-                        How to use:
-                        1. Select a video file using "Select video" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Select a compression preset:
-                           - Basic: Balanced size and quality.
-                           - Strong: Maximum compression, lower quality.
-                           - Super: Optimized high quality with smaller size;
-
-                        4. (Optional) Enable "Use GPU" if your hardware supports it;
-
-                        5. (Optional) Toggle "Compress Audio" if needed;
-
-                        6. Click "Compress and Download".
-
-                        You can cancel the conversion at any time using the "Cancel Compress" button.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
-    }
-
     private void loadFile(File selectedFile) {
         if (!validateSelectedFile(selectedFile)) {
             return;
@@ -335,33 +322,21 @@ public class CompressorVideoController extends AbstractMediaController {
         selectedPreset = null;
 
         toggleGroup.selectToggle(null);
-
         durationMillis = 0;
 
-        adaptivePresets = VideoPresets.createAdaptivePresets(videoProperties.getSrcFile(), chkCompressAudio.isSelected()).orElse(null);
-        if (nonNull(adaptivePresets)) {
-            ErrorLogger.info(getClass(), "Adaptive presets created successfully for: "
-                    + videoProperties.getSrcFile().getName());
-        } else {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Preset Creation Error",
-                    "Could not create presets from video. Check log for details.");
-        }
-        labelSelectFile.setText("Selected file: " + videoProperties.getSrcFile().getName() + " (Loading info...)");
+        File srcFile = videoProperties.getSrcFile();
+        adaptivePresets = VideoPresets.createAdaptivePresets(srcFile, chkCompressAudio.isSelected()).orElse(null);
 
-        CompletableFuture.supplyAsync(() -> getMetadata(videoProperties.getSrcFile()))
+        processPresetResult(adaptivePresets, srcFile);
+
+        labelSelectFile.setText("Selected file: " + srcFile.getName() + " (Loading info...)");
+
+        CompletableFuture.supplyAsync(() -> getMetadata(srcFile))
                 .thenAccept(infoOpt -> Platform.runLater(() -> updateLabelFromMetadata(infoOpt.orElse(null))));
 
         hideSuccessMessage(labelSuccess, videoProperties.getHideSuccessMessageTimer(), true);
-
-        progressBar.setVisible(true);
-        progressBar.setManaged(true);
-        progressBar.setProgress(0);
-
-        textDragZone.setText("Selected: " + videoProperties.getSrcFile().getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
+        setDefaultProgressBar();
+        markDropZoneLoaded(dropZone, textDragZone, srcFile.getName());
     }
 
     private void updateLabelFromMetadata(ws.schild.jave.info.MultimediaInfo info) {
@@ -396,8 +371,27 @@ public class CompressorVideoController extends AbstractMediaController {
         updateEstimatedSize();
     }
 
-    @FXML
-    private void onActionCancelOperation() {
-        if (nonNull(currentTask)) currentTask.cancelCompress();
+    private double calculateEstimatedSizeMB() {
+        return VideoPresets.calculateEstimatedSizeMB(selectedPreset, durationMillis, hasAudio);
+    }
+
+    private void setDefaultProgressBar() {
+        progressBar.setVisible(true);
+        progressBar.setManaged(true);
+        progressBar.setProgress(0);
+    }
+
+    private boolean canCalculateEstimatedSize() {
+        if (isNull(selectedPreset) || durationMillis <= 0 || isNull(videoProperties.getSrcFile())) {
+            labelSuccess.setVisible(false);
+            return false;
+        }
+        return true;
+    }
+
+    private void cancelCompress() {
+        if (nonNull(currentTask)) {
+            currentTask.cancelCompress();
+        }
     }
 }

@@ -9,10 +9,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.NonNull;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
+import model.select.SelectFile;
 import model.utility.DragDropped;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
@@ -235,6 +237,11 @@ public abstract class AbstractMediaController {
         Message.hideSuccessMessage(labelSuccess, getProperties().getHideSuccessMessageTimer(), true);
     }
 
+    protected void selectInputFile(Button triggerButton, FileChooser.ExtensionFilter filter, Consumer<File> fileConsumer) {
+        Stage stage = (Stage) triggerButton.getScene().getWindow();
+        new SelectFile().choiceFile(stage, filter).ifPresent(fileConsumer);
+    }
+
     protected void selectOutputDirectory(Button triggerButton, File currentPath, Consumer<File> propertySetter, String title) {
         Stage stage = (Stage) triggerButton.getScene().getWindow();
         directoryChooser(stage, currentPath, title)
@@ -325,6 +332,21 @@ public abstract class AbstractMediaController {
     protected void setImagePreview(BufferedImage image, ImageView imageViewPreview) {
         if (nonNull(image) && nonNull(imageViewPreview)) {
             imageViewPreview.setImage(SwingFXUtils.toFXImage(image, null));
+        }
+    }
+
+    protected void setControlsDisabled(boolean disabled, Control... controls) {
+        for (Control control : controls) {
+            if (nonNull(control)) {
+                control.setDisable(disabled);
+            }
+        }
+    }
+
+    protected void markDropZoneLoaded(StackPane dropZone, Label textDragZone, String nameFile) {
+        textDragZone.setText("Selected: " + nameFile);
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().add("drop-zone-filled");
         }
     }
 }
