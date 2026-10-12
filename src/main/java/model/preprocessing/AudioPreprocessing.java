@@ -5,10 +5,15 @@ import javafx.scene.image.Image;
 import model.logger.ErrorLogger;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagOptionSingleton;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.images.ArtworkFactory;
+import org.jaudiotagger.tag.reference.ID3V2Version;
 import viewHelp.Alerts;
 
 import java.io.File;
@@ -20,16 +25,35 @@ import java.util.Optional;
 import static java.util.Objects.nonNull;
 
 public class AudioPreprocessing {
+    private AudioPreprocessing() {
+        /* This utility class should not be instantiated */
+    }
+
+    static {
+        TagOptionSingleton.getInstance().setID3V2Version(ID3V2Version.ID3_V23);
+    }
+
     public static void applyTags(File file, Map<FieldKey, String> tags, String pathToPhoto) {
         try {
             AudioFile audioFile = AudioFileIO.read(file);
+
+            if (audioFile instanceof MP3File mp3File) {
+                if (mp3File.hasID3v2Tag()) {
+                    AbstractID3v2Tag existingTag = mp3File.getID3v2Tag();
+                    if (!(existingTag instanceof ID3v23Tag)) {
+                        mp3File.setID3v2Tag(new ID3v23Tag(existingTag));
+                    }
+                } else {
+                    mp3File.setID3v2Tag(new ID3v23Tag());
+                }
+            }
+
             Tag tag = audioFile.getTagOrCreateAndSetDefault();
 
             for (Map.Entry<FieldKey, String> entry : tags.entrySet()) {
-                if (nonNull(entry.getValue()) && !entry.getValue().isEmpty()) {
+                tag.deleteField(entry.getKey());
+                if (nonNull(entry.getValue()) && !entry.getValue().isBlank()) {
                     tag.setField(entry.getKey(), entry.getValue());
-                } else {
-                    tag.deleteField(entry.getKey());
                 }
             }
 
@@ -42,7 +66,9 @@ public class AudioPreprocessing {
             audioFile.commit();
         }
         catch (Exception e) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Something wrong!", "Something wrong!", "Check log file for more details for error!");
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Something wrong!",
+                    "Something wrong!",
+                    "Check log file for more details for error!");
             ErrorLogger.error("193 | " + e.getMessage());
         }
     }
@@ -59,11 +85,14 @@ public class AudioPreprocessing {
                         if (nonNull(value) && !value.isEmpty()) {
                             tagMap.put(key, value);
                         }
-                    } catch (Exception _) {}
+                    } catch (Exception _) {
+                        // Ignore
+                    }
                 }
             }
         } catch (Exception e) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Something wrong!", "Something wrong!", "Check log file for more details for error!");
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Something wrong!",
+                    "Check log file for more details for error!");
             ErrorLogger.error("190 | " + e.getMessage());
         }
         return tagMap;

@@ -72,7 +72,7 @@ public class InfoAlert {
     public static void showToolInfoWithoutClipboard(String toolName, String firstInstructions, String secondInstructions) {
         String text = String.format("""
                         How to use:
-                        %s;
+                        %s
                         
                         2. (Optional) Select where you want to save the result by clicking on "Directory for save".
                             (Default directory: Desktop);

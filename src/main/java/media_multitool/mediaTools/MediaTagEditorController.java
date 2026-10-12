@@ -9,72 +9,58 @@ import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import media_multitool.AbstractMediaController;
+import model.enums.BatchTargetType;
+import model.enums.MediaType;
 import model.preprocessing.AudioPreprocessing;
 import model.preprocessing.PhotoTagPreprocessing;
 import model.preprocessing.VideoTagPreprocessing;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
-import model.select.SelectFile;
 import model.utility.*;
 import org.jaudiotagger.tag.FieldKey;
 import model.helper.TableViewHelper;
 import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 import viewHelp.audioEditor.AudioEditor;
 import viewHelp.audioEditor.SetupScrollPane;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.enums.MediaType.*;
 import static model.utility.PathWorker.*;
 import static model.utility.TemplateCheck.*;
 import static viewHelp.Message.*;
 
 public class MediaTagEditorController extends AbstractMediaController {
-    private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
     private final ObservableList<DetailsAudioFile> masterFile = FXCollections.observableArrayList();
+    private final VideoAndAudioProperties audioProperties = new VideoAndAudioProperties();
     private final FilteredList<DetailsAudioFile> filteredFile = new FilteredList<>(masterFile, _ -> true);
+    private final ScrollBar[] tableInternalVBarRef = new ScrollBar[1];
 
-    @Override
-    protected MediaProperties getProperties() {
-        return audioProperties;
-    }
-
-    @FXML private TableView<DetailsAudioFile> tableViewAudio;
-    @FXML private ScrollPane tableScrollPane;
-    @FXML private ScrollBar tableVerticalScrollBar;
-
-    @FXML private TableColumn<DetailsAudioFile, String> colFileName, colPath, colTag, colTitle, colArtist, colAlbumArtist, colAlbum, colTrack,
-        colDiscnumber, colYear, colGenre, colComment, colCodec, colBitrate, colFrequency;
-
-    @FXML private TableColumn<DetailsAudioFile, LocalDate> colModified;
-    @FXML private TableColumn<DetailsAudioFile, LocalTime> colLength;
-
-    @FXML private Button btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveChanges;
-    @FXML private ImageView imageViewPreview;
-    @FXML private StackPane dropZone;
-    @FXML private Label labelSelectImageName, textDragZone;
-    @FXML private ComboBox<String> genreComboBox;
-
-    @FXML private Label titleLabel, artistLabel, albumLabel, albumArtistLabel, composerLabel, trackLabel,
-            discNumberLabel, commentLabel, yearLabel, descriptionLabel, keywordsLabel, copyrightLabel,
-            ratingLabel, genreLabel;
-
-    @FXML private TextField titleField, artistField, albumField, albumArtistField, composerField, trackField,
-            discNumberField, commentField, yearField, descriptionField, keywordsField, copyrightField,
-            ratingField, textFieldFindFile;
+    private static final Map<String, FieldKey> AUDIO_TAG_KEYS = Map.of(
+            "title", FieldKey.TITLE,
+            "artist", FieldKey.ARTIST,
+            "album", FieldKey.ALBUM,
+            "albumArtist", FieldKey.ALBUM_ARTIST,
+            "composer", FieldKey.COMPOSER,
+            "track", FieldKey.TRACK,
+            "discNumber", FieldKey.DISC_NO,
+            "comment", FieldKey.COMMENT,
+            "year", FieldKey.YEAR
+    );
 
     private static final Set<String> AUDIO_EDITABLE_TAGS = Set.of(
             "title", "artist", "album", "albumArtist", "composer", "track",
@@ -88,19 +74,43 @@ public class MediaTagEditorController extends AbstractMediaController {
             "comment", "year", "description", "keywords", "copyright", "rating", "genre"
     );
 
-    private File chosenDir;
-    private List<TextField> textFields;
+    @Override
+    protected MediaProperties getProperties() {
+        return audioProperties;
+    }
+
+    @FXML private Button btnChangeIcon, btnSelectMediaFile, btnChoiceDirForSave;
+    @FXML private Button btnSelectMultipleFile, btnSaveChanges;
+    @FXML private ImageView imageViewPreview;
+    @FXML private StackPane dropZone;
+    @FXML private ScrollPane tableScrollPane;
+    @FXML private ScrollBar tableVerticalScrollBar;
+    @FXML private Label labelSelectImageName, textDragZone;
+    @FXML private Label titleLabel, artistLabel, albumLabel;
+    @FXML private Label albumArtistLabel, composerLabel, trackLabel;
+    @FXML private Label discNumberLabel, commentLabel, yearLabel;
+    @FXML private Label descriptionLabel, keywordsLabel, copyrightLabel;
+    @FXML private Label ratingLabel, genreLabel;
+    @FXML private ComboBox<String> genreComboBox;
+    @FXML private TableView<DetailsAudioFile> tableViewAudio;
+    @FXML private TextField titleField, artistField, albumField,
+            albumArtistField, composerField, trackField,
+            discNumberField, commentField, yearField,
+            descriptionField, keywordsField, copyrightField,
+            ratingField, textFieldFindFile;
+
     private List<Button> listBtn;
+    private List<TextField> textFields;
     private List<Control> listControls;
     private Map<String, TextField> tagTextFields;
     private Map<String, Label> tagLabels;
     private Map<String, String> originalTagLabelTexts;
     private Set<String> editableTagKeys = Set.of();
-    private String selectedMediaType = "";
-    private final ScrollBar[] tableInternalVBarRef = new ScrollBar[1];
+    private MediaType selectedMediaType;
+    private File chosenDir;
 
     @FXML
-    public void initialize() {
+    private void initialize() {
         tableViewAudio.setItems(filteredFile);
 
         initLists();
@@ -115,198 +125,69 @@ public class MediaTagEditorController extends AbstractMediaController {
         setupDragAndDrop(dropZone, getSupportedTagEditorFormats(), this::loadFile);
     }
 
-    private void initLists() {
-        textFields = List.of(titleField, artistField, albumField, albumArtistField, composerField,
-                trackField, discNumberField, commentField, yearField, descriptionField, keywordsField,
-                copyrightField, ratingField, textFieldFindFile);
-
-        tagTextFields = Map.ofEntries(
-                Map.entry("title", titleField),
-                Map.entry("artist", artistField),
-                Map.entry("album", albumField),
-                Map.entry("albumArtist", albumArtistField),
-                Map.entry("composer", composerField),
-                Map.entry("track", trackField),
-                Map.entry("discNumber", discNumberField),
-                Map.entry("comment", commentField),
-                Map.entry("year", yearField),
-                Map.entry("description", descriptionField),
-                Map.entry("keywords", keywordsField),
-                Map.entry("copyright", copyrightField),
-                Map.entry("rating", ratingField)
-        );
-        tagLabels = Map.ofEntries(
-                Map.entry("title", titleLabel),
-                Map.entry("artist", artistLabel),
-                Map.entry("album", albumLabel),
-                Map.entry("albumArtist", albumArtistLabel),
-                Map.entry("composer", composerLabel),
-                Map.entry("track", trackLabel),
-                Map.entry("discNumber", discNumberLabel),
-                Map.entry("comment", commentLabel),
-                Map.entry("year", yearLabel),
-                Map.entry("description", descriptionLabel),
-                Map.entry("keywords", keywordsLabel),
-                Map.entry("copyright", copyrightLabel),
-                Map.entry("rating", ratingLabel),
-                Map.entry("genre", genreLabel)
-        );
-        originalTagLabelTexts = new HashMap<>();
-        tagLabels.forEach((key, label) -> originalTagLabelTexts.put(key, label.getText()));
-
-        listControls = new ArrayList<>();
-        listControls.addAll(textFields);
-        List<Control> tempListControl = List.of(genreComboBox, btnSaveChanges, btnChangeIcon, btnReset);
-
-        listControls.addAll(tempListControl);
-
-        List<TableColumn<DetailsAudioFile, ?>> allTableCol = List.of(colFileName, colPath, colTag, colTitle, colArtist, colAlbumArtist, colAlbum, colTrack,
-                colDiscnumber, colYear, colGenre, colComment, colCodec, colBitrate, colFrequency, colModified, colLength);
-
-        List<String> property = List.of(
-                "fileName", "path", "tag", "title", "artist", "albumArtist", "album", "track",
-                "discNumber", "year", "genre", "comment", "codec", "bitrate", "frequency", "modified", "length"
-        );
-
-        listBtn = List.of(btnChangeIcon, btnSelectImage, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveChanges);
-
-        initTableViewAndScrollPane(allTableCol, property);
-    }
-
-    private void initTextFieldFind() {
-        UnaryOperator<TextFormatter.Change> filter = change -> {
-            String newText = change.getControlNewText();
-            if (newText.matches("\\d*") && newText.length() <= 4) {
-                return change;
-            }
-            return null;
-        };
-
-        TextFormatter<String> textFormatter = new TextFormatter<>(filter);
-        yearField.setTextFormatter(textFormatter);
-
-        Timeline searchDebounce = createSearchDebounce();
-
-        textFieldFindFile.textProperty().addListener((_, _, _) -> {
-            searchDebounce.stop();
-            searchDebounce.playFromStart();
-        });
-    }
-
-    private @NonNull Timeline createSearchDebounce() {
-        Timeline searchDebounce = new Timeline(new KeyFrame(Duration.millis(300), _ -> {
-            String query = textFieldFindFile.getText().toLowerCase();
-            filteredFile.setPredicate(file -> {
-                if (isNull(file)) return true;
-                if (query.isEmpty()) return true;
-                return file.getFileName().toLowerCase().contains(query);
-            });
-            SetupScrollPane.fillPlaceholderRows(tableViewAudio, masterFile, tableScrollPane.getViewportBounds().getHeight());
-        }));
-        searchDebounce.setCycleCount(1);
-        return searchDebounce;
-    }
-
-    private void initTableViewAndScrollPane(@NonNull List<TableColumn<DetailsAudioFile, ?>> allTableCol, List<String> property) {
-        tableViewAudio.setTableMenuButtonVisible(false);
-        tableViewAudio.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        allTableCol.forEach(column -> {
-            if (column.getPrefWidth() > 0) {
-                column.setMinWidth(column.getPrefWidth());
-            }
-        });
-
-        SetupScrollPane.configureTableHorizontalScroll(
-                tableScrollPane, tableViewAudio, masterFile, allTableCol, tableVerticalScrollBar, tableInternalVBarRef);
-
-        TableViewHelper.setCellValueFactoryCol(allTableCol, property);
-
-        tableViewAudio.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
-            if (nonNull(newValue)) {
-                loadFile(new File(newValue.getPath()));
-            }
-        });
-    }
-
-    private void initComboBoxes() {
-        genreComboBox.getItems().addAll(
-                "Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Electronic", "Metal", "Blues", "Country", "Reggae", "Other"
-        );
-    }
-
     @FXML
     private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
+        InfoAlert.showToolInfoWithoutClipboard(
                 "Media Tag Editor",
                 """
-                        How to use:
                         1. Select an audio, photo or video file using "Select media" or drag and drop it into the dash-bordered zone;
+                            (Optional) To view and edit multiple files from a folder,
+                             click the "Select multiple file" button and select the folder;""",
+                """
+                3. Edit the available tag fields for the selected media file;
 
-                        2. (Optional) To view and edit multiple files from a folder, click the "Select multiple file" button and select the folder;
+                4. (Optional) Change the cover image for audio files using "Change Icon";
+                
+                5. Click "Save Changes" to apply all changes.
 
-                        3. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        4. Edit the available tag fields for the selected media file;
-
-                        5. (Optional) Change the cover image for audio files using "Change Icon";
-
-                        6. Click "Save Changes" to apply all changes.
-
-                        This tool allows you to edit audio, photo and video tags.
-                        Supported audio formats: %s
-                        Supported video formats: %s
-                        Supported photo formats: JPEG (.jpg, .jpeg) and TIFF (.tif, .tiff).
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-                        .formatted(
-                                String.join(", ", Global.getAllSupportedAudioFormats()),
-                                String.join(", ", Global.getAllSupportedVideoFormats())
-                        )
+                Supported audio formats: %s
+                Supported video formats: %s
+                Supported photo formats: JPEG (.jpg, .jpeg) and TIFF (.tif, .tiff).
+                """.formatted(
+                        String.join(", ", Global.getAllSupportedAudioFormats()) + ";",
+                        String.join(", ", Global.getAllSupportedVideoFormats()) + ";"
+                )
         );
     }
 
-    @Override
-    protected void lockUI() {
-        listBtn.forEach(button -> button.setDisable(true));
-    }
+    @FXML
+    private void onResetPressed() {
+        ResetContext ctx = new ResetContext(
+                labelSelectImageName, labelSuccess, textDragZone, null,
+                dropZone, imageViewPreview, progressBar, true, "photo, video or audio"
+        );
+        reset(audioProperties, ctx, "Selected audio file: none");
+        AudioEditor.loadDefaultPreview(imageViewPreview);
+        AudioEditor.clearFields(textFields, genreComboBox);
+        configureEditableFields(MediaType.NONE, Set.of());
+        masterFile.clear();
+        if (!SetupScrollPane.hasRealTableData(masterFile)) {
+            SetupScrollPane.fillPlaceholderRows(tableViewAudio, masterFile, tableScrollPane.getViewportBounds().getHeight());
+        }
+        disableControls();
 
-    @Override
-    protected void unlockUI() {
-        listBtn.forEach(button -> button.setDisable(false));
-        updateTagFieldAvailability();
-    }
-
-    @Override
-    protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
-    }
-
-    @Override
-    protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
-        updateTagFieldAvailability();
+        if (nonNull(audioProperties.getSrcFile())) {
+            ErrorLogger.error("For some reason, the file is not null when resetting!");
+            AudioEditor.loadDefaultPreview(imageViewPreview);
+            AudioEditor.clearFields(textFields, genreComboBox);
+        }
     }
 
     @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectAudioFile = new SelectFile();
-        Stage stage = (Stage) btnSelectImage.getScene().getWindow();
-        selectAudioFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Supported media files", getSupportedTagEditorFormatsForFileChooser())).ifPresent(this::loadFile);
+    private void selectFile() {
+        selectInputFile(btnSelectMediaFile,
+                new FileChooser.ExtensionFilter("Media file", getSupportedTagEditorFormatsForFileChooser()), this::loadFile);
     }
 
     @FXML
-    public void btnChoiceDirForSaveImage() {
-        selectOutputDirectory(btnChoiceDirForSave, audioProperties.getOutput(), audioProperties::setOutput, "Select directory for save audio");
+    private void chooseSaveDirectory() {
+        selectOutputDirectory(btnChoiceDirForSave, audioProperties.getOutput(), audioProperties::setOutput, "Select directory for save media file");
     }
 
     @FXML
-    public void submitAndDownload() {
-        if(isNull(audioProperties.getSrcFile())) {
-            ErrorLogger.error("Audio file not selected!");
+    private void submitAndDownload() {
+        if (isNull(audioProperties.getSrcFile())) {
+            ErrorLogger.error("Media file not selected!");
             return;
         }
 
@@ -314,64 +195,79 @@ public class MediaTagEditorController extends AbstractMediaController {
             @Override
             protected Boolean call() throws Exception {
                 updateProgress(10, 100);
-                if (isAudioFile(audioProperties.getSrcFile())) {
-                    Map<FieldKey, String> tags = collectTags();
-                    String imagePath = nonNull(audioProperties.getPathToImage())
-                            ? audioProperties.getPathToImage().getPath()
-                            : null;
-                    AudioPreprocessing.applyTags(audioProperties.getSrcFile(), tags, imagePath);
-                } else if (PhotoTagPreprocessing.supports(audioProperties.getSrcFile())) {
-                    PhotoTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
-                } else {
-                    VideoTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
+                switch (selectedMediaType) {
+                    case AUDIO -> {
+                        Map<FieldKey, String> tags = collectTags();
+                        String imagePath = nonNull(audioProperties.getPathToImage())
+                                ? audioProperties.getPathToImage().getPath() : null;
+                        AudioPreprocessing.applyTags(audioProperties.getSrcFile(), tags, imagePath);
+                    }
+                    case IMAGE -> PhotoTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
+                    default    -> VideoTagPreprocessing.applyTags(audioProperties.getSrcFile(), collectMediaTags());
                 }
+
                 updateProgress(100, 100);
                 return true;
             }
         };
 
         executeMediaTask(task);
-        labelSuccess.setManaged(true);
     }
 
-    private Map<String, String> collectMediaTags() {
-        Map<String, String> tags = new LinkedHashMap<>();
-        tags.put("title", titleField.getText());
-        tags.put("artist", artistField.getText());
-        tags.put("album", albumField.getText());
-        tags.put("albumArtist", albumArtistField.getText());
-        tags.put("composer", composerField.getText());
-        tags.put("track", trackField.getText());
-        tags.put("discNumber", discNumberField.getText());
-        tags.put("year", yearField.getText());
-        tags.put("genre", genreComboBox.getEditor().getText());
-        tags.put("comment", commentField.getText());
-        tags.put("description", descriptionField.getText());
-        tags.put("keywords", keywordsField.getText());
-        tags.put("copyright", copyrightField.getText());
-        tags.put("rating", ratingField.getText());
-        tags.keySet().removeIf(key -> !editableTagKeys.contains(key));
-        return tags;
+    @FXML
+    private void selectMultipleFile() {
+        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
+
+        initChoiceDialog(stage).showAndWait().ifPresent(type ->
+                directoryChooser(stage, audioProperties.getOutput(), "Select directory")
+                        .ifPresent(dir -> {
+                            disableControls();
+                            chosenDir = dir;
+                            audioProperties.setOutput(dir);
+                            ErrorLogger.info(getClass(), "Batch processing directory selected: " + dir.getAbsolutePath());
+                            List<String> formats = getFormatsForMediaType(type);
+
+                            Task<List<DetailsAudioFile>> task = createTask(formats);
+
+                            Alerts.showProgressDialog(stage, task, "Loading files", "Reading " + type.getDisplayName().toLowerCase(Locale.ROOT) + " from directory");
+                            executeMediaTask(task);
+                        }));
     }
 
-    private @NonNull Map<FieldKey, String> collectTags() {
-        Map<FieldKey, String> tags = new EnumMap<>(FieldKey.class);
-        tags.put(FieldKey.TITLE, titleField.getText());
-        tags.put(FieldKey.ARTIST, artistField.getText());
-        tags.put(FieldKey.ALBUM, albumField.getText());
-        tags.put(FieldKey.ALBUM_ARTIST, albumArtistField.getText());
-        tags.put(FieldKey.COMPOSER, composerField.getText());
-        tags.put(FieldKey.TRACK, trackField.getText());
-        tags.put(FieldKey.DISC_NO, discNumberField.getText());
-        tags.put(FieldKey.COMMENT, commentField.getText());
-        tags.put(FieldKey.YEAR, yearField.getText());
-
-        String genre = genreComboBox.getEditor().getText();
-        if (nonNull(genre) && !genre.isEmpty()) {
-            tags.put(FieldKey.GENRE, genre);
+    @FXML
+    private void changeIcon() {
+        if (selectedMediaType != AUDIO) {
+            Alerts.alertDialog(Alert.AlertType.INFORMATION,
+                    "Audio file not selected!",
+                    "Audio file not selected!",
+                    "First select audio file!");
+            return;
         }
 
-        return tags;
+        selectInputFile(btnChangeIcon,
+                new FileChooser.ExtensionFilter("Image file", Global.getSupportedImageFormatsForFileChooser()), this::loadIcon);
+    }
+
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+        updateTagFieldAvailability();
+    }
+
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+        updateTagFieldAvailability();
     }
 
     @Override
@@ -398,12 +294,11 @@ public class MediaTagEditorController extends AbstractMediaController {
         Platform.runLater(() -> {
             showSuccessText(labelSuccess, "Tags saved successfully!", audioProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
-            if (isAudioFile(audioProperties.getSrcFile())) {
+            if (selectedMediaType == AUDIO) {
                 AudioEditor.updatePreview(audioProperties, imageViewPreview);
-            }
 
-            DetailsAudioFile selected = tableViewAudio.getSelectionModel().getSelectedItem();
-            if (selected != null && isAudioFile(audioProperties.getSrcFile())) {
+                DetailsAudioFile selected = tableViewAudio.getSelectionModel().getSelectedItem();
+                if (nonNull(selected)) {
                     Map<FieldKey, String> newTags = collectTags();
                     selected.setTitle(newTags.get(FieldKey.TITLE));
                     selected.setArtist(newTags.get(FieldKey.ARTIST));
@@ -415,6 +310,7 @@ public class MediaTagEditorController extends AbstractMediaController {
                     selected.setGenre(genreComboBox.getEditor().getText());
                     selected.setComment(newTags.get(FieldKey.COMMENT));
                     tableViewAudio.refresh();
+                }
             }
         });
     }
@@ -428,27 +324,12 @@ public class MediaTagEditorController extends AbstractMediaController {
         });
     }
 
-    @FXML
-    public void onResetPressed() {
-        ResetContext ctx = new ResetContext(
-                labelSelectImageName, labelSuccess, textDragZone, null,
-                dropZone, imageViewPreview, progressBar, true, "photo, video or audio"
-        );
-        reset(audioProperties, ctx, "Selected audio file: none");
-        AudioEditor.loadDefaultPreview(imageViewPreview);
-        AudioEditor.clearFields(textFields, genreComboBox);
-        configureEditableFields("", Set.of());
-        masterFile.clear();
-        if (!SetupScrollPane.hasRealTableData(masterFile)) {
-            SetupScrollPane.fillPlaceholderRows(tableViewAudio, masterFile, tableScrollPane.getViewportBounds().getHeight());
+    private void loadIcon(File icon) {
+        if (!validateSelectedFile(icon)) {
+            return;
         }
-        disableControls();
-
-        if(audioProperties.getSrcFile() != null) {
-            ErrorLogger.error("For some reason, the file is not null when resetting!");
-            AudioEditor.loadDefaultPreview(imageViewPreview);
-            AudioEditor.clearFields(textFields, genreComboBox);
-        }
+        audioProperties.setPathToImage(icon);
+        AudioEditor.updatePreviewWithPath(audioProperties, imageViewPreview);
     }
 
     private void loadFile(File selectedFile) {
@@ -456,7 +337,7 @@ public class MediaTagEditorController extends AbstractMediaController {
             return;
         }
 
-        String mediaType;
+        MediaType mediaType;
         try {
             mediaType = selectedMediaType(selectedFile);
         } catch (IllegalArgumentException exception) {
@@ -471,7 +352,7 @@ public class MediaTagEditorController extends AbstractMediaController {
         labelSelectImageName.setText("Selected: " + selectedFile.getName());
 
         try {
-            if (isAudioFile(selectedFile)) {
+            if (mediaType == AUDIO) {
                 AudioPreprocessing.getIconMp3(audioProperties.getSrcFile())
                         .ifPresentOrElse(file -> AudioEditor.setPreview(file, imageViewPreview),
                                 () -> AudioEditor.loadDefaultPreview(imageViewPreview));
@@ -491,57 +372,158 @@ public class MediaTagEditorController extends AbstractMediaController {
                     audioProperties.getHideSuccessMessageTimer());
         }
 
-        textDragZone.setText("Selected: " + selectedFile.getName());
+        markDropZoneLoaded(dropZone, textDragZone, selectedFile.getName());
+    }
 
-        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
+    private void initTextFieldFind() {
+        yearField.setTextFormatter(new TextFormatter<>(getFilterYear()));
+        ratingField.setTextFormatter(new TextFormatter<>(getFilterRating()));
+
+        Timeline searchDebounce = createSearchDebounce();
+
+        textFieldFindFile.textProperty().addListener((_, _, _) -> {
+            searchDebounce.stop();
+            searchDebounce.playFromStart();
+        });
+    }
+
+    private void initTableViewAndScrollPane() {
+        tableViewAudio.setTableMenuButtonVisible(false);
+        tableViewAudio.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+
+        var columns = tableViewAudio.getColumns();
+
+        columns.forEach(column -> {
+            if (nonNull(column.getId())) {
+                column.setCellValueFactory(new PropertyValueFactory<>(column.getId()));
+            }
+            if (column.getPrefWidth() > 0) {
+                column.setMinWidth(column.getPrefWidth());
+            }
+        });
+
+        SetupScrollPane.configureTableHorizontalScroll(
+                tableScrollPane, tableViewAudio, masterFile, columns, tableVerticalScrollBar, tableInternalVBarRef);
+
+        tableViewAudio.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
+            if (nonNull(newValue)) {
+                loadFile(new File(newValue.getPath()));
+            }
+        });
+    }
+
+    private void initLists() {
+        tagTextFields = Map.ofEntries(
+                e("title", titleField),
+                e("artist", artistField),
+                e("album", albumField),
+                e("albumArtist", albumArtistField),
+                e("composer", composerField),
+                e("track", trackField),
+                e("discNumber", discNumberField),
+                e("comment", commentField),
+                e("year", yearField),
+                e("description", descriptionField),
+                e("keywords", keywordsField),
+                e("copyright", copyrightField),
+                e("rating", ratingField)
+        );
+        tagLabels = Map.ofEntries(
+                e("title", titleLabel),
+                e("artist", artistLabel),
+                e("album", albumLabel),
+                e("albumArtist", albumArtistLabel),
+                e("composer", composerLabel),
+                e("track", trackLabel),
+                e("discNumber", discNumberLabel),
+                e("comment", commentLabel),
+                e("year", yearLabel),
+                e("description", descriptionLabel),
+                e("keywords", keywordsLabel),
+                e("copyright", copyrightLabel),
+                e("rating", ratingLabel),
+                e("genre", genreLabel)
+        );
+        originalTagLabelTexts = new HashMap<>();
+        tagLabels.forEach((key, label) -> originalTagLabelTexts.put(key, label.getText()));
+
+        textFields = new ArrayList<>(tagTextFields.values());
+        textFields.add(textFieldFindFile);
+
+        listControls = new ArrayList<>(textFields);
+        Collections.addAll(listControls, genreComboBox, btnSaveChanges, btnChangeIcon, btnReset);
+
+        initTableViewAndScrollPane();
+
+        listBtn = List.of(btnChangeIcon, btnSelectMediaFile, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveChanges);
+    }
+
+    private @NonNull Timeline createSearchDebounce() {
+        Timeline searchDebounce = new Timeline(new KeyFrame(Duration.millis(300), _ -> {
+            String query = textFieldFindFile.getText().toLowerCase();
+            filteredFile.setPredicate(file -> {
+                if (isNull(file)) return true;
+                if (query.isEmpty()) return true;
+                return file.getFileName().toLowerCase().contains(query);
+            });
+            SetupScrollPane.fillPlaceholderRows(tableViewAudio, masterFile, tableScrollPane.getViewportBounds().getHeight());
+        }));
+        searchDebounce.setCycleCount(1);
+        return searchDebounce;
+    }
+
+    private Map<String, String> collectMediaTags() {
+        Map<String, String> tags = new LinkedHashMap<>();
+
+        tagTextFields.forEach((key, field) -> {
+            if (editableTagKeys.contains(key)) {
+                tags.put(key, field.getText());
+            }
+        });
+
+        if (editableTagKeys.contains("genre")) {
+            tags.put("genre", genreComboBox.getEditor().getText());
         }
+
+        return tags;
+    }
+
+    private @NonNull Map<FieldKey, String> collectTags() {
+        Map<FieldKey, String> tags = new EnumMap<>(FieldKey.class);
+        AUDIO_TAG_KEYS.forEach((key, fieldKey) -> tags.put(fieldKey, tagTextFields.get(key).getText()));
+
+        String genre = genreComboBox.getEditor().getText();
+        if (nonNull(genre) && !genre.isBlank()) {
+            tags.put(FieldKey.GENRE, genre);
+        }
+        return tags;
     }
 
     private void populateFields(@NonNull Map<FieldKey, String> tags) {
-        titleField.setText(tags.getOrDefault(FieldKey.TITLE, ""));
-        artistField.setText(tags.getOrDefault(FieldKey.ARTIST, ""));
-        albumField.setText(tags.getOrDefault(FieldKey.ALBUM, ""));
-        albumArtistField.setText(tags.getOrDefault(FieldKey.ALBUM_ARTIST, ""));
-        composerField.setText(tags.getOrDefault(FieldKey.COMPOSER, ""));
-        trackField.setText(tags.getOrDefault(FieldKey.TRACK, ""));
-        discNumberField.setText(tags.getOrDefault(FieldKey.DISC_NO, ""));
-        commentField.setText(tags.getOrDefault(FieldKey.COMMENT, ""));
-        yearField.setText(tags.getOrDefault(FieldKey.YEAR, ""));
-        descriptionField.clear();
-        keywordsField.clear();
-        copyrightField.clear();
-        ratingField.clear();
+        AUDIO_TAG_KEYS.forEach((key, fieldKey) -> tagTextFields.get(key).setText(tags.getOrDefault(fieldKey, "")));
+
+        String rawYear = tags.getOrDefault(FieldKey.YEAR, "").replaceAll("\\D.*", "");
+        yearField.setText(rawYear.length() > 4 ? rawYear.substring(0, 4) : rawYear);
+
+        List.of(descriptionField, keywordsField, copyrightField, ratingField).forEach(TextInputControl::clear);
         AudioEditor.setGenreValue(genreComboBox, tags.get(FieldKey.GENRE));
     }
 
     private void populateMediaFields(@NonNull Map<String, String> tags) {
-        titleField.setText(tags.getOrDefault("title", ""));
-        artistField.setText(tags.getOrDefault("artist", ""));
-        albumField.setText(tags.getOrDefault("album", ""));
-        albumArtistField.setText(tags.getOrDefault("albumArtist", ""));
-        composerField.setText(tags.getOrDefault("composer", ""));
-        trackField.setText(tags.getOrDefault("track", ""));
-        discNumberField.setText(tags.getOrDefault("discNumber", ""));
-        commentField.setText(tags.getOrDefault("comment", ""));
-        yearField.setText(tags.getOrDefault("year", ""));
-        descriptionField.setText(tags.getOrDefault("description", ""));
-        keywordsField.setText(tags.getOrDefault("keywords", ""));
-        copyrightField.setText(tags.getOrDefault("copyright", ""));
-        ratingField.setText(tags.getOrDefault("rating", ""));
+        tagTextFields.forEach((key, field) -> field.setText(tags.getOrDefault(key, "")));
         AudioEditor.setGenreValue(genreComboBox, tags.get("genre"));
     }
 
-    private String selectedMediaType(@NonNull File file) {
+    private MediaType selectedMediaType(@NonNull File file) {
         if (isAudioFile(file)) {
-            return "audio";
+            return AUDIO;
         }
         String fileName = file.getName().toLowerCase(Locale.ROOT);
         if (PhotoTagPreprocessing.supports(file)) {
-            return "photo";
+            return IMAGE;
         }
         if (Global.getAllSupportedVideoFormats().stream().anyMatch(fileName::endsWith)) {
-            return "video";
+            return VIDEO;
         }
         if (Global.getAllSupportedImageFormats().stream().anyMatch(fileName::endsWith)) {
             throw new IllegalArgumentException("Photo tag editing supports JPEG and TIFF files only.");
@@ -549,11 +531,11 @@ public class MediaTagEditorController extends AbstractMediaController {
         throw new IllegalArgumentException("Unsupported media file: " + file.getName());
     }
 
-    private Set<String> getEditableTags(String mediaType) {
+    private Set<String> getEditableTags(MediaType mediaType) {
         return switch (mediaType) {
-            case "audio" -> AUDIO_EDITABLE_TAGS;
-            case "photo" -> PHOTO_EDITABLE_TAGS;
-            case "video" -> VIDEO_EDITABLE_TAGS;
+            case AUDIO -> AUDIO_EDITABLE_TAGS;
+            case IMAGE -> PHOTO_EDITABLE_TAGS;
+            case VIDEO -> VIDEO_EDITABLE_TAGS;
             default -> throw new IllegalArgumentException("Unsupported media type: " + mediaType);
         };
     }
@@ -571,7 +553,7 @@ public class MediaTagEditorController extends AbstractMediaController {
                 .toList();
     }
 
-    private void configureEditableFields(String mediaType, Set<String> editableTags) {
+    private void configureEditableFields(MediaType mediaType, Set<String> editableTags) {
         selectedMediaType = mediaType;
         editableTagKeys = editableTags;
         updateTagFieldAvailability();
@@ -584,90 +566,103 @@ public class MediaTagEditorController extends AbstractMediaController {
         tagTextFields.forEach((key, field) -> {
             boolean editable = editableTagKeys.contains(key);
             field.setDisable(!editable);
-            Label label = tagLabels.get(key);
-            label.setText(editable || selectedMediaType.isEmpty()
-                    ? originalTagLabelTexts.get(key)
-                    : originalTagLabelTexts.get(key) + " (not editable for " + selectedMediaType + ")");
+            updateLabelStatus(key, editable);
         });
+
         boolean genreEditable = editableTagKeys.contains("genre");
         genreComboBox.setDisable(!genreEditable);
-        Label genreTagLabel = tagLabels.get("genre");
-        genreTagLabel.setText(genreEditable || selectedMediaType.isEmpty()
-                ? originalTagLabelTexts.get("genre")
-                : originalTagLabelTexts.get("genre") + " (not editable for " + selectedMediaType + ")");
-        btnChangeIcon.setDisable(!"audio".equals(selectedMediaType));
+        updateLabelStatus("genre", genreEditable);
+
+        btnChangeIcon.setDisable(selectedMediaType != AUDIO);
     }
 
-    public void onActionChangeIcon() {
-        if (!isAudioFile(audioProperties.getSrcFile())) {
-            Alerts.alertDialog(Alert.AlertType.INFORMATION, "Audio file not selected!", "Audio file not selected!", "First select audio file!");
-            return;
+    private void updateLabelStatus(String key, boolean editable) {
+        Label label = tagLabels.get(key);
+        if (nonNull(label)) {
+            String original = originalTagLabelTexts.get(key);
+            label.setText(editable || selectedMediaType == MediaType.NONE
+                    ? original
+                    : original + " (not editable for " + selectedMediaType.getTypeCategory().toLowerCase() + ")");
         }
-
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnChangeIcon.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("Image Files", Global.getSupportedImageFormatsForFileChooser())).ifPresent(file -> {
-            if (!validateSelectedFile(file)) {
-                return;
-            }
-            audioProperties.setPathToImage(file);
-            AudioEditor.updatePreviewWithPath(audioProperties, imageViewPreview);
-        });
     }
 
-    public void onActionBtnSelectMultipleFile() {
-        Stage stage = (Stage) btnChoiceDirForSave.getScene().getWindow();
-        ChoiceDialog<String> mediaTypeDialog = new ChoiceDialog<>(
-                "All media",
-                "Photos",
-                "Videos",
-                "Audio",
-                "All media"
+    private ChoiceDialog<BatchTargetType> initChoiceDialog(Stage stage) {
+        ChoiceDialog<BatchTargetType> dialog = new ChoiceDialog<>(
+                BatchTargetType.ALL,
+                BatchTargetType.values()
         );
-        mediaTypeDialog.initOwner(stage);
-        mediaTypeDialog.setTitle("Batch File");
-        mediaTypeDialog.setHeaderText("Choose files to search for");
-        mediaTypeDialog.setContentText("Media type:");
-        mediaTypeDialog.setGraphic(Alerts.createQuestionGraphic());
-        mediaTypeDialog.setOnShown(_ -> mediaTypeDialog.getDialogPane().setGraphic(Alerts.createQuestionGraphic()));
 
-        mediaTypeDialog.showAndWait().ifPresent(mediaType ->
-                directoryChooser(stage, audioProperties.getOutput(), "Select directory")
-                .ifPresent(dir -> {
-                    disableControls();
-                    chosenDir = dir;
-                    audioProperties.setOutput(dir);
-                            ErrorLogger.info(getClass(), "Batch processing directory selected: " + dir.getAbsolutePath());
-                            List<String> formats = getFormatsForMediaType(mediaType);
+        dialog.initOwner(stage);
+        dialog.setTitle("Batch File");
+        dialog.setHeaderText("Choose files to search for");
+        dialog.setContentText("Media type:");
+        dialog.setGraphic(Alerts.createQuestionGraphic());
+        dialog.setOnShown(_ -> dialog.getDialogPane().setGraphic(Alerts.createQuestionGraphic()));
 
-                    Task<List<DetailsAudioFile>> task = new Task<>() {
-                        @Override
-                        protected List<DetailsAudioFile> call() {
-                            return TableViewHelper.loadFilesFromDir(
-                                    chosenDir.toPath(),
-                                    formats,
-                                    (processed, total) -> {
-                                        updateProgress(processed, Math.max(total, 1));
-                                        updateMessage("Read files: " + processed + " / " + total);
-                                    },
-                                    this::isCancelled
-                            );
-                        }
-                    };
-
-                    Alerts.showProgressDialog(stage, task, "Loading files", "Reading " + mediaType.toLowerCase(Locale.ROOT) + " from directory");
-                    executeMediaTask(task);
-                }));
+        return dialog;
     }
 
-    private List<String> getFormatsForMediaType(String mediaType) {
-        return switch (mediaType) {
-            case "Photos" -> List.of(".jpg", ".jpeg", ".tif", ".tiff");
-            case "Videos" -> Global.getAllSupportedVideoFormats();
-            case "Audio" -> Global.getAllSupportedAudioFormats();
-            case "All media" -> getSupportedTagEditorFormats();
-            default -> throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+    private Task<List<DetailsAudioFile>> createTask(List<String> formats) {
+        return new Task<>() {
+            @Override
+            protected List<DetailsAudioFile> call() {
+                return TableViewHelper.loadFilesFromDir(
+                        chosenDir.toPath(),
+                        formats,
+                        (processed, total) -> {
+                            updateProgress(processed, Math.max(total, 1));
+                            updateMessage("Read files: " + processed + " / " + total);
+                        },
+                        this::isCancelled
+                );
+            }
         };
+    }
+
+    private UnaryOperator<TextFormatter.Change> getFilterYear() {
+        return change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("\\d*") && newText.length() <= 4) {
+                return change;
+            }
+            return null;
+        };
+    }
+
+    private UnaryOperator<TextFormatter.Change> getFilterRating() {
+        return change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("[0-5]") && newText.length() <= 1) {
+                return change;
+            }
+            return null;
+        };
+    }
+
+    private List<String> getFormatsForMediaType(BatchTargetType type) {
+        return switch (type) {
+            case PHOTOS -> List.of(".jpg", ".jpeg", ".tif", ".tiff");
+            case VIDEOS -> Global.getAllSupportedVideoFormats();
+            case AUDIO -> Global.getAllSupportedAudioFormats();
+            case ALL -> getSupportedTagEditorFormats();
+        };
+    }
+
+    private static <K, V> Map.Entry<K, V> e(K key, V value) {
+        return Map.entry(key, value);
+    }
+
+    private void initComboBoxes() {
+        genreComboBox.getItems().addAll(
+                "Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Electronic", "Metal", "Blues", "Country", "Reggae", "Other"
+        );
+    }
+
+    private void toggleUI(boolean disabled) {
+        listBtn.forEach(c -> c.setDisable(disabled));
+    }
+
+    private void toggleControls(boolean disabled) {
+        listControls.forEach(c -> c.setDisable(disabled));
     }
 }

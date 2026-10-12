@@ -33,7 +33,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.converterImage.UsefulMethods.readPreviewImage;
 import static model.utility.PathWorker.directoryChooser;
-import static model.utility.PathWorker.getSavedPath;
 
 public abstract class AbstractImageConverterController extends AbstractMediaController {
     protected final ImageProperties imageProperties = new ImageProperties();
@@ -47,11 +46,6 @@ public abstract class AbstractImageConverterController extends AbstractMediaCont
     @FXML protected StackPane dropZone, previewContainer;
     @FXML protected Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
     @FXML protected VBox parametersContainer;
-
-    @FXML
-    public void initialize() {
-        imageProperties.setOutput(getSavedPath());
-    }
 
     @Override
     protected MediaProperties getProperties() {

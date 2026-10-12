@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.hideSuccessMessage;
 import static viewHelp.Message.setupClearMessageTimer;
 
@@ -61,6 +62,8 @@ public class ConverterAudioController extends AbstractAudioVideoConverterControl
 
     @FXML
     public void initialize() {
+        properties.setOutput(getSavedPath());
+
         initToggleGroup();
         initComboBoxes();
 

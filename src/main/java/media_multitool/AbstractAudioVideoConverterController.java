@@ -102,11 +102,7 @@ public abstract class AbstractAudioVideoConverterController extends AbstractMedi
 
         enableControls();
         properties.setSrcFile(selectedFile);
-        textDragZone.setText("Selected: " + selectedFile.getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
+        markDropZoneLoaded(dropZone, textDragZone, selectedFile.getName());
 
         labelSelectFile.setText("Selected " + getFileCategoryName().name().toLowerCase() + " file: " + selectedFile.getName());
         hideSuccessMessage(labelSuccess, properties.getHideSuccessMessageTimer(), true);

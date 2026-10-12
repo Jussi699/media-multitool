@@ -144,7 +144,7 @@ public final class PhotoTagPreprocessing {
                                   org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii tag,
                                   String value) throws Exception {
         directory.removeField(tag);
-        if (value != null && !value.isBlank()) {
+        if (nonNull(value) && !value.isBlank()) {
             directory.add(tag, value);
         }
     }
@@ -153,7 +153,7 @@ public final class PhotoTagPreprocessing {
                                     org.apache.commons.imaging.formats.tiff.taginfos.TagInfoXpString tag,
                                     String value) throws Exception {
         directory.removeField(tag);
-        if (value != null && !value.isBlank()) {
+        if (nonNull(value) && !value.isBlank()) {
             directory.add(tag, value);
         }
     }

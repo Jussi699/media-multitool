@@ -14,11 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -31,19 +27,41 @@ import java.util.function.BiConsumer;
 import static java.util.Objects.nonNull;
 
 public class TableViewHelper {
+    private TableViewHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     public static final double TABLE_ROW_HEIGHT = 28.0;
     public static final double TABLE_HEADER_HEIGHT = 28.0;
 
-    public static List<DetailsAudioFile> loadFilesFromDir(
-            Path inputDirectory,
-            List<String> formats,
-            BiConsumer<Integer, Integer> onProgress,
-            BooleanSupplier isCancelled) {
-        List<DetailsAudioFile> detailsList = new ArrayList<>();
+    public static List<DetailsAudioFile> loadFilesFromDir(Path inputDirectory, List<String> formats,
+            BiConsumer<Integer, Integer> onProgress, BooleanSupplier isCancelled) {
 
-        List<Path> foundPaths = new ArrayList<>();
+        List<Path> foundPaths;
         try {
-            Files.walkFileTree(inputDirectory, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE,
+            foundPaths = findFiles(inputDirectory, formats);
+        } catch (IOException e) {
+            throw new RuntimeException("Error loading files from directory", e);
+        }
+
+        reportProgress(onProgress, 0, foundPaths.size());
+
+        List<DetailsAudioFile> detailsList = new ArrayList<>();
+        for (int i = 0; i < foundPaths.size(); i++) {
+            if (nonNull(isCancelled) && isCancelled.getAsBoolean()) {
+                break;
+            }
+            detailsList.add(createDetails(foundPaths.get(i)));
+            reportProgress(onProgress, i + 1, foundPaths.size());
+        }
+
+        return detailsList;
+    }
+
+    private static List<Path> findFiles(Path inputDirectory, List<String> formats) throws IOException {
+        List<Path> foundPaths = new ArrayList<>();
+
+        Files.walkFileTree(inputDirectory, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE,
                 new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(@NonNull Path file, @NonNull BasicFileAttributes attrs) {
@@ -64,25 +82,12 @@ public class TableViewHelper {
                         return FileVisitResult.CONTINUE;
                     }
                 });
-        } catch (IOException e) {
-            throw new RuntimeException("Error loading files from directory", e);
-        }
 
-        reportProgress(onProgress, 0, foundPaths.size());
-
-        for (int i = 0; i < foundPaths.size(); i++) {
-            if (isCancelled != null && isCancelled.getAsBoolean()) {
-                break;
-            }
-            detailsList.add(createDetails(foundPaths.get(i)));
-            reportProgress(onProgress, i + 1, foundPaths.size());
-        }
-
-        return detailsList;
+        return foundPaths;
     }
 
     private static void reportProgress(BiConsumer<Integer, Integer> onProgress, int processed, int total) {
-        if (onProgress != null) {
+        if (nonNull(onProgress)) {
             onProgress.accept(processed, total);
         }
     }
@@ -142,16 +147,5 @@ public class TableViewHelper {
         return Math.max(0, (int) Math.floor(
                 (viewportHeight - getTableHeaderHeight(tableView)) / tableView.getFixedCellSize()
         ));
-    }
-
-    public static void setCellValueFactoryCol(
-            List<TableColumn<DetailsAudioFile, ?>> columns,
-            List<String> properties) {
-
-        for (int i = 0; i < columns.size() && i < properties.size(); i++) {
-            columns.get(i).setCellValueFactory(
-                    new PropertyValueFactory<>(properties.get(i))
-            );
-        }
     }
 }

@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.hideSuccessMessage;
 import static viewHelp.Message.setupClearMessageTimer;
 
@@ -32,6 +33,7 @@ public class ConverterImageController extends AbstractImageConverterController {
 
     @FXML
     public void initialize() {
+        imageProperties.setOutput(getSavedPath());
         initToggleGroup();
         initComboBoxes();
 

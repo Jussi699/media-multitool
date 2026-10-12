@@ -37,21 +37,21 @@
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectImage"
+            <Button fx:id="btnSelectMediaFile"
                     mnemonicParsing="false"
-                    onAction="#onActionBtnSelectFile"
+                    onAction="#selectFile"
                     prefWidth="180.0"
                     text="Select media"/>
 
             <Button fx:id="btnSelectMultipleFile"
                     mnemonicParsing="false"
-                    onAction="#onActionBtnSelectMultipleFile"
+                    onAction="#selectMultipleFile"
                     prefWidth="180.0"
                     text="Select multiple media"/>
 
             <Button fx:id="btnChoiceDirForSave"
                     mnemonicParsing="false"
-                    onAction="#btnChoiceDirForSaveImage"
+                    onAction="#chooseSaveDirectory"
                     prefWidth="180.0"
                     text="Directory for save">
 
@@ -180,11 +180,21 @@
                                 <Label fx:id="yearLabel"
                                        styleClass="label-h"
                                        text="Year:"
-                                       textFill="WHITE"/>
+                                       textFill="WHITE">
+
+                                    <tooltip>
+                                        <Tooltip text="YYYY"/>
+                                    </tooltip>
+                                </Label>
 
                                 <TextField fx:id="yearField"
                                            prefHeight="25.0"
-                                           prefWidth="82.0"/>
+                                           prefWidth="82.0">
+
+                                    <tooltip>
+                                        <Tooltip text="YYYY"/>
+                                    </tooltip>
+                                </TextField>
                             </VBox>
 
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
@@ -251,9 +261,18 @@
                                 <Label fx:id="ratingLabel"
                                        styleClass="label-h"
                                        text="Rating:"
-                                       textFill="WHITE"/>
+                                       textFill="WHITE">
 
-                                <TextField fx:id="ratingField"/>
+                                    <tooltip>
+                                        <Tooltip text="0-5"/>
+                                    </tooltip>
+                                </Label>
+
+                                <TextField fx:id="ratingField">
+                                    <tooltip>
+                                        <Tooltip text="0-5"/>
+                                    </tooltip>
+                                </TextField>
                             </VBox>
                         </HBox>
 
@@ -262,7 +281,7 @@
                                     maxWidth="Infinity"
                                     mnemonicParsing="false"
 
-                                    onAction="#onActionChangeIcon"
+                                    onAction="#changeIcon"
                                     text="Change Icon"/>
                         </VBox>
 
@@ -302,23 +321,23 @@
 
                         <TableView fx:id="tableViewAudio" prefHeight="500.0" tableMenuButtonVisible="true">
                             <columns>
-                                <TableColumn fx:id="colFileName"    prefWidth="150" text="Filename"    />
-                                <TableColumn fx:id="colPath"        prefWidth="100" text="Path"        />
-                                <TableColumn fx:id="colTag"         prefWidth="70"  text="Tag"         />
-                                <TableColumn fx:id="colTitle"       prefWidth="100" text="Title"       />
-                                <TableColumn fx:id="colArtist"      prefWidth="100" text="Artist"      />
-                                <TableColumn fx:id="colAlbumArtist" prefWidth="100" text="AlbumArtist" />
-                                <TableColumn fx:id="colAlbum"       prefWidth="100" text="Album"       />
-                                <TableColumn fx:id="colTrack"       prefWidth="50"  text="Track"       />
-                                <TableColumn fx:id="colDiscnumber"  prefWidth="50"  text="Disc number" />
-                                <TableColumn fx:id="colYear"        prefWidth="50"  text="Year"        />
-                                <TableColumn fx:id="colGenre"       prefWidth="70"  text="Genre"       />
-                                <TableColumn fx:id="colComment"     prefWidth="100" text="Comment"     />
-                                <TableColumn fx:id="colCodec"       prefWidth="70"  text="Codec"       />
-                                <TableColumn fx:id="colBitrate"     prefWidth="70"  text="Bitrate"     />
-                                <TableColumn fx:id="colFrequency"   prefWidth="70"  text="Frequency"   />
-                                <TableColumn fx:id="colLength"      prefWidth="70"  text="Length"      />
-                                <TableColumn fx:id="colModified"    prefWidth="70"  text="Modified"    />
+                                <TableColumn id="fileName"    prefWidth="150" text="Filename"    />
+                                <TableColumn id="path"        prefWidth="100" text="Path"        />
+                                <TableColumn id="tag"         prefWidth="70"  text="Tag"         />
+                                <TableColumn id="title"       prefWidth="100" text="Title"       />
+                                <TableColumn id="artist"      prefWidth="100" text="Artist"      />
+                                <TableColumn id="albumArtist" prefWidth="100" text="AlbumArtist" />
+                                <TableColumn id="album"       prefWidth="100" text="Album"       />
+                                <TableColumn id="track"       prefWidth="50"  text="Track"       />
+                                <TableColumn id="discNumber"  prefWidth="50"  text="Disc number" />
+                                <TableColumn id="year"        prefWidth="50"  text="Year"        />
+                                <TableColumn id="genre"       prefWidth="70"  text="Genre"       />
+                                <TableColumn id="comment"     prefWidth="100" text="Comment"     />
+                                <TableColumn id="codec"       prefWidth="70"  text="Codec"       />
+                                <TableColumn id="bitrate"     prefWidth="70"  text="Bitrate"     />
+                                <TableColumn id="frequency"   prefWidth="70"  text="Frequency"   />
+                                <TableColumn id="length"      prefWidth="70"  text="Length"      />
+                                <TableColumn id="modified"    prefWidth="70"  text="Modified"    />
                             </columns>
 
                             <columnResizePolicy>
@@ -346,8 +365,7 @@
 
                     <Label fx:id="textDragZone"
                            text="Drag photo, video or audio here"
-                           textFill="WHITE"
-                           styleClass="label-drag-zone"/>
+                           textFill="WHITE"/>
                 </StackPane>
             </VBox>
         </GridPane>

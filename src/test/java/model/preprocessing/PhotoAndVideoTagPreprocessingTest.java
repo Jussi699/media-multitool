@@ -52,7 +52,7 @@ class PhotoAndVideoTagPreprocessingTest {
     @Test
     void writesVideoTagsWithoutReencoding() throws Exception {
         File video = createVideo();
-        Map<String, String> tags = Map.of("title", "Test title", "artist", "Test artist");
+        Map<String, String> tags = Map.of("title", "Test title", "artist", "Test artist", "year", "2024");
 
         VideoTagPreprocessing.applyTags(video, tags);
 
@@ -68,8 +68,8 @@ class PhotoAndVideoTagPreprocessingTest {
 
     private File createVideo() throws Exception {
         File video = tempDir.resolve("video.mp4").toFile();
-        try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
-            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(video, 32, 32);
+        try (Java2DFrameConverter converter = new Java2DFrameConverter();
+             FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(video, 32, 32);) {
             recorder.setFormat("mp4");
             recorder.setVideoCodec(org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_MPEG4);
             recorder.setFrameRate(1);

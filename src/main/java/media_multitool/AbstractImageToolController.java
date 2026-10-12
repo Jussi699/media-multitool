@@ -147,12 +147,6 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
             labelSuccess.setManaged(true);
         }
 
-
-        if (nonNull(textDragZone)) {
-            textDragZone.setText("Selected: " + file.getName());
-        }
-        if (nonNull(dropZone) && !dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
+        markDropZoneLoaded(dropZone, textDragZone, file.getName());
     }
 }
