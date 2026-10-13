@@ -104,6 +104,10 @@
     -fx-pref-height: 30px;
 }
 
+.combo-box-genre.prompt-visible > .list-cell {
+    -fx-text-fill: #1a7a1a;
+}
+
 .combo-box-genre:hover {
     -fx-scale-x: 1;
     -fx-scale-y: 1;
@@ -135,10 +139,15 @@
     -fx-padding: 0;
 }
 
+.combo-box-genre .text-field {
+    -fx-prompt-text-fill: #1a7a1a;
+}
+
 .text-field {
     -fx-border-color: -color-for-active-button-comboBox;
     -fx-background-color: -dark-gradient-background;
     -fx-text-fill: -main-color-label;
+    -fx-prompt-text-fill: #1a7a1a;
     -fx-border-width: 2px;
     -fx-pref-height: 30px;
 }

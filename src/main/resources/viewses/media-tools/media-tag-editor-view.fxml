@@ -124,7 +124,7 @@
                                    styleClass="label-h"
                                    text="Title:"/>
 
-                            <TextField fx:id="titleField"/>
+                            <TextField fx:id="titleField" promptText="Blinding Lights"/>
                         </VBox>
 
                         <VBox spacing="2.0">
@@ -133,7 +133,7 @@
                                    text="Artist:"
                                    textFill="WHITE"/>
 
-                            <TextField fx:id="artistField"/>
+                            <TextField fx:id="artistField" promptText="The Weeknd"/>
                         </VBox>
 
                         <VBox spacing="2.0">
@@ -142,7 +142,7 @@
                                    text="Album:"
                                    textFill="WHITE"/>
 
-                            <TextField fx:id="albumField"/>
+                            <TextField fx:id="albumField" promptText="After Hours"/>
                         </VBox>
 
                         <HBox spacing="10.0">
@@ -152,7 +152,7 @@
                                        text="Album Artist:"
                                        textFill="WHITE"/>
 
-                                <TextField fx:id="albumArtistField"/>
+                                <TextField fx:id="albumArtistField" promptText="The Weeknd"/>
                             </VBox>
 
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
@@ -161,7 +161,7 @@
                                        text="Composer:"
                                        textFill="WHITE"/>
 
-                                <TextField fx:id="composerField"/>
+                                <TextField fx:id="composerField" promptText="Abel Tesfaye, Ahmad Balshe"/>
                             </VBox>
                         </HBox>
 
@@ -174,7 +174,8 @@
 
                                 <TextField fx:id="trackField"
                                            prefHeight="25.0"
-                                           prefWidth="30.0"/>
+                                           prefWidth="30.0"
+                                           promptText="05"/>
                             </VBox>
                             <VBox spacing="2.0">
                                 <Label fx:id="yearLabel"
@@ -189,10 +190,11 @@
 
                                 <TextField fx:id="yearField"
                                            prefHeight="25.0"
-                                           prefWidth="82.0">
+                                           prefWidth="82.0"
+                                           promptText="2020">
 
                                     <tooltip>
-                                        <Tooltip text="YYYY"/>
+                                        <Tooltip text="2020"/>
                                     </tooltip>
                                 </TextField>
                             </VBox>
@@ -207,7 +209,8 @@
                                           maxWidth="Infinity"
                                           prefHeight="25.0"
                                           prefWidth="0.0"
-                                          styleClass="combo-box-genre"/>
+                                          styleClass="combo-box-genre"
+                                          promptText="Synthwave"/>
                             </VBox>
                         </HBox>
 
@@ -217,7 +220,7 @@
                                    text="Disc Number:"
                                    textFill="WHITE"/>
 
-                            <TextField fx:id="discNumberField"/>
+                            <TextField fx:id="discNumberField" promptText="1"/>
                         </VBox>
 
                         <VBox spacing="2.0">
@@ -226,7 +229,7 @@
                                    text="Comment:"
                                    textFill="WHITE"/>
 
-                            <TextField fx:id="commentField"/>
+                            <TextField fx:id="commentField" promptText="High quality audio rip"/>
                         </VBox>
 
                         <VBox spacing="2.0">
@@ -235,7 +238,7 @@
                                    text="Description:"
                                    textFill="WHITE"/>
 
-                            <TextField fx:id="descriptionField"/>
+                            <TextField fx:id="descriptionField" promptText="Official studio track release"/>
                         </VBox>
 
                         <VBox spacing="2.0">
@@ -244,7 +247,7 @@
                                    text="Keywords:"
                                    textFill="WHITE"/>
 
-                            <TextField fx:id="keywordsField"/>
+                            <TextField fx:id="keywordsField" promptText="pop, 2020, hit"/>
                         </VBox>
 
                         <HBox spacing="10.0">
@@ -254,7 +257,7 @@
                                        text="Copyright:"
                                        textFill="WHITE"/>
 
-                                <TextField fx:id="copyrightField"/>
+                                <TextField fx:id="copyrightField" promptText="Republic Records"/>
                             </VBox>
 
                             <VBox spacing="2.0" HBox.hgrow="ALWAYS">
@@ -268,7 +271,7 @@
                                     </tooltip>
                                 </Label>
 
-                                <TextField fx:id="ratingField">
+                                <TextField fx:id="ratingField" promptText="5">
                                     <tooltip>
                                         <Tooltip text="0-5"/>
                                     </tooltip>

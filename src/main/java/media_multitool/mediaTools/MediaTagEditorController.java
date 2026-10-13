@@ -656,6 +656,19 @@ public class MediaTagEditorController extends AbstractMediaController {
         genreComboBox.getItems().addAll(
                 "Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Electronic", "Metal", "Blues", "Country", "Reggae", "Other"
         );
+        updateGenrePromptStyle(isNull(genreComboBox.getValue()));
+        genreComboBox.valueProperty().addListener((_, _, newValue) ->
+                updateGenrePromptStyle(isNull(newValue)));
+    }
+
+    private void updateGenrePromptStyle(boolean promptVisible) {
+        if (promptVisible) {
+            if (!genreComboBox.getStyleClass().contains("prompt-visible")) {
+                genreComboBox.getStyleClass().add("prompt-visible");
+            }
+        } else {
+            genreComboBox.getStyleClass().remove("prompt-visible");
+        }
     }
 
     private void toggleUI(boolean disabled) {
