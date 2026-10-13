@@ -6,6 +6,7 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 import com.drew.metadata.exif.GpsDirectory;
+import model.exceptions.MetadataProcessingException;
 import model.logger.ErrorLogger;
 import model.utility.DetermineType;
 import org.apache.pdfbox.Loader;
@@ -14,8 +15,15 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.CannotWriteException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.TagException;
+import org.jspecify.annotations.NonNull;
 import ws.schild.jave.Encoder;
+import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
@@ -31,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -80,10 +89,12 @@ public class MetadataHelper {
 
         try {
             String mimeType = Files.probeContentType(file.toPath());
-            if (mimeType != null && !mimeType.isBlank()) {
+            if (nonNull(mimeType) && !mimeType.isBlank()) {
                 entries.add(new MetadataEntry(category, "MIME / Content Type", mimeType, false, null));
             }
-        } catch (Exception _) {}
+        } catch (Exception _) {
+            // Ignored
+        }
 
         try {
             BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
@@ -94,7 +105,9 @@ public class MetadataHelper {
 
             String modified = attrs.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault()).format(formatter);
             entries.add(new MetadataEntry(category, "Last Modified", modified, false, null));
-        } catch (Exception _) {}
+        } catch (Exception _) {
+            // Ignored
+        }
     }
 
     private static boolean extractMediaAndGpsMetadata(File file, List<MetadataEntry> entries) {
@@ -103,7 +116,7 @@ public class MetadataHelper {
             if (isNull(metadata)) return false;
 
             GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
-            if (gpsDirectory != null) {
+            if (nonNull(gpsDirectory)) {
                 String catGps = "GPS & Location";
                 GeoLocation geoLocation = gpsDirectory.getGeoLocation();
                 if (nonNull(geoLocation) && !geoLocation.isZero()) {
@@ -123,25 +136,29 @@ public class MetadataHelper {
                 }
             }
 
-            for (Directory directory : metadata.getDirectories()) {
-                if (directory instanceof GpsDirectory) continue;
-
-                String dirName = directory.getName();
-                String category = categorizeDirectoryName(dirName);
-                boolean canDelete = isDirectoryDeletable(category);
-
-                for (Tag tag : directory.getTags()) {
-                    String desc = tag.getDescription();
-                    if (desc != null && !desc.isBlank()) {
-                        entries.add(new MetadataEntry(category, tag.getTagName(), desc, canDelete, tag.getTagName()));
-                    }
-                }
-            }
+            addToEntriesData(metadata, entries);
 
             return true;
         } catch (Exception e) {
             ErrorLogger.warn("Metadata extractor could not parse file: " + e.getMessage());
             return false;
+        }
+    }
+
+    private static void addToEntriesData(@NonNull Metadata metadata, @NonNull List<MetadataEntry> entries) {
+        for (Directory directory : metadata.getDirectories()) {
+            if (directory instanceof GpsDirectory) continue;
+
+            String dirName = directory.getName();
+            String category = categorizeDirectoryName(dirName);
+            boolean canDelete = isDirectoryDeletable(category);
+
+            for (Tag tag : directory.getTags()) {
+                String desc = tag.getDescription();
+                if (nonNull(desc) && !desc.isBlank()) {
+                    entries.add(new MetadataEntry(category, tag.getTagName(), desc, canDelete, tag.getTagName()));
+                }
+            }
         }
     }
 
@@ -175,86 +192,109 @@ public class MetadataHelper {
     private static void extractAudioMetadata(File file, List<MetadataEntry> entries) {
         try {
             AudioFile audioFile = AudioFileIO.read(file);
-            AudioHeader header = audioFile.getAudioHeader();
-
-            if (nonNull(header)) {
-                String catHeader = "Audio Technical";
-                addIfNotEmpty(entries, catHeader, "Encoding / Format", header.getEncodingType(), false, null);
-                addIfNotEmpty(entries, catHeader, "Bitrate", header.getBitRate() + " kbps", false, null);
-                addIfNotEmpty(entries, catHeader, "Sample Rate", header.getSampleRate() + " Hz", false, null);
-                addIfNotEmpty(entries, catHeader, "Channels", header.getChannels(), false, null);
-
-                int sec = header.getTrackLength();
-                String duration = String.format("%02d:%02d", sec / 60, sec % 60);
-                addIfNotEmpty(entries, catHeader, "Duration", duration, false, null);
-            }
-
-            org.jaudiotagger.tag.Tag tag = audioFile.getTag();
-            if (nonNull(tag)) {
-                String catTag = "Audio Tag";
-                for (FieldKey key : FieldKey.values()) {
-                    try {
-                        String val = tag.getFirst(key);
-                        if (nonNull(val) && !val.trim().isEmpty()) {
-                            entries.add(new MetadataEntry(catTag, formatTagKey(key.name()), val, true, key));
-                        }
-                    } catch (Exception _) {}
-                }
-
-                if (nonNull(tag.getFirstArtwork())) {
-                    entries.add(new MetadataEntry(catTag, "Embedded Artwork",
-                            tag.getFirstArtwork().getMimeType() + " (" + tag.getFirstArtwork().getBinaryData().length + " bytes)",
-                            true, "ARTWORK"));
-                }
-            }
+            addAudioTechnicalMetadata(audioFile.getAudioHeader(), entries);
+            addAudioTagMetadata(audioFile.getTag(), entries);
         } catch (Exception e) {
             ErrorLogger.warn("Could not read audio metadata: " + e.getMessage());
         }
     }
 
+    private static void addAudioTechnicalMetadata(AudioHeader header, List<MetadataEntry> entries) {
+        if (isNull(header)) {
+            return;
+        }
+
+        String category = "Audio Technical";
+        addIfNotEmpty(entries, category, "Encoding / Format", header.getEncodingType(), false, null);
+        addIfNotEmpty(entries, category, "Bitrate", header.getBitRate() + " kbps", false, null);
+        addIfNotEmpty(entries, category, "Sample Rate", header.getSampleRate() + " Hz", false, null);
+        addIfNotEmpty(entries, category, "Channels", header.getChannels(), false, null);
+
+        int seconds = header.getTrackLength();
+        String duration = String.format("%02d:%02d", seconds / 60, seconds % 60);
+        addIfNotEmpty(entries, category, "Duration", duration, false, null);
+    }
+
+    private static void addAudioTagMetadata(org.jaudiotagger.tag.Tag tag, List<MetadataEntry> entries) {
+        if (isNull(tag)) {
+            return;
+        }
+
+        String category = "Audio Tag";
+        for (FieldKey key : FieldKey.values()) {
+            try {
+                String value = tag.getFirst(key);
+                if (nonNull(value) && !value.trim().isEmpty()) {
+                    entries.add(new MetadataEntry(category, formatTagKey(key.name()), value, true, key));
+                }
+            } catch (Exception _) {
+                // Ignored
+            }
+        }
+
+        var artwork = tag.getFirstArtwork();
+        if (nonNull(artwork)) {
+            entries.add(new MetadataEntry(category, "Embedded Artwork",
+                    artwork.getMimeType() + " (" + artwork.getBinaryData().length + " bytes)",
+                    true, "ARTWORK"));
+        }
+    }
+
     private static void extractPdfMetadata(File file, List<MetadataEntry> entries) {
         try (PDDocument document = Loader.loadPDF(file)) {
-            String catDoc = "PDF Information";
-            PDDocumentInformation info = document.getDocumentInformation();
-
-            if (nonNull(info)) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(PATTERN_DATE);
-
-                addIfNotEmpty(entries, catDoc, "Title", info.getTitle(), true, "Title");
-                addIfNotEmpty(entries, catDoc, "Author", info.getAuthor(), true, "Author");
-                addIfNotEmpty(entries, catDoc, "Subject", info.getSubject(), true, "Subject");
-                addIfNotEmpty(entries, catDoc, "Keywords", info.getKeywords(), true, "Keywords");
-                addIfNotEmpty(entries, catDoc, "Creator", info.getCreator(), true, "Creator");
-                addIfNotEmpty(entries, catDoc, "Producer", info.getProducer(), true, "Producer");
-
-                if (nonNull(info.getCreationDate())) {
-                    entries.add(new MetadataEntry(catDoc, "Creation Date",
-                            formatDateTime(info.getCreationDate(), formatter), true, "Creation Date"));
-                }
-                if (nonNull(info.getModificationDate())) {
-                    entries.add(new MetadataEntry(catDoc, "Modification Date",
-                            formatDateTime(info.getModificationDate(), formatter), true, "Modification Date"));
-                }
-                addIfNotEmpty(entries, catDoc, "Trapped", info.getTrapped(), true, "Trapped");
-
-                for (String customKey : info.getMetadataKeys()) {
-                    if (!isStandardPdfKey(customKey)) {
-                        String customVal = info.getCustomMetadataValue(customKey);
-                        if (customVal != null && !customVal.isBlank()) {
-                            entries.add(new MetadataEntry(catDoc, customKey, customVal, true, customKey));
-                        }
-                    }
-                }
-            }
-
-            String catTech = "PDF Technical";
-            entries.add(new MetadataEntry(catTech, "Number of Pages", String.valueOf(document.getNumberOfPages()), false, null));
-            entries.add(new MetadataEntry(catTech, "PDF Version", String.valueOf(document.getVersion()), false, null));
-            entries.add(new MetadataEntry(catTech, "Is Encrypted", document.isEncrypted() ? "Yes" : "No", false, null));
-
+            addPdfDocumentMetadata(document.getDocumentInformation(), entries);
+            addPdfTechnicalMetadata(document, entries);
         } catch (Exception e) {
             ErrorLogger.warn("Could not read PDF metadata: " + e.getMessage());
         }
+    }
+
+    private static void addPdfDocumentMetadata(PDDocumentInformation info, List<MetadataEntry> entries) {
+        if (isNull(info)) {
+            return;
+        }
+
+        String category = "PDF Information";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(PATTERN_DATE);
+
+        addIfNotEmpty(entries, category, "Title", info.getTitle(), true, "Title");
+        addIfNotEmpty(entries, category, "Author", info.getAuthor(), true, "Author");
+        addIfNotEmpty(entries, category, "Subject", info.getSubject(), true, "Subject");
+        addIfNotEmpty(entries, category, "Keywords", info.getKeywords(), true, "Keywords");
+        addIfNotEmpty(entries, category, "Creator", info.getCreator(), true, "Creator");
+        addIfNotEmpty(entries, category, "Producer", info.getProducer(), true, "Producer");
+
+        if (nonNull(info.getCreationDate())) {
+            entries.add(new MetadataEntry(category, "Creation Date",
+                    formatDateTime(info.getCreationDate(), formatter), true, "Creation Date"));
+        }
+        if (nonNull(info.getModificationDate())) {
+            entries.add(new MetadataEntry(category, "Modification Date",
+                    formatDateTime(info.getModificationDate(), formatter), true, "Modification Date"));
+        }
+        addIfNotEmpty(entries, category, "Trapped", info.getTrapped(), true, "Trapped");
+        addPdfCustomMetadata(info, entries, category);
+    }
+
+    private static void addPdfCustomMetadata(PDDocumentInformation info, List<MetadataEntry> entries, String category) {
+        for (String customKey : info.getMetadataKeys()) {
+            if (isStandardPdfKey(customKey)) {
+                continue;
+            }
+
+            String customValue = info.getCustomMetadataValue(customKey);
+            if (nonNull(customValue) && !customValue.isBlank()) {
+                entries.add(new MetadataEntry(category, customKey, customValue, true, customKey));
+            }
+        }
+    }
+
+    private static void addPdfTechnicalMetadata(PDDocument document, List<MetadataEntry> entries) {
+        String category = "PDF Technical";
+        entries.add(new MetadataEntry(category, "Number of Pages",
+                String.valueOf(document.getNumberOfPages()), false, null));
+        entries.add(new MetadataEntry(category, "PDF Version", String.valueOf(document.getVersion()), false, null));
+        entries.add(new MetadataEntry(category, "Is Encrypted", document.isEncrypted() ? "Yes" : "No", false, null));
     }
 
     private static void extractVideoTechnicalMetadata(File file, List<MetadataEntry> entries) {
@@ -266,54 +306,76 @@ public class MetadataHelper {
                 return;
             }
 
-            String catFormat = "Video / Media Container";
-            addIfNotEmpty(entries, catFormat, "Container Format", info.getFormat(), false, null);
-
-            long durationMs = info.getDuration();
-            if (durationMs > 0) {
-                long totalSec = durationMs / 1000;
-                long hours = totalSec / 3600;
-                long minutes = (totalSec % 3600) / 60;
-                long seconds = totalSec % 60;
-                String durStr = (hours > 0)
-                        ? String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                        : String.format("%02d:%02d", minutes, seconds);
-                entries.add(new MetadataEntry(catFormat, "Duration", durStr, false, null));
-            }
-
-            VideoInfo video = info.getVideo();
-            if (nonNull(video)) {
-                String catVideo = "Video Stream";
-                addIfNotEmpty(entries, catVideo, "Video Codec", video.getDecoder(), false, null);
-                if (nonNull(video.getSize())) {
-                    entries.add(new MetadataEntry(catVideo, "Resolution", video.getSize().getWidth() + "x" + video.getSize().getHeight(), false, null));
-                }
-                if (video.getFrameRate() > 0) {
-                    entries.add(new MetadataEntry(catVideo, "Frame Rate", String.format("%.2f FPS", video.getFrameRate()), false, null));
-                }
-                if (video.getBitRate() > 0) {
-                    entries.add(new MetadataEntry(catVideo, "Bitrate", (video.getBitRate() / 1000) + " kbps", false, null));
-                }
-            }
-
-            AudioInfo audio = info.getAudio();
-            if (nonNull(audio)) {
-                String catAudio = "Audio Stream";
-                addIfNotEmpty(entries, catAudio, "Audio Codec", audio.getDecoder(), false, null);
-                if (audio.getBitRate() > 0) {
-                    entries.add(new MetadataEntry(catAudio, "Bitrate", (audio.getBitRate() / 1000) + " kbps", false, null));
-                }
-                if (audio.getSamplingRate() > 0) {
-                    entries.add(new MetadataEntry(catAudio, "Sample Rate", audio.getSamplingRate() + " Hz", false, null));
-                }
-                if (audio.getChannels() > 0) {
-                    String chan = audio.getChannels() == 2 ? "Stereo (2)" : (audio.getChannels() == 1 ? "Mono (1)" : audio.getChannels() + " channels");
-                    entries.add(new MetadataEntry(catAudio, "Channels", chan, false, null));
-                }
-            }
-
+            addVideoContainerMetadata(info, entries);
+            addVideoStreamMetadata(info.getVideo(), entries);
+            addAudioStreamMetadata(info.getAudio(), entries);
         } catch (Exception e) {
             ErrorLogger.warn("Could not read video metadata: " + e.getMessage());
+        }
+    }
+
+    private static void addVideoContainerMetadata(MultimediaInfo info, List<MetadataEntry> entries) {
+        String category = "Video / Media Container";
+        addIfNotEmpty(entries, category, "Container Format", info.getFormat(), false, null);
+
+        long durationMs = info.getDuration();
+        if (durationMs <= 0) {
+            return;
+        }
+
+        long totalSeconds = durationMs / 1000;
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+        String duration = hours > 0
+                ? String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                : String.format("%02d:%02d", minutes, seconds);
+        entries.add(new MetadataEntry(category, "Duration", duration, false, null));
+    }
+
+    private static void addVideoStreamMetadata(VideoInfo video, List<MetadataEntry> entries) {
+        if (isNull(video)) {
+            return;
+        }
+
+        String category = "Video Stream";
+        addIfNotEmpty(entries, category, "Video Codec", video.getDecoder(), false, null);
+        if (nonNull(video.getSize())) {
+            entries.add(new MetadataEntry(category, "Resolution",
+                    video.getSize().getWidth() + "x" + video.getSize().getHeight(), false, null));
+        }
+        if (video.getFrameRate() > 0) {
+            entries.add(new MetadataEntry(category, "Frame Rate",
+                    String.format("%.2f FPS", video.getFrameRate()), false, null));
+        }
+        if (video.getBitRate() > 0) {
+            entries.add(new MetadataEntry(category, "Bitrate", (video.getBitRate() / 1000) + " kbps", false, null));
+        }
+    }
+
+    private static void addAudioStreamMetadata(AudioInfo audio, List<MetadataEntry> entries) {
+        if (isNull(audio)) {
+            return;
+        }
+
+        String category = "Audio Stream";
+        addIfNotEmpty(entries, category, "Audio Codec", audio.getDecoder(), false, null);
+        if (audio.getBitRate() > 0) {
+            entries.add(new MetadataEntry(category, "Bitrate", (audio.getBitRate() / 1000) + " kbps", false, null));
+        }
+        if (audio.getSamplingRate() > 0) {
+            entries.add(new MetadataEntry(category, "Sample Rate", audio.getSamplingRate() + " Hz", false, null));
+        }
+        if (audio.getChannels() > 0) {
+            String channels;
+            if (audio.getChannels() == 2) {
+                channels = "Stereo (2)";
+            } else if (audio.getChannels() == 1) {
+                channels = "Mono (1)";
+            } else {
+                channels = audio.getChannels() + " channels";
+            }
+            entries.add(new MetadataEntry(category, "Channels", channels, false, null));
         }
     }
 
@@ -678,80 +740,113 @@ public class MetadataHelper {
         return false;
     }
 
-    public static File removeAllMetadata(File inputFile, File outputDirectory) throws Exception {
+    public static File removeAllMetadata(File inputFile, File outputDirectory)
+            throws IOException, MetadataProcessingException {
         if (isNull(inputFile) || !inputFile.exists()) {
             throw new IllegalArgumentException("Input file does not exist");
         }
 
-        File targetDir = (nonNull(outputDirectory) && outputDirectory.isDirectory())
+        String ext = DetermineType.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
+        if (isAudioFormat(ext)) {
+            return removeAllAudioMetadata(inputFile, createCleanOutputFile(inputFile, outputDirectory));
+        }
+        if (isPdfFormat(ext)) {
+            return removeAllPdfMetadata(inputFile, createCleanOutputFile(inputFile, outputDirectory));
+        }
+        if (isImageFormat(ext)) {
+            return removeAllImageMetadata(inputFile, ext, createCleanOutputFile(inputFile, outputDirectory));
+        }
+        if (isVideoFormat(ext)) {
+            return removeAllVideoMetadata(inputFile, ext, createCleanOutputFile(inputFile, outputDirectory));
+        }
+
+        throw new UnsupportedOperationException("Unsupported format for metadata removal: " + ext);
+    }
+
+    private static File createCleanOutputFile(File inputFile, File outputDirectory) {
+        File targetDirectory = nonNull(outputDirectory) && outputDirectory.isDirectory()
                 ? outputDirectory
                 : inputFile.getParentFile();
-
-        String ext = DetermineType.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
         String baseName = getBaseName(inputFile.getName());
-        File outputFile = new File(targetDir, baseName + "_clean." + ext);
+        String extension = DetermineType.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
+        return new File(targetDirectory, baseName + "_clean." + extension);
+    }
 
-        if (isAudioFormat(ext)) {
-            Files.copy(inputFile.toPath(), outputFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+    private static File removeAllAudioMetadata(File inputFile, File outputFile) throws MetadataProcessingException {
+        try {
+            Files.copy(inputFile.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             AudioFile audioFile = AudioFileIO.read(outputFile);
             org.jaudiotagger.tag.Tag tag = audioFile.getTag();
             if (nonNull(tag)) {
                 tag.deleteArtworkField();
-                for (FieldKey fk : FieldKey.values()) {
+                for (FieldKey fieldKey : FieldKey.values()) {
                     try {
-                        tag.deleteField(fk);
-                    } catch (Exception _) {}
+                        tag.deleteField(fieldKey);
+                    } catch (Exception _) {
+                        // Ignored
+                    }
                 }
                 audioFile.commit();
             }
             return outputFile;
-        } else if (isPdfFormat(ext)) {
-            try (PDDocument document = Loader.loadPDF(inputFile)) {
-                document.setDocumentInformation(new PDDocumentInformation());
-                if (nonNull(document.getDocumentCatalog())) {
-                    document.getDocumentCatalog().setMetadata(null);
-                }
-                document.save(outputFile);
-                return outputFile;
-            }
-        } else if (isImageFormat(ext)) {
-            BufferedImage image = ImageIO.read(inputFile);
-            if (isNull(image)) {
-                throw new IOException("Unable to decode image");
-            }
-            String formatName = ext.isEmpty() ? "png" : ext;
-            if (formatName.equalsIgnoreCase("jpg") || formatName.equalsIgnoreCase("jpeg")) {
-                BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-                rgbImage.createGraphics().drawImage(image, 0, 0, java.awt.Color.WHITE, null);
-                ImageIO.write(rgbImage, "jpg", outputFile);
-            } else {
-                ImageIO.write(image, formatName, outputFile);
-            }
-            return outputFile;
-        } else if (isVideoFormat(ext)) {
-            MultimediaObject mo = new MultimediaObject(inputFile);
-            MultimediaInfo info = mo.getInfo();
+        } catch (IOException | CannotReadException | TagException | ReadOnlyFileException
+                 | InvalidAudioFrameException | CannotWriteException e) {
+            throw new MetadataProcessingException("Could not remove audio metadata from " + inputFile.getName(), e);
+        }
+    }
 
-            EncodingAttributes attrs = new EncodingAttributes();
-            attrs.setOutputFormat(ext);
-
-            if (nonNull(info) && nonNull(info.getVideo())) {
-                VideoAttributes va = new VideoAttributes();
-                va.setCodec("copy");
-                attrs.setVideoAttributes(va);
+    private static File removeAllPdfMetadata(File inputFile, File outputFile) throws IOException {
+        try (PDDocument document = Loader.loadPDF(inputFile)) {
+            document.setDocumentInformation(new PDDocumentInformation());
+            if (nonNull(document.getDocumentCatalog())) {
+                document.getDocumentCatalog().setMetadata(null);
             }
-            if (nonNull(info) && nonNull(info.getAudio())) {
-                AudioAttributes aa = new AudioAttributes();
-                aa.setCodec("copy");
-                attrs.setAudioAttributes(aa);
-            }
-
-            Encoder encoder = new Encoder();
-            encoder.encode(mo, outputFile, attrs);
+            document.save(outputFile);
             return outputFile;
         }
+    }
 
-        throw new UnsupportedOperationException("Unsupported format for metadata removal: " + ext);
+    private static File removeAllImageMetadata(File inputFile, String extension, File outputFile) throws IOException {
+        BufferedImage image = ImageIO.read(inputFile);
+        if (isNull(image)) {
+            throw new IOException("Unable to decode image");
+        }
+
+        String formatName = extension.isEmpty() ? "png" : extension;
+        if (formatName.equalsIgnoreCase("jpg") || formatName.equalsIgnoreCase("jpeg")) {
+            BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            rgbImage.createGraphics().drawImage(image, 0, 0, java.awt.Color.WHITE, null);
+            ImageIO.write(rgbImage, "jpg", outputFile);
+        } else {
+            ImageIO.write(image, formatName, outputFile);
+        }
+        return outputFile;
+    }
+
+    private static File removeAllVideoMetadata(File inputFile, String extension, File outputFile)
+            throws MetadataProcessingException {
+        try {
+            MultimediaObject multimediaObject = new MultimediaObject(inputFile);
+            MultimediaInfo info = multimediaObject.getInfo();
+
+            EncodingAttributes attributes = new EncodingAttributes();
+            attributes.setOutputFormat(extension);
+            if (nonNull(info) && nonNull(info.getVideo())) {
+                VideoAttributes videoAttributes = new VideoAttributes();
+                videoAttributes.setCodec("copy");
+                attributes.setVideoAttributes(videoAttributes);
+            }
+            if (nonNull(info) && nonNull(info.getAudio())) {
+                AudioAttributes audioAttributes = new AudioAttributes();
+                audioAttributes.setCodec("copy");
+                attributes.setAudioAttributes(audioAttributes);
+            }
+
+            new Encoder().encode(multimediaObject, outputFile, attributes);
+            return outputFile;
+        } catch (EncoderException e) {
+            throw new MetadataProcessingException("Could not remove video metadata from " + inputFile.getName(), e);
+        }
     }
 
     public static String exportMetadataToText(File file, List<MetadataEntry> entries) {
@@ -760,7 +855,7 @@ public class MetadataHelper {
         sb.append("File: ").append(nonNull(file) ? file.getName() : "Unknown").append("\n");
         sb.append("Path: ").append(nonNull(file) ? file.getAbsolutePath() : "").append("\n");
         sb.append("Generated on: ")
-                .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern(PATTERN_DATE)))
+                .append(LocalDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern(PATTERN_DATE)))
                 .append("\n\n");
 
         String currentCategory = "";
