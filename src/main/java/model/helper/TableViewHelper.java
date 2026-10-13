@@ -1,9 +1,9 @@
 package model.helper;
 
 import javafx.scene.Node;
-import javafx.scene.control.TableColumn;
+import javafx.geometry.Orientation;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import model.utility.DetailsAudioFile;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -147,5 +147,15 @@ public class TableViewHelper {
         return Math.max(0, (int) Math.floor(
                 (viewportHeight - getTableHeaderHeight(tableView)) / tableView.getFixedCellSize()
         ));
+    }
+
+    public static ScrollBar findInternalVerticalScrollBar(TableView<?> tableView) {
+        for (Node node : tableView.lookupAll(".scroll-bar")) {
+            if (node instanceof ScrollBar scrollBar
+                    && scrollBar.getOrientation() == Orientation.VERTICAL) {
+                return scrollBar;
+            }
+        }
+        return null;
     }
 }

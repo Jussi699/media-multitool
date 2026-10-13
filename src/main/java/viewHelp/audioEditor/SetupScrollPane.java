@@ -18,6 +18,7 @@ import java.util.Objects;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.helper.TableViewHelper.findInternalVerticalScrollBar;
 
 public class SetupScrollPane {
     private SetupScrollPane() {
@@ -143,13 +144,7 @@ public class SetupScrollPane {
             ScrollBar[] internalBarRef) {
 
         Runnable sync = () -> {
-            ScrollBar internalBar = null;
-            for (Node node : tableView.lookupAll(".scroll-bar")) {
-                if (node instanceof ScrollBar scrollBar && scrollBar.getOrientation() == Orientation.VERTICAL) {
-                    internalBar = scrollBar;
-                    break;
-                }
-            }
+            ScrollBar internalBar = findInternalVerticalScrollBar(tableView);
             if (isNull(internalBar)) {
                 return;
             }
@@ -160,7 +155,7 @@ public class SetupScrollPane {
             internalBar.setMaxWidth(0);
 
             if (internalBarRef[0] != internalBar) {
-                if (internalBarRef[0] != null) {
+                if (nonNull(internalBarRef[0])) {
                     externalBar.minProperty().unbind();
                     externalBar.maxProperty().unbind();
                     externalBar.visibleAmountProperty().unbind();
