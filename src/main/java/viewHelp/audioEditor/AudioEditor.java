@@ -6,11 +6,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import model.logger.ErrorLogger;
 import model.preprocessing.AudioPreprocessing;
 import model.properties.VideoAndAudioProperties;
 
+import java.net.URL;
 import java.util.List;
-import java.util.Objects;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -22,7 +23,8 @@ public class AudioEditor {
 
     public static void updatePreviewWithPath(VideoAndAudioProperties audioProperties, ImageView imageView) {
         if (nonNull(audioProperties.getPathToImage())) {
-            setPreview(new Image(audioProperties.getPathToImage().toURI().toString()), imageView);
+            Image image = (new Image(audioProperties.getPathToImage().toURI().toString()));
+            setPreview(image, imageView);
         }
     }
 
@@ -33,7 +35,12 @@ public class AudioEditor {
     }
 
     public static void loadDefaultPreview(ImageView imageViewPreview) {
-        setPreview(new Image(Objects.requireNonNull(Launcher.class.getResourceAsStream("/img/defaultImageMp3.png"))), imageViewPreview);
+        URL imageResource = Launcher.class.getResource("/img/defaultImageMp3.png");
+        if (isNull(imageResource)) {
+            ErrorLogger.error("Default audio preview image not found: /img/defaultImageMp3.png");
+            return;
+        }
+        setPreview(new Image(imageResource.toExternalForm()), imageViewPreview);
     }
 
     public static void clearFields(List<TextField> textFields, ComboBox<String> comboBox) {
@@ -44,7 +51,8 @@ public class AudioEditor {
 
     public static void updatePreview(VideoAndAudioProperties audioProperties, ImageView imageViewPreview) {
         if (nonNull(audioProperties.getSrcFile())) {
-            AudioPreprocessing.getIconMp3(audioProperties.getSrcFile()).ifPresent(file -> AudioEditor.setPreview(file, imageViewPreview));
+            AudioPreprocessing.getIconMp3(audioProperties.getSrcFile()).ifPresent(
+                    file -> AudioEditor.setPreview(file, imageViewPreview));
         }
     }
 
