@@ -39,7 +39,9 @@ public enum MediaFormat {
     PGM("pgm", "image/x-portable-graymap", MediaType.IMAGE),
     PAM("pam", "image/x-portable-arbitrarymap", MediaType.IMAGE),
     SVG("svg", "image/svg+xml", MediaType.IMAGE),
-    ICO("ico", "image/x-icon", MediaType.IMAGE);
+    ICO("ico", "image/x-icon", MediaType.IMAGE),
+
+    GIF("gif", "image/gif", MediaType.VIDEO);
 
     private final String extension;
     private final String mimeType;
@@ -56,6 +58,7 @@ public enum MediaFormat {
             case "btnToFLV"       -> Optional.of(FLV);
             case "btnToWMV"       -> Optional.of(WMV);
             case "btnTo3GP"       -> Optional.of(THREE_GP);
+            case "btnToGIF"       -> Optional.of(GIF);
 
             case "btnToMP3"       -> Optional.of(MP3);
             case "btnToAAC"       -> Optional.of(AAC);

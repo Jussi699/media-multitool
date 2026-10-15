@@ -22,6 +22,7 @@ public class MediaHelper {
         return switch (format) {
             case AVI                     -> useGPU ? "h264_nvenc" : "mpeg4";
             case WEBM                    -> "libvpx";
+            case GIF                     -> "gif";
             case WMV                     -> "wmv2";
             case FLV                     -> "flv1";
             case MP4, MOV, MKV, THREE_GP -> useGPU ? "h264_nvenc" : "libx264";
@@ -74,6 +75,7 @@ public class MediaHelper {
             case WMV, WMA              -> "asf";
             case FLV                   -> "flv";
             case THREE_GP              -> "3gp";
+            case GIF                   -> "gif";
             case MP3                   -> "mp3";
             case WAV                   -> "wav";
             case OGG                   -> "ogg";

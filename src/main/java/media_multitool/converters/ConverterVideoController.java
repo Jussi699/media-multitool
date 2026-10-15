@@ -37,27 +37,27 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
     @FXML private Button btnSelectFile, btnChoiceDirForSaveFile;
     @FXML private ToggleButton btnToMP4, btnToAVI, btnToMKV;
     @FXML private ToggleButton btnToWEBM, btnToMOV, btnToFLV;
-    @FXML private ToggleButton btnToWMV, btnTo3GP;
+    @FXML private ToggleButton btnToWMV, btnTo3GP, btnToGIF;
+    @FXML private Label gifInfoLabel;
     @FXML private ComboBox<Item> videoBitRateComboBox, audioBitRateComboBox, channelsComboBox;
     @FXML private ComboBox<Item> samplingRateComboBox, fpsComboBox;
     @FXML private ComboBox<String> resolutionComboBox;
     @FXML private CheckBox gpuCheckBox;
     @FXML private VBox parametersContainer;
 
-
     @Override
     protected List<String> getSupportedInputFormats() {
-        return Global.getAllSupportedVideoFormats();
+        return Stream.concat(Global.getAllSupportedVideoFormats().stream(), Stream.of(".gif")).toList();
     }
 
     @Override
     protected List<String> getSupportedFileChooserFormats() {
-        return Global.getSupportedVideoFormatsForFileChooser();
+        return Stream.concat(Global.getSupportedVideoFormatsForFileChooser().stream(), Stream.of("*.gif")).toList();
     }
 
     @Override
     protected String getFileFilterDescription() {
-        return "Video";
+        return "Video or animated GIF";
     }
 
     @Override
@@ -79,7 +79,7 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
     }
 
     private void initToggleGroup() {
-        Stream.of(btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP)
+        Stream.of(btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP, btnToGIF)
                 .forEach(tb -> tb.setToggleGroup(toggleGroup));
     }
 
@@ -87,11 +87,11 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
     private void showInfo() {
         InfoAlert.showToolInfoWithoutClipboard(
                 "Converter Video",
-                "1. Select a video or audio file using \"Select video\" or drag and drop it into the dash-bordered zone",
+                "1. Select a video or animated GIF using \"Select video/GIF\" or drag and drop it into the dash-bordered zone",
                 """
-                        3. Select the target video format (MP4, AVI, MKV, etc.);
+                        3. Select the target format (MP4, AVI, MKV, GIF, etc.);
 
-                        4. Configure video and audio settings (Bitrate, FPS, Resolution, etc.);
+                        4. Configure video settings (FPS, Resolution, etc.). GIF is silent and supports up to 256 colors;
 
                         5. (Optional) Enable GPU Acceleration if your hardware supports it;
 
@@ -121,6 +121,7 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
 
         progressBar.setProgress(0);
         toggleGroup.selectToggle(null);
+        updateGifControls(false);
     }
 
     @Override
@@ -236,6 +237,7 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
                 format -> selectFormat(format.getExtension(), properties::setTargetFormat),
                 () -> properties.setTargetFormat(null)
         );
+        updateGifControls("gif".equalsIgnoreCase(properties.getTargetFormat()));
     }
 
     private int getSelectedItemValue(ComboBox<Item> comboBox) {
@@ -307,9 +309,19 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
         properties.setResolution(params.resolution());
         properties.setUseGPU(params.useGPU());
         properties.setVideoCodec(MediaHelper.getVideoCodec(targetFormat, params.useGPU()));
-        properties.setAudioCodec(MediaHelper.getAudioCodec(targetFormat, true));
+        properties.setAudioCodec(targetFormat == MediaFormat.GIF ? null : MediaHelper.getAudioCodec(targetFormat, true));
         properties.setFfmpegFormat(MediaHelper.getFFmpegFormat(targetFormat));
         properties.setMediaType(MediaType.VIDEO);
+    }
+
+    private void updateGifControls(boolean gifSelected) {
+        videoBitRateComboBox.setDisable(gifSelected);
+        audioBitRateComboBox.setDisable(gifSelected);
+        channelsComboBox.setDisable(gifSelected);
+        samplingRateComboBox.setDisable(gifSelected);
+        gpuCheckBox.setDisable(gifSelected);
+        gifInfoLabel.setVisible(gifSelected);
+        gifInfoLabel.setManaged(gifSelected);
     }
 
     private ConversionParams resolveConversionParams(MultimediaInfo sourceInfo) {
@@ -349,7 +361,8 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
                 ? parseResolution(sourceInfo).orElse(null)
                 : resolution;
 
-        boolean useGPU = nonNull(gpuCheckBox) && gpuCheckBox.isSelected();
+        boolean useGPU = !"gif".equalsIgnoreCase(properties.getTargetFormat())
+                && nonNull(gpuCheckBox) && gpuCheckBox.isSelected();
 
         return new ConversionParams(finalVideoBitrate, finalAudioBitrate, finalChannels, finalSamplingRate, finalFps, finalResolution, useGPU);
     }

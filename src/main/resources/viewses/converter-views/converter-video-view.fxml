@@ -35,7 +35,7 @@
                     mnemonicParsing="false"
                     onAction="#selectFile"
                     prefWidth="180.0"
-                    text="Select video"/>
+                    text="Select video/GIF"/>
 
             <Button fx:id="btnChoiceDirForSaveFile"
                     mnemonicParsing="false"
@@ -101,7 +101,19 @@
                                   onAction="#onActionClickToggleBtnFormat"
                                   styleClass="btn-to-video-format"
                                   text="to 3GP"/>
+
+                    <ToggleButton fx:id="btnToGIF"
+                                  mnemonicParsing="false"
+                                  onAction="#onActionClickToggleBtnFormat"
+                                  styleClass="btn-to-video-format"
+                                  text="to GIF"/>
                 </HBox>
+
+                <Label fx:id="gifInfoLabel"
+                       text="GIF: up to 256 colors, no audio; lower FPS/resolution reduces file size."
+                       visible="false"
+                       managed="false"
+                       styleClass="label-h"/>
             </VBox>
 
             <VBox alignment="CENTER" spacing="12.0">
@@ -193,9 +205,7 @@
             <StackPane fx:id="dropZone"
                        styleClass="drop-zone, drop-zone-solo"
                        HBox.hgrow="ALWAYS">
-                <Label fx:id="textDragZone"
-                       styleClass="label-drag-zone"
-                       text="Drag video here"/>
+                <Label fx:id="textDragZone" text="Drag video or GIF here"/>
             </StackPane>
         </HBox>
 

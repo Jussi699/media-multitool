@@ -8,11 +8,16 @@ import model.utility.PreparingAttributes;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.encode.AudioAttributes;
+import ws.schild.jave.encode.ArgType;
+import ws.schild.jave.encode.EncodingArgument;
 import ws.schild.jave.encode.EncodingAttributes;
+import ws.schild.jave.encode.ValueArgument;
 import ws.schild.jave.encode.VideoAttributes;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.DoubleConsumer;
 
@@ -45,7 +50,12 @@ public class ConverterVideoAudioFile {
 
             ErrorLogger.info("Starting encoding: " + file.getName() + " [V-BR: " + properties.getVideoBitRate() + ", A-BR: " + properties.getAudioBitRate() + "]");
 
-            encoder.encode(multimediaObject, target, attrs, getEncoderProgressListener(progressConsumer));
+            if ("gif".equalsIgnoreCase(properties.getFfmpegFormat())) {
+                encoder.encode(List.of(multimediaObject), target, attrs,
+                        getEncoderProgressListener(progressConsumer), createGifArguments(properties));
+            } else {
+                encoder.encode(multimediaObject, target, attrs, getEncoderProgressListener(progressConsumer));
+            }
 
             ErrorLogger.info("Conversion successful!");
             clearCurrentTarget(target);
@@ -86,7 +96,8 @@ public class ConverterVideoAudioFile {
         attrs.setOutputFormat(normalizedFormat);
 
         boolean isVideo = (type == MediaType.VIDEO);
-        boolean hasAudio = (nonNull(sourceInfo) && nonNull(sourceInfo.getAudio()));
+        boolean gifOutput = "gif".equalsIgnoreCase(outputFormat);
+        boolean hasAudio = !gifOutput && nonNull(sourceInfo) && nonNull(sourceInfo.getAudio());
         
         ErrorLogger.info("Creating encoding attributes - Format: " + normalizedFormat + ", IsVideo: " + isVideo + ", HasAudio: " + hasAudio);
 
@@ -141,16 +152,30 @@ public class ConverterVideoAudioFile {
         VideoAttributes video = new VideoAttributes();
         video.setCodec(properties.getVideoCodec());
         int videoBitrate = properties.getVideoBitRate();
-        if (videoBitrate > 0) {
+        boolean gifOutput = "gif".equalsIgnoreCase(properties.getFfmpegFormat());
+        if (videoBitrate > 0 && !gifOutput) {
             video.setBitRate(videoBitrate * 1000);
         }
-        video.setPixelFormat("yuv420p");
+        video.setPixelFormat(gifOutput ? "pal8" : "yuv420p");
 
         int fps = properties.getFps();
         if (fps > 0) { video.setFrameRate(fps); }
 
         PreparingAttributes.parseSize(properties.getResolution()).ifPresent(video::setSize);
         return video;
+    }
+
+    private List<EncodingArgument> createGifArguments(VideoAndAudioProperties properties) {
+        int fps = properties.getFps() > 0 ? properties.getFps() : 30;
+        String filterGraph = "[0:v:0]fps=" + fps
+                + ",split[frames][paletteSource];"
+                + "[paletteSource]palettegen=max_colors=256:stats_mode=diff[palette];"
+                + "[frames][palette]paletteuse=dither=sierra2_4a[gif]";
+
+        return List.of(
+                new ValueArgument(ArgType.OUTFILE, "-filter_complex", ignored -> Optional.of(filterGraph)),
+                new ValueArgument(ArgType.OUTFILE, "-map", ignored -> Optional.of("[gif]"))
+        );
     }
 
     public void cancelConversion() {

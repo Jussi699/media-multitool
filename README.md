@@ -39,7 +39,8 @@
 
 ### 🎥 Video & Audio Conversion
 - **Powered by JAVE2 (FFmpeg):** Reliable and fast conversion using industrial-grade codecs
-- **Video Formats:** MP4, AVI, MKV, WEBM, MOV, FLV, WMV, 3GP
+- **Video Formats:** MP4, AVI, MKV, WEBM, MOV, FLV, WMV, 3GP, animated GIF
+- **GIF Conversion:** Convert videos to GIF and animated GIFs back to video. GIF output uses a 256-color palette, has no audio, and may create large files; frame rate and resolution can be adjusted.
 - **Audio Formats:** MP3, AAC, OGG (Vorbis), OPUS, FLAC, ALAC (M4A), WAV, AIFF
 - **Video Settings:**
   - Bitrate control (1000-8000+ kbps)
