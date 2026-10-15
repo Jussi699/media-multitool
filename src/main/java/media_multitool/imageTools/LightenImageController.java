@@ -1,6 +1,5 @@
 package media_multitool.imageTools;
 
-import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -10,6 +9,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
+import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Global;

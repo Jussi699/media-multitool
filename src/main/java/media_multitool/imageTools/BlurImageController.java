@@ -10,6 +10,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
+import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Global;
@@ -91,7 +92,7 @@ public class BlurImageController extends AbstractImageToolController {
             protected BufferedImage call() throws Exception {
                 updateProgress(0, 1.0);
                 updateMessage("Updating preview...");
-                return com.imagetools.ImageTools.blurryImage(
+                return ImageTools.blurryImage(
                         originalImage,
                         radius,
                         progress -> updateProgress(progress, 1.0)
@@ -152,7 +153,7 @@ public class BlurImageController extends AbstractImageToolController {
 
     @Override
     protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
-        Optional<BufferedImage> blurred = com.imagetools.ImageTools.blurryImage(
+        Optional<BufferedImage> blurred = ImageTools.blurryImage(
                 originalImage,
                 getSliderValue(),
                 progressUpdater

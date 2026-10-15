@@ -9,6 +9,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
+import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Global;
@@ -120,7 +121,7 @@ public class DarkenImageController extends AbstractImageToolController {
             setImagePreview(processedImage, preview);
         }
 
-        com.imagetools.ImageTools.brightnessImage(originalImage, -value).ifPresent(darkened -> {
+        ImageTools.brightnessImage(originalImage, -value).ifPresent(darkened -> {
             processedImage = darkened;
             setImagePreview(processedImage, preview);
         });
@@ -128,7 +129,7 @@ public class DarkenImageController extends AbstractImageToolController {
 
     @Override
     protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
-        var darkened = com.imagetools.ImageTools.brightnessImage(
+        var darkened = ImageTools.brightnessImage(
                 originalImage,
                 getSliderValue()
         );

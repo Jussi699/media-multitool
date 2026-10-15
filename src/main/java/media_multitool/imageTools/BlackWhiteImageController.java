@@ -7,6 +7,7 @@ import javafx.scene.control.Control;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
+import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Global;
@@ -61,7 +62,7 @@ public class BlackWhiteImageController extends AbstractImageToolController {
             return;
         }
 
-        com.imagetools.ImageTools.blackAndWhiteImage(originalImage).ifPresent(bw -> {
+        ImageTools.blackAndWhiteImage(originalImage).ifPresent(bw -> {
             processedImage = bw;
             setImagePreview(processedImage, preview);
         });

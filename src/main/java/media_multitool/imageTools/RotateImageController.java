@@ -1,7 +1,5 @@
 package media_multitool.imageTools;
 
-import com.imagetools.ImageTools;
-import com.imagetools.RotateSide;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -9,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
+import model.enums.RotateSide;
+import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Global;

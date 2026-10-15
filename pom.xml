@@ -60,11 +60,6 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>com.imagetools</groupId>
-            <artifactId>imagetools</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>

@@ -1,7 +1,6 @@
 package media_multitool.imageTools;
 
 import com.bric.colorpicker.ColorPicker;
-import com.imagetools.ImageTools;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -11,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.WindowEvent;
 import media_multitool.AbstractImageToolController;
+import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Global;
@@ -65,7 +65,7 @@ public class ColorizeImageController extends AbstractImageToolController {
                 () -> {
                     if (isNull(originalImage)) return null;
                     return nonNull(selectedColorFX)
-                            ? com.imagetools.ImageTools.applyColorizeEffect(originalImage, selectedColorFX)
+                            ? ImageTools.applyColorizeEffect(originalImage, selectedColorFX)
                             : originalImage;
                 },
                 "Colorized"
@@ -142,7 +142,7 @@ public class ColorizeImageController extends AbstractImageToolController {
         }
 
         if (nonNull(selectedColorFX)) {
-            return com.imagetools.ImageTools.applyColorizeEffect(originalImage, selectedColorFX);
+            return ImageTools.applyColorizeEffect(originalImage, selectedColorFX);
         }
         return originalImage;
     }

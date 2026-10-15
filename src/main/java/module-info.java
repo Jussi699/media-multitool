@@ -24,7 +24,6 @@ module media_multitool {
     requires com.sun.jna.platform;
     requires org.lwjgl;
     requires org.lwjgl.nfd;
-    requires com.imagetools;
     requires com.drew.metadata;
     requires org.apache.commons.imaging;
     requires org.apache.commons.lang3;

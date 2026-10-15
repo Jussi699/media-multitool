@@ -3,7 +3,8 @@ package model.converterImage;
 import model.converterImage.strategy.ImageConversionStrategy;
 import model.converterImage.strategy.ImageStrategyFactory;
 import model.compressorImage.Compressor;
-import com.imagetools.RotateSide;
+import model.enums.RotateSide;
+import model.imageTools.ImageTools;
 import model.properties.ImageProperties;
 import model.compressorImage.CompressionResult;
 import org.junit.jupiter.api.Test;
@@ -80,22 +81,22 @@ public class ImageOperationsTest {
         int height = 50;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         
-        Optional<BufferedImage> flippedH = com.imagetools.ImageTools.rotateImage(image, RotateSide.HORIZONTALLY);
+        Optional<BufferedImage> flippedH = ImageTools.rotateImage(image, RotateSide.HORIZONTALLY);
         assertTrue(flippedH.isPresent());
         assertEquals(width, flippedH.get().getWidth());
         assertEquals(height, flippedH.get().getHeight());
 
-        Optional<BufferedImage> flippedV = com.imagetools.ImageTools.rotateImage(image, RotateSide.VERTICALLY);
+        Optional<BufferedImage> flippedV = ImageTools.rotateImage(image, RotateSide.VERTICALLY);
         assertTrue(flippedV.isPresent());
         assertEquals(width, flippedV.get().getWidth());
         assertEquals(height, flippedV.get().getHeight());
 
-        Optional<BufferedImage> rotatedR = com.imagetools.ImageTools.rotateImage(image, RotateSide.RIGHT);
+        Optional<BufferedImage> rotatedR = ImageTools.rotateImage(image, RotateSide.RIGHT);
         assertTrue(rotatedR.isPresent());
         assertEquals(height, rotatedR.get().getWidth());
         assertEquals(width, rotatedR.get().getHeight());
 
-        Optional<BufferedImage> rotatedL = com.imagetools.ImageTools.rotateImage(image, RotateSide.LEFT);
+        Optional<BufferedImage> rotatedL = ImageTools.rotateImage(image, RotateSide.LEFT);
         assertTrue(rotatedL.isPresent());
         assertEquals(height, rotatedL.get().getWidth());
         assertEquals(width, rotatedL.get().getHeight());
