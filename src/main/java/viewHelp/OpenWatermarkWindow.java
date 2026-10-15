@@ -13,16 +13,16 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class OpenWatermarkWindow {
-    public <T> T openWatermarkWindow(RecordOpenWatermarkWindow record, Consumer<T> controllerSetup, Consumer<T> settingsLoader) {
-        Stage[] stageHolder = record.stageHolder();
-        String title = record.title();
+    public <T> T openWatermarkWindow(RecordOpenWatermarkWindow watermarkWindow, Consumer<T> controllerSetup, Consumer<T> settingsLoader) {
+        Stage[] stageHolder = watermarkWindow.stageHolder();
+        String title = watermarkWindow.title();
 
         try {
             T controller;
             Stage stage = stageHolder[0];
 
             if (isNull(stage)) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(record.fxmlPath()));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(watermarkWindow.fxmlPath()));
                 Scene scene = new Scene(loader.load());
                 scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
                 scene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
@@ -32,7 +32,7 @@ public class OpenWatermarkWindow {
 
                 stage = new Stage();
                 stage.initModality(Modality.NONE);
-                stage.initOwner(record.ownerButton().getScene().getWindow());
+                stage.initOwner(watermarkWindow.ownerButton().getScene().getWindow());
 
                 stage.setTitle(title);
                 stage.setScene(scene);
@@ -52,7 +52,7 @@ public class OpenWatermarkWindow {
                 controller = existing;
             }
 
-            if (nonNull(controller) && record.currentWatermarkSettings().getType() == record.expectedType()) {
+            if (nonNull(controller) && watermarkWindow.currentWatermarkSettings().getType() == watermarkWindow.expectedType()) {
                 settingsLoader.accept(controller);
             }
 

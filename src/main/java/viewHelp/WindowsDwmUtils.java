@@ -61,7 +61,7 @@ public final class WindowsDwmUtils {
             if (nonNull(hwnd)) {
                 return applyCustomDarkTitleBar(hwnd, DEFAULT_CAPTION_COLOR_REF, DEFAULT_TEXT_COLOR_REF);
             }
-        } catch (Exception t) {
+        } catch (Throwable t) {
             ErrorLogger.warn("Failed to apply DWM dark mode: " + t.getMessage());
         }
         return false;
@@ -103,7 +103,7 @@ public final class WindowsDwmUtils {
                 hr = Dwmapi.INSTANCE.DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, darkMode, 4);
             }
             return hr == 0;
-        } catch (Exception t) {
+        } catch (Throwable t) {
             ErrorLogger.warn("Error calling DwmSetWindowAttribute: " + t.getMessage());
             return false;
         }
@@ -116,7 +116,7 @@ public final class WindowsDwmUtils {
         try {
             IntByReference color = new IntByReference(colorRef);
             return Dwmapi.INSTANCE.DwmSetWindowAttribute(hwnd, attribute, color, 4) == 0;
-        } catch (Exception _) {
+        } catch (Throwable _) {
             return false;
         }
     }

@@ -13,7 +13,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class ConvertImagesToPdfHelper {
-
     private static final String[] SUPPORTED_IMAGE_EXTENSIONS = {
         ".png", ".jpg", ".jpeg", ".tiff", ".svg", ".bmp"
     };

@@ -31,10 +31,13 @@ public class SvgImageStrategy implements ImageConversionStrategy {
 
         try (FileWriter writer = new FileWriter(outputFile)) {
             writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
-            writer.write(String.format("<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",
+
+            writer.write(String.format("<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">%n",
                     image.getWidth(), image.getHeight()));
-            writer.write(String.format("  <image width=\"%d\" height=\"%d\" xlink:href=\"data:image/png;base64,%s\"/>\n",
+
+            writer.write(String.format("  <image width=\"%d\" height=\"%d\" xlink:href=\"data:image/png;base64,%s\"/>%n",
                     image.getWidth(), image.getHeight(), base64));
+            
             writer.write("</svg>");
         }
     }

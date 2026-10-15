@@ -50,7 +50,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class MetadataHelper {
-    private MetadataHelper() {}
+    private MetadataHelper() {
+        /* This utility class should not be instantiated */
+    }
 
     private static final String PATTERN_DATE = "yyyy-MM-dd HH:mm:ss";
 
@@ -173,17 +175,29 @@ public class MetadataHelper {
     private static String categorizeDirectoryName(String dirName) {
         if (isNull(dirName)) return "Metadata";
         String lower = dirName.toLowerCase(Locale.ROOT);
-        if (lower.contains("gps")) {
+
+        final boolean isGps = lower.contains("gps");
+        final boolean isCameraExif = lower.contains("exif") || lower.contains("camera")
+                || lower.contains("subifd") || lower.contains("ifd0");
+        final boolean isIptcRights = lower.contains("iptc") || lower.contains("xmp") || lower.contains("photoshop");
+        final boolean isMakerNotes = lower.contains("makernote") || lower.contains("canon") || lower.contains("nikon")
+                || lower.contains("sony") || lower.contains("apple") || lower.contains("samsung");
+        final boolean isVideoAudioTracks = lower.contains("quicktime") || lower.contains("mp4")
+                || lower.contains("video") || lower.contains("avi");
+        final boolean isImageFormat = lower.contains("png") || lower.contains("jpeg") || lower.contains("webp")
+                || lower.contains("gif") || lower.contains("bmp") || lower.contains("jfif");
+
+        if (isGps) {
             return "GPS & Location";
-        } else if (lower.contains("exif") || lower.contains("camera") || lower.contains("subifd") || lower.contains("ifd0")) {
+        } else if (isCameraExif) {
             return "Camera & EXIF";
-        } else if (lower.contains("iptc") || lower.contains("xmp") || lower.contains("photoshop")) {
+        } else if (isIptcRights) {
             return "IPTC & Rights";
-        } else if (lower.contains("makernote") || lower.contains("canon") || lower.contains("nikon") || lower.contains("sony") || lower.contains("apple") || lower.contains("samsung")) {
+        } else if (isMakerNotes) {
             return "Camera MakerNotes";
-        } else if (lower.contains("quicktime") || lower.contains("mp4") || lower.contains("video") || lower.contains("avi")) {
+        } else if (isVideoAudioTracks) {
             return "Video / Audio Tracks";
-        } else if (lower.contains("png") || lower.contains("jpeg") || lower.contains("webp") || lower.contains("gif") || lower.contains("bmp") || lower.contains("jfif")) {
+        } else if (isImageFormat) {
             return "Image Format Details";
         }
         return dirName;

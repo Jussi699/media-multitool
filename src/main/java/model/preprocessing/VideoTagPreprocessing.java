@@ -22,6 +22,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 public final class VideoTagPreprocessing {
     private static final Map<String, String> FFMPEG_TAGS = createFfmpegTags();
 
@@ -44,7 +47,7 @@ public final class VideoTagPreprocessing {
         Map<String, String> supportedValues = new LinkedHashMap<>();
         for (Map.Entry<String, String> entry : values.entrySet()) {
             String ffmpegKey = FFMPEG_TAGS.get(entry.getKey());
-            if (ffmpegKey == null) {
+            if (isNull(ffmpegKey)) {
                 throw new IllegalArgumentException("Unsupported video tag: " + entry.getKey());
             }
             supportedValues.put(ffmpegKey, entry.getValue() == null ? "" : entry.getValue());
@@ -59,8 +62,7 @@ public final class VideoTagPreprocessing {
                     .setAudioAttributes(new AudioAttributes().setCodec(AudioAttributes.DIRECT_STREAM_COPY));
             List<EncodingArgument> arguments = supportedValues.entrySet().stream()
                     .map(entry -> (EncodingArgument) new ValueArgument(
-                            ArgType.OUTFILE,
-                            "-metadata",
+                            ArgType.OUTFILE, "-metadata",
                             ignored -> Optional.of(entry.getKey() + "=" + entry.getValue())))
                     .toList();
             Encoder encoder = new Encoder();
@@ -81,23 +83,23 @@ public final class VideoTagPreprocessing {
         for (Map.Entry<String, String> entry : metadata.entrySet()) {
             String key = entry.getKey().toLowerCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
             String field = switch (key) {
-                case "title" -> "title";
-                case "artist", "author" -> "artist";
-                case "album" -> "album";
-                case "album_artist", "albumartist" -> "albumArtist";
-                case "composer" -> "composer";
-                case "track", "tracknumber" -> "track";
-                case "disc", "discnumber" -> "discNumber";
+                case "title"                         -> "title";
+                case "artist", "author"              -> "artist";
+                case "album"                         -> "album";
+                case "album_artist", "albumartist"   -> "albumArtist";
+                case "composer"                      -> "composer";
+                case "track", "tracknumber"          -> "track";
+                case "disc", "discnumber"            -> "discNumber";
                 case "date", "year", "creation_time" -> "year";
-                case "genre" -> "genre";
-                case "comment" -> "comment";
-                case "description", "synopsis" -> "description";
-                case "keywords" -> "keywords";
-                case "copyright" -> "copyright";
-                case "rating" -> "rating";
-                default -> null;
+                case "genre"                         -> "genre";
+                case "comment"                       -> "comment";
+                case "description", "synopsis"       -> "description";
+                case "keywords"                      -> "keywords";
+                case "copyright"                     -> "copyright";
+                case "rating"                        -> "rating";
+                default                              -> null;
             };
-            if (field != null && entry.getValue() != null && !entry.getValue().isBlank()) {
+            if (nonNull(field) && nonNull(entry.getValue()) && !entry.getValue().isBlank()) {
                 String value = entry.getValue();
                 if (field.equals("year") && value.length() >= 4) {
                     value = value.substring(0, 4);

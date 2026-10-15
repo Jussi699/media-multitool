@@ -11,7 +11,7 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static viewHelp.Utility.getMetadata;
+import static model.utility.Utility.getMetadata;
 
 public class VideoPresets {
 
@@ -32,69 +32,81 @@ public class VideoPresets {
         if (infoOpt.isEmpty()) {
             return Optional.empty();
         }
-        MultimediaInfo info = infoOpt.get();
 
+        PresetSettings settings = parseSettings(infoOpt.get());
+        Preset[] presets = compressAudio
+                ? createCompressedAudioPresets(settings)
+                : createOriginalAudioPresets(settings);
+        return Optional.of(presets);
+    }
+
+    private static PresetSettings parseSettings(MultimediaInfo info) {
         int vBitrate = Parsers.parseVideoBitrate(info);
-        boolean bitrateUnknown = vBitrate <= 0;
-        if (bitrateUnknown) vBitrate = 5000;
-
+        if (vBitrate <= 0) vBitrate = 5000;
         int aBitrate = Parsers.parseAudioBitrate(info);
         if (aBitrate <= 0) aBitrate = 192;
-
         int fps = Parsers.parseFps(info);
         if (fps <= 0) fps = 30;
-
         int samplingRate = Parsers.parseSamplingRate(info);
         if (samplingRate <= 0) samplingRate = 48000;
-
         int channels = Parsers.parseChannels(info);
         if (channels <= 0) channels = 2;
-
         String resolution = Parsers.parseResolution(info).orElse("1920x1080");
 
-        // CRF values for libx264 (lower = better quality, larger file)
-        // Basic=28: balanced quality, Strong=35: maximum compression, Super=32: between both
-        int crfBasic  = 28;
-        int crfStrong = 35;
-        int crfSuper  = 32;
-
-        // ABR fallback bitrates (used for GPU/mpeg4 codecs that don't support CRF via JAVE)
         int abrBasic  = (int) (vBitrate * 0.7);
         int abrStrong = (int) (vBitrate * 0.3);
         int abrSuper  = (int) (vBitrate * 0.5);
 
-        String strongRes = computeHalfResolution(resolution);
+        return new PresetSettings(fps, aBitrate, samplingRate, channels, resolution,
+                computeHalfResolution(resolution), abrBasic, abrStrong, abrSuper);
+    }
 
-        if (!compressAudio) {
-            AudioAttributes originalAudio = PreparingAttributes.audioAttributes(channels, samplingRate, aBitrate, null);
+    private static Preset[] createOriginalAudioPresets(PresetSettings settings) {
+        AudioAttributes originalAudio = PreparingAttributes.audioAttributes(
+                settings.channels(), settings.samplingRate(), settings.audioBitrate(), null);
 
-            Preset basic  = new Preset("Basic",  PreparingAttributes.videoAttributes(fps, abrBasic,  null, null, resolution), originalAudio, crfBasic);
-            Preset strong = new Preset("Strong", PreparingAttributes.videoAttributes(Math.min(fps, 24), abrStrong, null, null, strongRes),  originalAudio, crfStrong);
-            Preset superP = new Preset("Super",  PreparingAttributes.videoAttributes(fps, abrSuper,  null, null, resolution), originalAudio, crfSuper);
+        Preset basic = new Preset("Basic",
+                PreparingAttributes.videoAttributes(settings.fps(), settings.abrBasic(), null, null, settings.resolution()),
+                originalAudio, 28);
 
-            return Optional.of(new Preset[]{basic, strong, superP});
-        }
+        Preset strong = new Preset("Strong",
+                PreparingAttributes.videoAttributes(Math.min(settings.fps(), 24), settings.abrStrong(),
+                        null, null, settings.halfResolution()),
+                originalAudio, 35);
 
+        Preset superPreset = new Preset("Super",
+                PreparingAttributes.videoAttributes(settings.fps(), settings.abrSuper(), null, null, settings.resolution()),
+                originalAudio, 32);
+
+        return new Preset[]{basic, strong, superPreset};
+    }
+
+    private static Preset[] createCompressedAudioPresets(PresetSettings settings) {
         // Basic: Balanced size and quality (CRF 28, 128k audio)
         Preset basic = new Preset("Basic",
-                PreparingAttributes.videoAttributes(fps, abrBasic, null, null, resolution),
-                PreparingAttributes.audioAttributes(2, 44100, Math.min(aBitrate, 128), null),
-                crfBasic);
+                PreparingAttributes.videoAttributes(settings.fps(), settings.abrBasic(), null, null, settings.resolution()),
+                PreparingAttributes.audioAttributes(2, 44100, Math.min(settings.audioBitrate(), 128), null),
+                28);
 
         // Strong: Maximum compression (CRF 35, 64k audio, lower FPS/res)
         Preset strong = new Preset("Strong",
-                PreparingAttributes.videoAttributes(Math.min(fps, 24), abrStrong, null, null, strongRes),
-                PreparingAttributes.audioAttributes(1, 22050, Math.min(aBitrate, 64), null),
-                crfStrong);
+                PreparingAttributes.videoAttributes(Math.min(settings.fps(), 24), settings.abrStrong(),
+                        null, null, settings.halfResolution()),
+                PreparingAttributes.audioAttributes(1, 22050, Math.min(settings.audioBitrate(), 64), null),
+                35);
 
         // Super: Optimized quality (CRF 32, 192k audio, original resolution)
         Preset superPreset = new Preset("Super",
-                PreparingAttributes.videoAttributes(fps, abrSuper, null, null, resolution),
-                PreparingAttributes.audioAttributes(2, 48000, Math.min(aBitrate, 192), null),
-                crfSuper);
+                PreparingAttributes.videoAttributes(settings.fps(), settings.abrSuper(), null, null, settings.resolution()),
+                PreparingAttributes.audioAttributes(2, 48000, Math.min(settings.audioBitrate(), 192), null),
+                32);
 
-        return Optional.of(new Preset[]{basic, strong, superPreset});
+        return new Preset[]{basic, strong, superPreset};
     }
+
+    private record PresetSettings(int fps, int audioBitrate, int samplingRate, int channels,
+                                  String resolution, String halfResolution,
+                                  int abrBasic, int abrStrong, int abrSuper) {}
 
     /** Halves the resolution, ensuring even dimensions for codec compatibility. */
     private static String computeHalfResolution(String resolution) {

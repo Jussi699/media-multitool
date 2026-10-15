@@ -325,6 +325,14 @@ public class SplitPdfController extends AbstractMediaController {
             return;
         }
 
+        if (!rbRange.isSelected() && selectedPageIndices.isEmpty()) {
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning",
+                    "No pages selected",
+                    "Please select at least one page to split.");
+            return;
+        }
+
+
         File outputDir = nonNull(imageProperties.getOutput())
                 ? imageProperties.getOutput()
                 : new File(System.getProperty("user.home"), "Desktop");

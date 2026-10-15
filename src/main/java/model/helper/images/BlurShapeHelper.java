@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlurShapeHelper {
-    
+    private static final Color GUIDE_COLOR = Color.color(0.5, 0.5, 0.5, 0.5);
+
     public enum ShapeType { RECTANGLE, ELLIPSE }
 
     public static class BlurShapeVisual {
@@ -147,6 +148,18 @@ public class BlurShapeHelper {
         return visual;
     }
 
+    private static void setupGuideStroke(Shape shape) {
+        shape.setStroke(GUIDE_COLOR);
+        shape.setStrokeWidth(1);
+        shape.getStrokeDashArray().addAll(5.0, 5.0);
+    }
+
+    private static Line createGuideLine(double startX, double startY, double endX, double endY) {
+        Line line = new Line(startX, startY, endX, endY);
+        setupGuideStroke(line);
+        return line;
+    }
+
     public static void drawDashedGuides(BlurShapeVisual shape, Bounds imageBounds, List<Shape> guidesList) {
         double minX = Math.min(shape.getAbsStartX(imageBounds), shape.getAbsEndX(imageBounds));
         double maxX = Math.max(shape.getAbsStartX(imageBounds), shape.getAbsEndX(imageBounds));
@@ -154,38 +167,17 @@ public class BlurShapeHelper {
         double maxY = Math.max(shape.getAbsStartY(imageBounds), shape.getAbsEndY(imageBounds));
 
         if (shape.type == ShapeType.RECTANGLE) {
-            Line verticalLeft = new Line(minX, minY, minX, maxY);
-            verticalLeft.setStroke(Color.color(0.5, 0.5, 0.5, 0.5));
-            verticalLeft.setStrokeWidth(1);
-            verticalLeft.getStrokeDashArray().addAll(5.0, 5.0);
-            guidesList.add(verticalLeft);
-
-            Line verticalRight = new Line(maxX, minY, maxX, maxY);
-            verticalRight.setStroke(Color.color(0.5, 0.5, 0.5, 0.5));
-            verticalRight.setStrokeWidth(1);
-            verticalRight.getStrokeDashArray().addAll(5.0, 5.0);
-            guidesList.add(verticalRight);
-
-            Line horizontalTop = new Line(minX, minY, maxX, minY);
-            horizontalTop.setStroke(Color.color(0.5, 0.5, 0.5, 0.5));
-            horizontalTop.setStrokeWidth(1);
-            horizontalTop.getStrokeDashArray().addAll(5.0, 5.0);
-            guidesList.add(horizontalTop);
-
-            Line horizontalBottom = new Line(minX, maxY, maxX, maxY);
-            horizontalBottom.setStroke(Color.color(0.5, 0.5, 0.5, 0.5));
-            horizontalBottom.setStrokeWidth(1);
-            horizontalBottom.getStrokeDashArray().addAll(5.0, 5.0);
-            guidesList.add(horizontalBottom);
+            guidesList.add(createGuideLine(minX, minY, minX, maxY));
+            guidesList.add(createGuideLine(maxX, minY, maxX, maxY));
+            guidesList.add(createGuideLine(minX, minY, maxX, minY));
+            guidesList.add(createGuideLine(minX, maxY, maxX, maxY));
         } else {
             double width = maxX - minX;
             double height = maxY - minY;
-            
+
             Rectangle dashedRect = new Rectangle(minX, minY, width, height);
             dashedRect.setFill(null);
-            dashedRect.setStroke(Color.CYAN);
-            dashedRect.setStrokeWidth(1);
-            dashedRect.getStrokeDashArray().addAll(5.0, 5.0);
+            setupGuideStroke(dashedRect);
             guidesList.add(dashedRect);
         }
     }

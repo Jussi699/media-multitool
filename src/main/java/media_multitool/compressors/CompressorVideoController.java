@@ -29,7 +29,7 @@ import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
 import static java.util.Objects.isNull;
 import static viewHelp.Message.*;
-import static viewHelp.Utility.getMetadata;
+import static model.utility.Utility.getMetadata;
 
 public class CompressorVideoController extends AbstractMediaController {
     private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();

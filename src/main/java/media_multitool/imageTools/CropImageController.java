@@ -20,7 +20,7 @@ import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
 import viewHelp.InfoAlert;
-import viewHelp.ZoomControlHelper;
+import model.helper.images.ZoomControlHelper;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

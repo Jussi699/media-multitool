@@ -13,15 +13,21 @@ import java.io.IOException;
 import static java.util.Objects.isNull;
 
 public class ImagePreprocessing {
+    private ImagePreprocessing() {
+        /* This utility class should not be instantiated */
+    }
+
     public static void downloadImage(BufferedImage image, String formatFile, File output) throws IOException {
         if (isNull(image)) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Error delivered", "Error delivered", "Error, image not delivered to download!");
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Error delivered", "Error delivered",
+                    "Error, image not delivered to download!");
             ErrorLogger.info("Unfortunately, current image = null!");
             return;
         }
 
         if (isNull(output)) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Error delivered", "Error delivered", "Error, output path not delivered to download!");
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Error delivered", "Error delivered",
+                    "Error, output path not delivered to download!");
             ErrorLogger.error("Output file is null!");
             return;
         }

@@ -75,8 +75,8 @@ public class ConverterPdfHelper {
     private float determineMargin(String marginType) {
         return switch (marginType.toLowerCase()) {
             case "small" -> 20f;
-            case "big" -> 50f;
-            default -> 0f;
+            case "big"   -> 50f;
+            default      -> 0f;
         };
     }
 }

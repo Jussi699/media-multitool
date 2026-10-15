@@ -70,7 +70,8 @@ public class ImageZoomHelper {
         });
     }
 
-    private static void updateMagnifier(MouseEvent event, ImageView imageView, Canvas magnifierCanvas, StackPane magnifierWrapper, StackPane container) {
+    private static void updateMagnifier(MouseEvent event, ImageView imageView,
+                                        Canvas magnifierCanvas, StackPane magnifierWrapper, StackPane container) {
         double x = event.getX();
         double y = event.getY();
 

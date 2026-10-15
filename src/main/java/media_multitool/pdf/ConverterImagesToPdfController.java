@@ -21,7 +21,7 @@ import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.ImagePreviewCard;
 import viewHelp.Message;
-import viewHelp.Utility;
+import model.utility.Utility;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -267,7 +267,9 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
                     if (nonNull(finalDoc)) {
                         try {
                             finalDoc.close();
-                        } catch (Exception _) {}
+                        } catch (Exception _) {
+                            // Ignored
+                        }
                     }
                     Utility.cleanupFile(outputFile);
                     throw new InterruptedException("Conversion cancelled");

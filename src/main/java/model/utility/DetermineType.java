@@ -15,6 +15,10 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class DetermineType {
+    private DetermineType() {
+        /* This utility class should not be instantiated */
+    }
+
     public static String determineFormatImage(File file) throws IOException {
         if (isNull(file)) {
             throw new IllegalArgumentException("File is null");

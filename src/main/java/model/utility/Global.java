@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Global {
+    private Global() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final List<String> allSupportedVideoFormat = List.of(
             ".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".3gp"
     );

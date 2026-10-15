@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import media_multitool.AbstractMediaController;
 import model.checks.Checking;
+import model.enums.CompressionLevel;
 import model.helper.pdf.CompressPdfHelper;
 import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
@@ -23,7 +24,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
-import viewHelp.Utility;
+import model.utility.Utility;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -35,7 +36,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
-import static viewHelp.Utility.formatFileSize;
+import static model.utility.Utility.formatFileSize;
 
 public class CompressPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -119,7 +120,7 @@ public class CompressPdfController extends AbstractMediaController {
             return;
         }
 
-        CompressPdfHelper.CompressionLevel selectedLevel = getSelectedCompressionLevel();
+        CompressionLevel selectedLevel = getSelectedCompressionLevel();
         cancelFlag.set(false);
 
         Task<File> task = new Task<>() {
@@ -249,7 +250,7 @@ public class CompressPdfController extends AbstractMediaController {
         }
 
         long originalSize = imageProperties.getImage().length();
-        CompressPdfHelper.CompressionLevel level = getSelectedCompressionLevel();
+        CompressionLevel level = getSelectedCompressionLevel();
 
         double factor = switch (level) {
             case LOW    -> 0.9;
@@ -261,10 +262,10 @@ public class CompressPdfController extends AbstractMediaController {
         labelEstimatedSize.setText("Estimated size: ~" + formatFileSize(estimatedSize));
     }
 
-    private CompressPdfHelper.CompressionLevel getSelectedCompressionLevel() {
-        if (btnHighCompression.isSelected())   return CompressPdfHelper.CompressionLevel.HIGH;
-        if (btnMediumCompression.isSelected()) return CompressPdfHelper.CompressionLevel.MEDIUM;
-        return CompressPdfHelper.CompressionLevel.LOW;
+    private CompressionLevel getSelectedCompressionLevel() {
+        if (btnHighCompression.isSelected())   return CompressionLevel.HIGH;
+        if (btnMediumCompression.isSelected()) return CompressionLevel.MEDIUM;
+        return CompressionLevel.LOW;
     }
 
     @FXML

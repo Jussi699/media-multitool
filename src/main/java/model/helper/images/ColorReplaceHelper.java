@@ -5,26 +5,30 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import static viewHelp.WorkColors.hexToRGB;
 
 public class ColorReplaceHelper {
-    private ColorReplaceHelper() {}
+    private ColorReplaceHelper() {
+        /* This utility class should not be instantiated */
+    }
 
     private static final Map<String, String> COLOR_HEX_MAP = new HashMap<>();
     
     static {
-        COLOR_HEX_MAP.put("Red", "#FF0000");
-        COLOR_HEX_MAP.put("Green", "#00FF00");
-        COLOR_HEX_MAP.put("Blue", "#0000FF");
-        COLOR_HEX_MAP.put("Yellow", "#FFFF00");
-        COLOR_HEX_MAP.put("Cyan", "#00FFFF");
-        COLOR_HEX_MAP.put("Magenta", "#FF00FF");
-        COLOR_HEX_MAP.put("White", "#FFFFFF");
-        COLOR_HEX_MAP.put("Black", "#000000");
-        COLOR_HEX_MAP.put("Orange", "#FFA500");
-        COLOR_HEX_MAP.put("Purple", "#800080");
+        putColorToMap("Red", "#FF0000");
+        putColorToMap("Green", "#00FF00");
+        putColorToMap("Blue", "#0000FF");
+        putColorToMap("Yellow", "#FFFF00");
+        putColorToMap("Cyan", "#00FFFF");
+        putColorToMap("Magenta", "#FF00FF");
+        putColorToMap("White", "#FFFFFF");
+        putColorToMap("Black", "#000000");
+        putColorToMap("Orange", "#FFA500");
+        putColorToMap("Purple", "#800080");
+    }
+
+    private static void putColorToMap(String key, String value) {
+        COLOR_HEX_MAP.put(key, value);
     }
 
     public static String getHexFromColorName(String colorName) {
@@ -35,10 +39,6 @@ public class ColorReplaceHelper {
         return COLOR_HEX_MAP.keySet().toArray(new String[0]);
     }
 
-    public static boolean isValidHex(String hex) {
-        return nonNull(hex) && hex.matches("#[0-9A-Fa-f]{6}");
-    }
-    
     /**
      * Replace a specific color in an image with a target color
      * @param source Source image
@@ -154,57 +154,5 @@ public class ColorReplaceHelper {
         return result;
     }
     
-    /**
-     * Parse RGB components from HEX color string (#RRGGBB or RRGGBB)
-     * @param hex HEX color string
-     * @return Array of [R, G, B] values (0-255)
-     */
-    public static int[] hexToRGB(String hex) {
-        if (!isValidHex(hex)) {
-            throw new IllegalArgumentException("Invalid HEX color format: " + hex);
-        }
-        
-        int rgb = Integer.parseInt(hex.startsWith("#") ? hex.substring(1) : hex, 16);
-        int r = (rgb >> 16) & 0xFF;
-        int g = (rgb >> 8) & 0xFF;
-        int b = rgb & 0xFF;
-        
-        return new int[]{r, g, b};
-    }
-    
-    /**
-     * Convert RGB components to HEX color string (e.g. "#FF0000")
-     * @param r Red component (0-255)
-     * @param g Green component (0-255)
-     * @param b Blue component (0-255)
-     * @return HEX color string (e.g., "#FF0000")
-     */
-    public static String rgbToHex(int r, int g, int b) {
-        return String.format("#%02X%02X%02X",
-                Math.clamp(r, 0, 255),
-                Math.clamp(g, 0, 255),
-                Math.clamp(b, 0, 255));
-    }
 
-    /**
-     * Convert java.awt.Color to HEX color string
-     */
-    public static String rgbToHex(java.awt.Color color) {
-        if (isNull(color)) {
-            return "#FFFFFF";
-        }
-        return rgbToHex(color.getRed(), color.getGreen(), color.getBlue());
-    }
-
-    /**
-     * Convert javafx.scene.paint.Color to HEX color string
-     */
-    public static String rgbToHex(javafx.scene.paint.Color color) {
-        if (isNull(color)) {
-            return "#FFFFFF";
-        }
-        return rgbToHex((int) Math.round(color.getRed() * 255),
-                (int) Math.round(color.getGreen() * 255),
-                (int) Math.round(color.getBlue() * 255));
-    }
 }

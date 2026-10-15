@@ -1,6 +1,6 @@
 package model.helper.pdf;
 
-import lombok.Getter;
+import model.enums.CompressionLevel;
 import model.logger.ErrorLogger;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
@@ -31,20 +31,8 @@ public class CompressPdfHelper {
         void onProgress(double workDone, double max);
     }
 
-    @Getter
-    public enum CompressionLevel {
-        LOW(1.0f),
-        MEDIUM(0.6f),
-        HIGH(0.3f);
-
-        private final float imageQuality;
-
-        CompressionLevel(float imageQuality) {
-            this.imageQuality = imageQuality;
-        }
-    }
-
-    public static void compressPdf(File inputFile, File outputFile, CompressionLevel level, ProgressCallback progressCallback) throws IOException {
+    public static void compressPdf(File inputFile, File outputFile,
+                                   CompressionLevel level, ProgressCallback progressCallback) throws IOException {
         if (nonNull(progressCallback)) {
             progressCallback.onProgress(0, 100);
         }

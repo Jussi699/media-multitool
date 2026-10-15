@@ -28,7 +28,8 @@ public class SpotBlurHelper {
                 y >= imageBounds.getMinY() && y <= imageBounds.getMaxY();
     }
 
-    public static BufferedImage applyBlurShapes(BufferedImage sourceImage, List<BlurShapeVisual> blurShapes, int blurIntensity, double imageWidth, double imageHeight) {
+    public static BufferedImage applyBlurShapes(BufferedImage sourceImage, List<BlurShapeVisual> blurShapes,
+                                                int blurIntensity, double imageWidth, double imageHeight) {
         if (isNull(sourceImage)) return null;
         int width = sourceImage.getWidth();
         int height = sourceImage.getHeight();

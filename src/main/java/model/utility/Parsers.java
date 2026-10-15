@@ -13,7 +13,7 @@ public class Parsers {
     }
 
     public static int parseComboBoxStringToInt(ComboBox<String> cb) {
-        return Integer.parseInt(cb.getValue().replaceAll("[^0-9]", ""));
+        return Integer.parseInt(cb.getValue().replaceAll("[\\D]", ""));
     }
 
     public static int parseChannels(MultimediaInfo info) {

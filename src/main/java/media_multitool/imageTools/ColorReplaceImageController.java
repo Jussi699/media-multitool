@@ -24,7 +24,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
-import static viewHelp.Utility.setTextToTextField;
+import static model.utility.Utility.setTextToTextField;
+import static viewHelp.WorkColors.isValidHex;
 
 public class ColorReplaceImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();
@@ -137,7 +138,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
         }
 
         String targetHex = getTargetColorHex();
-        if (!ColorReplaceHelper.isValidHex(targetHex)) {
+        if (!isValidHex(targetHex)) {
             return;
         }
 
@@ -221,7 +222,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
         }
 
         String targetHex = getTargetColorHex();
-        if (!ColorReplaceHelper.isValidHex(targetHex)) {
+        if (!isValidHex(targetHex)) {
             return originalImage;
         }
 
@@ -232,7 +233,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
             return ColorReplaceHelper.replaceAllColors(originalImage, targetHex, intensity, enhancement);
         } else {
             String sourceHex = textSourceColorHex.getText();
-            if (!ColorReplaceHelper.isValidHex(sourceHex)) {
+            if (!isValidHex(sourceHex)) {
                 return originalImage;
             }
             int smoothing = spinnerSmoothing.getValue();
@@ -267,13 +268,13 @@ public class ColorReplaceImageController extends AbstractImageToolController {
         });
 
         textSourceColorHex.textProperty().addListener((_, _, newValue) -> {
-            if (ColorReplaceHelper.isValidHex(newValue)) {
+            if (isValidHex(newValue)) {
                 generatePreview();
             }
         });
 
         textTargetColorHex.textProperty().addListener((_, _, newValue) -> {
-            if (ColorReplaceHelper.isValidHex(newValue)) {
+            if (isValidHex(newValue)) {
                 generatePreview();
             }
         });

@@ -11,6 +11,10 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class TemplateCheck {
+    private TemplateCheck() {
+        /* This utility class should not be instantiated */
+    }
+
     public static boolean isValidFile(File file) {
         if (isNull(file) || !file.exists() || !file.isFile()) {
             Alerts.alertDialog(

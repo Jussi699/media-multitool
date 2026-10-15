@@ -1,4 +1,4 @@
-package viewHelp;
+package model.helper.images;
 
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
@@ -54,16 +54,14 @@ public class ZoomControlHelper {
     }
 
     public void updateImageSize() {
-        if (nonNull(imageView.getImage())) {
-            if (slider.getValue() == 1.0) {
-                double viewPortWidth = scrollPane.getViewportBounds().getWidth();
-                double viewPortHeight = scrollPane.getViewportBounds().getHeight();
+        if (nonNull(imageView.getImage()) && slider.getValue() == 1.0) {
+            double viewPortWidth = scrollPane.getViewportBounds().getWidth();
+            double viewPortHeight = scrollPane.getViewportBounds().getHeight();
 
-                imageView.setFitWidth(viewPortWidth - 20);
-                imageView.setFitHeight(viewPortHeight - 20);
-                imageView.setPreserveRatio(true);
-                updateImageContainerSize(slider.getValue());
-            }
+            imageView.setFitWidth(viewPortWidth - 20);
+            imageView.setFitHeight(viewPortHeight - 20);
+            imageView.setPreserveRatio(true);
+            updateImageContainerSize(slider.getValue());
         }
     }
 
@@ -77,11 +75,9 @@ public class ZoomControlHelper {
             double step = 0.1;
             double delta = event.getDeltaY() > 0 ? step : -step;
             double oldZoom = slider.getValue();
-            double newZoom = Math.clamp(
-                    oldZoom + delta,
-                    slider.getMin(),
-                    slider.getMax()
+            double newZoom = Math.clamp(oldZoom + delta, slider.getMin(), slider.getMax()
             );
+
             if (Math.abs(newZoom - oldZoom) < 1e-9) {
                 return;
             }

@@ -11,7 +11,6 @@ import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
 import ws.schild.jave.encode.VideoAttributes;
 import ws.schild.jave.info.MultimediaInfo;
-import ws.schild.jave.progress.EncoderProgressListener;
 
 import java.io.File;
 import java.util.UUID;
@@ -19,6 +18,7 @@ import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.utility.EncoderUtility.getEncoderProgressListener;
 
 public class ConverterVideoAudioFile {
     private final Encoder encoder = new Encoder();
@@ -36,35 +36,18 @@ public class ConverterVideoAudioFile {
         currentTarget = target;
         nameFileAfter = target;
 
-        ErrorLogger.info(ConverterVideoAudioFile.class, "Starting conversion...");
+        ErrorLogger.info("Starting conversion...");
         try {
             MultimediaObject multimediaObject = new MultimediaObject(file);
             MultimediaInfo sourceInfo = multimediaObject.getInfo();
 
             EncodingAttributes attrs = createEncodingAttributes(properties, typeConvert, sourceInfo);
 
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Starting encoding: " + file.getName() + " [V-BR: " + properties.getVideoBitRate() + ", A-BR: " + properties.getAudioBitRate() + "]");
+            ErrorLogger.info("Starting encoding: " + file.getName() + " [V-BR: " + properties.getVideoBitRate() + ", A-BR: " + properties.getAudioBitRate() + "]");
 
-            encoder.encode(multimediaObject, target, attrs, new EncoderProgressListener() {
-                @Override
-                public void sourceInfo(MultimediaInfo info) {
-                    ErrorLogger.info(ConverterVideoAudioFile.class, "Source info: " + info);
-                }
+            encoder.encode(multimediaObject, target, attrs, getEncoderProgressListener(progressConsumer));
 
-                @Override
-                public void progress(int permille) {
-                    if (nonNull(progressConsumer)) {
-                        progressConsumer.accept(permille / 1000.0);
-                    }
-                }
-
-                @Override
-                public void message(String message) {
-                    ErrorLogger.info(ConverterVideoAudioFile.class, "FFmpeg: " + message);
-                }
-            });
-
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Conversion successful!");
+            ErrorLogger.info("Conversion successful!");
             clearCurrentTarget(target);
             return true;
         } catch (Exception e) {
@@ -105,17 +88,17 @@ public class ConverterVideoAudioFile {
         boolean isVideo = (type == MediaType.VIDEO);
         boolean hasAudio = (nonNull(sourceInfo) && nonNull(sourceInfo.getAudio()));
         
-        ErrorLogger.info(ConverterVideoAudioFile.class, "Creating encoding attributes - Format: " + normalizedFormat + ", IsVideo: " + isVideo + ", HasAudio: " + hasAudio);
+        ErrorLogger.info("Creating encoding attributes - Format: " + normalizedFormat + ", IsVideo: " + isVideo + ", HasAudio: " + hasAudio);
 
         if (hasAudio || !isVideo) {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Setting up audio attributes...");
+            ErrorLogger.info("Setting up audio attributes...");
             attrs.setAudioAttributes(setupAudioAttributes(properties));
         } else {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Source file has no audio track. Skipping audio attributes for video conversion.");
+            ErrorLogger.info("Source file has no audio track. Skipping audio attributes for video conversion.");
         }
 
         if (isVideo) {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Setting up video attributes...");
+            ErrorLogger.info("Setting up video attributes...");
             attrs.setVideoAttributes(setupVideoAttributes(properties));
         }
         return attrs;
@@ -125,30 +108,30 @@ public class ConverterVideoAudioFile {
         AudioAttributes audio = new AudioAttributes();
         String audioCodec = properties.getAudioCodec();
         audio.setCodec(audioCodec);
-        ErrorLogger.info(ConverterVideoAudioFile.class, "Setting audio codec: " + audioCodec);
+        ErrorLogger.info("Setting audio codec: " + audioCodec);
 
         int audioBitrate = properties.getAudioBitRate();
         if (audioBitrate > 0 && shouldSetAudioBitrate(audioCodec)) {
             audio.setBitRate(audioBitrate * 1000);
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Setting audio bitrate: " + audioBitrate + " kbps");
+            ErrorLogger.info("Setting audio bitrate: " + audioBitrate + " kbps");
         } else {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Skipping audio bitrate (value=" + audioBitrate + ", shouldSet=" + shouldSetAudioBitrate(audioCodec) + ")");
+            ErrorLogger.info("Skipping audio bitrate (value=" + audioBitrate + ", shouldSet=" + shouldSetAudioBitrate(audioCodec) + ")");
         }
         
         int channels = properties.getChannel();
         if (channels > 0) {
             audio.setChannels(channels);
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Setting audio channels: " + channels);
+            ErrorLogger.info("Setting audio channels: " + channels);
         } else {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Skipping audio channels (value=" + channels + ")");
+            ErrorLogger.info("Skipping audio channels (value=" + channels + ")");
         }
         
         int samplingRate = properties.getSamplingRate();
         if (samplingRate > 0) {
             audio.setSamplingRate(samplingRate);
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Setting audio sampling rate: " + samplingRate + " Hz");
+            ErrorLogger.info("Setting audio sampling rate: " + samplingRate + " Hz");
         } else {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Skipping audio sampling rate (value=" + samplingRate + ")");
+            ErrorLogger.info("Skipping audio sampling rate (value=" + samplingRate + ")");
         }
         
         return audio;
@@ -181,7 +164,7 @@ public class ConverterVideoAudioFile {
     }
 
     private boolean checkingFile(File file) {
-        return file != null && file.exists();
+        return nonNull(file) && file.exists();
     }
 
     public static boolean shouldSetAudioBitrate(String codec) {
@@ -199,10 +182,10 @@ public class ConverterVideoAudioFile {
                 || (nonNull(causeMsg) && causeMsg.contains("Stream Closed"));
 
         if (isCancelled) {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Conversion was cancelled by user.");
+            ErrorLogger.info("Conversion was cancelled by user.");
         } else {
-            ErrorLogger.info(ConverterVideoAudioFile.class, "Conversion failed: " + e.getMessage());
-            ErrorLogger.log(109, ErrorLogger.Level.ERROR, "Exception during conversion", e);
+            ErrorLogger.info("Conversion failed: " + e.getMessage());
+            ErrorLogger.error("Exception during conversion: " + e.getMessage());
         }
     }
 

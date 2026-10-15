@@ -12,6 +12,10 @@ import java.util.Optional;
 import static java.util.Objects.isNull;
 
 public class UsefulMethods {
+    private UsefulMethods() {
+        /* This utility class should not be instantiated */
+    }
+
     public static Optional<BufferedImage> readPreviewImage(File imageFile) throws IOException {
         return Optional.ofNullable(readImage(imageFile));
     }
@@ -42,7 +46,7 @@ public class UsefulMethods {
     }
 
     public static String getFileExtension(File file) {
-        if (file == null) {
+        if (isNull(file)) {
             return "";
         }
 

@@ -6,7 +6,9 @@ import model.metadata.MetadataEntry;
 import static java.util.Objects.isNull;
 
 public class Cells {
-    private Cells() {}
+    private Cells() {
+        /* This utility class should not be instantiated */
+    }
 
     public static void comboBoxIcoSizeButtonCell(ComboBox<String> comboBoxIcoSize, String text) {
         comboBoxIcoSize.setButtonCell(new ListCell<>() {

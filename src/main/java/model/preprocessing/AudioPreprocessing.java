@@ -111,7 +111,8 @@ public class AudioPreprocessing {
                 }
             }
         } catch (Exception e) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Something wrong!", "Something wrong!", "Check log file for more details for error!");
+            Alerts.alertDialog(Alert.AlertType.WARNING, "Something wrong!", "Something wrong!",
+                    "Check log file for more details for error!");
             ErrorLogger.error("191 | " + e.getMessage());
         }
         return Optional.empty();

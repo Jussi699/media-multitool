@@ -208,10 +208,11 @@ public class SetupScrollPane {
     }
 
     public static boolean hasRealTableData(List<?> list) {
-        return list != null && list.stream().anyMatch(Objects::nonNull);
+        return nonNull(list) && list.stream().anyMatch(Objects::nonNull);
     }
 
-    public static void fillPlaceholderRows(TableView<DetailsAudioFile> tableView, ObservableList<DetailsAudioFile> modifiableList, double viewportHeight) {
+    public static void fillPlaceholderRows(TableView<DetailsAudioFile> tableView,
+                                           ObservableList<DetailsAudioFile> modifiableList, double viewportHeight) {
         tableView.setPlaceholder(new Label(""));
 
         int rowCount = Math.max(1, TableViewHelper.getVisibleRowCount(tableView, viewportHeight));

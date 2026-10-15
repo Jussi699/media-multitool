@@ -27,7 +27,7 @@ import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.InfoAlert;
 import viewHelp.SliderSetup;
-import viewHelp.ZoomControlHelper;
+import model.helper.images.ZoomControlHelper;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

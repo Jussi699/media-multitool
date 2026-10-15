@@ -184,7 +184,9 @@ public abstract class AbstractMediaController {
             if (nonNull(progressBar)) {
                 progressBar.setProgress(0);
             }
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", "The operation completed but did not produce the expected result. Please check the logs.");
+            Alerts.alertDialog(Alert.AlertType.ERROR, "Error",
+                    "Operation failed",
+                    "The operation completed but did not produce the expected result. Please check the logs.");
             startSuccessTimer();
             return;
         }

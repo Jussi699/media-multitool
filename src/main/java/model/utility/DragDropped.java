@@ -11,6 +11,10 @@ import java.util.List;
 import static model.checks.Checking.isSupportedMediaFile;
 
 public class DragDropped {
+    private DragDropped() {
+        /* This utility class should not be instantiated */
+    }
+
     public static void handleDragOver(DragEvent e, List<String> supportedExtensions, StackPane dropZone) {
         Dragboard db = e.getDragboard();
         if (e.getGestureSource() != dropZone && db.hasFiles()) {
@@ -19,11 +23,6 @@ public class DragDropped {
             }
         }
         e.consume();
-    }
-
-    public static File handleDragDropped(DragEvent e, StackPane dropZone) {
-        List<File> files = handleDragDropped(e, dropZone, List.of());
-        return files.isEmpty() ? null : files.getFirst();
     }
 
     public static List<File> handleDragDropped(DragEvent e, StackPane dropZone, List<String> supportedExtensions) {
@@ -36,11 +35,11 @@ public class DragDropped {
                     .toList();
         }
 
-        boolean success = !files.isEmpty();
-        if (success) {
-            if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-                dropZone.getStyleClass().add("drop-zone-filled");
-            }
+        final boolean success = !files.isEmpty();
+        final boolean isContainsStyle = dropZone.getStyleClass().contains("drop-zone-filled");
+
+        if (success && !isContainsStyle) {
+            dropZone.getStyleClass().add("drop-zone-filled");
         }
 
         e.setDropCompleted(success);

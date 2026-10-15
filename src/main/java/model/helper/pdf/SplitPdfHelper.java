@@ -1,10 +1,12 @@
 package model.helper.pdf;
 
+import model.exceptions.ImageProcessingException;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
@@ -19,7 +21,7 @@ public class SplitPdfHelper {
 
     public static void splitMultiplePagesToZip(PDDocument sourceDoc, PDFMergerUtility merger, File outputDir,
                                          String baseName, String shortId, List<Integer> sortedIndices,
-                                         BiConsumer<Long, Long> progress) throws Exception {
+                                         BiConsumer<Long, Long> progress) throws IOException, IllegalArgumentException, NullPointerException {
         File zipFile = new File(outputDir, baseName + "_split_" + shortId + ".zip");
         int totalSteps = sortedIndices.size();
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
@@ -41,7 +43,7 @@ public class SplitPdfHelper {
     }
 
     public static void splitSinglePage(PDDocument sourceDoc, PDFMergerUtility merger, File outputDir,
-                                        String baseName, int idx, BiConsumer<Long, Long> progress) throws Exception {
+                                        String baseName, int idx, BiConsumer<Long, Long> progress) throws IOException {
         try (PDDocument targetDoc = new PDDocument()) {
             try (PDDocument tempDoc = new PDDocument()) {
                 tempDoc.addPage(sourceDoc.getPage(idx));
@@ -54,9 +56,9 @@ public class SplitPdfHelper {
     }
 
     public static void splitByPages(PDDocument sourceDoc, PDFMergerUtility merger, File outputDir,
-                              BiConsumer<Long, Long> progress, Set<Integer> selectedPageIndices, File image) throws Exception {
+                              BiConsumer<Long, Long> progress, Set<Integer> selectedPageIndices, File image) throws ImageProcessingException, IOException {
         if (selectedPageIndices.isEmpty()) {
-            throw new RuntimeException("No pages selected");
+            throw new ImageProcessingException("No pages selected");
         }
 
         List<Integer> sortedIndices = new ArrayList<>(selectedPageIndices);
@@ -73,7 +75,7 @@ public class SplitPdfHelper {
     }
 
     public static void splitByRange(PDDocument sourceDoc, PDFMergerUtility merger, File outputDir,
-                              BiConsumer<Long, Long> progress, int from, int to, File image) throws Exception {
+                              BiConsumer<Long, Long> progress, int from, int to, File image) throws IOException {
         int totalPages = sourceDoc.getNumberOfPages();
 
         from = Math.max(1, from);

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static java.util.Objects.nonNull;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -30,7 +32,7 @@ public class AreaView {
     }
 
     private void applyStyle() {
-        if (textArea != null) {
+        if (nonNull(textArea)) {
             textArea.setStyle(String.format("-fx-font-size: %dpx; -fx-text-fill: %s; -fx-text-inner-color: %s;",
                     fontSize, textColor, textColor));
         }

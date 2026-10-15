@@ -28,7 +28,7 @@ import static model.utility.Parsers.parseChannels;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.hideSuccessMessage;
 import static viewHelp.Message.showSuccessMessage;
-import static viewHelp.Utility.getMetadata;
+import static model.utility.Utility.getMetadata;
 
 public abstract class AbstractAudioVideoConverterController extends AbstractMediaController {
     protected final VideoAndAudioProperties properties = new VideoAndAudioProperties();

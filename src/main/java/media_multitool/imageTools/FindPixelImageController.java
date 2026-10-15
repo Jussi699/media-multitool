@@ -10,11 +10,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import media_multitool.AbstractImageToolController;
 import model.helper.images.PixelHelper;
+import model.helper.images.ZoomControlHelper;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.utility.Clipboards;
 import model.utility.Global;
 import model.utility.ResetContext;
+import model.utility.Utility;
 import viewHelp.*;
 
 import java.util.List;
@@ -23,7 +25,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.setupClearMessageTimer;
-import static viewHelp.Utility.setTextToTextField;
+import static model.utility.Utility.setTextToTextField;
 
 public class FindPixelImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();

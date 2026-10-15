@@ -1,6 +1,7 @@
 package model.preprocessing;
 
 import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.ImagingException;
 import org.apache.commons.imaging.common.ImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
@@ -8,6 +9,8 @@ import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
 import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
+import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii;
+import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoXpString;
 import org.apache.commons.imaging.formats.tiff.write.TiffImageWriterLossless;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
@@ -102,7 +105,7 @@ public final class PhotoTagPreprocessing {
         return null;
     }
 
-    private static TiffOutputSet getOutputSet(File file) throws Exception {
+    private static TiffOutputSet getOutputSet(File file) throws IOException {
         ImageMetadata metadata = Imaging.getMetadata(file);
         TiffImageMetadata tiffMetadata = getTiffMetadata(metadata);
         if (nonNull(tiffMetadata)) {
@@ -141,8 +144,8 @@ public final class PhotoTagPreprocessing {
     }
 
     private static void setString(TiffOutputDirectory directory,
-                                  org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii tag,
-                                  String value) throws Exception {
+                                  TagInfoAscii tag,
+                                  String value) throws ImagingException {
         directory.removeField(tag);
         if (nonNull(value) && !value.isBlank()) {
             directory.add(tag, value);
@@ -150,15 +153,15 @@ public final class PhotoTagPreprocessing {
     }
 
     private static void setXpString(TiffOutputDirectory directory,
-                                    org.apache.commons.imaging.formats.tiff.taginfos.TagInfoXpString tag,
-                                    String value) throws Exception {
+                                    TagInfoXpString tag,
+                                    String value) throws ImagingException {
         directory.removeField(tag);
         if (nonNull(value) && !value.isBlank()) {
             directory.add(tag, value);
         }
     }
 
-    private static void putIfPresent(Map<String, String> tags, String key, TiffField field) throws Exception {
+    private static void putIfPresent(Map<String, String> tags, String key, TiffField field) throws ImagingException {
         if (isNull(field)) {
             return;
         }

@@ -1,9 +1,10 @@
-package viewHelp;
+package model.utility;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import model.logger.ErrorLogger;
+import viewHelp.Alerts;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
 
@@ -17,7 +18,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class Utility {
-    private Utility() {}
+    private Utility() {
+        /* This utility class should not be instantiated */
+    }
 
     public static Optional<MultimediaInfo> getMetadata(File file) {
         if (isNull(file) || !file.exists()) return Optional.empty();
@@ -48,9 +51,30 @@ public class Utility {
             } catch (IOException e) {
                 ErrorLogger.error("Failed to delete file: " + file.getAbsolutePath() + " - " + e.getMessage());
                 Platform.runLater(() ->
-                        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to delete file", "Could not delete temporary file. Check logs for details.")
+                        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to delete file",
+                                "Could not delete temporary file. Check logs for details.")
                 );
             }
+        }
+    }
+
+    public static boolean cleanupFile(File file, boolean showAlertOnError) {
+        if (isNull(file) || !file.exists()) {
+            return true;
+        }
+        try {
+            cleanUp(file.toPath());
+            ErrorLogger.info("File deleted: " + file.getName());
+            return true;
+        } catch (IOException e) {
+            ErrorLogger.warn("Failed to delete file: " + file.getAbsolutePath() + " - " + e.getMessage());
+            if (showAlertOnError) {
+                Platform.runLater(() ->
+                        Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to delete file",
+                                "Could not delete temporary file. Check logs for details.")
+                );
+            }
+            return false;
         }
     }
 

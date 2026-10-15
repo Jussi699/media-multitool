@@ -8,6 +8,10 @@ import java.io.File;
 import java.io.IOException;
 
 public class UnlockPdfHelper {
+    private UnlockPdfHelper() {
+        /* This utility class should not be instantiated */
+    }
+
     public static File unlockPdf(File inputFile, File outputFile, String password) throws IOException {
         try (PDDocument document = Loader.loadPDF(inputFile, password)) {
             document.setAllSecurityToBeRemoved(true);

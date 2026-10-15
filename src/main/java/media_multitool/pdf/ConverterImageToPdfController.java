@@ -22,7 +22,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
-import viewHelp.Utility;
+import model.utility.Utility;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

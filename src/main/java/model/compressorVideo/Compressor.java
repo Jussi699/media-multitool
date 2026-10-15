@@ -11,16 +11,15 @@ import ws.schild.jave.encode.VideoAttributes;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
-import ws.schild.jave.progress.EncoderProgressListener;
 
 import java.io.File;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.nonNull;
+import static model.utility.EncoderUtility.getEncoderProgressListener;
 
 public class Compressor {
     private final Encoder encoder = new Encoder();
-    private volatile File currentTarget;
 
     private String videoCodec;
     private String audioCodec;
@@ -29,9 +28,11 @@ public class Compressor {
     @Setter private boolean useGPU;
     @Setter private boolean compressAudio = true;
 
+    private volatile File currentTarget;
+
     public void compress(File videoFile, File output,
                                 VideoAttributes video, AudioAttributes audio,
-                                int crf, Consumer<Double> progressConsumer) throws EncoderException {
+                                int crf, DoubleConsumer progressConsumer) throws EncoderException {
         currentTarget = output;
 
         try {
@@ -46,9 +47,9 @@ public class Compressor {
                 video.setBitRate(null);
                 video.setCrf(crf);
                 video.setPreset("medium");
-                ErrorLogger.info(Compressor.class, "Using CRF mode: crf=" + crf + ", preset=medium, codec=" + videoCodec);
+                ErrorLogger.info("Using CRF mode: crf=" + crf + ", preset=medium, codec=" + videoCodec);
             } else {
-                ErrorLogger.info(Compressor.class, "Using ABR mode: bitRate=" + video.getBitRate().orElse(-1) + " bps, codec=" + videoCodec);
+                ErrorLogger.info("Using ABR mode: bitRate=" + video.getBitRate().orElse(-1) + " bps, codec=" + videoCodec);
             }
 
             EncodingAttributes attrs = new EncodingAttributes();
@@ -63,38 +64,20 @@ public class Compressor {
                     AudioAttributes copyAudio = new AudioAttributes();
                     copyAudio.setCodec("copy");
                     attrs.setAudioAttributes(copyAudio);
-                    ErrorLogger.info(Compressor.class, "Using copy codec for audio - preserving original audio stream.");
+                    ErrorLogger.info("Using copy codec for audio - preserving original audio stream.");
                 }
             } else {
-                ErrorLogger.info(Compressor.class, "Source video has no audio track. Skipping audio attributes in compressor.");
+                ErrorLogger.info("Source video has no audio track. Skipping audio attributes in compressor.");
             }
 
-            encoder.encode(multimediaObject, output, attrs, new EncoderProgressListener() {
-                @Override
-                public void sourceInfo(MultimediaInfo info) {
-                    ErrorLogger.info(Compressor.class, "Source info: " + info);
-                }
-
-
-                @Override
-                public void progress(int permille) {
-                    if (nonNull(progressConsumer)) {
-                        progressConsumer.accept(permille / 1000.0);
-                    }
-                }
-
-                @Override
-                public void message(String message) {
-                    ErrorLogger.info(Compressor.class, "FFmpeg: " + message);
-                }
-            });
+            encoder.encode(multimediaObject, output, attrs, getEncoderProgressListener(progressConsumer));
             
-            ErrorLogger.info(Compressor.class, "Video compression completed successfully: " + output.getAbsolutePath());
+            ErrorLogger.info("Video compression completed successfully: " + output.getAbsolutePath());
         } catch (EncoderException e) {
             String msg = e.getMessage();
             boolean isCancelled = nonNull(msg) && (msg.contains("Encoding interrupted") || msg.contains("Stream Closed"));
             if (isCancelled) {
-                ErrorLogger.info(Compressor.class, "Compression was cancelled by user.");
+                ErrorLogger.info("Compression was cancelled by user.");
             } else {
                 throw e;
             }
@@ -119,7 +102,7 @@ public class Compressor {
         }
     }
 
-    public void getCodec(File videoFile) {
+    private void getCodec(File videoFile) {
         String formatVideo = DetermineType.determineFormat(videoFile).orElse("");
         switch (formatVideo) {
             case "mp4", "m4v", "wmv", "x-ms-wmv" -> {
