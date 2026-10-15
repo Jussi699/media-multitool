@@ -1,15 +1,30 @@
 <p align="center">
-  <a href="https://github.com/Jussi699/media-multitool/releases/latest"><img src="https://github.com/Jussi699/media-multitool/blob/master/src/main/resources/img/tools.png" alt="Media-Multitol" width="128" /></a>
+  <a href="https://github.com/Jussi699/media-multitool/releases/latest">
+    <img src="src/main/resources/img/tools.png" alt="Media-Multitool" width="128" />
+  </a>
 </p>
-
 <h1 align="center">Media-Multitool</h1>
-
 <p align="center">
-  A lightweight, cross-platform multimedia toolkit for converting, compressing, and editing video, audio, images, and PDFs
+  <b>Stop uploading private files to sketchy converter websites.</b><br>
+  Media-Multitool converts, compresses, and edits video, audio, images, and PDFs 100% locally on your machine — zero tracking, completely offline, and free forever.
 </p>
 
 <p align="center">
-  <a href="https://github.com/Jussi699/media-multitool/releases/latest"><b>Download</b></a>
+  <a href="https://www.oracle.com/java/technologies/downloads/"><img src="https://img.shields.io/badge/Java-25-orange?style=flat-square&logo=openjdk&logoColor=white" alt="Java 25" /></a>
+  <a href="https://gluonhq.com/products/javafx/"><img src="https://img.shields.io/badge/JavaFX-25-blue?style=flat-square" alt="JavaFX" /></a>
+  <a href="https://ffmpeg.org/download.html"><img src="https://img.shields.io/badge/FFmpeg-Latest-red?style=flat-square&logo=ffmpeg&logoColor=white" alt="FFmpeg" /></a>
+  <a href="https://maven.apache.org/download.cgi"><img src="https://img.shields.io/badge/Maven-3.9+-C71A36?style=flat-square&logo=apachemaven&logoColor=white" alt="Maven" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" /></a>
+</p>
+<p align="center">
+  <a href="https://github.com/Jussi699/media-multitool/releases/latest">
+    <img src="src/main/resources/video.gif" alt="Media-Multitool in Action" width="800" />
+  </a>
+</p>
+<p align="center">
+  <a href="https://github.com/Jussi699/media-multitool/releases/latest">
+    <img src="https://img.shields.io/badge/Download-Latest%20Release-brightgreen?style=for-the-badge&logo=github&logoColor=white" alt="Download Media-Multitool" />
+  </a>
 </p>
 
 ## Overview
@@ -119,12 +134,19 @@ Media Multitool processes your media files locally on your computer. We take you
 
 ## 📋 Prerequisites
 
-- **For users:** Download and run the packaged application from the [latest release](https://github.com/Jussi699/media-multitool/releases/latest). **JRE is required!!!**
-- **For development:** Java Development Kit (JDK) 25 or higher and Maven 3.8 or higher.
+> [!IMPORTANT]
+> **Java Runtime Environment (JRE) is required** to run the packaged application.
+- **For users:**
+  - Download and run the application from [Latest Release](https://github.com/Jussi699/media-multitool/releases/latest).
+  - Install Java Runtime: [Download JDK 25](https://www.oracle.com/java/technologies/downloads/) or [Download Eclipse Temurin JRE/JDK](https://adoptium.net/temurin/releases/).
+- **For developers:**
+  - [Java Development Kit (JDK) 25+](https://www.oracle.com/java/technologies/downloads/)
+  - [Apache Maven 3.8+](https://maven.apache.org/download.cgi)
 
 ## 📥 Installation & Running
-
-**👉 [Download latest release](https://github.com/Jussi699/media-multitool/releases/latest)**
+ <a href="https://github.com/Jussi699/media-multitool/releases/latest">
+    <img src="https://img.shields.io/badge/Скачать-Release-brightgreen?style=for-the-badge&logo=github&logoColor=white" alt="Download">
+ </a>
 
 ---
 
