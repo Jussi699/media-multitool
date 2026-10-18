@@ -23,96 +23,122 @@ public class MediaMultitoolApp extends Application {
 
     @Override
     public void start(Stage loadingStage) throws IOException {
-        if(!Launcher.isCanWriteInLog()) {
+        checkLoggingStatus();
+        showLoadingStage(loadingStage);
+        startBackgroundLoading(createLoadAppTask(loadingStage));
+    }
+
+    private void checkLoggingStatus() {
+        if (!Launcher.isCanWriteInLog()) {
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Logback Error",
                     "Logback cannot write logs to the log file!\nIn the app, go to the \"Info\" tab to access the logs folder and view the 'logback.log' file.");
         }
+    }
 
-        FXMLLoader loadingLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/loading-page-view.fxml"));
-        Scene loadingScene = new Scene(loadingLoader.load(), 300, 200);
-        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
-        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
+    private void showLoadingStage(Stage loadingStage) throws IOException {
+        Scene loadingScene = createLoadingScene();
 
         loadingStage.initStyle(StageStyle.DECORATED);
         loadingStage.setResizable(false);
         loadingStage.setTitle("Loading App");
         loadingStage.setScene(loadingScene);
-
-        try {
-            loadingStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(PATH_MAIN_ICON))));
-        } catch (NullPointerException e) {
-            ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
-        }
+        applyAppIcon(loadingStage);
 
         loadingStage.setOnCloseRequest(_ -> Platform.exit());
 
         WindowsDwmUtils.enableDarkMode(loadingStage);
         loadingStage.show();
+    }
 
+    private Scene createLoadingScene() throws IOException {
+        FXMLLoader loadingLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/loading-page-view.fxml"));
+        Scene loadingScene = new Scene(loadingLoader.load(), 300, 200);
+        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
+        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
+        return loadingScene;
+    }
+
+    private Task<Scene> createLoadAppTask(Stage loadingStage) {
         Task<Scene> loadAppTask = new Task<>() {
             @Override
             protected Scene call() throws Exception {
-                FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
-                Scene scene = new Scene(fxmlLoader.load(), 1040, 860);
-                scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
-                scene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
-                scene.getStylesheets().add(String.valueOf(getClass().getResource("/home_page&control_panel.css")));
-                return scene;
+                return createMainScene();
             }
         };
 
-        loadAppTask.setOnSucceeded(_ -> {
-            if (loadAppTask.isCancelled() || !loadingStage.isShowing()) {
-                return;
-            }
+        loadAppTask.setOnSucceeded(_ -> onAppLoadSucceeded(loadingStage, loadAppTask));
+        loadAppTask.setOnFailed(_ -> onAppLoadFailed(loadingStage, loadAppTask.getException()));
+        loadAppTask.setOnCancelled(_ -> onAppLoadCancelled(loadingStage));
 
-            Scene mainScene = loadAppTask.getValue();
-            Stage mainStage = new Stage();
+        return loadAppTask;
+    }
 
-            try {
-                mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(PATH_MAIN_ICON))));
-            } catch (NullPointerException e) {
-                ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
-            }
+    private Scene createMainScene() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 1040, 860);
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/home_page&control_panel.css")));
+        return scene;
+    }
 
-            mainStage.setResizable(true);
+    private void onAppLoadSucceeded(Stage loadingStage, Task<Scene> loadAppTask) {
+        if (loadAppTask.isCancelled() || !loadingStage.isShowing()) {
+            return;
+        }
 
-            mainStage.setTitle("Media multitool!");
-            mainStage.setScene(mainScene);
+        Scene mainScene = loadAppTask.getValue();
+        showMainStage(mainScene);
+        loadingStage.close();
+    }
 
-            WindowsDwmUtils.enableDarkMode(mainStage);
+    private void showMainStage(Scene mainScene) {
+        Stage mainStage = new Stage();
+        applyAppIcon(mainStage);
+        mainStage.setResizable(true);
+        mainStage.setTitle("Media multitool!");
+        mainStage.setScene(mainScene);
+        WindowsDwmUtils.enableDarkMode(mainStage);
+        mainStage.show();
+    }
 
-            loadingStage.close();
-            mainStage.show();
-        });
+    private void onAppLoadFailed(Stage loadingStage, Throwable ex) {
+        if (nonNull(ex)) {
+            String rootCauseMessage = extractRootCauseMessage(ex);
+            ErrorLogger.error("Failed to load application", ex);
+            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load app",
+                    "Application startup failed.\nRoot cause: " + rootCauseMessage
+                            + "\n\nFull details are available in the application log.");
+        }
+        loadingStage.close();
+        Platform.exit();
+    }
 
-        loadAppTask.setOnFailed(_ -> {
-            Throwable ex = loadAppTask.getException();
-            if (nonNull(ex)) {
-                Throwable rootCause = ex;
-                while (nonNull(rootCause.getCause()) && rootCause.getCause() != rootCause) {
-                    rootCause = rootCause.getCause();
-                }
-                String rootCauseMessage = rootCause.getClass().getSimpleName()
-                        + (nonNull(rootCause.getMessage()) ? ": " + rootCause.getMessage() : "");
+    private String extractRootCauseMessage(Throwable ex) {
+        Throwable rootCause = ex;
+        while (nonNull(rootCause.getCause()) && rootCause.getCause() != rootCause) {
+            rootCause = rootCause.getCause();
+        }
+        return rootCause.getClass().getSimpleName()
+                + (nonNull(rootCause.getMessage()) ? ": " + rootCause.getMessage() : "");
+    }
 
-                ErrorLogger.error("Failed to load application", ex);
-                Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load app",
-                        "Application startup failed.\nRoot cause: " + rootCauseMessage
-                                + "\n\nFull details are available in the application log.");
-            }
-            loadingStage.close();
-            Platform.exit();
-        });
+    private void onAppLoadCancelled(Stage loadingStage) {
+        loadingStage.close();
+        Platform.exit();
+    }
 
-        loadAppTask.setOnCancelled(_ -> {
-            loadingStage.close();
-            Platform.exit();
-        });
+    private void applyAppIcon(Stage stage) {
+        try {
+            stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(PATH_MAIN_ICON))));
+        } catch (NullPointerException e) {
+            ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
+        }
+    }
 
+    private void startBackgroundLoading(Task<Scene> loadAppTask) {
         Thread loaderThread = new Thread(loadAppTask);
         loaderThread.setDaemon(true);
         loaderThread.start();
     }
-
 }
