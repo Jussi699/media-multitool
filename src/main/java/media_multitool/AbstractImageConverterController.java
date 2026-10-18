@@ -17,7 +17,6 @@ import model.converterImage.ConvertImageTask;
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.Global;
 import model.utility.Preparation;
 import viewHelp.Alerts;
@@ -32,6 +31,7 @@ import java.util.Optional;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.converterImage.UsefulMethods.readPreviewImage;
+import static model.select.SelectFile.showOpenMultipleDialog;
 import static model.utility.PathWorker.directoryChooser;
 
 public abstract class AbstractImageConverterController extends AbstractMediaController {
@@ -59,9 +59,8 @@ public abstract class AbstractImageConverterController extends AbstractMediaCont
 
     @FXML
     public void selectFile() {
-        SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.showOpenMultipleDialog(stage,
+        showOpenMultipleDialog(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser()))
                 .ifPresent(files -> {
                     if (!files.isEmpty()) {

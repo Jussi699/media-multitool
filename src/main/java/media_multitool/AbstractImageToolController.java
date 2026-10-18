@@ -14,7 +14,6 @@ import model.logger.ErrorLogger;
 import model.preprocessing.ImagePreprocessing;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.DetermineType;
 import model.utility.Global;
 import model.utility.PathWorker;
@@ -25,6 +24,7 @@ import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.select.SelectFile.choiceFile;
 import static viewHelp.Message.showErrorMessage;
 
 public abstract class AbstractImageToolController extends AbstractMediaController {
@@ -94,9 +94,8 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     @FXML
     protected void selectImages() {
-        SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
+        choiceFile(stage,
                 new FileChooser.ExtensionFilter("Images", Global.getSupportedImageFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 

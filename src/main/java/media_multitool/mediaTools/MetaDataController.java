@@ -127,7 +127,7 @@ public class MetaDataController extends AbstractMediaController {
     }
 
     @FXML
-    private void onChoiceFolderForSaveFile() {
+    private void chooseSaveDirectory() {
         selectOutputDirectory(btnChoiceDirForSaveFile, metaDataProperties.getOutput(),
                 metaDataProperties::setOutput, "Select directory for saving cleaned files");
     }

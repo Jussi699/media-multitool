@@ -14,7 +14,6 @@ import model.enums.MediaType;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
-import model.select.SelectFile;
 import viewHelp.Alerts;
 import ws.schild.jave.info.MultimediaInfo;
 
@@ -24,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.select.SelectFile.choiceFile;
 import static model.utility.Parsers.parseChannels;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.hideSuccessMessage;
@@ -66,8 +66,7 @@ public abstract class AbstractAudioVideoConverterController extends AbstractMedi
         Node sourceNode = (Node) event.getSource();
         Stage stage = (Stage) sourceNode.getScene().getWindow();
 
-        SelectFile selectFile = new SelectFile();
-        selectFile.choiceFile(
+        choiceFile(
                 stage,
                 new FileChooser.ExtensionFilter(getFileFilterDescription(), getSupportedFileChooserFormats())
         ).ifPresent(this::loadFile);
