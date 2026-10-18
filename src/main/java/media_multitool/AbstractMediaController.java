@@ -14,7 +14,6 @@ import javafx.stage.Stage;
 import lombok.NonNull;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.DragDropped;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
@@ -24,13 +23,18 @@ import viewHelp.Message;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.select.SelectFile.choiceFile;
 import static model.utility.PathWorker.*;
 import static viewHelp.Message.hideSuccessMessage;
 
@@ -161,12 +165,18 @@ public abstract class AbstractMediaController {
             if (!currentTask.compareAndSet(task, null)) {
                 return;
             }
+            boolean cancellationRequested = isTaskCancellationRequested();
             unbindProgress();
             unlockUI();
             Throwable exception = task.getException();
-            ErrorLogger.log(101, ErrorLogger.Level.ERROR,
-                    getClass().getSimpleName() + " - " + operationName + " failed", exception);
-            handleTaskFailure(exception);
+            if (cancellationRequested || isCancellationException(exception)) {
+                ErrorLogger.info(getClass(), operationName + " cancelled.");
+                handleTaskCancelled();
+            } else {
+                ErrorLogger.log(101, ErrorLogger.Level.ERROR,
+                        getClass().getSimpleName() + " - " + operationName + " failed", exception);
+                handleTaskFailure(exception);
+            }
         });
 
         PathWorker.IO_EXECUTOR.execute(task);
@@ -213,6 +223,14 @@ public abstract class AbstractMediaController {
     }
 
     protected void handleTaskFailure(@NonNull Throwable exception) {
+        showTaskFailure(exception);
+        if (nonNull(progressBar)) {
+            progressBar.setProgress(0);
+        }
+        startSuccessTimer();
+    }
+
+    protected void showTaskFailure(Throwable exception) {
         Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Operation failed", exception.getMessage());
         if (nonNull(labelSuccess)) {
             labelSuccess.setStyle("-fx-text-fill: RED;");
@@ -220,10 +238,35 @@ public abstract class AbstractMediaController {
             labelSuccess.setVisible(true);
             labelSuccess.setManaged(true);
         }
-        if (nonNull(progressBar)) {
-            progressBar.setProgress(0);
+    }
+
+    protected void handlePdfLoadError(Throwable exception) {
+        String message = "Error loading PDF: " + exception.getMessage();
+        ErrorLogger.error(message);
+        Message.showErrorMessage(
+                labelSuccess,
+                progressBar,
+                message,
+                getProperties().getHideSuccessMessageTimer()
+        );
+    }
+
+    protected boolean isTaskCancellationRequested() {
+        return false;
+    }
+
+    private boolean isCancellationException(Throwable exception) {
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Throwable cause = exception; nonNull(cause) && visited.add(cause); cause = cause.getCause()) {
+            if (cause instanceof InterruptedException || cause instanceof CancellationException) {
+                return true;
+            }
+            String message = cause.getMessage();
+            if (nonNull(message) && message.toLowerCase().contains("cancelled")) {
+                return true;
+            }
         }
-        startSuccessTimer();
+        return false;
     }
 
     protected void startSuccessTimer() {
@@ -241,7 +284,7 @@ public abstract class AbstractMediaController {
 
     protected void selectInputFile(Button triggerButton, FileChooser.ExtensionFilter filter, Consumer<File> fileConsumer) {
         Stage stage = (Stage) triggerButton.getScene().getWindow();
-        new SelectFile().choiceFile(stage, filter).ifPresent(fileConsumer);
+        choiceFile(stage, filter).ifPresent(fileConsumer);
     }
 
     protected void selectOutputDirectory(Button triggerButton, File currentPath, Consumer<File> propertySetter, String title) {
@@ -280,7 +323,11 @@ public abstract class AbstractMediaController {
                 .ifPresent(fileProcessor));
     }
 
-    protected static void showProgressBar(ProgressBar bar, PauseTransition timer) {
+    protected void setupDragAndDrop(@NonNull StackPane dropZone, @NonNull String supportedFormats, @NonNull Consumer<File> fileProcessor) {
+        setupDragAndDrop(dropZone, Collections.singletonList(supportedFormats), fileProcessor);
+    }
+
+        protected static void showProgressBar(ProgressBar bar, PauseTransition timer) {
         if (nonNull(bar)) {
             bar.setVisible(true);
             bar.setManaged(true);
@@ -293,7 +340,7 @@ public abstract class AbstractMediaController {
         properties.reset();
 
         if (nonNull(ctx.labelSelectFileName())) {
-            ctx.labelSelectFileName().setText(defaultText != null ? defaultText : "Selected file: none");
+            ctx.labelSelectFileName().setText(nonNull(defaultText) ? defaultText : "Selected file: none");
         }
 
         if (nonNull(ctx.labelSuccess())) {
@@ -347,6 +394,13 @@ public abstract class AbstractMediaController {
 
     protected void markDropZoneLoaded(StackPane dropZone, Label textDragZone, String nameFile) {
         textDragZone.setText("Selected: " + nameFile);
+        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
+            dropZone.getStyleClass().add("drop-zone-filled");
+        }
+    }
+
+    protected void markDropZoneLoadedAlt(StackPane dropZone, Label textDragZone, String text) {
+        textDragZone.setText(text);
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
             dropZone.getStyleClass().add("drop-zone-filled");
         }
