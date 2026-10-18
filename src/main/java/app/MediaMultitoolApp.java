@@ -89,9 +89,17 @@ public class MediaMultitoolApp extends Application {
         loadAppTask.setOnFailed(_ -> {
             Throwable ex = loadAppTask.getException();
             if (nonNull(ex)) {
-                ErrorLogger.error("Failed to load application: " + ex.getMessage() + ex.getCause());
+                Throwable rootCause = ex;
+                while (nonNull(rootCause.getCause()) && rootCause.getCause() != rootCause) {
+                    rootCause = rootCause.getCause();
+                }
+                String rootCauseMessage = rootCause.getClass().getSimpleName()
+                        + (nonNull(rootCause.getMessage()) ? ": " + rootCause.getMessage() : "");
+
+                ErrorLogger.error("Failed to load application", ex);
                 Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load app",
-                        "Failed to load application: " + ex.getMessage() + ex.getCause());
+                        "Application startup failed.\nRoot cause: " + rootCauseMessage
+                                + "\n\nFull details are available in the application log.");
             }
             loadingStage.close();
             Platform.exit();
