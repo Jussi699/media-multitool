@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum CompressionLevel {
-    LOW(1.0f),
+    LOW(0.85f),
     MEDIUM(0.6f),
     HIGH(0.3f);
 
