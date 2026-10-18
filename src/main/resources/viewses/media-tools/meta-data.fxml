@@ -31,7 +31,7 @@
 
             <Button fx:id="btnChoiceDirForSaveFile"
                     mnemonicParsing="false"
-                    onAction="#onChoiceFolderForSaveFile"
+                    onAction="#chooseSaveDirectory"
                     prefWidth="220.0"
                     text="Directory for save">
 
