@@ -38,8 +38,16 @@ public class PdfPagePreviewCard {
         "-fx-border-color: #FFD700; -fx-border-radius: 8; -fx-border-width: 2;";
 
     public PdfPagePreviewCard(BufferedImage pageImage, String fileName, int pageIndex, String cardId, Runnable onDelete,
-                              java.util.function.Consumer<String> onDragDropped,
-                              int containerWidth, int containerHeight, int imageContainerWidth, int imageContainerHeight) {
+                              Consumer<String> onDragDropped, int containerWidth, int containerHeight, int imageContainerWidth,
+                              int imageContainerHeight) {
+        this(pageImage, fileName, pageIndex, cardId, onDelete, onDragDropped,
+                containerWidth, containerHeight, imageContainerWidth, imageContainerHeight, true);
+    }
+
+    public PdfPagePreviewCard(BufferedImage pageImage, String fileName, int pageIndex, String cardId, Runnable onDelete,
+                              Consumer<String> onDragDropped,
+                              int containerWidth, int containerHeight, int imageContainerWidth, int imageContainerHeight,
+                              boolean showDeleteButton) {
         this.pageIndex = pageIndex;
         this.cardId = cardId;
         
@@ -74,13 +82,14 @@ public class PdfPagePreviewCard {
         Label nameLabel = new Label(displayName + " (p." + (pageIndex + 1) + ")");
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 10px;");
         nameLabel.setAlignment(Pos.CENTER);
-        nameLabel.setMaxWidth(containerWidth - 10);
+        nameLabel.setMaxWidth(containerWidth - 10d);
 
         contentBox.getChildren().addAll(imageContainer, nameLabel);
 
-        StackPane deleteButton = createDeleteButton(onDelete);
-
-        container.getChildren().addAll(contentBox, deleteButton);
+        container.getChildren().add(contentBox);
+        if (showDeleteButton) {
+            container.getChildren().add(createDeleteButton(onDelete));
+        }
 
         setupDragAndDrop(onDragDropped);
     }

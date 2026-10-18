@@ -11,6 +11,7 @@ import java.util.function.IntConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.helper.pdf.ConverterPdfHelper.getDocumentFromImage;
 
 public class ConvertImagesToPdfHelper {
     private static final String[] SUPPORTED_IMAGE_EXTENSIONS = {
@@ -100,7 +101,6 @@ public class ConvertImagesToPdfHelper {
         }
 
         PDDocument finalDoc = new PDDocument();
-        ConverterPdfHelper pdfHelper = new ConverterPdfHelper();
         PDFMergerUtility merger = new PDFMergerUtility();
         
         int totalImages = imageFiles.size();
@@ -117,7 +117,7 @@ public class ConvertImagesToPdfHelper {
                     continue;
                 }
                 
-                PDDocument imageDocument = pdfHelper.getDocumentFromImage(
+                PDDocument imageDocument = getDocumentFromImage(
                         imageFile.getAbsolutePath(),
                         margin,
                         pageSize,

@@ -8,149 +8,192 @@ import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
+import javafx.stage.Modality;
+import media_multitool.AbstractPdfToolController;
+import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.ResetContext;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 import viewHelp.Message;
 import viewHelp.PdfPagePreviewCard;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 
-public class RemovePagesPdfController extends AbstractMediaController {
-    private static final float PREVIEW_MAX_WIDTH = 230;
-    private static final float PREVIEW_MAX_HEIGHT = 260;
-
-    private final ImageProperties imageProperties = new ImageProperties();
-    private final List<PageEntry> selectedPages = new ArrayList<>();
+public class RemovePagesPdfController extends AbstractPdfToolController {
+    private final List<PdfHelper.PageEntry> allPages = new ArrayList<>();
     private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
-    
-    private static class PageEntry {
-        final int originalPageIndex;
-        final String id;
-        
-        PageEntry(int index) {
-            this.originalPageIndex = index;
-            this.id = UUID.randomUUID().toString();
-        }
-    }
+    private final Set<Integer> removalPageIndices = new HashSet<>();
 
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
-
-    @FXML private FlowPane imagesFlowPane;
     @FXML private ScrollPane scrollPanePreview;
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
-    @FXML private Label labelSelectFileName, textDragZone;
-
-    private List<Control> listControls;
-
+    @FXML private FlowPane imagesFlowPane;
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset);
-        imageProperties.setOutput(getSavedPath());
+        properties.setOutput(getSavedPath());
         setupDragAndDropMultiple();
         isPressedReset();
     }
 
-    private void setupDragAndDropMultiple() {
-        dropZone.setOnDragOver(event -> {
-            if (event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
-            event.consume();
-        });
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Remove Pages PDF",
+                "1. Select a PDF file using \"Select PDF\" or drag and drop it into the dash-bordered zone;",
+                """
+                        3. Click page thumbnails to mark the pages to remove (marked pages have a red border; use Shift + click to mark a range);
 
-        dropZone.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            if (db.hasFiles()) {
-                List<File> files = db.getFiles();
-                if (!files.isEmpty()) {
-                    File file = files.getFirst();
-                    if (file.getName().toLowerCase().endsWith(".pdf")) {
-                        loadPdfFile(file);
-                    }
-                }
-            }
-            event.consume();
-        });
+                        4. Click "Submit and Download".
+                       
+                        You can cancel the conversion at any time using the "Cancel Remove" button.
+                        """
+        );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        allPages.clear();
+        pageCards.clear();
+        removalPageIndices.clear();
+        imagesFlowPane.getChildren().clear();
+        properties.setImage(null);
+
+        ResetContext ctx = new ResetContext(
+                labelSelectFileName, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true, "PDF"
+        );
+        if (nonNull(progressBar)) {
+            progressBar.progressProperty().unbind();
+        }
+        reset(properties, ctx, "Selected PDF file: none");
+
+        disableControls();
+        textDragZone.setText("Drag PDF here");
+        dropZone.getStyleClass().remove("drop-zone-filled");
+    }
+
+    @FXML
+    public void submitAndDownload() {
+        if (removalPageIndices.isEmpty()) {
+            Alerts.alertDialog(
+                    Alert.AlertType.WARNING,
+                    "Warning",
+                    "No pages selected",
+                    "Select at least one page to remove."
+            );
+            return;
+        }
+        if (removalPageIndices.size() == allPages.size()) {
+            Alerts.alertDialog(
+                    Alert.AlertType.WARNING,
+                    "Warning",
+                    "All pages selected",
+                    "Please keep at least one page in the PDF."
+            );
+            return;
+        }
+
+        if (isNull(properties.getOutput())) {
+            properties.setOutput(getSavedPath());
+        }
+
+        Task<File> task = getProcessingTask();
+        executeMediaTask(task);
     }
 
     @Override
     protected void lockUI() {
-        btnSelectFiles.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
-        listControls.forEach(c -> c.setDisable(true));
+        toggleUI(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectFiles.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
-        listControls.forEach(c -> c.setDisable(false));
+        toggleUI(false);
+        cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        toggleControls(true);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        toggleControls(false);
     }
 
-    @FXML
-    public void onActionBtnSelectFiles() {
-        SelectFile selectPdf = new SelectFile();
-        Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
-
-        selectPdf.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(this::loadPdfFile);
+    @Override
+    protected void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        scrollPanePreview.setDisable(disabled);
+        btnCancel.setDisable(!disabled);
     }
 
-    private void loadPdfFile(File file) {
+    @Override
+    protected void toggleControls(boolean disabled) {
+        setControlsDisabled(disabled, btnSubmit, btnReset);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (result instanceof File outputFile) {
+            ErrorLogger.info(getClass(), "PDF pages removed successfully! Saved to: " + outputFile.getAbsolutePath());
+
+            Platform.runLater(() -> {
+                Message.showSuccessText(labelSuccess, "PDF saved!", properties.getHideSuccessMessageTimer());
+
+                properties.getHideSuccessMessageTimer().setOnFinished(_ -> {
+                    labelSuccess.setVisible(false);
+                    progressBar.setProgress(0);
+                });
+            });
+        }
+    }
+
+    @Override
+    protected void loadFile(File file) {
         if (!validateSelectedFile(file)) {
             return;
         }
 
         isPressedReset();
-        imageProperties.setImage(file);
+        properties.setImage(file);
         labelSelectFileName.setText("Selected PDF: " + file.getName());
-        textDragZone.setText("Selected: " + file.getName());
-        
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
 
-        Task<List<BufferedImage>> loadTask = new Task<>() {
+        markDropZoneLoaded(dropZone, textDragZone, file.getName());
+
+        Task<List<BufferedImage>> loadTask = getLoadTask(file);
+
+        setOnSucceededLoadTask(loadTask);
+        setOnFailedLoadTask(loadTask);
+
+        progressBar.progressProperty().bind(loadTask.progressProperty());
+
+        startDaemonTask(loadTask);
+    }
+
+    private Task<List<BufferedImage>> getLoadTask(File file) {
+        return new Task<>() {
             @Override
             protected List<BufferedImage> call() throws Exception {
                 List<BufferedImage> images = new ArrayList<>();
-                try (PDDocument document = Loader.loadPDF(file)) {
+                try (PDDocument document = PdfHelper.loadUnencryptedPdf(file)) {
                     PDFRenderer renderer = new PDFRenderer(document);
                     int pageCount = document.getNumberOfPages();
                     for (int i = 0; i < pageCount; i++) {
@@ -163,123 +206,51 @@ public class RemovePagesPdfController extends AbstractMediaController {
                             width = height;
                             height = temp;
                         }
+
+                        final float PREVIEW_MAX_WIDTH = 230;
+                        final float PREVIEW_MAX_HEIGHT = 260;
                         float scale = Math.min(PREVIEW_MAX_WIDTH / width, PREVIEW_MAX_HEIGHT / height);
                         BufferedImage image = renderer.renderImage(i, scale);
                         images.add(image);
-                        updateProgress(i + 1, pageCount);
+                        updateProgress(i + 1L, pageCount);
                     }
                 }
                 return images;
             }
         };
-
-        loadTask.setOnSucceeded(_ -> {
-            progressBar.progressProperty().unbind();
-            List<BufferedImage> pageImages = loadTask.getValue();
-            for (int i = 0; i < pageImages.size(); i++) {
-                addPageToList(i, pageImages.get(i));
-                pageImages.set(i, null);
-            }
-            enableControls();
-            
-            PauseTransition hideBar = imageProperties.getHideSuccessMessageTimer();
-            hideBar.setOnFinished(_ -> progressBar.setProgress(0));
-            hideBar.playFromStart();
-        });
-
-        loadTask.setOnFailed(_ -> {
-            progressBar.progressProperty().unbind();
-            ErrorLogger.error("Failed to load PDF: " + loadTask.getException().getMessage());
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to load PDF", loadTask.getException().getMessage());
-            isPressedReset();
-            
-            progressBar.setProgress(0);
-        });
-
-        progressBar.progressProperty().bind(loadTask.progressProperty());
-        
-        new Thread(loadTask).start();
     }
 
-    private void addPageToList(int index, BufferedImage image) {
-        PageEntry entry = new PageEntry(index);
-        selectedPages.add(entry);
-        createPagePreviewCard(entry, image);
-    }
-
-    private void createPagePreviewCard(PageEntry entry, BufferedImage image) {
-        PdfPagePreviewCard card = new PdfPagePreviewCard(
-            image,
-            imageProperties.getImage() != null ? imageProperties.getImage().getName() : "PDF",
-            entry.originalPageIndex,
-            entry.id,
-            () -> removePage(entry.id),
-                null,
-                240, 270, 230, 260
-        );
-        pageCards.add(card);
-        imagesFlowPane.getChildren().add(card.getContainer());
-    }
-
-    private void updateUIState() {
-        labelSelectFileName.setText(isNull(imageProperties.getImage()) ? "Selected PDF file: none" : "Selected PDF: " +
-                imageProperties.getImage().getName() + " (Pages: " + selectedPages.size() + ")");
-        
-        if (!selectedPages.isEmpty()) {
-            enableControls();
-        } else {
-            disableControls();
-        }
-    }
-
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), 
-            imageProperties::setOutput, "Select directory for save PDF");
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (selectedPages.isEmpty()) {
-            Alerts.alertDialog(
-                Alert.AlertType.WARNING,
-                "Warning",
-                "No pages selected",
-                "Please keep at least one page in the PDF."
-            );
-            return;
-        }
-
-        if (isNull(imageProperties.getOutput())) {
-            imageProperties.setOutput(getSavedPath());
-        }
-
-        Task<File> task = new Task<>() {
+    private Task<File> getProcessingTask() {
+        return new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                File inputFile = imageProperties.getImage();
-                File outputDirFile = imageProperties.getOutput();
-                
+                File inputFile = properties.getImage();
+                File outputDirFile = properties.getOutput();
+
                 String baseName = inputFile.getName().replace(".pdf", "") + "_modified";
                 File outputFile = generateUniquePdfOutputFile(outputDirFile.getAbsolutePath(), baseName);
 
                 updateProgress(30, 100);
 
-                try (PDDocument sourceDoc = Loader.loadPDF(inputFile);
+                try (PDDocument sourceDoc = PdfHelper.loadUnencryptedPdf(inputFile);
                      PDDocument targetDoc = new PDDocument()) {
-                    
+
                     PDFMergerUtility merger = new PDFMergerUtility();
-                    int total = selectedPages.size();
-                    for (int i = 0; i < total; i++) {
+                    int total = allPages.size() - removalPageIndices.size();
+                    int processed = 0;
+                    for (PdfHelper.PageEntry page : allPages) {
+                        if (removalPageIndices.contains(page.originalPageIndex)) {
+                            continue;
+                        }
                         try (PDDocument tempDoc = new PDDocument()) {
-                            tempDoc.addPage(sourceDoc.getPage(selectedPages.get(i).originalPageIndex));
+                            tempDoc.addPage(sourceDoc.getPage(page.originalPageIndex));
                             merger.appendDocument(targetDoc, tempDoc);
                         }
-                        updateProgress(30 + (60L * (i + 1) / total), 100);
+                        updateProgress(30 + (60L * ++processed / total), 100);
                     }
-                    
+
                     targetDoc.save(outputFile);
                 }
 
@@ -287,97 +258,135 @@ public class RemovePagesPdfController extends AbstractMediaController {
                 return outputFile;
             }
         };
-
-        executeMediaTask(task);
     }
 
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (result instanceof File outputFile) {
-            ErrorLogger.info(getClass(), "PDF pages removed successfully! Saved to: " + outputFile.getAbsolutePath());
-
-            Platform.runLater(() -> {
-                Message.showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
-                
-                imageProperties.getHideSuccessMessageTimer().setOnFinished(_ -> {
-                    labelSuccess.setVisible(false);
-                    progressBar.setProgress(0);
-                });
-            });
-        }
-    }
-
-    @FXML
-    public void isPressedReset() {
-        selectedPages.clear();
-        pageCards.clear();
-        imagesFlowPane.getChildren().clear();
-        imageProperties.setImage(null);
-        
-        ResetContext ctx = new ResetContext(
-            labelSelectFileName, labelSuccess, textDragZone, null,
-            dropZone, null, progressBar, true, "PDF"
-        );
-        if (nonNull(progressBar)) {
+    private void setOnFailedLoadTask(Task<List<BufferedImage>> loadTask) {
+        loadTask.setOnFailed(_ -> {
             progressBar.progressProperty().unbind();
-        }
-        reset(imageProperties, ctx, "Selected PDF file: none");
+            String textEx = loadTask.getException().getMessage();
+            ErrorLogger.error("Failed to load PDF: " + textEx);
+            Platform.runLater(() -> Alerts.alertDialog(
+                    Alert.AlertType.ERROR,
+                    "Error",
+                    "Failed to load PDF",
+                    textEx,
+                    Modality.APPLICATION_MODAL
+            ));
+            isPressedReset();
 
-        disableControls();
-        textDragZone.setText("Drag PDF here");
-        if (nonNull(dropZone)) {
-            dropZone.getStyleClass().remove("drop-zone-filled");
-        }
+            progressBar.setProgress(0);
+        });
     }
 
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-            Alert.AlertType.INFORMATION,
-            "Information",
-            "Remove Pages PDF",
-            """
-                How to use:
-                1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
-
-                2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                    (Default directory: Desktop);
-
-                3. (Optional) Click the remove button on any page thumbnail to exclude it from the resulting PDF;
-
-                4. Click "Submit and Download".
-
-                If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
-    }
-
-    private void removePage(String cardId) {
-        int index = -1;
-        for (int i = 0; i < pageCards.size(); i++) {
-            if (pageCards.get(i).getCardId().equals(cardId)) {
-                index = i;
-                break;
+    private void setOnSucceededLoadTask(Task<List<BufferedImage>> loadTask) {
+        loadTask.setOnSucceeded(_ -> {
+            progressBar.progressProperty().unbind();
+            List<BufferedImage> pageImages = loadTask.getValue();
+            for (int i = 0; i < pageImages.size(); i++) {
+                addPageToList(i, pageImages.get(i));
+                pageImages.set(i, null);
             }
-        }
-        
-        if (index != -1) {
-            final int finalIndex = index;
-            PdfPagePreviewCard card = pageCards.get(finalIndex);
-            
-            card.animateRemoval(() -> {
-                selectedPages.remove(finalIndex);
-                pageCards.remove(finalIndex);
-                refreshPreview();
-                updateUIState();
-            });
+            updateUIState();
+
+            PauseTransition hideBar = properties.getHideSuccessMessageTimer();
+            hideBar.setOnFinished(_ -> progressBar.setProgress(0));
+            hideBar.playFromStart();
+        });
+    }
+
+    private void setupDragAndDropMultiple() {
+        dropZone.setOnDragOver(event -> {
+            Dragboard dragboard = event.getDragboard();
+            if (event.getGestureSource() != dropZone
+                    && dragboard.hasFiles()
+                    && dragboard.getFiles().stream()
+                    .anyMatch(file -> file.getName().toLowerCase().endsWith(".pdf"))) {
+                event.acceptTransferModes(TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        dropZone.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            File pdfFile = null;
+            if (db.hasFiles()) {
+                pdfFile = db.getFiles().stream()
+                        .filter(file -> file.getName().toLowerCase().endsWith(".pdf"))
+                        .findFirst()
+                        .orElse(null);
+            }
+            if (nonNull(pdfFile)) {
+                loadFile(pdfFile);
+            }
+            event.setDropCompleted(nonNull(pdfFile));
+            event.consume();
+        });
+    }
+
+    private void addPageToList(int index, BufferedImage image) {
+        PdfHelper.PageEntry entry = new PdfHelper.PageEntry(index);
+        allPages.add(entry);
+        createPagePreviewCard(entry, image);
+    }
+
+    private void createPagePreviewCard(PdfHelper.PageEntry entry, BufferedImage image) {
+        PdfPagePreviewCard card = new PdfPagePreviewCard(
+                image,
+                properties.getImage() != null ? properties.getImage().getName() : "PDF",
+                entry.originalPageIndex,
+                entry.id,
+                null,
+                null,
+                240, 270, 230, 260,
+                false
+        );
+        pageCards.add(card);
+        imagesFlowPane.getChildren().add(card.getContainer());
+
+        card.getContainer().setOnMouseClicked(event -> {
+            int pageIndex = entry.originalPageIndex;
+            if (event.isShiftDown() && !removalPageIndices.isEmpty()) {
+                int anchor = removalPageIndices.stream().mapToInt(Integer::intValue).max().orElse(pageIndex);
+                int start = Math.min(anchor, pageIndex);
+                int end = Math.max(anchor, pageIndex);
+                for (int i = start; i <= end; i++) {
+                    if (i < pageCards.size()) {
+                        markPageForRemoval(i, pageCards.get(i));
+                    }
+                }
+            } else {
+                togglePageSelection(pageIndex, card);
+            }
+            updateUIState();
+        });
+    }
+
+    private void updateUIState() {
+        labelSelectFileName.setText(isNull(properties.getImage())
+                ? "Selected PDF file: none"
+                : "Selected PDF: " + properties.getImage().getName() + " (Pages: " + allPages.size()
+                + ", marked for removal: " + removalPageIndices.size() + ")");
+
+        if (!allPages.isEmpty()) {
+            enableControls();
+        } else {
+            disableControls();
         }
     }
 
-    private void refreshPreview() {
-        imagesFlowPane.getChildren().clear();
-        for (PdfPagePreviewCard card : pageCards) {
-            imagesFlowPane.getChildren().add(card.getContainer());
+    private void togglePageSelection(int index, PdfPagePreviewCard card) {
+        if (removalPageIndices.remove(index)) {
+            card.getContainer().setStyle("-fx-background-color: #2a2a2a; -fx-background-radius: 8; -fx-padding: 5; "
+                    + "-fx-border-color: #555; -fx-border-radius: 8; -fx-border-width: 1;");
+        } else {
+            markPageForRemoval(index, card);
+        }
+    }
+
+    private void markPageForRemoval(int index, PdfPagePreviewCard card) {
+        if (removalPageIndices.add(index)) {
+            card.getContainer().setStyle("-fx-background-color: #3a2a2a; -fx-background-radius: 8; -fx-padding: 5; "
+                    + "-fx-border-color: #ff4444; -fx-border-radius: 8; -fx-border-width: 2;");
         }
     }
 }

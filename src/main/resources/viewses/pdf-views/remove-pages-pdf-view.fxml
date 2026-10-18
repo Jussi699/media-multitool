@@ -21,15 +21,15 @@
         </Label>
 
         <HBox alignment="CENTER" spacing="20.0">
-            <Button fx:id="btnSelectFiles"
+            <Button fx:id="btnSelectFile"
                     mnemonicParsing="false"
-                    onAction="#onActionBtnSelectFiles"
+                    onAction="#selectPdfFile"
                     prefWidth="180.0"
                     text="Select PDF"/>
 
-            <Button fx:id="btnChoiceDirForSaveFile"
+            <Button fx:id="btnChoiceDirForSave"
                     mnemonicParsing="false"
-                    onAction="#onActionChoiceDirForSaveFile"
+                    onAction="#chooseSaveDirectory"
                     prefWidth="180.0"
                     text="Directory for save">
 
@@ -49,11 +49,20 @@
                          prefWidth="240.0"
                          progress="0.0"/>
 
+            <HBox alignment="CENTER" spacing="20.0">
             <Button fx:id="btnSubmit"
                     mnemonicParsing="false"
                     onAction="#submitAndDownload"
                     prefWidth="240.0"
                     text="Submit and Download"/>
+
+            <Button fx:id="btnCancel"
+                    mnemonicParsing="false"
+                    onAction="#cancelProcessing"
+                    prefWidth="240.0"
+                    text="Cancel Remove"
+                    disable="true"/>
+            </HBox>
         </VBox>
 
         <VBox spacing="10.0"
@@ -68,7 +77,7 @@
                 <Insets top="2.0"/>
             </VBox.margin>
 
-            <Label text="Pages preview (remove to delete from PDF):"
+            <Label text="Pages preview (click to mark for removal; Shift + click selects a range):"
                    styleClass="label-h"/>
 
             <ScrollPane fx:id="scrollPanePreview"
@@ -87,7 +96,6 @@
                        minHeight="80.0">
 
                 <Label fx:id="textDragZone"
-                       styleClass="label-drag-zone"
                        text="Drag PDF here"/>
             </StackPane>
         </VBox>
@@ -119,4 +127,3 @@
         </StackPane.margin>
     </Button>
 </StackPane>
-

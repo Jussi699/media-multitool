@@ -2,35 +2,20 @@ package media_multitool.pdf;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
+import media_multitool.AbstractPdfToolController;
 import model.checks.Checking;
 import model.enums.CompressionLevel;
 import model.helper.pdf.CompressPdfHelper;
 import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.*;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
 import model.utility.Utility;
+import viewHelp.InfoAlert;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -38,89 +23,63 @@ import static model.utility.PathWorker.*;
 import static viewHelp.Message.*;
 import static model.utility.Utility.formatFileSize;
 
-public class CompressPdfController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
-    private final AtomicBoolean cancelFlag = new AtomicBoolean(false);
-
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
-
-    @FXML private ImageView imageViewPdf;
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit, btnCancel;
-    @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder, labelEstimatedSize;
+public class CompressPdfController extends AbstractPdfToolController {
     @FXML private ToggleButton btnLowCompression, btnMediumCompression, btnHighCompression;
-
-    private PDDocument currentDoc;
-    private List<Control> listControls;
+    @FXML private Label labelEstimatedSize;
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnLowCompression, btnMediumCompression, btnHighCompression, btnSubmit, btnChoiceDirForSaveFile, btnReset);
+        properties.setOutput(getSavedPath());
 
-        imageProperties.setOutput(getSavedPath());
-
-        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-        setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
+        setupClearMessageTimer(labelSuccess, progressBar, properties.getHideSuccessMessageTimer(), true);
+        setupDragAndDrop(dropZone, "pdf", this::loadFile);
 
         isPressedReset();
     }
 
-    @Override
-    protected void lockUI() {
-        listControls.forEach(lc -> lc.setDisable(true));
-        btnSelectFile.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
-        btnSubmit.setDisable(true);
-        btnCancel.setDisable(false);
-    }
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Compress PDF",
+                "1. Select a PDF file using \"Select PDF\" or drag and drop it into the dash-bordered zone;",
+                """
+                        3. Select the desired compression level ("Low", "Medium", or "High");
 
-    @Override
-    protected void unlockUI() {
-        listControls.forEach(lc -> lc.setDisable(false));
-        btnSelectFile.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
-        btnSubmit.setDisable(false);
-        btnCancel.setDisable(true);
-        cancelFlag.set(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        listControls.forEach(lc -> lc.setDisable(true));
-        btnCancel.setDisable(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        listControls.forEach(lc -> lc.setDisable(false));
-        btnCancel.setDisable(true);
+                        4. Click "Compress and Download".
+                        
+                        You can cancel the compression at any time using the "Cancel Compression" button.
+                        """
+        );
     }
 
     @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(this::loadFile);
+    public void isPressedReset() {
+        cancelProcessing();
+
+        ResetContext ctx = new ResetContext(
+                labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPdf, progressBar, true, "PDF"
+        );
+        reset(properties, ctx, "Selected PDF file: none");
+
+        disableControls();
+        closeCurrentDoc();
+
+        if (nonNull(imageViewPdf)) {
+            imageViewPdf.setImage(null);
+        }
+
+        labelPreviewPlaceholder.setVisible(true);
+        labelEstimatedSize.setText("Estimated size: Waiting load PDF");
+        btnLowCompression.setSelected(true);
     }
 
     @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save PDF");
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(imageProperties)) {
+    private void submitAndDownload() {
+        if (Checking.checkImageAndOutputOnNull(properties)) {
             return;
         }
 
-        CompressionLevel selectedLevel = getSelectedCompressionLevel();
         cancelFlag.set(false);
 
         Task<File> task = new Task<>() {
@@ -131,11 +90,7 @@ public class CompressPdfController extends AbstractMediaController {
                     throw new InterruptedException("Compression cancelled");
                 }
 
-                File outputFile = createOutputFile(
-                        imageProperties.getImage(),
-                        imageProperties.getOutput(),
-                        "pdf"
-                );
+                File outputFile = getOutputFilePdf("compressed");
 
                 if (isCancelled() || cancelFlag.get()) {
                     Utility.cleanupFile(outputFile);
@@ -143,7 +98,12 @@ public class CompressPdfController extends AbstractMediaController {
                 }
 
                 try {
-                    CompressPdfHelper.compressPdf(imageProperties.getImage(), outputFile, selectedLevel, this::updateProgress);
+                    CompressPdfHelper.compressPdf(
+                            properties.getImage(),
+                            outputFile,
+                            getSelectedCompressionLevel(),
+                            this::updateProgress
+                    );
                 } catch (Exception e) {
                     Utility.cleanupFile(outputFile);
                     throw e;
@@ -165,22 +125,87 @@ public class CompressPdfController extends AbstractMediaController {
     }
 
     @FXML
-    public void cancelProcessing() {
-        cancelFlag.set(true);
-        cancelCurrentTask();
+    public void onCompressionLevelChanged() {
+        updateEstimatedSize();
     }
 
-    private void updatePreview() {
-        if (nonNull(currentDoc)) {
-            try {
-                PDFRenderer renderer = new PDFRenderer(currentDoc);
-                BufferedImage bim = renderer.renderImageWithDPI(0, 72);
-                imageViewPdf.setImage(SwingFXUtils.toFXImage(bim, null));
-                labelPreviewPlaceholder.setVisible(false);
-            } catch (IOException e) {
-                ErrorLogger.error("Error rendering PDF preview: " + e.getMessage());
+    @Override
+    protected void loadFile(File selectedFile) {
+        if (!validateSelectedFile(selectedFile)) {
+            return;
+        }
+
+        enableControls();
+        hideSuccessMessage(labelSuccess, progressBar, properties.getHideSuccessMessageTimer(), true);
+
+        boolean encrypted = false;
+        try {
+            currentDoc = PdfHelper.closeDocument(currentDoc);
+            currentDoc = PdfHelper.loadUnencryptedPdf(selectedFile);
+        } catch (IOException e) {
+            if (PdfHelper.isEncryptedException(e)) {
+                handleEncryptedPdf(e);
+                encrypted = true;
+            } else {
+                handlePdfLoadError(e);
+                labelPreviewPlaceholder.setText("Error loading PDF");
+                labelPreviewPlaceholder.setVisible(true);
+                imageViewPdf.setImage(null);
+                disableControls();
+                if (nonNull(btnReset)) {
+                    btnReset.setDisable(false);
+                }
             }
         }
+
+        properties.setImage(selectedFile);
+        properties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
+        labelSelectFileName.setText("Select PDF: " + selectedFile.getName());
+
+        markDropZoneLoaded(dropZone, textDragZone, selectedFile.getName());
+        bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
+
+        if (nonNull(currentDoc) && !encrypted) {
+            updatePreview();
+            updateEstimatedSize();
+        } else if (encrypted) {
+            labelEstimatedSize.setText("Estimated size: Encrypted PDF");
+        }
+    }
+
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+        cancelFlag.set(false);
+    }
+
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+    }
+
+    @Override
+    protected void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        btnCancel.setDisable(!disabled);
+    }
+
+    @Override
+    protected void toggleControls(boolean disabled) {
+        setControlsDisabled(disabled, btnLowCompression, btnMediumCompression, btnHighCompression, btnSubmit, btnReset);
+        btnCancel.setDisable(true);
     }
 
     @Override
@@ -193,153 +218,24 @@ public class CompressPdfController extends AbstractMediaController {
         ErrorLogger.info(getClass(), "PDF compression successful! Saved to: " + outputFile.getAbsolutePath());
 
         Platform.runLater(() -> {
-            showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
+            labelEstimatedSize.setText("Output size: " + formatFileSize(outputFile.length()));
+            showSuccessText(labelSuccess, "PDF saved!", properties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         });
-    }
-
-    @Override
-    protected void handleTaskFailure(@NonNull Throwable exception) {
-        if (exception instanceof InterruptedException || (nonNull(exception.getMessage()) && exception.getMessage().contains("cancelled")) || cancelFlag.get()) {
-            handleTaskCancelled();
-            return;
-        }
-        super.handleTaskFailure(exception);
-        Platform.runLater(() -> {
-            showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-        });
-    }
-
-    @FXML
-    public void isPressedReset() {
-        cancelProcessing();
-
-        ResetContext ctx = new ResetContext(
-                labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPdf, progressBar, true, "PDF"
-        );
-        reset(imageProperties, ctx, "Selected PDF file: none");
-
-        disableControls();
-
-        try {
-            currentDoc = PdfHelper.closeDocument(currentDoc);
-        } catch (IOException e) {
-            ErrorLogger.error("Error closing document during reset: " + e.getMessage());
-        }
-
-        if (nonNull(imageViewPdf)) {
-            imageViewPdf.setImage(null);
-        }
-
-        labelPreviewPlaceholder.setVisible(true);
-        labelEstimatedSize.setText("Estimated size: Waiting load PDF");
-        btnLowCompression.setSelected(true);
-    }
-
-    @FXML
-    public void onCompressionLevelChanged() {
-        updateEstimatedSize();
     }
 
     private void updateEstimatedSize() {
-        if (isNull(imageProperties.getImage())) {
+        if (isNull(properties.getImage())) {
             labelEstimatedSize.setText("Estimated size: Waiting load PDF");
             return;
         }
 
-        long originalSize = imageProperties.getImage().length();
-        CompressionLevel level = getSelectedCompressionLevel();
-
-        double factor = switch (level) {
-            case LOW    -> 0.9;
-            case MEDIUM -> 0.6;
-            case HIGH   -> 0.3;
-        };
-
-        long estimatedSize = (long) (originalSize * factor);
-        labelEstimatedSize.setText("Estimated size: ~" + formatFileSize(estimatedSize));
+        labelEstimatedSize.setText("Estimated size: depends on PDF content");
     }
 
     private CompressionLevel getSelectedCompressionLevel() {
         if (btnHighCompression.isSelected())   return CompressionLevel.HIGH;
         if (btnMediumCompression.isSelected()) return CompressionLevel.MEDIUM;
         return CompressionLevel.LOW;
-    }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Compress PDF",
-                """
-                        How to use:
-                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Select the desired compression level ("Low", "Medium", or "High");
-
-                        4. Click "Compress and Download".
-
-                        You can cancel the conversion at any time using the "Cancel Compression" button.
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
-    }
-
-    private void isEncrypted(PDDocument doc) {
-        if (doc.isEncrypted()) {
-            showErrorMessage(labelSuccess, "PDF file is encrypted! Please unlock it first.", imageProperties.getHideSuccessMessageTimer());
-            disableControls();
-            labelPreviewPlaceholder.setText("Encrypted PDF - Preview unavailable");
-            labelPreviewPlaceholder.setVisible(true);
-            imageViewPdf.setImage(null);
-        }
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        enableControls();
-        hideSuccessMessage(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
-        try {
-            currentDoc = PdfHelper.closeDocument(currentDoc);
-            currentDoc = Loader.loadPDF(selectedFile);
-
-            isEncrypted(currentDoc);
-        } catch (IOException e) {
-            String errorMsg = e.getMessage().toLowerCase();
-            if (errorMsg.contains("password") || errorMsg.contains("encrypted") || errorMsg.contains("owner") || errorMsg.contains("user")) {
-                showErrorMessage(labelSuccess, "PDF file is encrypted! Please unlock it first.", imageProperties.getHideSuccessMessageTimer());
-            } else {
-                ErrorLogger.error("Error loading PDF document: " + e.getMessage());
-            }
-            disableControls();
-            labelPreviewPlaceholder.setText("Error loading PDF");
-            labelPreviewPlaceholder.setVisible(true);
-            imageViewPdf.setImage(null);
-        }
-
-        imageProperties.setImage(selectedFile);
-        imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
-        labelSelectFileName.setText("Select PDF: " + selectedFile.getName());
-        textDragZone.setText("Selected: " + selectedFile.getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-
-        bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
-        if (nonNull(currentDoc) && !currentDoc.isEncrypted()) {
-            updatePreview();
-        }
-        updateEstimatedSize();
     }
 }

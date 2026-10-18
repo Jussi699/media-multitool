@@ -2,7 +2,6 @@ package model.helper.pdf;
 
 import model.enums.CompressionLevel;
 import model.logger.ErrorLogger;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -15,14 +14,17 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class CompressPdfHelper {
@@ -37,14 +39,14 @@ public class CompressPdfHelper {
             progressCallback.onProgress(0, 100);
         }
 
-        try (PDDocument document = Loader.loadPDF(inputFile)) {
+        try (PDDocument document = PdfHelper.loadUnencryptedPdf(inputFile)) {
             if (nonNull(progressCallback)) {
                 progressCallback.onProgress(5, 100);
             }
 
             int totalPages = document.getNumberOfPages();
 
-            if (level != CompressionLevel.LOW && totalPages > 0) {
+            if (totalPages > 0) {
                 for (int i = 0; i < totalPages; i++) {
                     if (Thread.currentThread().isInterrupted()) {
                         throw new IOException("Compression cancelled");
@@ -69,7 +71,6 @@ public class CompressPdfHelper {
                 progressCallback.onProgress(90, 100);
             }
 
-            document.setAllSecurityToBeRemoved(true);
             document.save(outputFile);
 
             if (nonNull(progressCallback)) {
@@ -78,14 +79,19 @@ public class CompressPdfHelper {
 
             ErrorLogger.info("PDF compressed successfully: " + outputFile.getAbsolutePath());
         } catch (IOException e) {
-            ErrorLogger.error("Error compressing PDF: " + e.getMessage());
+            if (Thread.currentThread().isInterrupted()
+                    || "Compression cancelled".equalsIgnoreCase(e.getMessage())) {
+                ErrorLogger.info("PDF compression cancelled.");
+            } else {
+                ErrorLogger.error("Error compressing PDF: " + e.getMessage());
+            }
             throw e;
         }
     }
 
     private static void optimizeResources(PDResources resources, PDDocument document, CompressionLevel level,
                                           ProgressCallback progressCallback, int pageIndex, int totalPages) throws IOException {
-        if (resources == null) return;
+        if (isNull(resources)) return;
 
         List<COSName> xObjectNames = new ArrayList<>();
         for (COSName name : resources.getXObjectNames()) {
@@ -104,9 +110,19 @@ public class CompressPdfHelper {
                 try {
                     BufferedImage bufferedImage = image.getImage();
                     if (nonNull(bufferedImage)) {
-                        byte[] compressedBytes = compressImage(bufferedImage, level.getImageQuality());
-                        PDImageXObject compressedImage = PDImageXObject.createFromByteArray(document, compressedBytes, name.getName());
-                        resources.put(name, compressedImage);
+                        byte[] compressedBytes = bufferedImage.getColorModel().hasAlpha()
+                                ? encodeImage(bufferedImage, "png", 1.0f)
+                                : encodeImage(bufferedImage, "jpg", level.getImageQuality());
+                        long originalLength;
+                        try (InputStream rawStream = image.getCOSObject().createRawInputStream()) {
+                            originalLength = rawStream.transferTo(java.io.OutputStream.nullOutputStream());
+                        }
+
+                        if (compressedBytes.length < originalLength) {
+                            PDImageXObject compressedImage = PDImageXObject.createFromByteArray(
+                                    document, compressedBytes, name.getName());
+                            resources.put(name, compressedImage);
+                        }
                     }
                 } catch (Exception e) {
                     if (Thread.currentThread().isInterrupted()) {
@@ -118,7 +134,7 @@ public class CompressPdfHelper {
                 optimizeResources(form.getResources(), document, level, progressCallback, pageIndex, totalPages);
             }
 
-            if (progressCallback != null && totalPages > 0 && totalXObjects > 0) {
+            if (nonNull(progressCallback) && totalPages > 0) {
                 double pageBase = 5.0 + 85.0 * pageIndex / totalPages;
                 double pageSlice = 85.0 / totalPages;
                 double currentProgress = pageBase + pageSlice * (j + 1) / totalXObjects;
@@ -127,15 +143,20 @@ public class CompressPdfHelper {
         }
     }
 
-    private static byte[] compressImage(BufferedImage image, float quality) throws IOException {
-        BufferedImage rgbImage = image;
-        if (image.getType() != BufferedImage.TYPE_INT_RGB) {
-            rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-            rgbImage.getGraphics().drawImage(image, 0, 0, null);
+    private static byte[] encodeImage(BufferedImage image, String format, float quality) throws IOException {
+        BufferedImage encodedImage = image;
+        if ("jpg".equals(format) && image.getType() != BufferedImage.TYPE_INT_RGB) {
+            encodedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = encodedImage.createGraphics();
+            try {
+                graphics.drawImage(image, 0, 0, null);
+            } finally {
+                graphics.dispose();
+            }
         }
 
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
-        if (!writers.hasNext()) throw new IllegalStateException("No writers for jpg");
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(format);
+        if (!writers.hasNext()) throw new IllegalStateException("No writers for " + format);
 
         ImageWriter writer = writers.next();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -149,7 +170,7 @@ public class CompressPdfHelper {
                 param.setCompressionQuality(quality);
             }
 
-            writer.write(null, new IIOImage(rgbImage, null, null), param);
+            writer.write(null, new IIOImage(encodedImage, null, null), param);
             return baos.toByteArray();
         } finally {
             writer.dispose();

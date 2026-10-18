@@ -6,78 +6,193 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
+import media_multitool.AbstractPdfToolController;
 import model.helper.pdf.ConvertImagesToPdfHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.jspecify.annotations.NonNull;
 import viewHelp.Alerts;
 import viewHelp.ImagePreviewCard;
+import viewHelp.InfoAlert;
 import viewHelp.Message;
 import model.utility.Utility;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntConsumer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static model.utility.PathWorker.generateUniquePdfOutputFile;
-import static model.utility.PathWorker.getSavedPath;
+import static model.utility.PathWorker.*;
 import static viewHelp.Message.setupClearMessageTimer;
 
-public class ConverterImagesToPdfController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
-    private final AtomicBoolean cancelFlag = new AtomicBoolean(false);
+public class ConverterImagesToPdfController extends AbstractPdfToolController {
     private final List<ImageEntry> selectedImages = new ArrayList<>();
     private final List<ImagePreviewCard> imageCards = new ArrayList<>();
     private final ConvertImagesToPdfHelper helper = new ConvertImagesToPdfHelper();
-    
+
+    @FXML private ScrollPane scrollPanePreview;
+    @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;
+    @FXML private FlowPane imagesFlowPane;
+
     private static class ImageEntry {
         final File file;
         final String id;
-        
+
         ImageEntry(File file) {
             this.file = file;
             this.id = UUID.randomUUID().toString();
         }
     }
 
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
-
-    @FXML private FlowPane imagesFlowPane;
-    @FXML private ScrollPane scrollPanePreview;
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit, btnCancel;
-    @FXML private Label labelSelectFileName, textDragZone;
-    @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;
-
-    private List<Control> listControls;
+    private record PdfConversionRequest(
+            List<File> imageFiles,
+            File outputDirectory,
+            String margin,
+            String orientation,
+            String pageSize
+    ) {}
 
     @FXML
-    public void initialize() {
-        listControls = List.of(comboMargin, comboOrientation, comboPageSize, btnSubmit, btnReset);
+    private void initialize() {
+        properties.setOutput(getSavedPath());
 
-        imageProperties.setOutput(getSavedPath());
-
-        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupClearMessageTimer(labelSuccess, progressBar, properties.getHideSuccessMessageTimer(), true);
 
         initComboBoxes();
         setupDragAndDropMultiple();
 
         isPressedReset();
+    }
+
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Images to PDF",
+                "1. Select one or more image files using \"Select images\" or drag and drop them into the dash-bordered zone;",
+                """
+                        3. (Optional) Drag image thumbnails to reorder them, or click the remove button to delete an image;
+
+                        4. Select the desired margin, page orientation, and page size;
+                        
+                        5. Click "Submit and Download".
+                        
+                        You can cancel the conversion at any time using the "Cancel Conversion" button.
+                        """
+        );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        cancelProcessing();
+
+        selectedImages.clear();
+        imageCards.clear();
+        imagesFlowPane.getChildren().clear();
+
+        ResetContext ctx = new ResetContext(
+                labelSelectFileName, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true, "image(s)"
+        );
+        reset(properties, ctx, "Last uploaded image: none");
+
+        disableControls();
+
+        comboMargin.setValue("No margin");
+        comboOrientation.setValue("Portrait");
+        comboPageSize.setValue("Fix (image size)");
+
+        textDragZone.setText("Drag image(s) here");
+        updateUIState();
+    }
+
+    @FXML
+    public void submitAndDownload() {
+        if (!hasSelectedImages()) {
+            return;
+        }
+
+        PdfConversionRequest request = createConversionRequest();
+
+        cancelFlag.set(false);
+        executeMediaTask(createConversionTask(request));
+        labelSuccess.setManaged(true);
+    }
+
+    @FXML
+    public void selectMultipleImageFile() {
+        selectMultipleImageFile(this::loadFile);
+    }
+
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+        cancelFlag.set(false);
+    }
+
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+    }
+
+    @Override
+    protected void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        btnCancel.setDisable(!disabled);
+    }
+
+    @Override
+    protected void toggleControls(boolean disabled) {
+        setControlsDisabled(disabled, comboMargin, comboOrientation, comboPageSize, btnSubmit, btnReset);
+        btnCancel.setDisable(true);
+    }
+
+    @Override
+    protected void loadFile(File file) {
+        if (!validateSelectedFile(file)) {
+            return;
+        }
+        if (!helper.isImageFile(file)) {
+            ErrorLogger.warn(getClass(), "Rejected unsupported image file: " + file.getAbsolutePath());
+            return;
+        }
+
+        ImageEntry entry = new ImageEntry(file);
+        selectedImages.add(entry);
+        createImagePreviewCard(entry);
+        updateUIState();
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (isNull(result) || Boolean.FALSE.equals(result)) {
+            return;
+        }
+        File outputFile = (File) result;
+        ErrorLogger.info(getClass(), "Images to PDF conversion successful! Saved to: " + outputFile.getAbsolutePath());
+
+        Platform.runLater(() -> {
+            Message.showSuccessText(labelSuccess, "PDF saved!", properties.getHideSuccessMessageTimer());
+            labelSuccess.setManaged(true);
+        });
     }
 
     private void initComboBoxes() {
@@ -93,7 +208,10 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
 
     private void setupDragAndDropMultiple() {
         dropZone.setOnDragOver(event -> {
-            if (event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
+            Dragboard dragboard = event.getDragboard();
+            if (event.getGestureSource() != dropZone
+                    && dragboard.hasFiles()
+                    && dragboard.getFiles().stream().anyMatch(helper::isImageFile)) {
                 event.acceptTransferModes(TransferMode.COPY);
             }
             event.consume();
@@ -104,73 +222,13 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
             if (db.hasFiles()) {
                 List<File> files = db.getFiles();
                 for (File file : files) {
-                    if (isImageFile(file)) {
-                        addImageToList(file);
+                    if (helper.isImageFile(file)) {
+                        loadFile(file);
                     }
                 }
             }
             event.consume();
         });
-    }
-
-    private boolean isImageFile(File file) {
-        return helper.isImageFile(file);
-    }
-
-    @Override
-    protected void lockUI() {
-        btnSelectFiles.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
-        btnReset.setDisable(true);
-        btnSubmit.setDisable(true);
-        btnCancel.setDisable(false);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFiles.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
-        btnReset.setDisable(false);
-        btnSubmit.setDisable(false);
-        btnCancel.setDisable(true);
-        cancelFlag.set(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
-        btnCancel.setDisable(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
-        btnCancel.setDisable(true);
-    }
-
-    @FXML
-    public void onActionBtnSelectFiles() {
-        SelectFile selectPdf = new SelectFile();
-        Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
-
-        selectPdf.showOpenMultipleDialog(stage,
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.tiff", "*.jpg", "*.jpeg", "*.svg", "*.bmp"))
-                .ifPresent(f -> f.forEach(this::addImageToList));
-    }
-
-    private void addImageToList(File file) {
-        if (!validateSelectedFile(file)) {
-            return;
-        }
-        if (!isImageFile(file)) {
-            ErrorLogger.warn(getClass(), "Rejected unsupported image file: " + file.getAbsolutePath());
-            return;
-        }
-
-        ImageEntry entry = new ImageEntry(file);
-        selectedImages.add(entry);
-        createImagePreviewCard(entry);
-        updateUIState();
     }
 
     private void createImagePreviewCard(ImageEntry entry) {
@@ -185,200 +243,112 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
     }
 
     private void updateUIState() {
-        textDragZone.setText(selectedImages.isEmpty() ?
-            "Drag image(s) here" : "Selected: " + selectedImages.size() + " image(s)");
+        textDragZone.setText(selectedImages.isEmpty() ? "Drag image(s) here" : "Selected: " + selectedImages.size() + " image(s)");
 
         if (!selectedImages.isEmpty()) {
             labelSelectFileName.setText("Last uploaded image: " + selectedImages.getLast().file.getName());
 
             enableControls();
-            if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-                dropZone.getStyleClass().add("drop-zone-filled");
-            }
+            markDropZoneLoadedAlt(dropZone, textDragZone,
+                    selectedImages.isEmpty() ?
+                            "Drag image(s) here" :
+                            "Selected: " + selectedImages.size() + " image(s)");
         } else {
             disableControls();
             dropZone.getStyleClass().remove("drop-zone-filled");
         }
     }
 
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), 
-            imageProperties::setOutput, "Select directory for save PDF");
-    }
+    private boolean hasSelectedImages() {
+        if (!selectedImages.isEmpty()) {
+            return true;
+        }
 
-    @FXML
-    public void submitAndDownload() {
-        if (selectedImages.isEmpty()) {
-            Alerts.alertDialog(
+        Alerts.alertDialog(
                 Alert.AlertType.WARNING,
                 "Warning",
                 "No images selected",
                 "Please select at least one image to convert to PDF."
-            );
-            return;
+        );
+        return false;
+    }
+
+    private PdfConversionRequest createConversionRequest() {
+        if (isNull(properties.getOutput())) {
+            properties.setOutput(getSavedPath());
         }
 
-        if (isNull(imageProperties.getOutput())) {
-            imageProperties.setOutput(getSavedPath());
-        }
+        List<File> imageFiles = selectedImages.stream()
+                .map(entry -> entry.file)
+                .toList();
 
-        cancelFlag.set(false);
+        return new PdfConversionRequest(
+                imageFiles,
+                properties.getOutput(),
+                helper.parseMarginValue(comboMargin.getValue()),
+                helper.parseOrientationValue(comboOrientation.getValue()),
+                helper.parsePageSizeValue(comboPageSize.getValue())
+        );
+    }
 
-        Task<File> task = new Task<>() {
+    private Task<File> createConversionTask(PdfConversionRequest request) {
+        return new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
-                if (isCancelled() || cancelFlag.get()) {
-                    throw new InterruptedException("Conversion cancelled");
-                }
-
-                File outputDirFile = nonNull(imageProperties.getOutput()) ?
-                    imageProperties.getOutput() : getSavedPath();
-                String outputDir = outputDirFile.getAbsolutePath();
-                File outputFile =
-                generateUniquePdfOutputFile(
-                    outputDir, 
-                    "merged_images"
+                return convertAndSave(
+                        request,
+                        progress -> updateProgress(progress, 100),
+                        () -> isCancelled() || cancelFlag.get()
                 );
-
-                updateProgress(30, 100);
-                if (isCancelled() || cancelFlag.get()) {
-                    Utility.cleanupFile(outputFile);
-                    throw new InterruptedException("Conversion cancelled");
-                }
-
-                String marginVal = helper.parseMarginValue(comboMargin.getValue());
-                String orientationVal = helper.parseOrientationValue(comboOrientation.getValue());
-                String pageSizeVal = helper.parsePageSizeValue(comboPageSize.getValue());
-
-                List<File> imageFiles = new ArrayList<>();
-                for (ImageEntry entry : selectedImages) {
-                    imageFiles.add(entry.file);
-                }
-
-                PDDocument finalDoc = helper.convertImagesToPdf(
-                    imageFiles, marginVal,
-                    pageSizeVal, orientationVal,
-                    progress -> updateProgress(progress, 100)
-                );
-
-                if (isCancelled() || cancelFlag.get()) {
-                    if (nonNull(finalDoc)) {
-                        try {
-                            finalDoc.close();
-                        } catch (Exception _) {
-                            // Ignored
-                        }
-                    }
-                    Utility.cleanupFile(outputFile);
-                    throw new InterruptedException("Conversion cancelled");
-                }
-
-                try {
-                    helper.savePdfDocument(finalDoc, outputFile);
-                } catch (Exception e) {
-                    Utility.cleanupFile(outputFile);
-                    throw e;
-                }
-
-                if (isCancelled() || cancelFlag.get()) {
-                    Utility.cleanupFile(outputFile);
-                    throw new InterruptedException("Conversion cancelled");
-                }
-
-                updateProgress(100, 100);
-
-                return outputFile;
             }
         };
-
-        executeMediaTask(task);
-        labelSuccess.setManaged(true);
     }
 
-    @FXML
-    public void cancelProcessing() {
-        cancelFlag.set(true);
-        cancelCurrentTask();
-    }
+    private File convertAndSave(
+            PdfConversionRequest request,
+            IntConsumer progressUpdater,
+            BooleanSupplier cancellationRequested
+    ) throws IOException {
+        File outputFile = null;
+        PDDocument document = null;
+        try {
+            checkConversionCancelled(cancellationRequested);
+            outputFile = generateUniquePdfOutputFile(
+                    request.outputDirectory().getAbsolutePath(),
+                    "merged_images"
+            );
 
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (isNull(result) || Boolean.FALSE.equals(result)) {
-            return;
+            progressUpdater.accept(30);
+            checkConversionCancelled(cancellationRequested);
+
+            document = helper.convertImagesToPdf(
+                    request.imageFiles(),
+                    request.margin(),
+                    request.pageSize(),
+                    request.orientation(),
+                    progressUpdater
+            );
+
+            checkConversionCancelled(cancellationRequested);
+            PDDocument documentToSave = document;
+            document = null;
+            helper.savePdfDocument(documentToSave, outputFile);
+
+            checkConversionCancelled(cancellationRequested);
+            progressUpdater.accept(100);
+            return outputFile;
+        } catch (IOException | RuntimeException exception) {
+            if (nonNull(document)) {
+                try {
+                    document.close();
+                } catch (IOException closeException) {
+                    exception.addSuppressed(closeException);
+                }
+            }
+            Utility.cleanupFile(outputFile);
+            throw exception;
         }
-        File outputFile = (File) result;
-        ErrorLogger.info(getClass(), "Images to PDF conversion successful! Saved to: " + outputFile.getAbsolutePath());
-
-        Platform.runLater(() -> {
-            Message.showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-        });
-    }
-
-    @Override
-    protected void handleTaskFailure(@NonNull Throwable exception) {
-        if (exception instanceof InterruptedException || (exception.getCause() instanceof InterruptedException) || cancelFlag.get()) {
-            handleTaskCancelled();
-            return;
-        }
-        super.handleTaskFailure(exception);
-        Platform.runLater(() -> {
-            Message.showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), 
-                imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-        });
-    }
-
-    @FXML
-    public void isPressedReset() {
-        cancelProcessing();
-
-        selectedImages.clear();
-        imageCards.clear();
-        imagesFlowPane.getChildren().clear();
-        
-        ResetContext ctx = new ResetContext(
-            labelSelectFileName, labelSuccess, textDragZone, null,
-            dropZone, null, progressBar, true, "image(s)"
-        );
-        reset(imageProperties, ctx, "Last uploaded image: none");
-
-        disableControls();
-
-        comboMargin.setValue("No margin");
-        comboOrientation.setValue("Portrait");
-        comboPageSize.setValue("Fix (image size)");
-        
-        textDragZone.setText("Drag image(s) here");
-        updateUIState();
-    }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-            Alert.AlertType.INFORMATION,
-            "Information",
-            "Images to PDF",
-            """
-                How to use:
-                1. Select one or more image files using "Select images" or drag and drop them into the dash-bordered zone;
-
-                2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                    (Default directory: Desktop);
-
-                3. (Optional) Drag image thumbnails to reorder them, or click the remove button to delete an image;
-
-                4. Select the desired margin, page orientation, and page size;
-
-                5. Click "Submit and Download".
-
-                You can cancel the conversion at any time using the "Cancel Conversion" button.
-
-                If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
     }
 
     private void removeImage(String imageId) {
@@ -427,6 +397,12 @@ public class ConverterImagesToPdfController extends AbstractMediaController {
         imagesFlowPane.getChildren().clear();
         for (ImagePreviewCard card : imageCards) {
             imagesFlowPane.getChildren().add(card.getContainer());
+        }
+    }
+
+    private void checkConversionCancelled(BooleanSupplier cancellationRequested) throws InterruptedIOException {
+        if (cancellationRequested.getAsBoolean() || Thread.currentThread().isInterrupted()) {
+            throw new InterruptedIOException("Conversion cancelled");
         }
     }
 }

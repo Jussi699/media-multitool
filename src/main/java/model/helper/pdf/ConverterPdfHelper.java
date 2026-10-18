@@ -11,8 +11,12 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class ConverterPdfHelper {
+    private ConverterPdfHelper() {
+        /* This utility class should not be instantiated */
+    }
 
-    public Optional<PDDocument> getDocumentFromImage(String imagePath, String marginType, String pageSizeType, String orientation) {
+
+    public static Optional<PDDocument> getDocumentFromImage(String imagePath, String marginType, String pageSizeType, String orientation) {
         PDDocument doc = new PDDocument();
         try {
             PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, doc);
@@ -57,7 +61,7 @@ public class ConverterPdfHelper {
         }
     }
 
-    private PDRectangle determinePageSize(String pageSizeType, PDImageXObject image, String orientation) {
+    private static PDRectangle determinePageSize(String pageSizeType, PDImageXObject image, String orientation) {
         PDRectangle rect;
 
         rect = switch (pageSizeType.toLowerCase()) {
@@ -72,7 +76,7 @@ public class ConverterPdfHelper {
         return rect;
     }
 
-    private float determineMargin(String marginType) {
+    private static float determineMargin(String marginType) {
         return switch (marginType.toLowerCase()) {
             case "small" -> 20f;
             case "big"   -> 50f;

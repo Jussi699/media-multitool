@@ -25,11 +25,14 @@ import static model.utility.PathWorker.*;
 import static org.lwjgl.util.nfd.NativeFileDialog.NFD_WINDOW_HANDLE_TYPE_WINDOWS;
 
 
-public class SelectFile extends AbstractSelectFile {
+public class SelectFile {
+    private SelectFile() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final Object NFD_LOCK = new Object();
 
-    @Override
-    public Optional<File> choiceFile(Stage stage, FileChooser.ExtensionFilter filter) {
+    public static Optional<File> choiceFile(Stage stage, FileChooser.ExtensionFilter filter) {
         synchronized (NFD_LOCK) {
             boolean initialized = false;
             try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -62,7 +65,7 @@ public class SelectFile extends AbstractSelectFile {
         }
     }
 
-    public Optional<List<File>> showOpenMultipleDialog(Stage stage, FileChooser.ExtensionFilter filter) {
+    public static Optional<List<File>> showOpenMultipleDialog(Stage stage, FileChooser.ExtensionFilter filter) {
         synchronized (NFD_LOCK) {
             boolean initialized = false;
             try (MemoryStack stack = MemoryStack.stackPush()) {

@@ -69,7 +69,7 @@ public class Alerts {
         return new Image(resource.toExternalForm());
     }
 
-    public static void alertDialog(Alert.AlertType type, String title, String headerText, String message) {
+    private static void finalAlertDialog(Alert.AlertType type, String title, String headerText, String message, Modality modality) {
         if (!Platform.isFxApplicationThread()) {
             Platform.runLater(() -> alertDialog(type, title, headerText, message));
             return;
@@ -79,7 +79,14 @@ public class Alerts {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
         alert.setContentText(message);
-        alert.initModality(Modality.NONE);
+
+        if(isNull(modality)) {
+            alert.initModality(Modality.NONE);
+        }
+        else {
+            alert.initModality(modality);
+        }
+
         alert.setResizable(true);
 
         DialogPane dialogPane = alert.getDialogPane();
@@ -95,6 +102,14 @@ public class Alerts {
 
         applyDialogStyles(alert, type);
         alert.showAndWait();
+    }
+
+    public static void alertDialog(Alert.AlertType type, String title, String headerText, String message, Modality modality) {
+        finalAlertDialog(type, title, headerText, message, modality);
+    }
+
+    public static void alertDialog(Alert.AlertType type, String title, String headerText, String message) {
+        finalAlertDialog(type, title, headerText, message, null);
     }
 
     private static double calculatePreferredWidth(String header, String message) {

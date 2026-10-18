@@ -1,7 +1,6 @@
 package model.helper.pdf;
 
 import model.logger.ErrorLogger;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
@@ -15,7 +14,7 @@ public class ProtectPdfHelper {
     }
 
     public static File protectPdf(File inputFile, File outputFile, String ownerPassword, String userPassword) throws IOException {
-        try (PDDocument document = Loader.loadPDF(inputFile)) {
+        try (PDDocument document = PdfHelper.loadUnencryptedPdf(inputFile)) {
             StandardProtectionPolicy policy = getStandardProtectionPolicy(ownerPassword, userPassword);
 
             document.protect(policy);

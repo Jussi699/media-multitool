@@ -8,21 +8,17 @@ import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
+import javafx.stage.Modality;
 import javafx.util.Duration;
-import media_multitool.AbstractMediaController;
+import media_multitool.AbstractPdfToolController;
+import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.ResetContext;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 import viewHelp.Message;
 import viewHelp.PdfPagePreviewCard;
 
@@ -36,17 +32,17 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.generateUniquePdfOutputFile;
 import static model.utility.PathWorker.getSavedPath;
+import static model.utility.Utility.cleanupFile;
 
-public class MergePdfController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
+public class MergePdfController extends AbstractPdfToolController {
     private final List<PageEntry> selectedPages = new ArrayList<>();
     private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
-    
+
     private static class PageEntry {
         final File sourceFile;
         final int originalPageIndex;
         final String id;
-        
+
         PageEntry(File sourceFile, int index) {
             this.sourceFile = sourceFile;
             this.originalPageIndex = index;
@@ -54,90 +50,122 @@ public class MergePdfController extends AbstractMediaController {
         }
     }
 
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
-
     @FXML private FlowPane imagesFlowPane;
     @FXML private ScrollPane scrollPanePreview;
-    @FXML private StackPane dropZone;
-    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
-    @FXML private Label labelSelectFileName, textDragZone;
-
-    private List<Control> listControls;
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset);
-
-        imageProperties.setOutput(getSavedPath());
+        properties.setOutput(getSavedPath());
         setupDragAndDropMultiple();
         isPressedReset();
     }
 
-    private void setupDragAndDropMultiple() {
-        dropZone.setOnDragOver(event -> {
-            if (event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
-            event.consume();
-        });
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Merge PDF",
+                "1. Select one or more PDF files using \"Select PDF\" or drag and drop them into the dash-bordered zone;",
+                """
+                        3. (Optional) Drag and drop thumbnails to reorder the PDF files, or click the remove button to remove a file;
 
-        dropZone.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            if (db.hasFiles()) {
-                List<File> files = db.getFiles();
-                if (!files.isEmpty()) {
-                    files.stream()
-                         .filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
-                         .forEach(this::loadPdfFile);
-                }
-            }
-            event.consume();
-        });
+                        4. Click "Submit and Download".
+                        
+                        You can cancel the conversion at any time using the "Cancel Merge" button.
+                        """
+        );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        selectedPages.clear();
+        pageCards.clear();
+        imagesFlowPane.getChildren().clear();
+        properties.setImage(null);
+
+        ResetContext ctx = new ResetContext(
+                labelSelectFileName, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true, "PDF(s)"
+        );
+        if (nonNull(progressBar)) {
+            progressBar.progressProperty().unbind();
+        }
+        reset(properties, ctx, "Last uploaded PDF: none");
+
+        disableControls();
+        textDragZone.setText("Drag PDF here");
+        if (nonNull(dropZone)) {
+            dropZone.getStyleClass().remove("drop-zone-filled");
+        }
+    }
+
+    @FXML
+    public void submitAndDownload() {
+        if (selectedPages.isEmpty()) {
+            Alerts.alertDialog(
+                    Alert.AlertType.WARNING,
+                    "Warning",
+                    "No pages selected",
+                    "Please add at least one PDF file."
+            );
+            return;
+        }
+
+        if (isNull(properties.getOutput())) {
+            properties.setOutput(getSavedPath());
+        }
+
+        Task<File> task = createTaskMergePdf();
+        executeMediaTask(task);
+    }
+
+    @FXML
+    public void selectMultiplePdfFile() {
+        selectMultiplePdfFile(this::loadFile);
     }
 
     @Override
     protected void lockUI() {
-        btnSelectFiles.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
-        listControls.forEach(c -> c.setDisable(true));
+        toggleUI(true);
     }
 
     @Override
     protected void unlockUI() {
-        btnSelectFiles.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
-        listControls.forEach(c -> c.setDisable(false));
+        toggleUI(false);
+        cancelFlag.set(false);
     }
 
     @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        toggleControls(true);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        toggleControls(false);
     }
 
-    @FXML
-    public void onActionBtnSelectFiles() {
-        SelectFile selectPdf = new SelectFile();
-        Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
-
-        selectPdf.showOpenMultipleDialog(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(page -> page.forEach(this::loadPdfFile));
+    @Override
+    protected void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        scrollPanePreview.setDisable(disabled);
+        btnCancel.setDisable(!disabled);
     }
 
-    private void loadPdfFile(File file) {
+    @Override
+    protected void toggleControls(boolean disabled) {
+        setControlsDisabled(disabled, btnSubmit, btnReset);
+    }
+
+    @Override
+    protected void loadFile(File file) {
         if (!validateSelectedFile(file)) {
             return;
         }
 
-        if (isNull(imageProperties.getImage())) {
-            imageProperties.setImage(file);
+        if (isNull(properties.getImage())) {
+            properties.setImage(file);
         }
 
         if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
@@ -147,7 +175,7 @@ public class MergePdfController extends AbstractMediaController {
         Task<BufferedImage> loadTask = new Task<>() {
             @Override
             protected BufferedImage call() throws Exception {
-                try (PDDocument document = Loader.loadPDF(file)) {
+                try (PDDocument document = PdfHelper.loadUnencryptedPdf(file)) {
                     PDFRenderer renderer = new PDFRenderer(document);
                     if (document.getNumberOfPages() > 0) {
                         return renderer.renderImageWithDPI(0, 72);
@@ -157,6 +185,51 @@ public class MergePdfController extends AbstractMediaController {
             }
         };
 
+        setOnSucceededLoadTask(loadTask, file);
+        setOnFailedLoadTask(loadTask);
+
+        progressBar.progressProperty().bind(loadTask.progressProperty());
+
+        startDaemonTask(loadTask);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (result instanceof File outputFile) {
+            ErrorLogger.info(getClass(), "PDF merged successfully! Saved to: " + outputFile.getAbsolutePath());
+
+            Platform.runLater(() -> {
+                Message.showSuccessText(labelSuccess, "PDF saved!", properties.getHideSuccessMessageTimer());
+
+                PauseTransition hideBar = new PauseTransition(Duration.seconds(5));
+                hideBar.setOnFinished(_ -> {
+                    labelSuccess.setVisible(false);
+                    progressBar.progressProperty().unbind();
+                    progressBar.setProgress(0);
+                });
+                hideBar.play();
+            });
+        }
+    }
+
+    private void setOnFailedLoadTask(Task<BufferedImage> loadTask) {
+        loadTask.setOnFailed(_ -> {
+            progressBar.progressProperty().unbind();
+            String textEx = loadTask.getException().getMessage();
+            ErrorLogger.error("Failed to load PDF: " + textEx);
+            Platform.runLater(() -> Alerts.alertDialog(
+                    Alert.AlertType.ERROR,
+                    "Error",
+                    "Failed to load PDF",
+                    textEx,
+                    Modality.APPLICATION_MODAL
+            ));
+            progressBar.setProgress(0);
+        });
+    }
+
+    private void setOnSucceededLoadTask(Task<BufferedImage> loadTask, File file) {
         loadTask.setOnSucceeded(_ -> {
             progressBar.progressProperty().unbind();
             progressBar.setProgress(1.0);
@@ -168,7 +241,7 @@ public class MergePdfController extends AbstractMediaController {
             }
             enableControls();
             updateUIState();
-            
+
             PauseTransition hideBar = new PauseTransition(Duration.seconds(5));
             hideBar.setOnFinished(_ -> {
                 progressBar.progressProperty().unbind();
@@ -176,18 +249,6 @@ public class MergePdfController extends AbstractMediaController {
             });
             hideBar.playFromStart();
         });
-
-        loadTask.setOnFailed(_ -> {
-            progressBar.progressProperty().unbind();
-            ErrorLogger.error("Failed to load PDF: " + loadTask.getException().getMessage());
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to load PDF", loadTask.getException().getMessage());
-            
-            progressBar.setProgress(0);
-        });
-
-        progressBar.progressProperty().bind(loadTask.progressProperty());
-        
-        new Thread(loadTask).start();
     }
 
     private void createPagePreviewCard(PageEntry entry, BufferedImage image) {
@@ -216,10 +277,10 @@ public class MergePdfController extends AbstractMediaController {
         if (draggedIdx != -1 && targetIdx != -1 && draggedIdx != targetIdx) {
             PageEntry draggedEntry = selectedPages.remove(draggedIdx);
             PdfPagePreviewCard draggedCard = pageCards.remove(draggedIdx);
-            
+
             selectedPages.add(targetIdx, draggedEntry);
             pageCards.add(targetIdx, draggedCard);
-            
+
             refreshPreview();
         }
     }
@@ -230,7 +291,6 @@ public class MergePdfController extends AbstractMediaController {
 
         textDragZone.setText("PDF selected: " + selectedPages.size());
 
-
         if (!selectedPages.isEmpty()) {
             enableControls();
         } else {
@@ -240,124 +300,47 @@ public class MergePdfController extends AbstractMediaController {
         }
     }
 
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), 
-            imageProperties::setOutput, "Select directory for save PDF");
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (selectedPages.isEmpty()) {
-            Alerts.alertDialog(
-                Alert.AlertType.WARNING,
-                "Warning",
-                "No pages selected",
-                "Please add at least one PDF file."
-            );
-            return;
-        }
-
-        if (isNull(imageProperties.getOutput())) {
-            imageProperties.setOutput(getSavedPath());
-        }
-
-        Task<File> task = new Task<>() {
+    private Task<File> createTaskMergePdf() {
+        List<PageEntry> pagesToMerge = List.copyOf(selectedPages);
+        return new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(0, 100);
 
-                File outputDirFile = imageProperties.getOutput();
+                File outputDirFile = properties.getOutput();
                 String baseName = "merged_document";
-                if (!selectedPages.isEmpty()) {
-                    baseName = selectedPages.getFirst().sourceFile.getName().replace(".pdf", "") + "_merged";
+                if (!pagesToMerge.isEmpty()) {
+                    baseName = pagesToMerge.getFirst().sourceFile.getName().replace(".pdf", "") + "_merged";
                 }
                 File outputFile = generateUniquePdfOutputFile(outputDirFile.getAbsolutePath(), baseName);
 
-                try (PDDocument targetDoc = new PDDocument()) {
-                    int totalFiles = selectedPages.size();
-                    PDFMergerUtility merger = new PDFMergerUtility();
-                    
-                    for (int i = 0; i < totalFiles; i++) {
-                        PageEntry entry = selectedPages.get(i);
-                        try (PDDocument sourceDoc = Loader.loadPDF(entry.sourceFile)) {
-                            merger.appendDocument(targetDoc, sourceDoc);
-                        }
-                        updateProgress(i + 1, totalFiles);
-                    }
-                    targetDoc.save(outputFile);
-                }
+                try {
+                    try (PDDocument targetDoc = new PDDocument()) {
+                        int totalFiles = pagesToMerge.size();
+                        PDFMergerUtility merger = new PDFMergerUtility();
 
-                updateProgress(100, 100);
-                return outputFile;
+                        for (int i = 0; i < totalFiles; i++) {
+                            if (isCancelled() || cancelFlag.get() || Thread.currentThread().isInterrupted()) {
+                                throw new InterruptedException("Merge cancelled");
+                            }
+                            PageEntry entry = pagesToMerge.get(i);
+                            try (PDDocument sourceDoc = PdfHelper.loadUnencryptedPdf(entry.sourceFile)) {
+                                merger.appendDocument(targetDoc, sourceDoc);
+                            }
+                            updateProgress(i + 1L, totalFiles);
+                        }
+                        if (isCancelled() || cancelFlag.get() || Thread.currentThread().isInterrupted()) {
+                            throw new InterruptedException("Merge cancelled");
+                        }
+                        targetDoc.save(outputFile);
+                    }
+                    return outputFile;
+                } catch (Exception exception) {
+                    cleanupFile(outputFile);
+                    throw exception;
+                }
             }
         };
-
-        executeMediaTask(task);
-    }
-
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (result instanceof File outputFile) {
-            ErrorLogger.info(getClass(), "PDF merged successfully! Saved to: " + outputFile.getAbsolutePath());
-
-            Platform.runLater(() -> {
-                Message.showSuccessText(labelSuccess, "PDF saved!", imageProperties.getHideSuccessMessageTimer());
-                
-                PauseTransition hideBar = new PauseTransition(Duration.seconds(5));
-                hideBar.setOnFinished(_ -> {
-                    labelSuccess.setVisible(false);
-                    progressBar.progressProperty().unbind();
-                    progressBar.setProgress(0);
-                });
-                hideBar.play();
-            });
-        }
-    }
-
-    @FXML
-    public void isPressedReset() {
-        selectedPages.clear();
-        pageCards.clear();
-        imagesFlowPane.getChildren().clear();
-        imageProperties.setImage(null);
-        
-        ResetContext ctx = new ResetContext(
-            labelSelectFileName, labelSuccess, textDragZone, null,
-            dropZone, null, progressBar, true, "PDF(s)"
-        );
-        if (nonNull(progressBar)) {
-            progressBar.progressProperty().unbind();
-        }
-        reset(imageProperties, ctx, "Last uploaded PDF: none");
-
-        disableControls();
-        textDragZone.setText("Drag PDF here");
-        if (nonNull(dropZone)) {
-            dropZone.getStyleClass().remove("drop-zone-filled");
-        }
-    }
-
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-            Alert.AlertType.INFORMATION,
-            "Information",
-            "Merge PDF",
-            """
-               How to use:
-                1. Select one or more PDF files using "Select PDF" or drag and drop them into the dash-bordered zone;
-
-                2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                    (Default directory: Desktop);
-
-                3. (Optional) Drag and drop thumbnails to reorder the PDF files, or click the remove button to remove a file;
-
-                4. Click "Submit and Download".
-
-                If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
     }
 
     private void mergePage(String cardId) {
@@ -368,11 +351,11 @@ public class MergePdfController extends AbstractMediaController {
                 break;
             }
         }
-        
+
         if (index != -1) {
             final int finalIndex = index;
             PdfPagePreviewCard card = pageCards.get(finalIndex);
-            
+
             card.animateRemoval(() -> {
                 selectedPages.remove(finalIndex);
                 pageCards.remove(finalIndex);
@@ -380,6 +363,33 @@ public class MergePdfController extends AbstractMediaController {
                 updateUIState();
             });
         }
+    }
+
+    private void setupDragAndDropMultiple() {
+        dropZone.setOnDragOver(event -> {
+            Dragboard dragboard = event.getDragboard();
+            if (event.getGestureSource() != dropZone
+                    && dragboard.hasFiles()
+                    && dragboard.getFiles().stream()
+                    .anyMatch(file -> file.getName().toLowerCase().endsWith(".pdf"))) {
+                event.acceptTransferModes(TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        dropZone.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                List<File> pdfFiles = db.getFiles().stream()
+                        .filter(file -> file.getName().toLowerCase().endsWith(".pdf"))
+                        .toList();
+                pdfFiles.forEach(this::loadFile);
+                success = !pdfFiles.isEmpty();
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
     }
 
     private void refreshPreview() {

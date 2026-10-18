@@ -1,136 +1,87 @@
 package media_multitool.pdf;
 
-import app.Launcher;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
+import media_multitool.AbstractPdfToolController;
 import model.helper.pdf.PdfHelper;
 import model.helper.pdf.UnlockPdfHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
 import model.utility.ResetContext;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.helper.pdf.PdfHelper.notNullInputAndOutput;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
 
-public class UnlockPdfController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
-
-    @FXML private PasswordField typePasswordField;
-    @FXML private TextField typePasswordTextField;
-    @FXML private ImageView imageViewPdf;
-    @FXML private StackPane dropZone, previewContainer;
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
+public class UnlockPdfController extends AbstractPdfToolController {
     @FXML private ToggleButton btnShowTypePassword;
-    @FXML private Label labelSelectFileName, textDragZone, labelPreviewPlaceholder, labelFileEncrypted;
+    @FXML private TextField typePasswordTextField;
+    @FXML private Label labelFileEncrypted;
+    @FXML private PasswordField typePasswordField;
 
-    private PDDocument currentDoc;
-    private List<Control> listControls;
     private String typePassword;
     private boolean isFileEncrypted = false;
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset);
+        properties.setOutput(getSavedPath());
 
-        imageProperties.setOutput(getSavedPath());
-
-        if (nonNull(progressBar)) {
-            progressBar.setVisible(true);
-            progressBar.setManaged(true);
-            progressBar.setProgress(0);
-        }
+        progressBar.setVisible(true);
+        progressBar.setManaged(true);
+        progressBar.setProgress(0);
 
         setupListener();
-
-        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
-
-        setupDragAndDrop(dropZone, List.of("pdf"), this::loadFile);
+        setupClearMessageTimer(labelSuccess, progressBar, properties.getHideSuccessMessageTimer(), true);
+        setupDragAndDrop(dropZone, "pdf", this::loadFile);
 
         isPressedReset();
     }
 
-    private void setupListener() {
-        typePasswordField.textProperty().addListener((_, _, newValue) -> {
-            typePassword = newValue;
-            if (nonNull(typePasswordTextField)) {
-                typePasswordTextField.setText(newValue);
-            }
-        });
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Unlock PDF",
+                "Select a PDF file using \"Select PDF\" or drag and drop it into the dash-bordered zone;",
+                """
+                        If the PDF file is password protected, enter the password (if the file is not password protected, you can simply proceed to the next step);
 
-
-        if (nonNull(typePasswordTextField)) {
-            typePasswordTextField.textProperty().addListener((_, _, newValue) -> {
-                typePassword = newValue;
-                typePasswordField.setText(newValue);
-            });
-        }
+                        4. Click "Unlock and Download".
+                        """
+        );
     }
 
-    @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChoiceDirForSaveFile.setDisable(true);
-        listControls.forEach(c -> c.setDisable(true));
-    }
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imageViewPdf, progressBar, true, "PDF"
+        );
+        reset(properties, ctx, "Selected PDF file: none");
 
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChoiceDirForSaveFile.setDisable(false);
-        listControls.forEach(c -> c.setDisable(false));
-    }
+        disableControls();
 
-    @Override
-    protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
-        typePasswordField.setDisable(true);
-
-        if (nonNull(typePasswordTextField)) {
-            typePasswordTextField.setDisable(true);
+        try {
+            currentDoc = PdfHelper.closeDocument(currentDoc);
+        } catch (IOException e) {
+            ErrorLogger.error("Error closing document during reset: " + e.getMessage());
         }
 
-        btnShowTypePassword.setDisable(true);
-    }
+        imageViewPdf.setImage(null);
 
-    @Override
-    protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
-        typePasswordField.setDisable(false);
-        if (nonNull(typePasswordTextField)) {
-            typePasswordTextField.setDisable(false);
-        }
-
-        btnShowTypePassword.setDisable(false);
+        labelPreviewPlaceholder.setVisible(true);
+        clearField();
+        isFileEncrypted = false;
+        turnField();
     }
 
     @FXML
@@ -151,38 +102,93 @@ public class UnlockPdfController extends AbstractMediaController {
     }
 
     @FXML
-    public void onActionBtnSelectFile() {
-        SelectFile selectPdfFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectPdfFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")).ifPresent(this::loadFile);
+    public void submitAndDownload() {
+        if(!checks()) {
+            return;
+        }
+
+        executeMediaTask(createTaskUnlockPdf());
+        labelSuccess.setManaged(true);
     }
 
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save PDF");
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+    }
+
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+    }
+
+    @Override
+    protected void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+    }
+
+    @Override
+    protected void toggleControls(boolean disabled) {
+        boolean passwordControlsDisabled = disabled || !isFileEncrypted;
+        setControlsDisabled(passwordControlsDisabled,
+                typePasswordField, typePasswordTextField, btnShowTypePassword);
+        setControlsDisabled(disabled, btnSubmit, btnReset);
+    }
+
+    @Override
+    protected void loadFile(File file) {
+        if (!validateSelectedFile(file)) {
+            return;
+        }
+
+        preparePreview();
+        updateSelectedFile(file);
+
+        try {
+            currentDoc = Loader.loadPDF(file);
+            updateDocumentPreview();
+        } catch (IOException e) {
+            handleDocumentLoadError(file, e);
+        }
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.FALSE.equals(result)) {
+            return;
+        }
+        File outputFile = (File) result;
+
+        ErrorLogger.info(getClass(), "PDF unlocked successfully! Saved to: " + outputFile.getAbsolutePath());
+
+        Platform.runLater(() -> {
+            String message = isFileEncrypted ? "PDF unlocked successfully!" : "PDF copied successfully!";
+            showSuccessText(labelSuccess, message, properties.getHideSuccessMessageTimer());
+            labelSuccess.setManaged(true);
+            progressBar.setProgress(0);
+        });
     }
 
     private boolean checks() {
-        if (isNull(imageProperties.getImage())) {
-            Platform.runLater(() -> {
-                showErrorMessage(labelSuccess, progressBar,"Please select a PDF file", imageProperties.getHideSuccessMessageTimer());
-                labelSuccess.setManaged(true);
-            });
-            return false;
-        }
-
-        if (isNull(imageProperties.getOutput())) {
-            Platform.runLater(() -> {
-                showErrorMessage(labelSuccess, progressBar,"Please select output directory", imageProperties.getHideSuccessMessageTimer());
-                labelSuccess.setManaged(true);
-            });
+        if(notNullInputAndOutput(properties, labelSuccess, progressBar)) {
             return false;
         }
 
         if (isFileEncrypted && (isNull(typePassword) || typePassword.isEmpty())) {
             Platform.runLater(() -> {
-                showErrorMessage(labelSuccess, progressBar,"Please enter password", imageProperties.getHideSuccessMessageTimer());
+                showErrorMessage(labelSuccess, progressBar,"Please enter password", properties.getHideSuccessMessageTimer());
                 labelSuccess.setManaged(true);
             });
             return false;
@@ -191,46 +197,33 @@ public class UnlockPdfController extends AbstractMediaController {
         return true;
     }
 
-    @FXML
-    public void submitAndDownload() {
-        if(!checks()) {
-            return;
-        }
-
-        executeMediaTask(taskUnlockPdf());
-        labelSuccess.setManaged(true);
-    }
-
-    private Task<File> taskUnlockPdf() {
+    private Task<File> createTaskUnlockPdf() {
         return new Task<>() {
             @Override
             protected File call() throws Exception {
                 updateProgress(10, 100);
 
-                if (isNull(imageProperties.getImage())) {
+                if (isNull(properties.getImage())) {
                     throw new IOException("PDF file not selected");
                 }
 
                 updateProgress(30, 100);
 
-                String baseName = imageProperties.getImage().getName().replaceFirst("[.][^.]+$", "");
-                String shortId  = UUID.randomUUID().toString().substring(0, 8);
-                File outputFile = new File(imageProperties.getOutput(), baseName + "_unlocked_" + shortId + ".pdf");
-
                 updateProgress(50, 100);
 
                 File result;
+                File outputFile = getOutputFilePdf("unlocked");
                 if (isFileEncrypted) {
                     result = UnlockPdfHelper.unlockPdf(
-                            imageProperties.getImage(),
+                            properties.getImage(),
                             outputFile,
                             typePassword
                     );
                 } else {
-                    java.nio.file.Files.copy(
-                            imageProperties.getImage().toPath(),
+                    Files.copy(
+                            properties.getImage().toPath(),
                             outputFile.toPath(),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            StandardCopyOption.REPLACE_EXISTING
                     );
                     result = outputFile;
                 }
@@ -242,181 +235,91 @@ public class UnlockPdfController extends AbstractMediaController {
         };
     }
 
-    private void updatePreview(boolean isEncrypted) {
-        if(isEncrypted) {
-            Image image = new Image(Objects.requireNonNull(Launcher.class.getResourceAsStream("/img/encrypted.webp")));
-            imageViewPdf.setImage(image);
-            labelPreviewPlaceholder.setVisible(false);
-        }
-        else if(currentDoc != null) {
-            try {
-                PDFRenderer renderer = new PDFRenderer(currentDoc);
-                BufferedImage bim = renderer.renderImageWithDPI(0, 72);
-                imageViewPdf.setImage(SwingFXUtils.toFXImage(bim, null));
-                labelPreviewPlaceholder.setVisible(false);
-            } catch (IOException e) {
-                ErrorLogger.error("Error rendering PDF preview: " + e.getMessage());
-            }
-        }
-    }
-
-
-    @Override
-    protected void handleTaskSuccess(Object result) {
-        super.handleTaskSuccess(result);
-        if (Boolean.FALSE.equals(result)) {
-            return;
-        }
-        File outputFile = (File) result;
-        
-        ErrorLogger.info(getClass(), "PDF unlocked successfully! Saved to: " + outputFile.getAbsolutePath());
-
-        Platform.runLater(() -> {
-            String message = isFileEncrypted ? "PDF unlocked successfully!" : "PDF copied successfully!";
-            showSuccessText(labelSuccess, message, imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-            progressBar.setProgress(0);
-        });
-    }
-
-    @Override
-    protected void handleTaskFailure(@NonNull Throwable exception) {
-        super.handleTaskFailure(exception);
-        Platform.runLater(() -> {
-            showErrorMessage(labelSuccess, progressBar,"Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
-            labelSuccess.setManaged(true);
-            progressBar.setProgress(0);
-        });
-    }
-
-    @FXML
-    public void isPressedReset() {
-        ResetContext ctx = new ResetContext(
-                labelSelectFileName, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPdf, progressBar, true, "PDF"
-        );
-        reset(imageProperties, ctx, "Selected PDF file: none");
-
-        disableControls();
-
-        try {
-            currentDoc = PdfHelper.closeDocument(currentDoc);
-        } catch (IOException e) {
-            ErrorLogger.error("Error closing document during reset: " + e.getMessage());
-        }
-        
-        if (nonNull(imageViewPdf)) {
-            imageViewPdf.setImage(null);
-        }
-
-        labelPreviewPlaceholder.setVisible(true);
-
-        typePassword = "";
-        typePasswordField.setText("");
-        if (nonNull(typePasswordTextField)) {
-            typePasswordTextField.setText("");
-        }
-
-        isFileEncrypted = false;
-
+    private void turnField() {
         if (btnShowTypePassword.isSelected()) {
             btnShowTypePassword.setSelected(false);
             typePasswordField.setVisible(true);
             typePasswordField.setManaged(true);
+            typePasswordTextField.setVisible(false);
+            typePasswordTextField.setManaged(false);
+        }
+    }
+
+    private void clearField() {
+        typePassword = "";
+        typePasswordField.setText("");
+        typePasswordTextField.setText("");
+    }
+
+    private void setupListener() {
+        typePasswordField.textProperty().addListener((_, _, newValue) -> {
+            typePassword = newValue;
             if (nonNull(typePasswordTextField)) {
-                typePasswordTextField.setVisible(false);
-                typePasswordTextField.setManaged(false);
+                typePasswordTextField.setText(newValue);
             }
+        });
+
+
+        if (nonNull(typePasswordTextField)) {
+            typePasswordTextField.textProperty().addListener((_, _, newValue) -> {
+                typePassword = newValue;
+                typePasswordField.setText(newValue);
+            });
         }
     }
 
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Unlock PDF",
-                """
-                        How to use:
-                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. If the PDF file is password protected, enter the password (if the file is not password protected, you can simply proceed to the next step);
-
-                        4. Click "Unlock and Download".
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
-    }
-
-    private void loadFile(File selectedFile) {
-        if (!validateSelectedFile(selectedFile)) {
-            return;
-        }
-
-        if (nonNull(imageViewPdf)) {
-            imageViewPdf.setImage(null);
-        }
+    private void preparePreview() {
+        imageViewPdf.setImage(null);
 
         try {
             currentDoc = PdfHelper.closeDocument(currentDoc);
         } catch (IOException e) {
             ErrorLogger.error("Error closing previous document: " + e.getMessage());
         }
+    }
 
-        imageProperties.setImage(selectedFile);
-        labelSelectFileName.setText("Selected PDF: " + selectedFile.getName());
-        textDragZone.setText("Selected: " + selectedFile.getName());
-
-        if (!dropZone.getStyleClass().contains("drop-zone-filled")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-
+    private void updateSelectedFile(File file) {
+        properties.setImage(file);
+        labelSelectFileName.setText("Selected PDF: " + file.getName());
+        markDropZoneLoaded(dropZone, textDragZone, file.getName());
         bindingImageViewToPreviewContainer(imageViewPdf, previewContainer);
+    }
 
-        try {
-            currentDoc = Loader.loadPDF(selectedFile);
-
-            if(currentDoc.isEncrypted()){
-                isFileEncrypted = true;
-                labelFileEncrypted.setText("PDF file is encrypted!");
-                updatePreview(true);
-                typePasswordTextField.setDisable(false);
-                typePasswordField.setDisable(false);
-                btnShowTypePassword.setDisable(false);
-                enableControls();
-            }
-            else {
-                isFileEncrypted = false;
-                labelFileEncrypted.setText("PDF file is not encrypted");
-                typePasswordTextField.setDisable(true);
-                typePasswordField.setDisable(true);
-                btnShowTypePassword.setDisable(true);
-                enableControls();
-                updatePreview(false);
-            }
-
-        } catch (IOException e) {
-            String errorMsg = e.getMessage().toLowerCase();
-            if (errorMsg.contains("password") || errorMsg.contains("encrypted") || errorMsg.contains("owner") || errorMsg.contains("user")) {
-                isFileEncrypted = true;
-                labelFileEncrypted.setText("PDF file is encrypted! Please enter password.");
-                labelFileEncrypted.setVisible(true);
-                updatePreview(true);
-                typePasswordTextField.setDisable(false);
-                typePasswordField.setDisable(false);
-                btnShowTypePassword.setDisable(false);
-                enableControls();
-                ErrorLogger.info(getClass(), "Encrypted PDF detected: " + selectedFile.getName());
-            } else {
-                ErrorLogger.error("Error loading PDF: " + e.getMessage());
-                Platform.runLater(() -> {
-                    showErrorMessage(labelSuccess, progressBar,"Error loading PDF: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
-                    labelSuccess.setManaged(true);
-                });
-            }
+    private void updateDocumentPreview() {
+        if (PdfHelper.isEncryptedDocument(currentDoc)) {
+            showEncryptedDocument("PDF file is encrypted!", false);
+            return;
         }
+
+        isFileEncrypted = false;
+        labelFileEncrypted.setText("PDF file is not encrypted");
+        typePasswordTextField.setDisable(true);
+        typePasswordField.setDisable(true);
+        btnShowTypePassword.setDisable(true);
+        enableControls();
+        updatePreview();
+    }
+
+    private void showEncryptedDocument(String status, boolean showStatus) {
+        isFileEncrypted = true;
+        labelFileEncrypted.setText(status);
+        if (showStatus) {
+            labelFileEncrypted.setVisible(true);
+        }
+        setProtectImage();
+        typePasswordTextField.setDisable(false);
+        typePasswordField.setDisable(false);
+        btnShowTypePassword.setDisable(false);
+        enableControls();
+    }
+
+    private void handleDocumentLoadError(File file, IOException exception) {
+        if (!PdfHelper.isEncryptedException(exception)) {
+            handlePdfLoadError(exception);
+            return;
+        }
+
+        showEncryptedDocument("PDF file is encrypted! Please enter password.", true);
+        ErrorLogger.info(getClass(), "Encrypted PDF detected: " + file.getName());
     }
 }

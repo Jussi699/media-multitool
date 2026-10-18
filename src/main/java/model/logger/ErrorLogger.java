@@ -42,6 +42,10 @@ public class ErrorLogger {
         getCallerLogger().error(message);
     }
 
+    public static void error(String message, Throwable throwable) {
+        getCallerLogger().error(message, throwable);
+    }
+
     private static Logger getCallerLogger() {
         String callerClassName = STACK_WALKER.walk(frames -> frames
                 .map(frame -> frame.getDeclaringClass().getName())

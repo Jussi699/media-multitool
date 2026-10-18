@@ -1,25 +1,25 @@
 package media_multitool.pdf;
 
 import javafx.application.Platform;
+import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import media_multitool.AbstractMediaController;
-import model.properties.ImageProperties;
-import model.properties.MediaProperties;
-import model.select.SelectFile;
+import javafx.stage.Modality;
+import javafx.util.Duration;
+import media_multitool.AbstractPdfToolController;
+import model.helper.pdf.PdfHelper;
 import model.utility.ResetContext;
-import org.apache.pdfbox.Loader;
+import model.utility.Utility;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import viewHelp.Alerts;
+import viewHelp.InfoAlert;
 import viewHelp.Message;
 import viewHelp.PdfPagePreviewCard;
 
@@ -31,48 +31,161 @@ import java.util.function.BiConsumer;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.helper.pdf.SplitPdfHelper.*;
+import static model.utility.PathWorker.getSavedPath;
 
-public class SplitPdfController extends AbstractMediaController {
-    private final ImageProperties imageProperties = new ImageProperties();
-    private final List<PageEntry> allPages = new ArrayList<>();
+public class SplitPdfController extends AbstractPdfToolController {
+    private final List<PdfHelper.PageEntry> allPages = new ArrayList<>();
     private final List<PdfPagePreviewCard> pageCards = new ArrayList<>();
     private final Set<Integer> selectedPageIndices = new HashSet<>();
 
-    @FXML private Button btnSelectFiles, btnChoiceDirForSaveFile, btnSubmit;
-    @FXML private Label textDragZone, labelSelectFileName;
-    @FXML private FlowPane imagesFlowPane;
-    @FXML private ScrollPane scrollPanePreview;
-    @FXML private StackPane dropZone;
-    @FXML private VBox vboxRangeOptions, vboxPagesOptions, vboxToPage;
-    @FXML private RadioButton rbCustomRange, rbFixedRange, rbRange, rbPages;
     @FXML private ToggleGroup rangeTypeGroup, splitModeGroup;
+    @FXML private RadioButton rbCustomRange, rbFixedRange, rbRange, rbPages;
     @FXML private TextField tfFromPage, tfToPage;
-
-    private List<Control> listControls;
-
-    private static class PageEntry {
-        final int originalPageIndex;
-        final String id;
-
-        PageEntry(int index) {
-            this.originalPageIndex = index;
-            this.id = UUID.randomUUID().toString();
-        }
-    }
-
-    @Override
-    protected MediaProperties getProperties() {
-        return imageProperties;
-    }
+    @FXML private ScrollPane scrollPanePreview;
+    @FXML private FlowPane imagesFlowPane;
+    @FXML private VBox vboxRangeOptions, vboxPagesOptions, vboxToPage;
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset, rbRange, rbPages, rbCustomRange, rbFixedRange, tfFromPage, tfToPage, btnReset);
+        properties.setOutput(getSavedPath());
 
-        setupDragAndDropMultiple();
+        setupDragAndDrop();
         disableControls();
         updateUIState();
         setupListener();
+    }
+
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfoWithoutClipboard(
+                "Split PDF",
+                "Select a PDF file using \"Select PDF\" or drag and drop it into the dash-bordered zone;",
+                """
+                        3.Choose split mode:
+                            - "Range": Select "Custom Range" to specify From/To pages, or "Fixed Range (1 to N)" to extract pages 1 to N
+                            (selected range is highlighted with a green border);
+                        
+                            - "Pages": Select pages in the preview area below (use Shift + click to select a range);
+                            (If multiple pages are selected, they will be packed into a ZIP archive);
+
+                        4. Click "Submit and Download".
+                        
+                        You can cancel the compression at any time using the "Cancel Split" button.
+                        """
+        );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        allPages.clear();
+        pageCards.clear();
+        selectedPageIndices.clear();
+        imagesFlowPane.getChildren().clear();
+
+        ResetContext ctx = new ResetContext(
+                labelSelectFileName, labelSuccess, textDragZone, null,
+                dropZone, null, progressBar, true, "PDF"
+        );
+        reset(properties, ctx, "Selected PDF file: none");
+
+        disableControls();
+    }
+
+    @FXML
+    public void submitAndDownload() {
+        if (isNull(properties.getImage())){
+            Alerts.alertDialog(Alert.AlertType.WARNING,
+                    "Warning",
+                    "No PDF selected",
+                    "Please select a PDF file to split.");
+            return;
+        }
+
+        int fromPage = 0;
+        int toPage = 0;
+        if (rbRange.isSelected()) {
+            try {
+                fromPage = rbFixedRange.isSelected() ? 1 : parsePageField(tfFromPage.getText());
+                toPage = parsePageField(tfToPage.getText());
+            } catch (NumberFormatException _) {
+                showInvalidRange("Enter a valid page range.");
+                return;
+            }
+
+            if (fromPage < 1 || toPage < 1 || fromPage > toPage || toPage > allPages.size()) {
+                showInvalidRange("Enter a range from page 1 to " + allPages.size()
+                        + " with the start page no greater than the end page.");
+                return;
+            }
+        } else if (selectedPageIndices.isEmpty()) {
+            Alerts.alertDialog(Alert.AlertType.WARNING,
+                    "Warning",
+                    "No pages selected",
+                    "Please select at least one page to split.");
+            return;
+        }
+
+        cancelFlag.set(false);
+        executeMediaTask(buildSplitTask(properties.getOutput(), fromPage, toPage));
+    }
+
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+        cancelFlag.set(false);
+    }
+
+    @Override
+    protected void disableControls() {
+        toggleControls(true);
+    }
+
+    @Override
+    protected void enableControls() {
+        toggleControls(false);
+    }
+
+    @Override
+    protected void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        scrollPanePreview.setDisable(disabled);
+        btnCancel.setDisable(!disabled);
+    }
+
+    @Override
+    protected void toggleControls(boolean disabled) {
+        setControlsDisabled(disabled, rbRange, rbPages, rbCustomRange, rbFixedRange,
+                tfFromPage, tfToPage, btnSubmit, btnReset);
+        btnCancel.setDisable(true);
+    }
+
+    @Override
+    protected void loadFile(File file) {
+        if (!validateSelectedFile(file)) {
+            return;
+        }
+
+        isPressedReset();
+        properties.setImage(file);
+
+        if (dropZone.getStyleClass().contains("drop-zone")) {
+            dropZone.getStyleClass().add("drop-zone-filled");
+        }
+
+        Task<List<BufferedImage>> loadTask = buildLoadTask(file);
+
+        setOnSucceededLoadTask(loadTask);
+        setOnFailedLoadTask(loadTask);
+
+        progressBar.progressProperty().bind(loadTask.progressProperty());
+        startDaemonTask(loadTask);
     }
 
     private void setupListener() {
@@ -103,6 +216,7 @@ public class SplitPdfController extends AbstractMediaController {
                 updateRangeHighlight();
             }
         });
+
         tfToPage.textProperty().addListener((_, _, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 tfToPage.setText(newValue.replaceAll("\\D", ""));
@@ -113,130 +227,73 @@ public class SplitPdfController extends AbstractMediaController {
         });
     }
 
-    private void setupDragAndDropMultiple() {
+    private void setupDragAndDrop() {
         dropZone.setOnDragOver(event -> {
-            if (event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
+            Dragboard dragboard = event.getDragboard();
+            if (event.getGestureSource() != dropZone
+                    && dragboard.hasFiles()
+                    && dragboard.getFiles().stream()
+                    .anyMatch(file -> file.getName().toLowerCase().endsWith(".pdf"))) {
                 event.acceptTransferModes(TransferMode.COPY);
             }
             event.consume();
         });
 
         dropZone.setOnDragDropped(event -> {
-            var db = event.getDragboard();
-            if (db.hasFiles()) {
-                File file = db.getFiles().getFirst();
-                if (file.getName().toLowerCase().endsWith(".pdf")) {
-                    loadPdfFile(file);
-                }
+            Dragboard dragboard = event.getDragboard();
+            File pdfFile = dragboard.hasFiles()
+                    ? dragboard.getFiles().stream()
+                    .filter(file -> file.getName().toLowerCase().endsWith(".pdf"))
+                    .findFirst()
+                    .orElse(null)
+                    : null;
+            if (nonNull(pdfFile)) {
+                loadFile(pdfFile);
             }
-            event.setDropCompleted(true);
+            event.setDropCompleted(nonNull(pdfFile));
             event.consume();
         });
     }
 
-    @Override
-    protected void lockUI() {
-        vboxRangeOptions.getScene().getRoot().setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        vboxRangeOptions.getScene().getRoot().setDisable(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        listControls.forEach(control -> control.setDisable(true));
-    }
-
-    @Override
-    protected void enableControls() {
-        listControls.forEach(control -> control.setDisable(false));
-    }
-
-    @FXML
-    public void onActionBtnSelectFiles() {
-        SelectFile selectImageFile = new SelectFile();
-        Stage stage = (Stage) btnSelectFiles.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
-                new FileChooser.ExtensionFilter("PDF", "*.pdf")).ifPresent(this::loadPdfFile);
-    }
-
-    private void loadPdfFile(File file) {
-        if (!validateSelectedFile(file)) {
-            return;
-        }
-
-        isPressedReset();
-        imageProperties.setImage(file);
-
-        if (dropZone.getStyleClass().contains("drop-zone")) {
-            dropZone.getStyleClass().add("drop-zone-filled");
-        }
-
-        Task<List<BufferedImage>> loadTask = new Task<>() {
+    private Task<List<BufferedImage>> buildLoadTask(File file) {
+        return new Task<>() {
             @Override
             protected List<BufferedImage> call() throws Exception {
                 List<BufferedImage> images = new ArrayList<>();
-                try (PDDocument document = Loader.loadPDF(file)) {
+                try (PDDocument document = PdfHelper.loadUnencryptedPdf(file)) {
                     PDFRenderer renderer = new PDFRenderer(document);
                     int pageCount = document.getNumberOfPages();
                     for (int i = 0; i < pageCount; i++) {
                         BufferedImage image = renderer.renderImageWithDPI(i, 72);
                         images.add(image);
-                        updateProgress(i + 1, pageCount);
+                        updateProgress(i + 1L, pageCount);
                     }
                 }
                 return images;
             }
         };
-
-        loadTask.setOnSucceeded(_ -> {
-            progressBar.progressProperty().unbind();
-            progressBar.setProgress(1.0);
-            List<BufferedImage> pageImages = loadTask.getValue();
-            for (int i = 0; i < pageImages.size(); i++) {
-                addPageToList(i, pageImages.get(i));
-            }
-            if (rbRange.isSelected()) {
-                updateRangeHighlight();
-            }
-            enableControls();
-            updateUIState();
-
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    Platform.runLater(() -> progressBar.setProgress(0));
-                }
-            }, 5000);
-        });
-
-        loadTask.setOnFailed(_ -> {
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed to load PDF", loadTask.getException().getMessage());
-            progressBar.setProgress(0);
-        });
-
-        progressBar.progressProperty().bind(loadTask.progressProperty());
-        new Thread(loadTask).start();
     }
 
     private void addPageToList(int index, BufferedImage image) {
-        PageEntry entry = new PageEntry(index);
+        PdfHelper.PageEntry entry = new PdfHelper.PageEntry(index);
         allPages.add(entry);
         createPagePreviewCard(entry, image);
     }
 
-    private void createPagePreviewCard(PageEntry entry, BufferedImage image) {
-        PdfPagePreviewCard card = new PdfPagePreviewCard(
+    private PdfPagePreviewCard getPdfPreviewCard(PdfHelper.PageEntry entry, BufferedImage image) {
+        return new PdfPagePreviewCard(
                 image,
-                imageProperties.getImage().getName(),
+                properties.getImage().getName(),
                 entry.originalPageIndex,
                 entry.id,
                 () -> {},
                 null,
                 240, 270, 230, 260
         );
+    }
+
+    private void createPagePreviewCard(PdfHelper.PageEntry entry, BufferedImage image) {
+        PdfPagePreviewCard card = getPdfPreviewCard(entry, image);
 
         card.getContainer().setOnMouseClicked(event -> {
             try {
@@ -291,7 +348,9 @@ public class SplitPdfController extends AbstractMediaController {
         try {
             if (!tfFromPage.getText().isEmpty()) from = Integer.parseInt(tfFromPage.getText());
             if (!tfToPage.getText().isEmpty()) to = Integer.parseInt(tfToPage.getText());
-        } catch (NumberFormatException _) {}
+        } catch (NumberFormatException _) {
+            // Ignored
+        }
 
         if (rbFixedRange.isSelected()) {
             from = 1;
@@ -309,129 +368,101 @@ public class SplitPdfController extends AbstractMediaController {
     }
 
     private void updateUIState() {
-        labelSelectFileName.setText(imageProperties.getImage() == null ? "Selected PDF file: none" : "Selected PDF: " +
-                imageProperties.getImage().getName() + " (Pages: " + allPages.size() + ")");
+        labelSelectFileName.setText(isNull(properties.getImage()) ? "Selected PDF file: none" : "Selected PDF: " +
+                properties.getImage().getName() + " (Pages: " + allPages.size() + ")");
     }
 
-    @FXML
-    public void onActionChoiceDirForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(),
-                imageProperties::setOutput, "Select directory for save PDF");
-    }
-
-    @FXML
-    public void submitAndDownload() {
-        if (isNull(imageProperties.getImage())){
-            return;
-        }
-
-        if (!rbRange.isSelected() && selectedPageIndices.isEmpty()) {
-            Alerts.alertDialog(Alert.AlertType.WARNING, "Warning",
-                    "No pages selected",
-                    "Please select at least one page to split.");
-            return;
-        }
-
-
-        File outputDir = nonNull(imageProperties.getOutput())
-                ? imageProperties.getOutput()
-                : new File(System.getProperty("user.home"), "Desktop");
-
-        Task<Void> splitTask = buildSplitTask(outputDir);
-
-        splitTask.setOnSucceeded(_ -> {
-            labelSuccess.setVisible(true);
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    Platform.runLater(() -> labelSuccess.setVisible(false));
-                }
-            }, 5000);
-            progressBar.progressProperty().unbind();
-            progressBar.setProgress(0);
-            Message.showSuccessText(labelSuccess, "Split successful!", imageProperties.getHideSuccessMessageTimer());
-        });
-
-        splitTask.setOnFailed(_ -> {
-            Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Split failed", splitTask.getException().getMessage());
-            progressBar.setProgress(0);
-        });
-
-        progressBar.progressProperty().bind(splitTask.progressProperty());
-        new Thread(splitTask).start();
-    }
-
-    private Task<Void> buildSplitTask(File outputDir) {
+    private Task<Boolean> buildSplitTask(File outputDir, int fromPage, int toPage) {
         boolean isRange    = rbRange.isSelected();
-        int fromPage       = isRange ? parsePageField(tfFromPage.getText()) : 0;
-        int toPage         = isRange ? parsePageField(tfToPage.getText()) : 0;
         boolean fixedRange = isRange && rbFixedRange.isSelected();
+        File inputFile = properties.getImage();
+        Set<Integer> pagesToSplit = Set.copyOf(selectedPageIndices);
 
         return new Task<>() {
             @Override
-            protected Void call() throws Exception {
+            protected Boolean call() throws Exception {
                 updateProgress(0, 100);
                 BiConsumer<Long, Long> progress = this::updateProgress;
-                try (PDDocument sourceDoc = Loader.loadPDF(imageProperties.getImage())) {
-                    PDFMergerUtility merger = new PDFMergerUtility();
-                    if (isRange) {
-                        int from = fixedRange ? 1 : fromPage;
-                        splitByRange(sourceDoc, merger, outputDir, progress, from, toPage, imageProperties.getImage());
-                    } else {
-                        splitByPages(sourceDoc, merger, outputDir, progress, selectedPageIndices, imageProperties.getImage());
+                checkSplitCancelled();
+                File outputFile = null;
+                try {
+                    try (PDDocument sourceDoc = PdfHelper.loadUnencryptedPdf(inputFile)) {
+                        PDFMergerUtility merger = new PDFMergerUtility();
+                        if (isRange) {
+                            int from = fixedRange ? 1 : fromPage;
+                            outputFile = splitByRange(sourceDoc, merger, outputDir, progress, from, toPage, inputFile);
+                        } else {
+                            outputFile = splitByPages(sourceDoc, merger, outputDir, progress, pagesToSplit, inputFile);
+                        }
                     }
+                    checkSplitCancelled();
+                    updateProgress(100, 100);
+                    return true;
+                } catch (Exception exception) {
+                    if (nonNull(outputFile)) {
+                        Utility.cleanupFile(outputFile);
+                    }
+                    throw exception;
                 }
-                updateProgress(100, 100);
-                return null;
+            }
+
+            private void checkSplitCancelled() throws InterruptedException {
+                if (isCancelled() || cancelFlag.get() || Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("Split cancelled");
+                }
             }
         };
     }
 
     private int parsePageField(String text) {
-        try {
-            return text.isEmpty() ? 1 : Integer.parseInt(text);
-        } catch (NumberFormatException _) {
-            return 1;
+        if (isNull(text) || text.isBlank()) {
+            throw new NumberFormatException("Page number is empty");
+        }
+        return Integer.parseInt(text);
+    }
+
+    private void showInvalidRange(String message) {
+        Alerts.alertDialog(Alert.AlertType.WARNING, "Warning", "Invalid page range", message);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        super.handleTaskSuccess(result);
+        if (Boolean.TRUE.equals(result)) {
+            Message.showSuccessText(labelSuccess, "Split successful!", properties.getHideSuccessMessageTimer());
         }
     }
 
-    @FXML
-    public void isPressedReset() {
-        allPages.clear();
-        pageCards.clear();
-        selectedPageIndices.clear();
-        imagesFlowPane.getChildren().clear();
+    private void setOnSucceededLoadTask(Task<List<BufferedImage>> loadTask) {
+        loadTask.setOnSucceeded(_ -> {
+            progressBar.progressProperty().unbind();
+            progressBar.setProgress(1.0);
+            List<BufferedImage> pageImages = loadTask.getValue();
+            for (int i = 0; i < pageImages.size(); i++) {
+                addPageToList(i, pageImages.get(i));
+            }
+            if (rbRange.isSelected()) {
+                updateRangeHighlight();
+            }
+            enableControls();
+            updateUIState();
 
-        ResetContext ctx = new ResetContext(
-                labelSelectFileName, labelSuccess, textDragZone, null,
-                dropZone, null, progressBar, true, "PDF"
-        );
-        reset(imageProperties, ctx, "Selected PDF file: none");
-
-        disableControls();
+            PauseTransition hideBar = new PauseTransition(Duration.seconds(5));
+            hideBar.setOnFinished(_ -> progressBar.setProgress(0));
+            hideBar.playFromStart();
+        });
     }
 
-    @FXML
-    private void showInfo() {
-        Alerts.alertDialog(
-                Alert.AlertType.INFORMATION,
-                "Information",
-                "Split PDF",
-                """
-                        How to use:
-                        1. Select a PDF file using "Select PDF" or drag and drop it into the dash-bordered zone;
-
-                        2. (Optional) Select where you want to save the result by clicking on "Directory for save".
-                            (Default directory: Desktop);
-
-                        3. Choose split mode:
-                            - "Range": Select "Custom Range" to specify From/To pages, or "Fixed Range (1 to N)" to extract pages 1 to N (selected range is highlighted with a green border);
-                            - "Pages": Select pages in the preview area below (use Shift + click to select a range);
-                            (If multiple pages are selected, they will be packed into a ZIP archive);
-
-                        4. Click "Submit and Download".
-
-                        If you have any questions or problems, please go to Info and write to me on Discord."""
-        );
+    private void setOnFailedLoadTask(Task<List<BufferedImage>> loadTask) {
+        loadTask.setOnFailed(_ -> {
+            Platform.runLater(() -> Alerts.alertDialog(
+                    Alert.AlertType.ERROR,
+                    "Error",
+                    "Failed to load PDF",
+                    loadTask.getException().getMessage(),
+                    Modality.APPLICATION_MODAL
+            ));
+            progressBar.setProgress(0);
+        });
     }
 }

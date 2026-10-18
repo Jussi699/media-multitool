@@ -23,13 +23,13 @@
         <HBox alignment="CENTER" spacing="20.0">
             <Button fx:id="btnSelectFile"
                     mnemonicParsing="false"
-                    onAction="#onActionBtnSelectFile"
+                    onAction="#selectPdfFile"
                     prefWidth="180.0"
                     text="Select PDF"/>
 
-            <Button fx:id="btnChoiceDirForSaveFile"
+            <Button fx:id="btnChoiceDirForSave"
                     mnemonicParsing="false"
-                    onAction="#onActionChoiceDirForSaveFile"
+                    onAction="#chooseSaveDirectory"
                     prefWidth="180.0" text="Directory for save">
 
                 <tooltip>
@@ -121,7 +121,6 @@
                        HBox.hgrow="ALWAYS">
 
                 <Label fx:id="textDragZone"
-                       styleClass="label-drag-zone"
                        text="Drag PDF here"/>
             </StackPane>
         </VBox>
