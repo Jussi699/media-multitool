@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -103,15 +102,11 @@ public class ConverterPdfToImageController extends AbstractPdfToolController {
         setFormatTogglesDisabled(true);
 
         closeCurrentDoc();
-        if (nonNull(imageViewPdf)) {
-            imageViewPdf.setImage(null);
-        }
 
+        imageViewPdf.setImage(null);
         labelPreviewPlaceholder.setVisible(true);
-
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
         properties.setTypeImage(null);
-
         isExtract = false;
     }
 
@@ -195,37 +190,8 @@ public class ConverterPdfToImageController extends AbstractPdfToolController {
     }
 
     @Override
-    protected void lockUI() {
-        toggleUI(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        toggleUI(false);
-        cancelFlag.set(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        toggleControls(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        toggleControls(false);
-    }
-
-    @Override
-    protected void toggleUI(boolean disabled) {
-        toggleControls(disabled);
-        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
-        dropZone.setDisable(disabled);
-        btnCancel.setDisable(!disabled);
-    }
-
-    @Override
-    protected void toggleControls(boolean disabled) {
-        setControlsDisabled(disabled, btnAllImageToJpeg, btnAllImageToPng, btnSubmit, btnReset);
+    protected void toggleAdditionalControls(boolean disabled) {
+        setControlsDisabled(disabled, btnAllImageToJpeg, btnAllImageToPng);
         setFormatTogglesDisabled(disabled);
     }
 
@@ -374,8 +340,8 @@ public class ConverterPdfToImageController extends AbstractPdfToolController {
     }
 
     private void initLists() {
-        List.of(btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM)
-                .forEach(tb -> tb.setToggleGroup(toggleGroup));
+        configureToggleGroup(toggleGroup, btnToPNG, btnToJPEG, btnToWEBP, btnToTIFF,
+                btnToBMP, btnToPPM, btnToPGM, btnToPAM);
     }
 
     private void setFormatTogglesDisabled(boolean disabled) {

@@ -29,9 +29,9 @@
                     prefWidth="180.0"
                     text="Select image"/>
 
-            <Button fx:id="btnChoiceDirForSaveFile"
+            <Button fx:id="btnChoiceDirForSave"
                     mnemonicParsing="false"
-                    onAction="#onChoiceFolderForSaveFile"
+                    onAction="#chooseSaveDirectory"
                     prefWidth="180.0"
                     text="Directory for save">
 

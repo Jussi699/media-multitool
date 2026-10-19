@@ -130,40 +130,13 @@ public class SplitPdfController extends AbstractPdfToolController {
     }
 
     @Override
-    protected void lockUI() {
-        toggleUI(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        toggleUI(false);
-        cancelFlag.set(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        toggleControls(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        toggleControls(false);
-    }
-
-    @Override
-    protected void toggleUI(boolean disabled) {
-        toggleControls(disabled);
-        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
-        dropZone.setDisable(disabled);
+    protected void toggleAdditionalUI(boolean disabled) {
         scrollPanePreview.setDisable(disabled);
-        btnCancel.setDisable(!disabled);
     }
 
     @Override
-    protected void toggleControls(boolean disabled) {
-        setControlsDisabled(disabled, rbRange, rbPages, rbCustomRange, rbFixedRange,
-                tfFromPage, tfToPage, btnSubmit, btnReset);
-        btnCancel.setDisable(true);
+    protected void toggleAdditionalControls(boolean disabled) {
+        setControlsDisabled(disabled, rbRange, rbPages, rbCustomRange, rbFixedRange, tfFromPage, tfToPage);
     }
 
     @Override

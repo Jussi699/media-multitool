@@ -22,7 +22,6 @@ import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
-import model.select.SelectFile;
 import model.utility.DetermineType;
 import model.utility.Global;
 import model.utility.PathWorker;
@@ -39,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static model.select.SelectFile.choiceFile;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
 import static viewHelp.Message.*;
@@ -61,8 +61,6 @@ public class WatermarkVideoController extends AbstractMediaController {
 
     private BufferedImage originalBufferedImage;
     private CropHelper cropHelper;
-    private List<Control> listControls;
-
     private WatermarkSettings currentWatermarkSettings;
     private final List<WatermarkSettings> watermarkSettingsList = new ArrayList<>();
     private int selectedWatermarkIndex = -1;
@@ -85,9 +83,6 @@ public class WatermarkVideoController extends AbstractMediaController {
         }
 
         currentWatermarkSettings = new WatermarkSettings();
-
-        listControls = List.of(btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset,
-                listWatermarks, btnDeleteWatermark, btnEditWatermark);
 
         videoProperties.setOutput(getSavedPath());
 
@@ -166,36 +161,43 @@ public class WatermarkVideoController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
+        disableControls();
         btnSelectFile.setDisable(true);
         btnChoiceFolderForSaveFile.setDisable(true);
         btnReset.setDisable(true);
+        dropZone.setDisable(true);
         btnCancel.setDisable(false);
     }
 
     @Override
     protected void unlockUI() {
+        enableControls();
         btnSelectFile.setDisable(false);
         btnChoiceFolderForSaveFile.setDisable(false);
         btnReset.setDisable(false);
+        dropZone.setDisable(false);
         btnCancel.setDisable(true);
         cancelFlag.set(false);
     }
 
     @Override
-    protected void disableControls() { listControls.forEach(c -> c.setDisable(true)); }
+    protected void disableControls() {
+        setControlsDisabled(true, btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset,
+                listWatermarks, btnDeleteWatermark, btnEditWatermark);
+    }
 
     @Override
     protected void enableControls()  {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, btnSubmit, btnWatermarkText, btnWatermarkPhoto, btnReset,
+                listWatermarks, btnDeleteWatermark, btnEditWatermark);
         updateDeleteButton();
         updateEditButton();
     }
 
     @FXML
     private void onActionBtnSelectFile() {
-        SelectFile selectImageFile = new SelectFile();
         Stage stage = (Stage) btnSelectFile.getScene().getWindow();
-        selectImageFile.choiceFile(stage,
+        choiceFile(stage,
                 new FileChooser.ExtensionFilter("Video", Global.getSupportedVideoFormatsForFileChooser())).ifPresent(this::loadFile);
     }
 

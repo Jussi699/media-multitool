@@ -16,7 +16,6 @@ import viewHelp.InfoAlert;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.DoubleConsumer;
 
@@ -40,8 +39,6 @@ public class ColorReplaceImageController extends AbstractImageToolController {
     @FXML private CheckBox checkBoxReplaceAllColors;
     @FXML private TextField textSourceColorHex, textTargetColorHex;
 
-    private List<Control> listControls;
-
     @Override
     protected ImageProperties getImageProperties() {
         return imageProperties;
@@ -54,13 +51,6 @@ public class ColorReplaceImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(
-            comboSourceColor, comboTargetColor, textSourceColorHex,
-            textTargetColorHex, spinnerIntensity, spinnerSmoothing,
-            spinnerEnhancement, toggleJPEG, togglePNG, btnSubmit,
-            checkBoxReplaceAllColors, btnSubmitAndCopy, btnReset
-        );
-
         btnChooseSaveDirectory.setTooltip(new Tooltip("Default directory: Desktop"));
         imageProperties.setOutput(getSavedPath());
 
@@ -155,27 +145,17 @@ public class ColorReplaceImageController extends AbstractImageToolController {
     }
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, comboSourceColor, comboTargetColor, textSourceColorHex,
+                textTargetColorHex, spinnerIntensity, spinnerSmoothing, spinnerEnhancement,
+                toggleJPEG, togglePNG, btnSubmit, checkBoxReplaceAllColors, btnSubmitAndCopy, btnReset);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, comboSourceColor, comboTargetColor, textSourceColorHex,
+                textTargetColorHex, spinnerIntensity, spinnerSmoothing, spinnerEnhancement,
+                toggleJPEG, togglePNG, btnSubmit, checkBoxReplaceAllColors, btnSubmitAndCopy, btnReset);
     }
 
     @Override
@@ -300,8 +280,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
 
     private void initializeToggleGroup() {
         ToggleGroup formatGroup = new ToggleGroup();
-        toggleJPEG.setToggleGroup(formatGroup);
-        togglePNG.setToggleGroup(formatGroup);
+        configureToggleGroup(formatGroup, toggleJPEG, togglePNG);
         togglePNG.setSelected(true);
 
         formatGroup.selectedToggleProperty().addListener((_, _, newToggle) -> {

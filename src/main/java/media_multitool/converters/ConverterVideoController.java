@@ -79,8 +79,8 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
     }
 
     private void initToggleGroup() {
-        Stream.of(btnToMP4, btnToAVI, btnToMKV, btnToWEBM, btnToMOV, btnToFLV, btnToWMV, btnTo3GP, btnToGIF)
-                .forEach(tb -> tb.setToggleGroup(toggleGroup));
+        configureToggleGroup(toggleGroup, btnToMP4, btnToAVI, btnToMKV, btnToWEBM,
+                btnToMOV, btnToFLV, btnToWMV, btnTo3GP, btnToGIF);
     }
 
     @FXML
@@ -120,7 +120,7 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
         gpuCheckBox.setSelected(false);
 
         progressBar.setProgress(0);
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
         updateGifControls(false);
     }
 
@@ -153,25 +153,26 @@ public class ConverterVideoController extends AbstractAudioVideoConverterControl
     @Override
     protected void disableControls() {
         toggleControls(true);
+        btnCancelConversion.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         toggleControls(false);
+        btnCancelConversion.setDisable(true);
     }
 
     @Override
     protected void toggleUI(boolean flag) {
-        Stream.of(parametersContainer, btnSelectFile, btnChoiceDirForSaveFile, btnSubmitAndDownload, btnReset)
-                        .forEach(c -> c.setDisable(flag));
+        toggleControls(flag);
+        setControlsDisabled(flag, parametersContainer, btnSelectFile, btnChoiceDirForSaveFile);
+        dropZone.setDisable(flag);
         btnCancelConversion.setDisable(!flag);
     }
 
     @Override
     protected void toggleControls(boolean flag) {
-        Stream.of(parametersContainer, btnSubmitAndDownload, btnReset)
-                .forEach(c -> c.setDisable(flag));
-        btnCancelConversion.setDisable(true);
+        setControlsDisabled(flag, parametersContainer, btnSubmitAndDownload, btnReset);
     }
 
     @Override

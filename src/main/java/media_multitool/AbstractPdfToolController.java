@@ -50,14 +50,19 @@ public abstract class AbstractPdfToolController extends AbstractMediaController 
         return properties;
     }
 
-    protected abstract void toggleUI(boolean disabled);
-    protected abstract void toggleControls(boolean disabled);
     protected abstract void loadFile(File file);
+    protected void toggleAdditionalControls(boolean disabled) {}
+    protected void toggleAdditionalUI(boolean disabled) {}
 
-    protected void startDaemonTask(Task<?> task) {
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+    @Override
+    protected void lockUI() {
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        toggleUI(false);
+        cancelFlag.set(false);
     }
 
     @Override
@@ -68,6 +73,30 @@ public abstract class AbstractPdfToolController extends AbstractMediaController 
     @Override
     protected void enableControls() {
         toggleControls(false);
+    }
+
+    protected final void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        toggleAdditionalUI(disabled);
+        if (nonNull(btnCancel)) {
+            btnCancel.setDisable(!disabled);
+        }
+    }
+
+    protected final void toggleControls(boolean disabled) {
+        toggleAdditionalControls(disabled);
+        setControlsDisabled(disabled, btnSubmit, btnReset);
+        if (nonNull(btnCancel)) {
+            btnCancel.setDisable(true);
+        }
+    }
+
+    protected void startDaemonTask(Task<?> task) {
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @FXML

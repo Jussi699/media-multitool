@@ -41,8 +41,6 @@ public class FindPixelImageController extends AbstractImageToolController {
     @FXML private Rectangle colorPreview;
 
     private ZoomControlHelper zoomControlHelper;
-    private List<Control> listControls;
-
     @Override
     protected ImageProperties getImageProperties() {
         return imageProperties;
@@ -55,10 +53,6 @@ public class FindPixelImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(textFieldR, textFieldG, textFieldB,
-                textFieldHEX, textFieldRGB, imageScaleSlider,
-                btnSaveRGB, btnSaveHex, btnReset);
-
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -130,25 +124,15 @@ public class FindPixelImageController extends AbstractImageToolController {
     }
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, textFieldR, textFieldG, textFieldB, textFieldHEX,
+                textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnReset);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, textFieldR, textFieldG, textFieldB, textFieldHEX,
+                textFieldRGB, imageScaleSlider, btnSaveRGB, btnSaveHex, btnReset);
     }
 
     public void onClickSaveHex(MouseEvent event) {

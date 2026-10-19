@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -47,6 +48,7 @@ public abstract class AbstractMediaController {
 
     /** Currently running a media task — used for cancellation. */
     private final AtomicReference<Task<?>> currentTask = new AtomicReference<>();
+    private final Set<ToggleGroup> toggleGroupsBeingCleared = Collections.newSetFromMap(new IdentityHashMap<>());
 
     protected abstract void lockUI();
     protected abstract void unlockUI();
@@ -384,11 +386,32 @@ public abstract class AbstractMediaController {
         }
     }
 
-    protected void setControlsDisabled(boolean disabled, Control... controls) {
-        for (Control control : controls) {
-            if (nonNull(control)) {
-                control.setDisable(disabled);
+    protected void setControlsDisabled(boolean disabled, Node... nodes) {
+        for (Node node : nodes) {
+            if (nonNull(node)) {
+                node.setDisable(disabled);
             }
+        }
+    }
+
+    protected void configureToggleGroup(ToggleGroup group, Toggle... toggles) {
+        for (Toggle toggle : toggles) {
+            toggle.setToggleGroup(group);
+        }
+
+        group.selectedToggleProperty().addListener((_, oldToggle, newToggle) -> {
+            if (isNull(newToggle) && nonNull(oldToggle) && !toggleGroupsBeingCleared.contains(group)) {
+                group.selectToggle(oldToggle);
+            }
+        });
+    }
+
+    protected void clearToggleGroup(ToggleGroup group) {
+        toggleGroupsBeingCleared.add(group);
+        try {
+            group.selectToggle(null);
+        } finally {
+            toggleGroupsBeingCleared.remove(group);
         }
     }
 

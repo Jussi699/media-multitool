@@ -115,38 +115,8 @@ public class RemovePagesPdfController extends AbstractPdfToolController {
     }
 
     @Override
-    protected void lockUI() {
-        toggleUI(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        toggleUI(false);
-        cancelFlag.set(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        toggleControls(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        toggleControls(false);
-    }
-
-    @Override
-    protected void toggleUI(boolean disabled) {
-        toggleControls(disabled);
-        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
-        dropZone.setDisable(disabled);
+    protected void toggleAdditionalUI(boolean disabled) {
         scrollPanePreview.setDisable(disabled);
-        btnCancel.setDisable(!disabled);
-    }
-
-    @Override
-    protected void toggleControls(boolean disabled) {
-        setControlsDisabled(disabled, btnSubmit, btnReset);
     }
 
     @Override

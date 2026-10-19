@@ -99,9 +99,7 @@ public class MediaTagEditorController extends AbstractMediaController {
             descriptionField, keywordsField, copyrightField,
             ratingField, textFieldFindFile;
 
-    private List<Button> listBtn;
     private List<TextField> textFields;
-    private List<Control> listControls;
     private Map<String, TextField> tagTextFields;
     private Map<String, Label> tagLabels;
     private Map<String, String> originalTagLabelTexts;
@@ -450,12 +448,8 @@ public class MediaTagEditorController extends AbstractMediaController {
         textFields = new ArrayList<>(tagTextFields.values());
         textFields.add(textFieldFindFile);
 
-        listControls = new ArrayList<>(textFields);
-        Collections.addAll(listControls, genreComboBox, btnSaveChanges, btnChangeIcon, btnReset);
-
         initTableViewAndScrollPane();
 
-        listBtn = List.of(btnChangeIcon, btnSelectMediaFile, btnChoiceDirForSave, btnSelectMultipleFile, btnSaveChanges);
     }
 
     private @NonNull Timeline createSearchDebounce() {
@@ -672,10 +666,13 @@ public class MediaTagEditorController extends AbstractMediaController {
     }
 
     private void toggleUI(boolean disabled) {
-        listBtn.forEach(c -> c.setDisable(disabled));
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectMediaFile, btnChoiceDirForSave, btnSelectMultipleFile);
+        dropZone.setDisable(disabled);
     }
 
     private void toggleControls(boolean disabled) {
-        listControls.forEach(c -> c.setDisable(disabled));
+        setControlsDisabled(disabled, textFieldFindFile, genreComboBox, btnSaveChanges, btnChangeIcon, btnReset);
+        tagTextFields.values().forEach(field -> field.setDisable(disabled));
     }
 }

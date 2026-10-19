@@ -15,7 +15,6 @@ import viewHelp.InfoAlert;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -82,7 +81,7 @@ public class ConverterImageController extends AbstractImageConverterController {
 
         icoSizeComboBox.setValue(TO_ICO);
 
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
         disableControls();
     }
 
@@ -112,7 +111,7 @@ public class ConverterImageController extends AbstractImageConverterController {
         }
 
         imageProperties.setSizeIcoImage(Integer.parseInt(selected));
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
         imageProperties.setTypeImage("ico");
     }
 
@@ -137,18 +136,18 @@ public class ConverterImageController extends AbstractImageConverterController {
     }
 
     private void initToggleGroup() {
-        Stream.of(btnToSVG, btnToWEBP, btnToJPEG, btnToPNG, btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM)
-                .forEach(btn -> btn.setToggleGroup(toggleGroup));
+        configureToggleGroup(toggleGroup, btnToSVG, btnToWEBP, btnToJPEG, btnToPNG,
+                btnToTIFF, btnToBMP, btnToPPM, btnToPGM, btnToPAM);
     }
 
     private void toggleControls(boolean flag) {
-        Stream.of(parametersContainer, btnSubmit, btnReset)
-                .forEach(c -> c.setDisable(flag));
+        setControlsDisabled(flag, parametersContainer, btnSubmit, btnReset);
     }
 
     private void toggleUI(boolean flag) {
-        Stream.of(parametersContainer, btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing, btnSubmit, btnReset)
-                .forEach(c -> c.setDisable(flag));
+        toggleControls(flag);
+        setControlsDisabled(flag, btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing);
+        dropZone.setDisable(flag);
     }
 
     private void initComboBoxes() {

@@ -3,7 +3,6 @@ package media_multitool.imageTools;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
@@ -19,7 +18,6 @@ import viewHelp.InfoAlert;
 import viewHelp.SliderSetup;
 
 import java.io.File;
-import java.util.List;
 
 import static java.util.Objects.isNull;
 import static model.utility.PathWorker.getSavedPath;
@@ -34,8 +32,6 @@ public class LightenImageController extends AbstractImageToolController {
     @FXML private Slider sliderLighten;
     @FXML private Label currentValueSlider;
 
-    private List<Control> listControls;
-
     @Override
     protected ImageProperties getImageProperties() {
         return imageProperties;
@@ -48,7 +44,6 @@ public class LightenImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderLighten, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -117,27 +112,13 @@ public class LightenImageController extends AbstractImageToolController {
 
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, sliderLighten, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, sliderLighten, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @FXML

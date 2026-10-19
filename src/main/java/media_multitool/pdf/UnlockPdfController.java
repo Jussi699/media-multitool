@@ -112,38 +112,10 @@ public class UnlockPdfController extends AbstractPdfToolController {
     }
 
     @Override
-    protected void lockUI() {
-        toggleUI(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        toggleUI(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        toggleControls(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        toggleControls(false);
-    }
-
-    @Override
-    protected void toggleUI(boolean disabled) {
-        toggleControls(disabled);
-        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
-        dropZone.setDisable(disabled);
-    }
-
-    @Override
-    protected void toggleControls(boolean disabled) {
+    protected void toggleAdditionalControls(boolean disabled) {
         boolean passwordControlsDisabled = disabled || !isFileEncrypted;
         setControlsDisabled(passwordControlsDisabled,
                 typePasswordField, typePasswordTextField, btnShowTypePassword);
-        setControlsDisabled(disabled, btnSubmit, btnReset);
     }
 
     @Override

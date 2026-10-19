@@ -3,7 +3,6 @@ package media_multitool.imageTools;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
@@ -16,7 +15,6 @@ import org.jspecify.annotations.NonNull;
 import viewHelp.InfoAlert;
 
 import java.io.File;
-import java.util.List;
 
 import static java.util.Objects.isNull;
 import static model.utility.PathWorker.getSavedPath;
@@ -28,8 +26,6 @@ public class BlackWhiteImageController extends AbstractImageToolController {
     @FXML private StackPane previewContainer;
     @FXML private Button btnSubmit;
     @FXML private ImageView preview;
-
-    private List<Control> listControls;
 
     @Override
     protected ImageProperties getImageProperties() {
@@ -43,7 +39,6 @@ public class BlackWhiteImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnSubmit, btnReset, btnSubmitAndCopy);
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -78,27 +73,13 @@ public class BlackWhiteImageController extends AbstractImageToolController {
     }
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, btnSubmit, btnReset, btnSubmitAndCopy);
     }
 
     @Override
     protected void enableControls() {
-         listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, btnSubmit, btnReset, btnSubmitAndCopy);
     }
 
     @Override

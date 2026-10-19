@@ -43,6 +43,25 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
     protected abstract ImageView getImageView();
 
     @Override
+    protected void lockUI() {
+        disableControls();
+        toggleUI(true);
+    }
+
+    @Override
+    protected void unlockUI() {
+        enableControls();
+        toggleUI(false);
+    }
+
+    protected void toggleUI(boolean disabled) {
+        setControlsDisabled(disabled, btnSelectFile, btnChooseSaveDirectory, btnReset);
+        if (nonNull(dropZone)) {
+            dropZone.setDisable(disabled);
+        }
+    }
+
+    @Override
     protected MediaProperties getProperties() {
         return getImageProperties();
     }

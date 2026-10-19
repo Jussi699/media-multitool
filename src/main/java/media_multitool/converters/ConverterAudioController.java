@@ -117,7 +117,7 @@ public class ConverterAudioController extends AbstractAudioVideoConverterControl
         properties.setSamplingRate(48000);
         progressBar.setProgress(0);
 
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
 
         lossyCompresionCheckBox.setSelected(false);
         lossyCompresionCheckBox.setDisable(true);
@@ -167,25 +167,28 @@ public class ConverterAudioController extends AbstractAudioVideoConverterControl
     @Override
     protected void disableControls() {
         toggleControls(true);
+        btnCancelConversion.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
         toggleControls(false);
+        btnCancelConversion.setDisable(true);
         updateLossyCheckboxState();
     }
 
     @Override
     protected void toggleUI(boolean flag) {
-        Stream.of(parametersContainer, btnSelectAudioVideoFile, btnChoiceDirForSave, btnSubmitAndDownload, btnReset)
-                .forEach(c -> c.setDisable(flag));
+        toggleControls(flag);
+        setControlsDisabled(flag, parametersContainer, btnSelectAudioVideoFile, btnChoiceDirForSave);
+        dropZone.setDisable(flag);
         btnCancelConversion.setDisable(!flag);
     }
 
     @Override
     protected void toggleControls(boolean flag) {
-        Stream.of(parametersContainer, btnSubmitAndDownload, btnCancelConversion, btnReset)
-                .forEach(c -> c.setDisable(flag));
+        setControlsDisabled(flag, parametersContainer, btnSubmitAndDownload, btnReset);
+        btnCancelConversion.setDisable(true);
     }
 
 
@@ -229,8 +232,8 @@ public class ConverterAudioController extends AbstractAudioVideoConverterControl
     }
 
     private void initToggleGroup() {
-        Stream.of(btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS, btnToFLAC, btnToALAC, btnToWAV, btnToAIFF)
-                .forEach(tb -> tb.setToggleGroup(toggleGroup));
+        configureToggleGroup(toggleGroup, btnToMP3, btnToAAC, btnToOggVorbis, btnToOPUS,
+                btnToFLAC, btnToALAC, btnToWAV, btnToAIFF);
     }
 
     private void initComboBoxes() {

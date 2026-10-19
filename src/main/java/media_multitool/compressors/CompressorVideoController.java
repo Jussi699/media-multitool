@@ -22,7 +22,6 @@ import viewHelp.Message;
 import java.io.File;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
@@ -35,8 +34,8 @@ public class CompressorVideoController extends AbstractMediaController {
     private final VideoAndAudioProperties videoProperties = new VideoAndAudioProperties();
     private final ToggleGroup toggleGroup = new ToggleGroup();
 
-    @FXML private Button btnChoiceDirForSaveFile, btnSelectFile;
-    @FXML private Button btnCancelCompression, btnCompress;
+    @FXML private Button btnChoiceDirForSave, btnSelectFile;
+    @FXML private Button btnCancel, btnSubmit;
     @FXML private ToggleButton btnBasicCompress, btnStrongCompress, btnSuperCompress;
     @FXML private StackPane dropZone;
     @FXML private Label labelSelectFile,textDragZone;
@@ -45,9 +44,6 @@ public class CompressorVideoController extends AbstractMediaController {
     private VideoPresets.Preset[] adaptivePresets;
     private VideoPresets.Preset selectedPreset;
     private CompressVideoTask currentTask;
-    private Control[] controlsUI;
-    private Control[] controls;
-
     private long durationMillis = 0;
     private boolean hasAudio = false;
 
@@ -58,21 +54,9 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        controlsUI = new Control[] {
-                btnSelectFile, btnChoiceDirForSaveFile, btnReset,
-                btnBasicCompress, btnSuperCompress, btnStrongCompress,
-                chkUseGPU, chkCompressAudio, btnCompress,
-        };
-
-        controls = new Control[] {
-                btnBasicCompress, btnSuperCompress, btnStrongCompress,
-                chkUseGPU, chkCompressAudio, btnCompress, btnReset
-        };
-
         videoProperties.setOutput(getSavedPath());
 
-        Stream.of(btnBasicCompress, btnStrongCompress, btnSuperCompress)
-                        .forEach(btn -> btn.setToggleGroup(toggleGroup));
+        configureToggleGroup(toggleGroup, btnBasicCompress, btnStrongCompress, btnSuperCompress);
 
         setupClearMessageTimer(labelSuccess, progressBar, videoProperties.getHideSuccessMessageTimer(), true);
         setupDragAndDrop(dropZone, Global.getAllSupportedVideoFormats(), this::loadFile);
@@ -115,7 +99,7 @@ public class CompressorVideoController extends AbstractMediaController {
         adaptivePresets = null;
         selectedPreset = null;
         durationMillis = 0;
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
         chkUseGPU.setSelected(false);
         chkCompressAudio.setSelected(true);
 
@@ -138,13 +122,13 @@ public class CompressorVideoController extends AbstractMediaController {
     }
 
     @FXML
-    public void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
+    public void chooseSaveDirectory() {
+        selectOutputDirectory(btnChoiceDirForSave, videoProperties.getOutput(), videoProperties::setOutput, "Select directory for save video");
     }
 
     @FXML
-    private void onActionCancelOperation() {
-        btnCancelCompression.setDisable(true);
+    private void cancelProcessing() {
+        btnCancel.setDisable(true);
         cancelCompress();
     }
 
@@ -165,7 +149,7 @@ public class CompressorVideoController extends AbstractMediaController {
                     "No presets available!",
                     "Please load a video file first to create presets.");
 
-            tb.setSelected(false);
+            clearToggleGroup(toggleGroup);
             return;
         }
 
@@ -196,26 +180,36 @@ public class CompressorVideoController extends AbstractMediaController {
 
     @Override
     protected void lockUI() {
-        setControlsDisabled(true, controlsUI);
-        btnCancelCompression.setDisable(false);
+        toggleUI(true);
     }
 
     @Override
     protected void unlockUI() {
-        setControlsDisabled(false, controlsUI);
-        btnCancelCompression.setDisable(true);
+        toggleUI(false);
     }
 
     @Override
     protected void disableControls() {
-        setControlsDisabled(true, controls);
-        btnCancelCompression.setDisable(true);
+        toggleControls(true);
+        btnCancel.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
-        setControlsDisabled(false, controls);
-        btnCancelCompression.setDisable(true);
+        toggleControls(false);
+        btnCancel.setDisable(true);
+    }
+
+    private void toggleControls(boolean disabled) {
+        setControlsDisabled(disabled, btnBasicCompress, btnSuperCompress, btnStrongCompress,
+                chkUseGPU, chkCompressAudio, btnSubmit, btnReset);
+    }
+
+    private void toggleUI(boolean disabled) {
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
+        btnCancel.setDisable(!disabled);
     }
 
     @Override
@@ -239,9 +233,9 @@ public class CompressorVideoController extends AbstractMediaController {
 
     private VideoPresets.Preset getPresetByButton(ToggleButton button) {
         if (isNull(adaptivePresets) || adaptivePresets.length < 3 || isNull(button)) return null;
-        if (button == btnBasicCompress) return adaptivePresets[0];
+        if (button == btnBasicCompress)  return adaptivePresets[0];
         if (button == btnStrongCompress) return adaptivePresets[1];
-        if (button == btnSuperCompress) return adaptivePresets[2];
+        if (button == btnSuperCompress)  return adaptivePresets[2];
         return null;
     }
 
@@ -321,7 +315,7 @@ public class CompressorVideoController extends AbstractMediaController {
         videoProperties.setSrcFile(selectedFile);
         selectedPreset = null;
 
-        toggleGroup.selectToggle(null);
+        clearToggleGroup(toggleGroup);
         durationMillis = 0;
 
         File srcFile = videoProperties.getSrcFile();

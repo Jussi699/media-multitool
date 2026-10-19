@@ -29,6 +29,7 @@ public class CompressPdfController extends AbstractPdfToolController {
 
     @FXML
     public void initialize() {
+        configureToggleGroup(new ToggleGroup(), btnLowCompression, btnMediumCompression, btnHighCompression);
         properties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, properties.getHideSuccessMessageTimer(), true);
@@ -174,38 +175,8 @@ public class CompressPdfController extends AbstractPdfToolController {
     }
 
     @Override
-    protected void lockUI() {
-        toggleUI(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        toggleUI(false);
-        cancelFlag.set(false);
-    }
-
-    @Override
-    protected void disableControls() {
-        toggleControls(true);
-    }
-
-    @Override
-    protected void enableControls() {
-        toggleControls(false);
-    }
-
-    @Override
-    protected void toggleUI(boolean disabled) {
-        toggleControls(disabled);
-        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
-        dropZone.setDisable(disabled);
-        btnCancel.setDisable(!disabled);
-    }
-
-    @Override
-    protected void toggleControls(boolean disabled) {
-        setControlsDisabled(disabled, btnLowCompression, btnMediumCompression, btnHighCompression, btnSubmit, btnReset);
-        btnCancel.setDisable(true);
+    protected void toggleAdditionalControls(boolean disabled) {
+        setControlsDisabled(disabled, btnLowCompression, btnMediumCompression, btnHighCompression);
     }
 
     @Override

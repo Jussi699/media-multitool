@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
@@ -21,7 +20,6 @@ import viewHelp.SliderSetup;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleConsumer;
 
@@ -40,8 +38,6 @@ public class BlurImageController extends AbstractImageToolController {
     @FXML private StackPane previewContainer;
 
     private Task<?> currentTask;
-    private List<Control> listControls;
-
     @Override
     protected ImageProperties getImageProperties() {
         return imageProperties;
@@ -54,7 +50,6 @@ public class BlurImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderBlurry, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -118,31 +113,25 @@ public class BlurImageController extends AbstractImageToolController {
 
     @Override
     protected void lockUI() {
-        disableControls();
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
+        toggleUI(true);
         btnCancelBlurring.setDisable(false);
     }
 
     @Override
     protected void unlockUI() {
-        enableControls();
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
+        toggleUI(false);
         btnCancelBlurring.setDisable(true);
     }
 
     @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, sliderBlurry, btnSubmit, btnSubmitAndCopy, btnReset);
         btnCancelBlurring.setDisable(true);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, sliderBlurry, btnSubmit, btnSubmitAndCopy, btnReset);
         btnCancelBlurring.setDisable(true);
     }
 

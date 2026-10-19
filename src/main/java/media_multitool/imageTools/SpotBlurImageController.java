@@ -60,8 +60,6 @@ public class SpotBlurImageController extends AbstractImageToolController {
     private BlurShapeVisual selectedShape;
     private BlurShapeVisual currentShape;
     private ResizeHandle resizeHandle;
-    private List<Control> listControls;
-
     private double dragOffsetX, dragOffsetY, originalEndX;
     private double originalStartX, originalStartY, originalEndY;
     private boolean isDrawing = false;
@@ -78,7 +76,6 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(sliderBlurIntensity, btnSubmit, btnSubmitAndCopy, btnAddRect, btnAddOval, btnUndo, btnReset, imageScaleSlider);
         imageProperties.setOutput(getSavedPath());
 
         sliderBlurIntensity.setMin(0);
@@ -246,32 +243,28 @@ public class SpotBlurImageController extends AbstractImageToolController {
 
     @Override
     protected void lockUI() {
-        disableControls();
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
+        toggleUI(true);
         btnCancel.setVisible(true);
         btnCancel.setManaged(true);
     }
 
     @Override
     protected void unlockUI() {
-        enableControls();
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
+        toggleUI(false);
         btnCancel.setVisible(false);
         btnCancel.setManaged(false);
     }
 
     @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, sliderBlurIntensity, btnSubmit, btnSubmitAndCopy, btnAddRect,
+                btnAddOval, btnUndo, btnReset, imageScaleSlider);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, sliderBlurIntensity, btnSubmit, btnSubmitAndCopy, btnAddRect,
+                btnAddOval, btnUndo, btnReset, imageScaleSlider);
     }
 
     @Override

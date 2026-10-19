@@ -24,23 +24,24 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class WatermarkPhotoController {
-    @FXML private Label labelTitle;
-    @FXML private StackPane watermarkDropZone;
-    @FXML private Label labelWatermarkName, labelSize, labelOpacity, labelRotation;
-    @FXML private Label labelSpacingText, labelSpacingValue, textDragZone;
+    private static final String DEFAULT_PATTERN = "single";
+    private static final String DROP_ZONE_FILLED = "drop-zone-filled";
+
     @FXML private Button btnSelectWatermark;
-    @FXML private Slider sliderSize, sliderOpacity, sliderRotation, sliderSpacing;
     @FXML private ToggleButton tileSingle, tileEvenGrid, tileDiamondMesh;
+    @FXML private StackPane watermarkDropZone;
+    @FXML private Slider sliderSize, sliderOpacity, sliderRotation, sliderSpacing;
+    @FXML private Label labelTitle, labelWatermarkName, textDragZone;
+    @FXML private Label labelSize, labelOpacity, labelRotation;
+    @FXML private Label labelSpacingText, labelSpacingValue;
 
     @Getter private WatermarkSettings settings;
     @Setter private WatermarkImageController mainImageController;
     @Setter private WatermarkPdfController mainPdfController;
     @Setter private WatermarkVideoController mainVideoController;
+
     @Getter private double relativePositionX = 0;
     @Getter private double relativePositionY = 0;
-
-    private static final String DEFAULT_PATTERN = "single";
-    private static final String DROP_ZONE_FILLED = "drop-zone-filled";
 
     @FXML
     public void initialize() {
@@ -124,6 +125,11 @@ public class WatermarkPhotoController {
         tileSingle.setToggleGroup(tileGroup);
         tileEvenGrid.setToggleGroup(tileGroup);
         tileDiamondMesh.setToggleGroup(tileGroup);
+        tileGroup.selectedToggleProperty().addListener((_, oldToggle, newToggle) -> {
+            if (isNull(newToggle) && nonNull(oldToggle)) {
+                tileGroup.selectToggle(oldToggle);
+            }
+        });
         
         tileSingle.setSelected(true);
         

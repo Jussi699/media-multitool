@@ -17,8 +17,6 @@ import org.jspecify.annotations.NonNull;
 import viewHelp.InfoAlert;
 
 import java.io.File;
-import java.util.List;
-
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
@@ -32,7 +30,6 @@ public class RotateImageController extends AbstractImageToolController {
     @FXML private StackPane previewContainer;
     @FXML private ImageView preview;
 
-    private List<Button> listControls;
     private RotateSide rotateSide;
 
     @Override
@@ -47,7 +44,6 @@ public class RotateImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnFlipHorizontally, btnFlipVertically, btnRotateImageRight, btnRotateImageLeft, btnSubmit, btnSubmitAndCopy, btnReset);
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -102,27 +98,15 @@ public class RotateImageController extends AbstractImageToolController {
     }
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, btnFlipHorizontally, btnFlipVertically, btnRotateImageRight,
+                btnRotateImageLeft, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, btnFlipHorizontally, btnFlipVertically, btnRotateImageRight,
+                btnRotateImageLeft, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override

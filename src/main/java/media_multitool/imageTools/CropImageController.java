@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
@@ -24,7 +23,6 @@ import model.helper.images.ZoomControlHelper;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
@@ -49,8 +47,6 @@ public class CropImageController extends AbstractImageToolController {
 
     private ZoomControlHelper zoomControlHelper;
     private CropHelper cropHelper;
-    private List<Control> listControls;
-
     @Override
     protected ImageProperties getImageProperties() {
         return imageProperties;
@@ -63,13 +59,6 @@ public class CropImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(
-                btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9, btnAspectRatio4x5,
-                btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3, btnAspectRatio2x3,
-                btnAspectRatio3x2, btnAspectRatio5x7, btnAspectRatio7x5, btnAspectRatio1x2,
-                btnAspectRatio2x1, imageScaleSlider, btnSubmit, btnSubmitAndCopy, btnReset
-        );
-
         imageProperties.setOutput(getSavedPath());
 
         setupTooltips();
@@ -164,27 +153,19 @@ public class CropImageController extends AbstractImageToolController {
     }
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9,
+                btnAspectRatio4x5, btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3,
+                btnAspectRatio2x3, btnAspectRatio3x2, btnAspectRatio5x7, btnAspectRatio7x5,
+                btnAspectRatio1x2, btnAspectRatio2x1, imageScaleSlider, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9,
+                btnAspectRatio4x5, btnAspectRatio3x4, btnAspectRatio5x4, btnAspectRatio4x3,
+                btnAspectRatio2x3, btnAspectRatio3x2, btnAspectRatio5x7, btnAspectRatio7x5,
+                btnAspectRatio1x2, btnAspectRatio2x1, imageScaleSlider, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override

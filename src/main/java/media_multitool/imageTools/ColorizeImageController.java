@@ -4,7 +4,6 @@ import com.bric.colorpicker.ColorPicker;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -22,7 +21,6 @@ import viewHelp.WorkColors;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 import java.util.function.DoubleConsumer;
 
 import static java.util.Objects.isNull;
@@ -40,8 +38,6 @@ public class ColorizeImageController extends AbstractImageToolController {
     private javafx.scene.paint.Color selectedColorFX;
     private java.awt.Color newColor;
     private JDialog swingDialog;
-    private List<Control> listControls;
-
     @Override
     protected ImageProperties getImageProperties() {
         return imageProperties;
@@ -54,7 +50,6 @@ public class ColorizeImageController extends AbstractImageToolController {
 
     @FXML
     public void initialize() {
-        listControls = List.of(btnColorPicker, btnSubmit, btnSubmitAndCopy, btnReset);
         btnChooseSaveDirectory.setTooltip(new Tooltip("Default directory: Desktop"));
 
         imageProperties.setOutput(getSavedPath());
@@ -148,27 +143,13 @@ public class ColorizeImageController extends AbstractImageToolController {
     }
 
     @Override
-    protected void lockUI() {
-        btnSelectFile.setDisable(true);
-        btnChooseSaveDirectory.setDisable(true);
-        btnReset.setDisable(true);
-    }
-
-    @Override
-    protected void unlockUI() {
-        btnSelectFile.setDisable(false);
-        btnChooseSaveDirectory.setDisable(false);
-        btnReset.setDisable(false);
-    }
-
-    @Override
     protected void disableControls() {
-        listControls.forEach(c -> c.setDisable(true));
+        setControlsDisabled(true, btnColorPicker, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override
     protected void enableControls() {
-        listControls.forEach(c -> c.setDisable(false));
+        setControlsDisabled(false, btnColorPicker, btnSubmit, btnSubmitAndCopy, btnReset);
     }
 
     @Override

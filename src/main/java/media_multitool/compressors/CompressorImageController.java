@@ -23,7 +23,6 @@ import viewHelp.InfoAlert;
 import java.io.File;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -35,13 +34,11 @@ import static viewHelp.Message.*;
 public class CompressorImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
-    @FXML private Button btnSelectFile, btnChoiceDirForSaveFile, btnSubmit;
+    @FXML private Button btnSelectFile, btnChoiceDirForSave, btnSubmit;
     @FXML private ImageView imageViewPreview;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Label textDragZone, labelSelectFile, labelPreviewPlaceholder;
     @FXML private ComboBox<Item> qualityComboBox, scaleComboBox;
-
-    private Control[] controls;
 
     @Override
     protected MediaProperties getProperties() {
@@ -50,8 +47,6 @@ public class CompressorImageController extends AbstractMediaController {
 
     @FXML
     public void initialize() {
-        controls = new Control[] {qualityComboBox, scaleComboBox, btnSubmit, btnReset };
-
         imageProperties.setOutput(getSavedPath());
 
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
@@ -101,8 +96,8 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
     @FXML
-    public void onChoiceFolderForSaveFile() {
-        selectOutputDirectory(btnChoiceDirForSaveFile, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
+    public void chooseSaveDirectory() {
+        selectOutputDirectory(btnChoiceDirForSave, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -161,13 +156,11 @@ public class CompressorImageController extends AbstractMediaController {
     @Override
     protected void lockUI() {
         toggleUI(true);
-        btnReset.setDisable(true);
     }
 
     @Override
     protected void unlockUI() {
         toggleUI(false);
-        btnReset.setDisable(false);
     }
 
     @Override
@@ -330,11 +323,12 @@ public class CompressorImageController extends AbstractMediaController {
     }
 
     private void toggleControls(boolean disabled) {
-        Stream.of(controls).forEach(c -> c.setDisable(disabled));
+        setControlsDisabled(disabled, qualityComboBox, scaleComboBox, btnSubmit, btnReset);
     }
 
     private void toggleUI(boolean disabled) {
-        btnSelectFile.setDisable(disabled);
-        btnChoiceDirForSaveFile.setDisable(disabled);
+        toggleControls(disabled);
+        setControlsDisabled(disabled, btnSelectFile, btnChoiceDirForSave);
+        dropZone.setDisable(disabled);
     }
 }

@@ -138,6 +138,11 @@ public class WatermarkTextController {
         tileSingle.setToggleGroup(tileGroup);
         tileEvenGrid.setToggleGroup(tileGroup);
         tileDiamondMesh.setToggleGroup(tileGroup);
+        tileGroup.selectedToggleProperty().addListener((_, oldToggle, newToggle) -> {
+            if (isNull(newToggle) && nonNull(oldToggle)) {
+                tileGroup.selectToggle(oldToggle);
+            }
+        });
 
         tileSingle.setSelected(true);
 
