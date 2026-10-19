@@ -7,7 +7,7 @@
 <?import javafx.scene.shape.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="media_multitool.watermarks.WatermarkImageController">
+           fx:controller="controllers.watermarks.WatermarkImageController">
     <VBox alignment="TOP_CENTER"
           prefHeight="820.0"
           prefWidth="630.0"

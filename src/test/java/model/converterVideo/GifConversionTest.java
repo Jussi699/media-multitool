@@ -1,6 +1,7 @@
 package model.converterVideo;
 
 import model.enums.MediaType;
+import model.mediaTools.converterVideo.ConverterVideoAudioFile;
 import model.properties.VideoAndAudioProperties;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.ffmpeg.global.avutil;

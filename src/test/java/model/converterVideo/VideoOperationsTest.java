@@ -1,8 +1,9 @@
 package model.converterVideo;
 
-import model.compressorVideo.Compressor;
-import model.compressorVideo.VideoPresets;
+import model.mediaTools.compressorVideo.Compressor;
+import model.mediaTools.compressorVideo.VideoPresets;
 import model.enums.MediaType;
+import model.mediaTools.converterVideo.ConverterVideoAudioFile;
 import model.properties.VideoAndAudioProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

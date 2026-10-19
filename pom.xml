@@ -152,7 +152,7 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.5.13</version>
+            <version>1.5.14</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -280,9 +280,9 @@
                     <argLine>
                         --enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,org.lwjgl,org.lwjgl.nfd,ALL-UNNAMED
                         --sun-misc-unsafe-memory-access=allow
-                        --add-reads media_multitool=org.junit.jupiter.api
-                        --add-opens media_multitool/model.converterVideo=org.junit.platform.commons
-                        --add-opens media_multitool/model.converterImage=org.junit.platform.commons
+                        --add-reads controllers=org.junit.jupiter.api
+                        --add-opens controllers/model.converterVideo=org.junit.platform.commons
+                        --add-opens controllers/model.converterImage=org.junit.platform.commons
                     </argLine>
                 </configuration>
             </plugin>
@@ -310,7 +310,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>media_multitool/app.Launcher</mainClass>
+                            <mainClass>controllers/app.Launcher</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

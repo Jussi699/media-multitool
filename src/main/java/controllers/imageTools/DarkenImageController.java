@@ -1,0 +1,176 @@
+package controllers.imageTools;
+
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import controllers.abstractControllers.AbstractImageToolController;
+import model.imageTools.ImageTools;
+import model.logger.ErrorLogger;
+import model.utility.format.SupportedFormat;
+import model.utility.context.ResetContext;
+import org.jspecify.annotations.NonNull;
+import visual.dialogs.InfoAlert;
+import visual.controls.SliderSetup;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.function.DoubleConsumer;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static model.utility.io.PathWorker.getSavedPath;
+import static visual.controls.Message.*;
+
+public class DarkenImageController extends AbstractImageToolController {
+    @FXML private Slider sliderDarken;
+    @FXML private Label currentValueSlider;
+
+    @FXML
+    public void initialize() {
+        imageProperties.setOutput(getSavedPath());
+
+        setupTooltips();
+        setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
+        setupImageClipboardButton(() -> processedImage, "Darkened");
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
+        sliderDarken.valueProperty().addListener((_, _, _) -> generatePreview());
+
+        sliderDarken.setMin(0);
+        sliderDarken.setMax(255);
+        sliderDarken.setValue(0);
+
+        SliderSetup.bindPercentageLabel(sliderDarken, currentValueSlider, 255);
+
+        isPressedReset();
+        setupDragAndDrop(dropZone, SupportedFormat.getAllSupportedImageFormats(), this::loadFile);
+    }
+
+    @FXML
+    private void showInfo() {
+        InfoAlert.showToolInfo(
+                "Darken Image",
+                """
+                        3. Use the slider to set how much you want to darken the image;
+                        
+                        4. Click "Darken and Download;
+                        """
+        );
+    }
+
+    @FXML
+    public void isPressedReset() {
+        ResetContext ctx = new ResetContext(
+                labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
+                dropZone, imagePreview, progressBar, true, "image"
+        );
+        reset(imageProperties, ctx, "Selected image file: none");
+
+        originalImage = null;
+        processedImage = null;
+        sliderDarken.setValue(0);
+        currentValueSlider.setText("100%");
+        disableControls();
+    }
+
+    @FXML
+    private void handleSliderRelease() {
+        generatePreview();
+    }
+
+    @Override
+    protected void generatePreview() {
+        if (isNull(originalImage)) {
+            return;
+        }
+
+        int value = getSliderValue();
+
+        if (value == 0) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imagePreview);
+            return;
+        }
+
+        if (isNull(processedImage)) {
+            processedImage = originalImage;
+            setImagePreview(processedImage, imagePreview);
+        }
+
+        ImageTools.brightnessImage(originalImage, -value).ifPresent(darkened -> {
+            processedImage = darkened;
+            setImagePreview(processedImage, imagePreview);
+        });
+    }
+
+    @Override
+    protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
+        var darkened = ImageTools.brightnessImage(
+                originalImage,
+                getSliderValue()
+        );
+
+        if (darkened.isEmpty()) {
+            throw new IllegalStateException("Darkening failed: processed image is empty");
+        }
+
+        processedImage = darkened.get();
+        return processedImage;
+    }
+
+    @Override
+    protected void disableControls() {
+        setControlsDisabled(true, sliderDarken, btnSubmit, btnSubmitAndCopy, btnReset);
+    }
+
+    @Override
+    protected void enableControls() {
+        setControlsDisabled(false, sliderDarken, btnSubmit, btnSubmitAndCopy, btnReset);
+    }
+
+    @Override
+    protected void handleTaskSuccess(Object result) {
+        if (result instanceof BufferedImage bi) {
+            processedImage = bi;
+            setImagePreview(processedImage, imagePreview);
+            Platform.runLater(() -> {
+                if (nonNull(progressBar)) {
+                    progressBar.setVisible(true);
+                    progressBar.setManaged(true);
+                }
+                if (nonNull(labelSuccess)) {
+                    labelSuccess.setVisible(true);
+                    labelSuccess.setManaged(true);
+                }
+            });
+            return;
+        }
+
+        super.handleTaskSuccess(result);
+
+        if (Boolean.FALSE.equals(result)) {
+            return;
+        }
+
+        File outputFile = (File) result;
+        ErrorLogger.info(getClass(), "Image darkening successful! Saved to: " + outputFile.getAbsolutePath());
+
+        Platform.runLater(() -> {
+            showSuccessText(labelSuccess, "Darkened image saved!", imageProperties.getHideSuccessMessageTimer());
+            labelSuccess.setManaged(true);
+        });
+    }
+
+    @Override
+    protected void handleTaskFailure(@NonNull Throwable exception) {
+        super.handleTaskFailure(exception);
+        Platform.runLater(() -> {
+            showErrorMessage(labelSuccess, "Error: " + exception.getMessage(), imageProperties.getHideSuccessMessageTimer());
+            labelSuccess.setManaged(true);
+        });
+    }
+
+    private int getSliderValue() {
+        return (int) sliderDarken.getValue();
+    }
+}

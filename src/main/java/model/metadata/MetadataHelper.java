@@ -8,7 +8,7 @@ import com.drew.metadata.Tag;
 import com.drew.metadata.exif.GpsDirectory;
 import model.exceptions.MetadataProcessingException;
 import model.logger.ErrorLogger;
-import model.utility.DetermineType;
+import model.utility.media.ImageFormatDetector;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -64,7 +64,7 @@ public class MetadataHelper {
 
         addGeneralAttributes(file, entries);
 
-        String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
+        String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
 
         if (isAudioFormat(ext)) {
             extractAudioMetadata(file, entries);
@@ -398,7 +398,7 @@ public class MetadataHelper {
             return false;
         }
 
-        String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
+        String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
 
         if (isAudioFormat(ext)) {
             return deleteSingleAudioTag(file, entry);
@@ -428,7 +428,7 @@ public class MetadataHelper {
     }
 
     private static boolean removeGpsFromImage(File file) throws IOException {
-        String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
+        String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
         byte[] bytes = Files.readAllBytes(file.toPath());
 
         switch (ext) {
@@ -455,7 +455,7 @@ public class MetadataHelper {
     }
 
     private static boolean removeExifFromImage(File file) throws IOException {
-        String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
+        String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
         byte[] bytes = Files.readAllBytes(file.toPath());
 
         switch (ext) {
@@ -480,7 +480,7 @@ public class MetadataHelper {
     }
 
     private static boolean removeIptcXmpFromImage(File file) throws IOException {
-        String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
+        String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
         byte[] bytes = Files.readAllBytes(file.toPath());
 
         switch (ext) {
@@ -679,7 +679,7 @@ public class MetadataHelper {
         try {
             BufferedImage image = ImageIO.read(file);
             if (isNull(image)) return false;
-            String ext = DetermineType.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
+            String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
             String formatName = ext.isEmpty() ? "png" : ext;
             if (formatName.equalsIgnoreCase("jpg") || formatName.equalsIgnoreCase("jpeg")) {
                 BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -760,7 +760,7 @@ public class MetadataHelper {
             throw new IllegalArgumentException("Input file does not exist");
         }
 
-        String ext = DetermineType.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
+        String ext = ImageFormatDetector.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
         if (isAudioFormat(ext)) {
             return removeAllAudioMetadata(inputFile, createCleanOutputFile(inputFile, outputDirectory));
         }
@@ -782,7 +782,7 @@ public class MetadataHelper {
                 ? outputDirectory
                 : inputFile.getParentFile();
         String baseName = getBaseName(inputFile.getName());
-        String extension = DetermineType.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
+        String extension = ImageFormatDetector.getExtensionByString(inputFile.getName()).toLowerCase(Locale.ROOT);
         return new File(targetDirectory, baseName + "_clean." + extension);
     }
 

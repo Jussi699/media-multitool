@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="media_multitool.imageTools.ColorizeImageController">
+           fx:controller="controllers.imageTools.ColorizeImageController">
     <VBox alignment="TOP_CENTER"
           prefHeight="820.0"
           prefWidth="630.0"

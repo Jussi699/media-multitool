@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Jussi699/media-multitool/releases/latest">
-    <img src="src/main/resources/img/tools.png" alt="Media-Multitool" width="128" />
+    <img src="src/main/resources/assets/tools.png" alt="Media-Multitool" width="128" />
   </a>
 </p>
 <h1 align="center">Media-Multitool</h1>
@@ -18,7 +18,7 @@
 </p>
 <p align="center">
   <a href="https://github.com/Jussi699/media-multitool/releases/latest">
-    <img src="src/main/resources/video.gif" alt="Media-Multitool in Action" width="800" />
+    <img src="src/main/resources/assets/video.gif" alt="Media-Multitool in Action" width="800" />
   </a>
 </p>
 <p align="center">

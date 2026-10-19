@@ -6,7 +6,7 @@
 <?import javafx.scene.image.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="media_multitool.pdf.CompressPdfController">
+           fx:controller="controllers.pdf.CompressPdfController">
     <VBox alignment="TOP_CENTER"
           prefHeight="820.0"
           prefWidth="630.0"

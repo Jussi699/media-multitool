@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="media_multitool.imageTools.BlurImageController">
+           fx:controller="controllers.imageTools.BlurImageController">
     <VBox alignment="TOP_CENTER"
           prefHeight="820.0"
           prefWidth="630.0"
@@ -119,7 +119,7 @@
                        VBox.vgrow="ALWAYS"
                        minWidth="200">
 
-                <ImageView fx:id="preview"
+                <ImageView fx:id="imagePreview"
                            preserveRatio="true"/>
 
                 <Label fx:id="labelPreviewPlaceholder"

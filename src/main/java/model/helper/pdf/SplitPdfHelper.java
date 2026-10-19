@@ -1,6 +1,7 @@
 package model.helper.pdf;
 
 import model.exceptions.ImageProcessingException;
+import model.utility.io.FileUtils;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
@@ -13,8 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static model.utility.PathWorker.generateUniquePdfOutputFile;
-import static model.utility.Utility.cleanupFile;
+import static model.utility.io.PathWorker.generateUniquePdfOutputFile;
 
 public class SplitPdfHelper {
     private SplitPdfHelper() {
@@ -45,7 +45,7 @@ public class SplitPdfHelper {
             checkCancellation();
             return zipFile;
         } catch (IOException | RuntimeException exception) {
-            cleanupFile(zipFile);
+            FileUtils.cleanupFile(zipFile);
             throw exception;
         }
     }
@@ -67,7 +67,7 @@ public class SplitPdfHelper {
             progress.accept(100L, 100L);
             return outputFile;
         } catch (IOException | RuntimeException exception) {
-            cleanupFile(outputFile);
+            FileUtils.cleanupFile(outputFile);
             throw exception;
         }
     }
@@ -122,7 +122,7 @@ public class SplitPdfHelper {
             checkCancellation();
             return outputFile;
         } catch (IOException | RuntimeException exception) {
-            cleanupFile(outputFile);
+            FileUtils.cleanupFile(outputFile);
             throw exception;
         }
     }

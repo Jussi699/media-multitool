@@ -1,4 +1,4 @@
-module media_multitool {
+module controllers {
     requires javafx.controls;
     requires javafx.fxml;
 
@@ -29,45 +29,58 @@ module media_multitool {
     requires org.apache.commons.lang3;
     requires static org.jspecify;
 
-    opens media_multitool to javafx.fxml;
-    exports model.converterImage;
-    exports model.converterVideo;
-    exports model.compressorImage;
-    exports media_multitool;
+    exports model.mediaTools.converterImage;
+    exports model.mediaTools.converterVideo;
+    exports model.mediaTools.compressorImage;
     exports model.utility;
     exports model.properties;
-    exports model.select;
     exports model.preprocessing;
     exports model.metadata;
     opens model.metadata to javafx.base, javafx.fxml;
-    exports visual;
     exports model.enums;
-    exports visual.audioEditor;
     exports app;
     opens app to javafx.fxml;
-    exports media_multitool.imageTools;
-    opens media_multitool.imageTools to javafx.fxml;
-    exports media_multitool.converters;
-    opens media_multitool.converters to javafx.fxml;
-    exports media_multitool.compressors;
-    opens media_multitool.compressors to javafx.fxml;
-    exports media_multitool.pdf;
-    opens media_multitool.pdf to javafx.fxml;
-    exports model.checks;
+    exports controllers.imageTools;
+    opens controllers.imageTools to javafx.fxml;
+    exports controllers.converters;
+    opens controllers.converters to javafx.fxml;
+    exports controllers.compressors;
+    opens controllers.compressors to javafx.fxml;
+    exports controllers.pdf;
+    opens controllers.pdf to javafx.fxml;
+    exports model.utility.checks;
     exports model.exceptions;
-    exports media_multitool.watermarks;
-    opens media_multitool.watermarks to javafx.fxml;
+    exports controllers.watermarks;
+    opens controllers.watermarks to javafx.fxml;
     exports model.helper.watermarks;
     opens model.helper.watermarks to javafx.fxml;
-    exports media_multitool.watermarks.viewController;
-    opens media_multitool.watermarks.viewController to javafx.fxml;
+    exports controllers.watermarks.viewController;
+    opens controllers.watermarks.viewController to javafx.fxml;
     exports model.helper.images;
     opens model.helper.images to javafx.fxml;
-    opens model.converterVideo;
-    opens model.converterImage;
-    opens media_multitool.mediaTools to javafx.fxml;
-    exports media_multitool.mediaTools;
+    opens model.mediaTools.converterVideo;
+    opens model.mediaTools.converterImage;
+    opens controllers.mediaTools to javafx.fxml;
+    exports controllers.mediaTools;
 
     opens model.preprocessing to org.junit.platform.commons;
     opens model.helper.pdf to org.junit.platform.commons;
+
+    exports visual.components;
+    exports visual.dialogs;
+    exports visual.controls;
+    exports visual.effects;
+    exports visual.platform;
+    exports model.helper;
+    exports model.utility.io;
+    exports model.utility.media;
+    exports model.utility.system;
+    exports model.utility.context;
+    exports visual.util;
+    exports model.utility.format;
+    exports model.helper.media;
+    exports controllers.abstractControllers;
+    opens controllers.abstractControllers to javafx.fxml;
+    exports controllers.appControllers;
+    opens controllers.appControllers to javafx.fxml;
 }

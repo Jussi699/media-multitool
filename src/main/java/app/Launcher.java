@@ -2,7 +2,7 @@ package app;
 
 import javafx.application.Application;
 import lombok.Getter;
-import model.utility.OS;
+import model.utility.system.OS;
 import org.bytedeco.ffmpeg.global.avutil;
 
 import javax.imageio.ImageIO;

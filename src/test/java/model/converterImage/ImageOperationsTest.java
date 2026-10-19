@@ -1,12 +1,12 @@
 package model.converterImage;
 
-import model.converterImage.strategy.ImageConversionStrategy;
-import model.converterImage.strategy.ImageStrategyFactory;
-import model.compressorImage.Compressor;
+import model.mediaTools.converterImage.strategy.ImageConversionStrategy;
+import model.mediaTools.converterImage.strategy.ImageStrategyFactory;
+import model.mediaTools.compressorImage.Compressor;
 import model.enums.RotateSide;
 import model.imageTools.ImageTools;
 import model.properties.ImageProperties;
-import model.compressorImage.CompressionResult;
+import model.mediaTools.compressorImage.CompressionResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

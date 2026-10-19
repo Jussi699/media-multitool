@@ -4,7 +4,7 @@ import javafx.scene.Node;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableView;
-import model.utility.DetailsAudioFile;
+import model.metadata.DetailsAudioFile;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;

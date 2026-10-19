@@ -10,8 +10,8 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.logger.ErrorLogger;
-import visual.Alerts;
-import visual.WindowsDwmUtils;
+import visual.dialogs.Alerts;
+import visual.platform.WindowsDwmUtils;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -19,7 +19,7 @@ import java.util.Objects;
 import static java.util.Objects.nonNull;
 
 public class MediaMultitoolApp extends Application {
-    private static final String PATH_MAIN_ICON = "/img/tools.png";
+    private static final String PATH_MAIN_ICON = "/assets/tools.png";
 
     @Override
     public void start(Stage loadingStage) throws IOException {
@@ -53,8 +53,8 @@ public class MediaMultitoolApp extends Application {
     private Scene createLoadingScene() throws IOException {
         FXMLLoader loadingLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/loading-page-view.fxml"));
         Scene loadingScene = new Scene(loadingLoader.load(), 300, 200);
-        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
-        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
+        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/style.css")));
+        loadingScene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/root.css")));
         return loadingScene;
     }
 
@@ -76,9 +76,9 @@ public class MediaMultitoolApp extends Application {
     private Scene createMainScene() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1040, 860);
-        scene.getStylesheets().add(String.valueOf(getClass().getResource("/style.css")));
-        scene.getStylesheets().add(String.valueOf(getClass().getResource("/root.css")));
-        scene.getStylesheets().add(String.valueOf(getClass().getResource("/home_page&control_panel.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/style.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/root.css")));
+        scene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/home_page&control_panel.css")));
         return scene;
     }
 

@@ -3,7 +3,7 @@ package model.preprocessing;
 import javafx.scene.control.Alert;
 import model.logger.ErrorLogger;
 import net.ifok.image.image4j.codec.ico.ICOEncoder;
-import visual.Alerts;
+import visual.dialogs.Alerts;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

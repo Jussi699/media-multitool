@@ -17,7 +17,7 @@
       prefWidth="800.0"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="media_multitool.ViewController">
+      fx:controller="controllers.appControllers.ViewController">
 
     <fx:define>
         <String fx:id="SVG_Folder"
