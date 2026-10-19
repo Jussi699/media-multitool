@@ -2,6 +2,7 @@ package model.mediaTools.compressorImage;
 
 import model.logger.ErrorLogger;
 import model.properties.ImageProperties;
+import model.utility.io.FileUtils;
 import model.utility.media.ImageFormatDetector;
 import net.coobird.thumbnailator.Thumbnails;
 import org.w3c.dom.Document;
@@ -73,9 +74,8 @@ public class Compressor {
                 return Optional.empty();
             }
 
-            if (compressedSize >= originalSize && !outputFile.delete()) {
-                ErrorLogger.warn("Compressed file is larger than source and could not be deleted: "
-                        + outputFile.getAbsolutePath());
+            if (compressedSize >= originalSize) {
+                FileUtils.cleanupFile(outputFile);
             }
 
             return Optional.of(new CompressionResult(outputFile, format, originalSize, compressedSize, compressedSize < originalSize));
@@ -98,9 +98,8 @@ public class Compressor {
                 return Optional.empty();
             }
 
-            if (compressedSize >= originalSize && !outputFile.delete()) {
-                ErrorLogger.warn("SVG file without metadata is larger than source and could not be deleted: "
-                        + outputFile.getAbsolutePath());
+            if (compressedSize >= originalSize) {
+                FileUtils.cleanupFile(outputFile);
             }
 
             boolean sizeReduced = compressedSize < originalSize;
@@ -183,41 +182,70 @@ public class Compressor {
     private void cleanNode(Node node) {
         NodeList children = node.getChildNodes();
         for (int i = children.getLength() - 1; i >= 0; i--) {
-            Node child = children.item(i);
+            cleanChildNode(node, children.item(i));
+        }
+    }
 
-            if (child.getNodeType() == Node.COMMENT_NODE ||
-                    (child.getNodeType() == Node.TEXT_NODE && child.getNodeValue().trim().isEmpty())) {
-                node.removeChild(child);
-                continue;
-            }
+    private void cleanChildNode(Node parent, Node child) {
+        if (isIgnoredNode(child)) {
+            parent.removeChild(child);
+            return;
+        }
 
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
-                String name = child.getNodeName().toLowerCase(Locale.ROOT);
-                final boolean checkContainFirst   = name.contains("metadata") || name.contains("sodipodi");
-                final boolean checkContainSecond  = name.contains("inkscape") || name.contains("foreignobject");
-                final boolean checkContainsThird  = name.equals("desc")       || name.equals("title");
+        if (child.getNodeType() == Node.ELEMENT_NODE) {
+            processElementChild(parent, child);
+        }
+    }
 
-                if (checkContainFirst || checkContainSecond || checkContainsThird) {
-                    node.removeChild(child);
-                    continue;
-                }
+    private boolean isIgnoredNode(Node child) {
+        short type = child.getNodeType();
+        return type == Node.COMMENT_NODE ||
+                (type == Node.TEXT_NODE && child.getNodeValue().trim().isEmpty());
+    }
 
-                NamedNodeMap attributes = child.getAttributes();
-                for (int j = attributes.getLength() - 1; j >= 0; j--) {
-                    Node attr = attributes.item(j);
-                    String attrName = attr.getNodeName().toLowerCase(Locale.ROOT);
-                    if (attrName.contains(":") && !attrName.startsWith("xmlns") && !attrName.startsWith("xlink")) {
-                        attributes.removeNamedItem(attr.getNodeName());
-                    }
-                }
+    private void processElementChild(Node parent, Node child) {
+        String name = child.getNodeName().toLowerCase(Locale.ROOT);
+        if (isMetadataElement(name)) {
+            parent.removeChild(child);
+            return;
+        }
 
-                cleanNode(child);
+        cleanAttributes(child);
+        cleanNode(child);
 
-                if (name.equals("g") && !child.hasChildNodes()) {
-                    node.removeChild(child);
-                }
+        if ("g".equals(name) && !child.hasChildNodes()) {
+            parent.removeChild(child);
+        }
+    }
+
+    private boolean isMetadataElement(String name) {
+        return name.contains("metadata")
+                || name.contains("sodipodi")
+                || name.contains("inkscape")
+                || name.contains("foreignobject")
+                || name.equals("desc")
+                || name.equals("title");
+    }
+
+    private void cleanAttributes(Node element) {
+        NamedNodeMap attributes = element.getAttributes();
+        if (isNull(attributes)) {
+            return;
+        }
+
+        for (int j = attributes.getLength() - 1; j >= 0; j--) {
+            Node attr = attributes.item(j);
+            String attrName = attr.getNodeName().toLowerCase(Locale.ROOT);
+            if (shouldRemoveAttribute(attrName)) {
+                attributes.removeNamedItem(attr.getNodeName());
             }
         }
+    }
+
+    private boolean shouldRemoveAttribute(String attrName) {
+        return attrName.contains(":")
+                && !attrName.startsWith("xmlns")
+                && !attrName.startsWith("xlink");
     }
 
     public static double calculateEstimatedSizeMB(ImageProperties properties) {
