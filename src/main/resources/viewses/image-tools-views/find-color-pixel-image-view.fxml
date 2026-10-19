@@ -184,7 +184,6 @@
                            styleClass="drop-zone, drop-zone-find-pixel">
 
                     <Label fx:id="textDragZone"
-                           styleClass="label-drag-zone"
                            text="Drag files here"
                            textFill="WHITE"/>
                 </StackPane>
