@@ -15,9 +15,9 @@ import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
-import viewHelp.Alerts;
-import viewHelp.InfoAlert;
-import viewHelp.Message;
+import visual.Alerts;
+import visual.InfoAlert;
+import visual.Message;
 
 import java.io.File;
 import java.util.Locale;
@@ -27,7 +27,7 @@ import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
 import static java.util.Objects.isNull;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 import static model.utility.Utility.getMetadata;
 
 public class CompressorVideoController extends AbstractMediaController {

@@ -1,4 +1,4 @@
-package viewHelp;
+package visual;
 
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Pos;

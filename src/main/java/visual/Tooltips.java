@@ -1,4 +1,4 @@
-package viewHelp;
+package visual;
 
 import javafx.animation.PauseTransition;
 import javafx.scene.Node;

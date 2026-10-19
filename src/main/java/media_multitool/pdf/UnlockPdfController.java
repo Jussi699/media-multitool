@@ -10,7 +10,7 @@ import model.helper.pdf.UnlockPdfHelper;
 import model.logger.ErrorLogger;
 import model.utility.ResetContext;
 import org.apache.pdfbox.Loader;
-import viewHelp.InfoAlert;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.helper.pdf.PdfHelper.notNullInputAndOutput;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class UnlockPdfController extends AbstractPdfToolController {
     @FXML private ToggleButton btnShowTypePassword;

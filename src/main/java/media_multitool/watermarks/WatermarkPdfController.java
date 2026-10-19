@@ -21,7 +21,7 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -31,7 +31,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import viewHelp.OpenWatermarkWindow;
+import visual.OpenWatermarkWindow;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -43,7 +43,7 @@ import static java.util.Objects.nonNull;
 import static model.select.SelectFile.choiceFile;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class WatermarkPdfController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();

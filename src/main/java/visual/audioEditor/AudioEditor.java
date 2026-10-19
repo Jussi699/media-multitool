@@ -1,4 +1,4 @@
-package viewHelp.audioEditor;
+package visual.audioEditor;
 
 import app.Launcher;
 import javafx.scene.control.ComboBox;

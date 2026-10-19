@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.HashMap;
 import java.util.Map;
-import static viewHelp.WorkColors.hexToRGB;
+import static visual.WorkColors.hexToRGB;
 
 public class ColorReplaceHelper {
     private ColorReplaceHelper() {

@@ -11,8 +11,8 @@ import model.helper.pdf.PdfHelper;
 import model.helper.pdf.ProtectPdfHelper;
 import model.logger.ErrorLogger;
 import model.utility.ResetContext;
-import viewHelp.Alerts;
-import viewHelp.InfoAlert;
+import visual.Alerts;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.helper.pdf.PdfHelper.notNullInputAndOutput;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class ProtectPdfController extends AbstractPdfToolController {
     @FXML private ToggleButton btnShowTypePassword, btnShowRepeatPassword;

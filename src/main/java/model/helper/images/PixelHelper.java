@@ -10,7 +10,7 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static viewHelp.WorkColors.rgbToHex;
+import static visual.WorkColors.rgbToHex;
 
 public class PixelHelper {
     private PixelHelper() {

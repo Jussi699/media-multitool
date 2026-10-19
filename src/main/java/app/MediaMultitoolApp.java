@@ -10,8 +10,8 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.logger.ErrorLogger;
-import viewHelp.Alerts;
-import viewHelp.WindowsDwmUtils;
+import visual.Alerts;
+import visual.WindowsDwmUtils;
 
 import java.io.IOException;
 import java.util.Objects;

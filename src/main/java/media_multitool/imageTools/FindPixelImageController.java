@@ -17,14 +17,14 @@ import model.utility.Clipboards;
 import model.utility.Global;
 import model.utility.ResetContext;
 import model.utility.Utility;
-import viewHelp.*;
+import visual.*;
 
 import java.util.List;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.setupClearMessageTimer;
+import static visual.Message.setupClearMessageTimer;
 import static model.utility.Utility.setTextToTextField;
 
 public class FindPixelImageController extends AbstractImageToolController {

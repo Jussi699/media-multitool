@@ -17,10 +17,10 @@ import model.utility.ResetContext;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import viewHelp.Alerts;
-import viewHelp.InfoAlert;
-import viewHelp.Message;
-import viewHelp.PdfPagePreviewCard;
+import visual.Alerts;
+import visual.InfoAlert;
+import visual.Message;
+import visual.PdfPagePreviewCard;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

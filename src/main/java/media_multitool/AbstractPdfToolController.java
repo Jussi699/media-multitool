@@ -20,7 +20,7 @@ import model.properties.MediaProperties;
 import model.helper.pdf.PdfHelper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 import static java.util.Objects.nonNull;
 import static model.select.SelectFile.showOpenMultipleDialog;
 import static model.utility.PathWorker.createOutputFile;
-import static viewHelp.Message.showErrorMessage;
+import static visual.Message.showErrorMessage;
 
 public abstract class AbstractPdfToolController extends AbstractMediaController {
     protected final ImageProperties properties = new ImageProperties();

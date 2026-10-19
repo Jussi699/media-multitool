@@ -14,14 +14,14 @@ import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.InfoAlert;
-import viewHelp.SliderSetup;
+import visual.InfoAlert;
+import visual.SliderSetup;
 
 import java.io.File;
 
 import static java.util.Objects.isNull;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class LightenImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();

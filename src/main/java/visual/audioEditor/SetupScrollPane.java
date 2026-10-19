@@ -1,4 +1,4 @@
-package viewHelp.audioEditor;
+package visual.audioEditor;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;

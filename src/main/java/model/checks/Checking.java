@@ -3,7 +3,7 @@ package model.checks;
 import javafx.scene.control.Alert;
 
 import model.properties.ImageProperties;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

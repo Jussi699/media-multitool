@@ -25,7 +25,7 @@ import java.util.function.DoubleConsumer;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.select.SelectFile.choiceFile;
-import static viewHelp.Message.showErrorMessage;
+import static visual.Message.showErrorMessage;
 
 public abstract class AbstractImageToolController extends AbstractMediaController {
     protected BufferedImage originalImage;

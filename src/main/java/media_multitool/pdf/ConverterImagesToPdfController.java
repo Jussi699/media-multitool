@@ -11,10 +11,10 @@ import model.helper.pdf.ConvertImagesToPdfHelper;
 import model.logger.ErrorLogger;
 import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import viewHelp.Alerts;
-import viewHelp.ImagePreviewCard;
-import viewHelp.InfoAlert;
-import viewHelp.Message;
+import visual.Alerts;
+import visual.ImagePreviewCard;
+import visual.InfoAlert;
+import visual.Message;
 import model.utility.Utility;
 
 import java.io.File;
@@ -29,7 +29,7 @@ import java.util.function.IntConsumer;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
-import static viewHelp.Message.setupClearMessageTimer;
+import static visual.Message.setupClearMessageTimer;
 
 public class ConverterImagesToPdfController extends AbstractPdfToolController {
     private final List<ImageEntry> selectedImages = new ArrayList<>();

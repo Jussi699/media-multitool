@@ -1,4 +1,4 @@
-package viewHelp;
+package visual;
 
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;

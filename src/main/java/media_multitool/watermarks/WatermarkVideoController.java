@@ -27,8 +27,8 @@ import model.utility.Global;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
-import viewHelp.OpenWatermarkWindow;
+import visual.Alerts;
+import visual.OpenWatermarkWindow;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -41,7 +41,7 @@ import static java.util.Objects.nonNull;
 import static model.select.SelectFile.choiceFile;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class WatermarkVideoController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();

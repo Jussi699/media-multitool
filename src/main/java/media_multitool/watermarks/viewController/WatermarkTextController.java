@@ -10,7 +10,7 @@ import media_multitool.watermarks.WatermarkImageController;
 import media_multitool.watermarks.WatermarkPdfController;
 import media_multitool.watermarks.WatermarkVideoController;
 import model.helper.watermarks.WatermarkSettings;
-import viewHelp.WorkColors;
+import visual.WorkColors;
 
 import javax.swing.*;
 import java.awt.GraphicsEnvironment;

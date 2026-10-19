@@ -11,8 +11,8 @@ import org.lwjgl.util.nfd.NFDOpenDialogArgs;
 import org.lwjgl.util.nfd.NFDWindowHandle;
 import org.lwjgl.util.nfd.NativeFileDialog;
 import model.utility.OS;
-import viewHelp.Alerts;
-import viewHelp.WindowsDwmUtils;
+import visual.Alerts;
+import visual.WindowsDwmUtils;
 
 import java.io.File;
 import java.nio.ByteBuffer;

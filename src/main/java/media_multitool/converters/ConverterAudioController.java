@@ -12,8 +12,8 @@ import model.enums.MediaType;
 import model.helper.MediaHelper;
 import model.utility.Global;
 import model.utility.ResetContext;
-import viewHelp.ComboBoxes;
-import viewHelp.InfoAlert;
+import visual.ComboBoxes;
+import visual.InfoAlert;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.util.ArrayList;
@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.hideSuccessMessage;
-import static viewHelp.Message.setupClearMessageTimer;
+import static visual.Message.hideSuccessMessage;
+import static visual.Message.setupClearMessageTimer;
 
 public class ConverterAudioController extends AbstractAudioVideoConverterController {
     @FXML private Button btnSelectAudioVideoFile, btnChoiceDirForSave;

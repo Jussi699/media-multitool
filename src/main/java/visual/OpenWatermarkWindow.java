@@ -1,4 +1,4 @@
-package viewHelp;
+package visual;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

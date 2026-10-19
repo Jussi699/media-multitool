@@ -14,9 +14,9 @@ import model.logger.ErrorLogger;
 import model.utility.Global;
 import model.utility.Item;
 import model.utility.ResetContext;
-import viewHelp.Alerts;
-import viewHelp.ComboBoxes;
-import viewHelp.InfoAlert;
+import visual.Alerts;
+import visual.ComboBoxes;
+import visual.InfoAlert;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.util.List;
@@ -27,9 +27,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.Parsers.*;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.ComboBoxes.createItems;
-import static viewHelp.Message.hideSuccessMessage;
-import static viewHelp.Message.setupClearMessageTimer;
+import static visual.ComboBoxes.createItems;
+import static visual.Message.hideSuccessMessage;
+import static visual.Message.setupClearMessageTimer;
 
 public class ConverterVideoController extends AbstractAudioVideoConverterController {
     private static final Set<Integer> UNSUPPORTED_WEBM_RATES = Set.of(11025, 22050, 32000, 44100);

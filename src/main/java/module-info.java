@@ -40,9 +40,9 @@ module media_multitool {
     exports model.preprocessing;
     exports model.metadata;
     opens model.metadata to javafx.base, javafx.fxml;
-    exports viewHelp;
+    exports visual;
     exports model.enums;
-    exports viewHelp.audioEditor;
+    exports visual.audioEditor;
     exports app;
     opens app to javafx.fxml;
     exports media_multitool.imageTools;

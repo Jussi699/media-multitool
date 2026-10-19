@@ -28,10 +28,10 @@ import model.utility.*;
 import org.jaudiotagger.tag.FieldKey;
 import model.helper.TableViewHelper;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
-import viewHelp.InfoAlert;
-import viewHelp.audioEditor.AudioEditor;
-import viewHelp.audioEditor.SetupScrollPane;
+import visual.Alerts;
+import visual.InfoAlert;
+import visual.audioEditor.AudioEditor;
+import visual.audioEditor.SetupScrollPane;
 
 import java.io.File;
 import java.util.*;
@@ -42,7 +42,7 @@ import static java.util.Objects.nonNull;
 import static model.enums.MediaType.*;
 import static model.utility.PathWorker.*;
 import static model.utility.TemplateCheck.*;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class MediaTagEditorController extends AbstractMediaController {
     private final ObservableList<DetailsAudioFile> masterFile = FXCollections.observableArrayList();

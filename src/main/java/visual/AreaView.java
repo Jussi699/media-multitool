@@ -1,4 +1,4 @@
-package viewHelp;
+package visual;
 
 import javafx.scene.control.TextArea;
 import lombok.AllArgsConstructor;

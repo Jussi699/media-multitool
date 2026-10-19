@@ -9,9 +9,9 @@ import model.logger.ErrorLogger;
 import model.utility.DragDropped;
 import model.utility.Global;
 import model.utility.ResetContext;
-import viewHelp.Alerts;
-import viewHelp.Cells;
-import viewHelp.InfoAlert;
+import visual.Alerts;
+import visual.Cells;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.util.List;
@@ -19,8 +19,8 @@ import java.util.List;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.hideSuccessMessage;
-import static viewHelp.Message.setupClearMessageTimer;
+import static visual.Message.hideSuccessMessage;
+import static visual.Message.setupClearMessageTimer;
 
 public class ConverterImageController extends AbstractImageConverterController {
     private static final String TO_ICO = "to ICO";

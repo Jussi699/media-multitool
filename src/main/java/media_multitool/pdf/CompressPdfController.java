@@ -12,7 +12,7 @@ import model.helper.pdf.PdfHelper;
 import model.logger.ErrorLogger;
 import model.utility.*;
 import model.utility.Utility;
-import viewHelp.InfoAlert;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.io.IOException;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.*;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 import static model.utility.Utility.formatFileSize;
 
 public class CompressPdfController extends AbstractPdfToolController {

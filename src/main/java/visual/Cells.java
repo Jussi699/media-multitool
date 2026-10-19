@@ -1,4 +1,4 @@
-package viewHelp;
+package visual;
 
 import javafx.scene.control.*;
 import model.metadata.MetadataEntry;

@@ -11,7 +11,7 @@ import model.logger.ErrorLogger;
 import model.utility.*;
 import model.utility.Utility;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import viewHelp.InfoAlert;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.helper.pdf.ConverterPdfHelper.getDocumentFromImage;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class ConverterImageToPdfController extends AbstractPdfToolController {
     @FXML private ComboBox<String> comboMargin, comboOrientation, comboPageSize;

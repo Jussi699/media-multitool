@@ -19,8 +19,8 @@ import model.utility.DragDropped;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
 import model.utility.TemplateCheck;
-import viewHelp.Alerts;
-import viewHelp.Message;
+import visual.Alerts;
+import visual.Message;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -37,7 +37,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.select.SelectFile.choiceFile;
 import static model.utility.PathWorker.*;
-import static viewHelp.Message.hideSuccessMessage;
+import static visual.Message.hideSuccessMessage;
 
 public abstract class AbstractMediaController {
     

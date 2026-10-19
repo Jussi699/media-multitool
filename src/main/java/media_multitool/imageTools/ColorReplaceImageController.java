@@ -12,7 +12,7 @@ import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.InfoAlert;
+import visual.InfoAlert;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,9 +22,9 @@ import java.util.function.DoubleConsumer;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 import static model.utility.Utility.setTextToTextField;
-import static viewHelp.WorkColors.isValidHex;
+import static visual.WorkColors.isValidHex;
 
 public class ColorReplaceImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();

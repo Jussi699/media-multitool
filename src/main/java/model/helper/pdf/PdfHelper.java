@@ -15,7 +15,7 @@ import java.util.UUID;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static viewHelp.Message.showErrorMessage;
+import static visual.Message.showErrorMessage;
 
 public class PdfHelper {
     private static final String ENCRYPTED_PDF_MESSAGE = "PDF file is encrypted! Please unlock it first.";

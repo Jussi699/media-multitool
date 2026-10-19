@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import lombok.Setter;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import static java.util.Objects.nonNull;
 

@@ -13,7 +13,7 @@ import model.utility.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import model.utility.Utility;
-import viewHelp.InfoAlert;
+import visual.InfoAlert;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -29,7 +29,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.createOutputFile;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class ConverterPdfToImageController extends AbstractPdfToolController {
     private final ToggleGroup toggleGroup = new ToggleGroup();

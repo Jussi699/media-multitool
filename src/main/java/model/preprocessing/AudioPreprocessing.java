@@ -14,7 +14,7 @@ import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.images.ArtworkFactory;
 import org.jaudiotagger.tag.reference.ID3V2Version;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import java.io.File;
 import java.io.ByteArrayInputStream;

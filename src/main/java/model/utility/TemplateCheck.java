@@ -2,7 +2,7 @@ package model.utility;
 
 import javafx.scene.control.Alert;
 import model.logger.ErrorLogger;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import java.io.File;
 import java.util.Locale;

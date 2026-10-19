@@ -21,8 +21,8 @@ import model.utility.Global;
 import model.utility.PathWorker;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.Alerts;
-import viewHelp.InfoAlert;
+import visual.Alerts;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.util.List;
@@ -32,10 +32,10 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.Clipboards.copyToClipboard;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Cells.setCellFactoryTableColumn;
-import static viewHelp.Message.setupClearMessageTimer;
-import static viewHelp.Message.showErrorMessage;
-import static viewHelp.Message.showSuccessText;
+import static visual.Cells.setCellFactoryTableColumn;
+import static visual.Message.setupClearMessageTimer;
+import static visual.Message.showErrorMessage;
+import static visual.Message.showSuccessText;
 
 public class MetaDataController extends AbstractMediaController {
     private record MetadataLoadResult(File file, List<MetadataEntry> entries) {}

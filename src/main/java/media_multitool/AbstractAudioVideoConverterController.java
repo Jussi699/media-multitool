@@ -14,7 +14,7 @@ import model.enums.MediaType;
 import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.VideoAndAudioProperties;
-import viewHelp.Alerts;
+import visual.Alerts;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
@@ -26,8 +26,8 @@ import static java.util.Objects.nonNull;
 import static model.select.SelectFile.choiceFile;
 import static model.utility.Parsers.parseChannels;
 import static model.utility.PathWorker.*;
-import static viewHelp.Message.hideSuccessMessage;
-import static viewHelp.Message.showSuccessMessage;
+import static visual.Message.hideSuccessMessage;
+import static visual.Message.showSuccessMessage;
 import static model.utility.Utility.getMetadata;
 
 public abstract class AbstractAudioVideoConverterController extends AbstractMediaController {

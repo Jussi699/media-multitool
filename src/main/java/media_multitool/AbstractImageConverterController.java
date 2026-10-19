@@ -19,7 +19,7 @@ import model.properties.ImageProperties;
 import model.properties.MediaProperties;
 import model.utility.Global;
 import model.utility.Preparation;
-import viewHelp.Alerts;
+import visual.Alerts;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

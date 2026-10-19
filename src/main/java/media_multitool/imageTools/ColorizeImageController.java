@@ -15,8 +15,8 @@ import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
-import viewHelp.InfoAlert;
-import viewHelp.WorkColors;
+import visual.InfoAlert;
+import visual.WorkColors;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
@@ -26,7 +26,7 @@ import java.util.function.DoubleConsumer;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.Message.*;
+import static visual.Message.*;
 
 public class ColorizeImageController extends AbstractImageToolController {
     private final ImageProperties imageProperties = new ImageProperties();

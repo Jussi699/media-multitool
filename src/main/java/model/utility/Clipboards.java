@@ -3,7 +3,7 @@ package model.utility;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
-import viewHelp.Tooltips;
+import visual.Tooltips;
 
 import static java.util.Objects.isNull;
 

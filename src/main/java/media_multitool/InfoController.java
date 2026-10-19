@@ -10,8 +10,8 @@ import model.helper.FileHelper;
 import model.logger.ErrorLogger;
 import model.utility.Clipboards;
 import model.utility.OS;
-import viewHelp.Alerts;
-import viewHelp.AreaView;
+import visual.Alerts;
+import visual.AreaView;
 
 import java.awt.*;
 import java.io.File;

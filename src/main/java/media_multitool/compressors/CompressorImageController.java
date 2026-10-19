@@ -16,9 +16,9 @@ import model.logger.ErrorLogger;
 import model.properties.MediaProperties;
 import model.properties.ImageProperties;
 import model.utility.*;
-import viewHelp.Alerts;
-import viewHelp.ComboBoxes;
-import viewHelp.InfoAlert;
+import visual.Alerts;
+import visual.ComboBoxes;
+import visual.InfoAlert;
 
 import java.io.File;
 import java.util.Locale;
@@ -28,8 +28,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static model.compressorImage.Compressor.calculateEstimatedSizeMB;
 import static model.utility.PathWorker.getSavedPath;
-import static viewHelp.ComboBoxes.*;
-import static viewHelp.Message.*;
+import static visual.ComboBoxes.*;
+import static visual.Message.*;
 
 public class CompressorImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
