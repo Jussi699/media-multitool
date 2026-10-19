@@ -81,7 +81,7 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,         RenderingHints.VALUE_RENDER_SPEED);
 
-            double scale = (nonNull(image)) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
+            double scale = Math.min(image.getWidth(), image.getHeight()) / 1000.0;
             int baseFontSize = Math.max(10, (int) Math.round(24 * scale));
             int fontSize = Math.max(8, (int) Math.round(baseFontSize * settings.getFontSize()));
             Font font = new Font(settings.getFontName(), Font.BOLD, fontSize);
@@ -240,7 +240,7 @@ public class WatermarkRenderer {
     }
     
     private static void applyImageWatermark(BufferedImage image, WatermarkSettings settings) {
-        if (settings.getWatermarkImage() == null) {
+        if (isNull(settings.getWatermarkImage())) {
             return;
         }
         
@@ -251,7 +251,7 @@ public class WatermarkRenderer {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,     RenderingHints.VALUE_RENDER_SPEED);
             
-            double scale = (nonNull(image)) ? Math.min(image.getWidth(), image.getHeight()) / 1000.0 : 1.0;
+            double scale = Math.min(image.getWidth(), image.getHeight()) / 1000.0;
             int maxSize = Math.min(image.getWidth(), image.getHeight());
             int size = (int) Math.round(Math.min(settings.getSize() * scale, maxSize));
             float opacity = (float) Math.min(1.0, settings.getOpacity() / 100.0);

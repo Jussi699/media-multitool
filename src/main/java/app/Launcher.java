@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -35,13 +36,15 @@ public class Launcher {
         String logDir = OS.getAppConfigDir() + File.separator + "logs";
         File logDirFile = new File(logDir);
 
-        if (!logDirFile.exists()) {
-            logDirFile.mkdirs();
+        Exception writeError;
+        try {
+            Files.createDirectories(logDirFile.toPath());
+            writeError = checkLogWritable(logDirFile);
+        } catch (IOException | SecurityException e) {
+            writeError = e;
         }
 
         System.setProperty("LOG_DIR", logDir);
-
-        Exception writeError = checkLogWritable(logDirFile);
 
         if (nonNull(writeError)) {
             canWriteInLog = false;
