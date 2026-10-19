@@ -30,7 +30,9 @@ public class Alerts {
     private static final String INFO_ICON_PATH = "/assets/info.png";
     private static final String QUESTION_ICON_PATH = "/assets/question.png";
 
-    private Alerts() {}
+    private Alerts() {
+        /* This utility class should not be instantiated */
+    }
 
     private static String getIconPath(Alert.AlertType type) {
         if (type == Alert.AlertType.CONFIRMATION) {

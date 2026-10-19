@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -64,7 +65,7 @@ public class Launcher {
     }
 
     private static Exception checkLogWritable(File logDirFile) {
-        String todayLogName = "app." + java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".log";
+        String todayLogName = "app." + LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".log";
         File checkFile = new File(logDirFile, todayLogName);
 
         if (checkFile.exists()) {

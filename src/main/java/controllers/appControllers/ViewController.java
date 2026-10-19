@@ -299,6 +299,7 @@ public class ViewController {
                 setActive(infoPage, navInfo);
                 showInfoPage();
             }
+            default -> throw new IllegalArgumentException("Unexpected id: " + button.getId());
         }
     }
 }

@@ -8,7 +8,10 @@ import java.util.Locale;
 import static java.util.Objects.isNull;
 
 public class ConverterImage {
-    
+    private ConverterImage() {
+        /* This utility class should not be instantiated */
+    }
+
     public static String normalizeOutputFormat(String typeFile) {
         if (isNull(typeFile)) {
             throw new IllegalArgumentException("Output format is null");

@@ -429,23 +429,22 @@ public class MetadataHelper {
 
     private static boolean removeGpsFromImage(File file) throws IOException {
         String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
-        byte[] bytes = Files.readAllBytes(file.toPath());
 
         switch (ext) {
             case "jpg", "jpeg" -> {
-                byte[] modified = removeGpsFromJpegBytes(bytes);
+                byte[] modified = removeGpsFromJpegBytes(Files.readAllBytes(file.toPath()));
                 if (nonNull(modified)) {
                     Files.write(file.toPath(), modified);
                     return true;
                 }
             }
             case "png" -> {
-                byte[] modified = removeChunksFromPngBytes(bytes, Set.of("eXIf", "tIME"));
+                byte[] modified = removeChunksFromPngBytes(Files.readAllBytes(file.toPath()), Set.of("eXIf", "tIME"));
                 Files.write(file.toPath(), modified);
                 return true;
             }
             case "webp" -> {
-                byte[] modified = removeChunksFromWebpBytes(bytes, Set.of("EXIF"));
+                byte[] modified = removeChunksFromWebpBytes(Files.readAllBytes(file.toPath()), Set.of("EXIF"));
                 Files.write(file.toPath(), modified);
                 return true;
             }
@@ -456,52 +455,48 @@ public class MetadataHelper {
 
     private static boolean removeExifFromImage(File file) throws IOException {
         String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
-        byte[] bytes = Files.readAllBytes(file.toPath());
 
-        switch (ext) {
+        return switch (ext) {
             case "jpg", "jpeg" -> {
-                byte[] modified = removeJpegAppSegments(bytes, Set.of((byte) 0xE1));
+                byte[] modified = removeJpegAppSegments(Files.readAllBytes(file.toPath()), Set.of((byte) 0xE1));
                 Files.write(file.toPath(), modified);
-                return true;
+                yield true;
             }
             case "png" -> {
-                byte[] modified = removeChunksFromPngBytes(bytes, Set.of("eXIf", "tEXt", "zTXt", "iTXt", "tIME"));
+                byte[] modified = removeChunksFromPngBytes(Files.readAllBytes(file.toPath()), Set.of("eXIf", "tEXt", "zTXt", "iTXt", "tIME"));
                 Files.write(file.toPath(), modified);
-                return true;
+                yield true;
             }
             case "webp" -> {
-                byte[] modified = removeChunksFromWebpBytes(bytes, Set.of("EXIF", "XMP "));
+                byte[] modified = removeChunksFromWebpBytes(Files.readAllBytes(file.toPath()), Set.of("EXIF", "XMP "));
                 Files.write(file.toPath(), modified);
-                return true;
+                yield true;
             }
-        }
-
-        return reSaveCleanImage(file);
+            default -> reSaveCleanImage(file);
+        };
     }
 
     private static boolean removeIptcXmpFromImage(File file) throws IOException {
         String ext = ImageFormatDetector.getExtensionByString(file.getName()).toLowerCase(Locale.ROOT);
-        byte[] bytes = Files.readAllBytes(file.toPath());
 
-        switch (ext) {
+        return switch (ext) {
             case "jpg", "jpeg" -> {
-                byte[] modified = removeJpegAppSegments(bytes, Set.of((byte) 0xED));
+                byte[] modified = removeJpegAppSegments(Files.readAllBytes(file.toPath()), Set.of((byte) 0xED));
                 Files.write(file.toPath(), modified);
-                return true;
+                yield true;
             }
             case "png" -> {
-                byte[] modified = removeChunksFromPngBytes(bytes, Set.of("tEXt", "zTXt", "iTXt"));
+                byte[] modified = removeChunksFromPngBytes(Files.readAllBytes(file.toPath()), Set.of("tEXt", "zTXt", "iTXt"));
                 Files.write(file.toPath(), modified);
-                return true;
+                yield true;
             }
             case "webp" -> {
-                byte[] modified = removeChunksFromWebpBytes(bytes, Set.of("XMP "));
+                byte[] modified = removeChunksFromWebpBytes(Files.readAllBytes(file.toPath()), Set.of("XMP "));
                 Files.write(file.toPath(), modified);
-                return true;
+                yield true;
             }
-        }
-
-        return reSaveCleanImage(file);
+            default -> reSaveCleanImage(file);
+        };
     }
 
     private static byte[] removeGpsFromJpegBytes(byte[] data) {
