@@ -46,8 +46,8 @@ module controllers {
     opens controllers.converters to javafx.fxml;
     exports controllers.compressors;
     opens controllers.compressors to javafx.fxml;
-    exports controllers.pdf;
-    opens controllers.pdf to javafx.fxml;
+    exports controllers.pdfTools;
+    opens controllers.pdfTools to javafx.fxml;
     exports model.utility.checks;
     exports model.exceptions;
     exports controllers.watermarks;

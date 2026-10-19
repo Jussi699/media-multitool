@@ -1,4 +1,4 @@
-package controllers.pdf;
+package controllers.pdfTools;
 
 import javafx.application.Platform;
 import javafx.animation.PauseTransition;
