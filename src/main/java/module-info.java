@@ -63,9 +63,6 @@ module controllers {
     opens controllers.mediaTools to javafx.fxml;
     exports controllers.mediaTools;
 
-    opens model.preprocessing to org.junit.platform.commons;
-    opens model.helper.pdf to org.junit.platform.commons;
-
     exports visual.components;
     exports visual.dialogs;
     exports visual.controls;
