@@ -49,7 +49,7 @@
                 <StackPane fx:id="previewContainer"
                            minHeight="200.0">
 
-                    <ImageView fx:id="preview"
+                    <ImageView fx:id="imagePreview"
                                preserveRatio="true"/>
 
                     <Label fx:id="labelPreviewPlaceholder"

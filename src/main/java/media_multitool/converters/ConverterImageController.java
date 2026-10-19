@@ -36,7 +36,7 @@ public class ConverterImageController extends AbstractImageConverterController {
         initToggleGroup();
         initComboBoxes();
 
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         isPressedReset();
@@ -70,11 +70,11 @@ public class ConverterImageController extends AbstractImageConverterController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image(s)"
+                dropZone, imagePreview, progressBar, true, "image(s)"
         );
 
         reset(imageProperties, ctx, "Selected image file: none");
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
         pathFolderBatchProcessing = null;
         filesToProcess.clear();
@@ -160,16 +160,16 @@ public class ConverterImageController extends AbstractImageConverterController {
         Cells.comboBoxIcoSizeSetCellFactory(icoSizeComboBox, TO_ICO);
 
         icoSizeComboBox.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
-            final boolean firstCheck = nonNull(newVal) && !newVal.equals(TO_ICO) && nonNull(imageViewPreview.getImage());
+            final boolean firstCheck = nonNull(newVal) && !newVal.equals(TO_ICO) && nonNull(imagePreview.getImage());
             final boolean secondCheck = nonNull(imageProperties.getImage()) && imageProperties.getImage().getName().toLowerCase().endsWith(".ico");
 
             if (firstCheck && secondCheck) {
                     try {
                         double size = Double.parseDouble(newVal);
-                        imageViewPreview.fitHeightProperty().unbind();
-                        imageViewPreview.fitWidthProperty().unbind();
-                        imageViewPreview.setFitHeight(size);
-                        imageViewPreview.setFitWidth(size);
+                        imagePreview.fitHeightProperty().unbind();
+                        imagePreview.fitWidthProperty().unbind();
+                        imagePreview.setFitHeight(size);
+                        imagePreview.setFitWidth(size);
                     } catch (NumberFormatException e) {
                         Alerts.alertDialog(Alert.AlertType.WARNING, "Error", "Format", "Invalid size value!");
                         ErrorLogger.warn("Invalid size value: " + e.getMessage());

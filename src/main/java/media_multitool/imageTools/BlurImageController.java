@@ -7,11 +7,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -29,24 +27,12 @@ import static model.utility.PathWorker.getSavedPath;
 import static visual.Message.*;
 
 public class BlurImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
-    @FXML private Slider sliderBlurry;
-    @FXML private Button btnSubmit, btnCancelBlurring;
-    @FXML private Label currentValueSlider;
+    @FXML private Button btnCancelBlurring;
     @FXML private ImageView preview;
-    @FXML private StackPane previewContainer;
+    @FXML private Label currentValueSlider;
+    @FXML private Slider sliderBlurry;
 
     private Task<?> currentTask;
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
 
     @FXML
     public void initialize() {

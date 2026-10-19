@@ -2,13 +2,9 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -21,22 +17,6 @@ import static model.utility.PathWorker.getSavedPath;
 import static visual.Message.*;
 
 public class NegativeImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
-    @FXML private Button btnSubmit;
-    @FXML private ImageView preview;
-    @FXML private StackPane previewContainer;
-
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
-
     @FXML
     public void initialize() {
         imageProperties.setOutput(getSavedPath());
@@ -44,7 +24,7 @@ public class NegativeImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Negative");
-        bindingImageViewToPreviewContainer(preview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -66,7 +46,7 @@ public class NegativeImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, preview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
         originalImage = null;
@@ -82,7 +62,7 @@ public class NegativeImageController extends AbstractImageToolController {
 
         ImageTools.toNegative(originalImage).ifPresent(negative -> {
             processedImage = negative;
-            setImagePreview(processedImage, preview);
+            setImagePreview(processedImage, imagePreview);
         });
     }
 

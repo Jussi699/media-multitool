@@ -113,7 +113,7 @@
                         VBox.vgrow="ALWAYS">
 
                 <StackPane fx:id="previewContainer" minHeight="200.0">
-                    <ImageView fx:id="preview" preserveRatio="true"/>
+                    <ImageView fx:id="imagePreview" preserveRatio="true"/>
 
                     <Pane fx:id="blurOverlay"/>
 

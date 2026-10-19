@@ -142,7 +142,7 @@
             <StackPane fx:id="previewContainer"
                        VBox.vgrow="ALWAYS"
                        minWidth="200">
-                <ImageView fx:id="imageViewPreview"
+                <ImageView fx:id="imagePreview"
                            preserveRatio="true"/>
 
                 <Label fx:id="labelPreviewPlaceholder"

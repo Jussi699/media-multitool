@@ -3,12 +3,9 @@ package media_multitool.imageTools;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.helper.images.ColorReplaceHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -27,27 +24,12 @@ import static model.utility.Utility.setTextToTextField;
 import static visual.WorkColors.isValidHex;
 
 public class ColorReplaceImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
-    @FXML private Button btnSubmit;
     @FXML private ToggleButton toggleJPEG, togglePNG;
-    @FXML private ImageView preview;
-    @FXML private StackPane previewContainer;
     @FXML private Spinner<Double> spinnerIntensity;
     @FXML private Spinner<Integer> spinnerSmoothing, spinnerEnhancement;
     @FXML private ComboBox<String> comboSourceColor, comboTargetColor;
     @FXML private CheckBox checkBoxReplaceAllColors;
     @FXML private TextField textSourceColorHex, textTargetColorHex;
-
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
 
     @FXML
     public void initialize() {
@@ -60,7 +42,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Color-replaced");
-        bindingImageViewToPreviewContainer(preview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
         initializeColorCombos();
         initializeSpinners();
@@ -93,7 +75,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, preview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -124,7 +106,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
 
         if (isNull(processedImage)) {
             processedImage = originalImage;
-            setImagePreview(processedImage, preview);
+            setImagePreview(processedImage, imagePreview);
         }
 
         String targetHex = getTargetColorHex();
@@ -188,7 +170,7 @@ public class ColorReplaceImageController extends AbstractImageToolController {
                 BufferedImage result = processColorReplacement();
                 if (nonNull(result)) {
                     processedImage = result;
-                    Platform.runLater(() -> setImagePreview(processedImage, preview));
+                    Platform.runLater(() -> setImagePreview(processedImage, imagePreview));
                 }
             } catch (Exception e) {
                 ErrorLogger.error("Error updating preview: " + e.getMessage());

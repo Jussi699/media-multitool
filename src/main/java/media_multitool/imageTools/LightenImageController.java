@@ -2,21 +2,16 @@ package media_multitool.imageTools;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
 import visual.InfoAlert;
 import visual.SliderSetup;
-
 import java.io.File;
 
 import static java.util.Objects.isNull;
@@ -24,23 +19,8 @@ import static model.utility.PathWorker.getSavedPath;
 import static visual.Message.*;
 
 public class LightenImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
-    @FXML private Button btnSubmit;
-    @FXML private ImageView preview;
-    @FXML private StackPane previewContainer;
     @FXML private Slider sliderLighten;
     @FXML private Label currentValueSlider;
-
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
 
     @FXML
     public void initialize() {
@@ -51,7 +31,7 @@ public class LightenImageController extends AbstractImageToolController {
         setupImageClipboardButton(() -> processedImage, "Lightened");
         sliderLighten.valueProperty().addListener((_, _, _) -> generatePreview());
 
-        bindingImageViewToPreviewContainer(preview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
         sliderLighten.setMin(0);
         sliderLighten.setMax(255);
@@ -79,7 +59,7 @@ public class LightenImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, preview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -100,13 +80,13 @@ public class LightenImageController extends AbstractImageToolController {
 
         if (value == 0) {
             processedImage = originalImage;
-            setImagePreview(processedImage, preview);
+            setImagePreview(processedImage, imagePreview);
             return;
         }
 
         ImageTools.brightnessImage(originalImage, value).ifPresent(lightened -> {
             processedImage = lightened;
-            setImagePreview(processedImage, preview);
+            setImagePreview(processedImage, imagePreview);
         });
     }
 

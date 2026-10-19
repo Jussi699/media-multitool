@@ -4,13 +4,10 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import media_multitool.AbstractImageToolController;
 import model.enums.RotateSide;
 import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -23,24 +20,10 @@ import static model.utility.PathWorker.getSavedPath;
 import static visual.Message.*;
 
 public class RotateImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
     @FXML private Button btnFlipHorizontally, btnFlipVertically;
-    @FXML private Button btnRotateImageRight, btnRotateImageLeft, btnSubmit;
-    @FXML private StackPane previewContainer;
-    @FXML private ImageView preview;
+    @FXML private Button btnRotateImageRight, btnRotateImageLeft;
 
     private RotateSide rotateSide;
-
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
 
     @FXML
     public void initialize() {
@@ -49,7 +32,7 @@ public class RotateImageController extends AbstractImageToolController {
         setupTooltips();
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
         setupImageClipboardButton(() -> processedImage, "Rotated");
-        bindingImageViewToPreviewContainer(preview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -71,7 +54,7 @@ public class RotateImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, preview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -84,14 +67,14 @@ public class RotateImageController extends AbstractImageToolController {
     protected void generatePreview() {
         if (isNull(processedImage)) {
             processedImage = originalImage;
-            setImagePreview(processedImage, preview);
+            setImagePreview(processedImage, imagePreview);
             return;
         }
 
         if (nonNull(rotateSide)) {
             ImageTools.rotateImage(processedImage, rotateSide).ifPresent(rotated -> {
                 processedImage = rotated;
-                setImagePreview(processedImage, preview);
+                setImagePreview(processedImage, imagePreview);
             });
             rotateSide = null;
         }

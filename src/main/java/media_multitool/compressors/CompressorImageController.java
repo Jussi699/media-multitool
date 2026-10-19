@@ -35,7 +35,7 @@ public class CompressorImageController extends AbstractMediaController {
     private final ImageProperties imageProperties = new ImageProperties();
 
     @FXML private Button btnSelectFile, btnChoiceDirForSave, btnSubmit;
-    @FXML private ImageView imageViewPreview;
+    @FXML private ImageView imagePreview;
     @FXML private StackPane dropZone, previewContainer;
     @FXML private Label textDragZone, labelSelectFile, labelPreviewPlaceholder;
     @FXML private ComboBox<Item> qualityComboBox, scaleComboBox;
@@ -52,7 +52,7 @@ public class CompressorImageController extends AbstractMediaController {
         setupClearMessageTimer(labelSuccess, progressBar, imageProperties.getHideSuccessMessageTimer(), true);
 
         initComboBoxes();
-        bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
         isPressedReset();
 
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -79,7 +79,7 @@ public class CompressorImageController extends AbstractMediaController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, null, textDragZone, labelPreviewPlaceholder,
-                dropZone, imageViewPreview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -198,9 +198,9 @@ public class CompressorImageController extends AbstractMediaController {
         imageProperties.setTypeImage(DetermineType.determineFormat(selectedFile).orElse(null));
         labelSelectFile.setText("Select image: " + selectedFile.getName());
 
-        if (nonNull(imageViewPreview)) {
+        if (nonNull(imagePreview)) {
             try {
-                imageViewPreview.setImage(new Image(selectedFile.toURI().toString()));
+                imagePreview.setImage(new Image(selectedFile.toURI().toString()));
                 labelPreviewPlaceholder.setVisible(false);
             } catch (Exception e) {
                 ErrorLogger.error("Failed to load preview: " + e.getMessage());

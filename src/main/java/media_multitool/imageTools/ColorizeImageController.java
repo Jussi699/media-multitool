@@ -5,13 +5,10 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import javafx.stage.WindowEvent;
 import media_multitool.AbstractImageToolController;
 import model.imageTools.ImageTools;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -29,24 +26,11 @@ import static model.utility.PathWorker.getSavedPath;
 import static visual.Message.*;
 
 public class ColorizeImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
-    @FXML private Button btnColorPicker, btnSubmit;
-    @FXML private ImageView preview;
-    @FXML private StackPane previewContainer;
+    @FXML private Button btnColorPicker;
 
     private javafx.scene.paint.Color selectedColorFX;
-    private java.awt.Color newColor;
+    private java.awt.Color newColorAwt;
     private JDialog swingDialog;
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
 
     @FXML
     public void initialize() {
@@ -65,7 +49,7 @@ public class ColorizeImageController extends AbstractImageToolController {
                 },
                 "Colorized"
         );
-        bindingImageViewToPreviewContainer(preview, previewContainer);
+        bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -87,14 +71,14 @@ public class ColorizeImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, preview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
         processedImage = null;
         originalImage = null;
         selectedColorFX = null;
-        newColor = null;
+        newColorAwt = null;
         previewContainer.setEffect(null);
         WorkColors.updateColorView(new java.awt.Color(64, 64, 64), btnColorPicker);
         disableControls();
@@ -119,10 +103,10 @@ public class ColorizeImageController extends AbstractImageToolController {
             return;
         }
         processedImage = originalImage;
-        setImagePreview(processedImage, preview);
+        setImagePreview(processedImage, imagePreview);
 
-        if (nonNull(newColor)) {
-            this.selectedColorFX = WorkColors.toFxColor(newColor);
+        if (nonNull(newColorAwt)) {
+            this.selectedColorFX = WorkColors.toFxColor(newColorAwt);
             previewContainer.setEffect(ImageTools.colorizeImage(processedImage, selectedColorFX));
         } else {
             this.selectedColorFX = null;
@@ -189,10 +173,10 @@ public class ColorizeImageController extends AbstractImageToolController {
                 : java.awt.Color.WHITE);
 
         swingColorPicker.addColorListener(colorModel -> {
-            newColor = colorModel.getColor();
+            newColorAwt = colorModel.getColor();
             Platform.runLater(() -> {
                 generatePreview();
-                WorkColors.updateColorView(newColor, btnColorPicker);
+                WorkColors.updateColorView(newColorAwt, btnColorPicker);
             });
         });
 

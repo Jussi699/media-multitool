@@ -157,7 +157,7 @@
                        VBox.vgrow="ALWAYS"
                        minWidth="200">
 
-                <ImageView fx:id="preview"
+                <ImageView fx:id="imagePreview"
                            preserveRatio="true"/>
 
                 <Label fx:id="labelPreviewPlaceholder"

@@ -42,7 +42,7 @@ public abstract class AbstractImageConverterController extends AbstractMediaCont
     protected List<File> filesToProcess = new ArrayList<>();
 
     @FXML protected Button btnSelectFile, btnChoiceFolderForSaveFile, btnSelectBatchFileProcessing, btnSubmit;
-    @FXML protected ImageView imageViewPreview;
+    @FXML protected ImageView imagePreview;
     @FXML protected StackPane dropZone, previewContainer;
     @FXML protected Label labelSelectFile, textDragZone, labelPreviewPlaceholder;
     @FXML protected VBox parametersContainer;
@@ -124,7 +124,7 @@ public abstract class AbstractImageConverterController extends AbstractMediaCont
             textDragZone.setText((batchSelection ? "Batch: " : "Selected: ") + filesToProcess.size() + " files");
         }
 
-        imageViewPreview.setImage(null);
+        imagePreview.setImage(null);
         labelPreviewPlaceholder.setVisible(true);
 
         try {
@@ -137,9 +137,9 @@ public abstract class AbstractImageConverterController extends AbstractMediaCont
 
             Image fxImage = SwingFXUtils.toFXImage(biOpt.get(), null);
 
-            bindingImageViewToPreviewContainer(imageViewPreview, previewContainer);
+            bindingImageViewToPreviewContainer(imagePreview, previewContainer);
 
-            imageViewPreview.setImage(fxImage);
+            imagePreview.setImage(fxImage);
             labelPreviewPlaceholder.setVisible(false);
 
             if (!dropZone.getStyleClass().contains("drop-zone-filled")) {

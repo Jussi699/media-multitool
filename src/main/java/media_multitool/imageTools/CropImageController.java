@@ -6,15 +6,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import media_multitool.AbstractImageToolController;
 import model.enums.AspectRatio;
 import model.helper.images.CropHelper;
 import model.logger.ErrorLogger;
-import model.properties.ImageProperties;
 import model.utility.Global;
 import model.utility.ResetContext;
 import org.jspecify.annotations.NonNull;
@@ -31,15 +28,11 @@ import static model.utility.PathWorker.getSavedPath;
 import static visual.Message.*;
 
 public class CropImageController extends AbstractImageToolController {
-    private final ImageProperties imageProperties = new ImageProperties();
-
     @FXML private Button btnAspectRatioSquare, btnAspectRatio9x16, btnAspectRatio16x9;
     @FXML private Button btnAspectRatio4x5, btnAspectRatio5x4, btnAspectRatio3x4;
     @FXML private Button btnAspectRatio4x3, btnAspectRatio2x3, btnAspectRatio3x2;
     @FXML private Button btnAspectRatio5x7,btnAspectRatio7x5, btnAspectRatio1x2;
-    @FXML private Button btnAspectRatio2x1, btnSubmit;
-    @FXML private ImageView preview;
-    @FXML private StackPane previewContainer;
+    @FXML private Button btnAspectRatio2x1;
     @FXML private ScrollPane scrollPaneImage;
     @FXML private Slider imageScaleSlider;
     @FXML private Rectangle cropRect;
@@ -47,15 +40,6 @@ public class CropImageController extends AbstractImageToolController {
 
     private ZoomControlHelper zoomControlHelper;
     private CropHelper cropHelper;
-    @Override
-    protected ImageProperties getImageProperties() {
-        return imageProperties;
-    }
-
-    @Override
-    protected ImageView getImageView() {
-        return preview;
-    }
 
     @FXML
     public void initialize() {
@@ -71,8 +55,8 @@ public class CropImageController extends AbstractImageToolController {
                 "Cropped"
         );
 
-        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, preview, imageScaleSlider, previewContainer, 1.0, 3.0);
-        cropHelper = new CropHelper(cropOverlay, preview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
+        zoomControlHelper = new ZoomControlHelper(scrollPaneImage, imagePreview, imageScaleSlider, previewContainer, 1.0, 3.0);
+        cropHelper = new CropHelper(cropOverlay, imagePreview, cropRect, scrollPaneImage, previewContainer, imageScaleSlider);
 
         isPressedReset();
         setupDragAndDrop(dropZone, Global.getAllSupportedImageFormats(), this::loadFile);
@@ -96,7 +80,7 @@ public class CropImageController extends AbstractImageToolController {
     public void isPressedReset() {
         ResetContext ctx = new ResetContext(
                 labelSelectFile, labelSuccess, textDragZone, labelPreviewPlaceholder,
-                dropZone, preview, progressBar, true, "image"
+                dropZone, imagePreview, progressBar, true, "image"
         );
         reset(imageProperties, ctx, "Selected image file: none");
 
@@ -120,7 +104,7 @@ public class CropImageController extends AbstractImageToolController {
         }
 
         processedImage = originalImage;
-        setImagePreview(processedImage, preview);
+        setImagePreview(processedImage, imagePreview);
 
         if (nonNull(zoomControlHelper)) {
             zoomControlHelper.resetZoom();

@@ -28,19 +28,17 @@ import static model.select.SelectFile.choiceFile;
 import static visual.Message.showErrorMessage;
 
 public abstract class AbstractImageToolController extends AbstractMediaController {
+    protected final ImageProperties imageProperties = new ImageProperties();
+
+    @FXML protected Button btnSelectFile, btnSubmit, btnChooseSaveDirectory;
+    @FXML protected ImageView imagePreview;
+    @FXML protected Label labelPreviewPlaceholder, textDragZone, labelSelectFile;
+    @FXML protected StackPane dropZone, previewContainer;
+
     protected BufferedImage originalImage;
     protected BufferedImage processedImage;
 
-    @FXML protected Label labelPreviewPlaceholder, textDragZone, labelSelectFile;
-    @FXML protected StackPane dropZone;
-    @FXML protected Button btnChooseSaveDirectory;
-    @FXML protected Button btnSelectFile;
-
     protected abstract void generatePreview();
-
-    protected abstract ImageProperties getImageProperties();
-
-    protected abstract ImageView getImageView();
 
     @Override
     protected void lockUI() {
@@ -63,7 +61,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     @Override
     protected MediaProperties getProperties() {
-        return getImageProperties();
+        return imageProperties;
     }
 
     protected BufferedImage getFinalImageForDownload(DoubleConsumer progressUpdater) {
@@ -73,7 +71,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     @FXML
     protected void submitAndDownload() {
-        if (Checking.checkImageAndOutputOnNull(getImageProperties()) || isNull(processedImage)) {
+        if (Checking.checkImageAndOutputOnNull(imageProperties) || isNull(processedImage)) {
             ErrorLogger.warn("Cannot submit task: input image, output directory or processed image is null");
             return;
         }
@@ -91,11 +89,11 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
                 updateMessage("Saving image...");
 
                 File outputFile = PathWorker.createOutputFile(
-                        getImageProperties().getImage(),
-                        getImageProperties().getOutput(),
-                        getImageProperties().getTypeImage());
+                        imageProperties.getImage(),
+                        imageProperties.getOutput(),
+                        imageProperties.getTypeImage());
 
-                ImagePreprocessing.downloadImage(finalImage, getImageProperties().getTypeImage(), outputFile);
+                ImagePreprocessing.downloadImage(finalImage, imageProperties.getTypeImage(), outputFile);
 
                 updateProgress(1.0, 1.0);
 
@@ -108,7 +106,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
     @FXML
     protected void chooseSaveDirectory() {
-        selectOutputDirectory(btnChooseSaveDirectory, getImageProperties().getOutput(), getImageProperties()::setOutput, "Select directory for save image");
+        selectOutputDirectory(btnChooseSaveDirectory, imageProperties.getOutput(), imageProperties::setOutput, "Select directory for save image");
     }
 
     @FXML
@@ -123,7 +121,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
             return;
         }
 
-        if (isNull(getImageView())) {
+        if (isNull(imagePreview)) {
             ErrorLogger.warn("Cannot generate preview: imageView is not initialized");
             return;
         }
@@ -131,7 +129,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
         originalImage = null;
         processedImage = null;
 
-        getImageView().setImage(null);
+        imagePreview.setImage(null);
 
         if (nonNull(labelPreviewPlaceholder)) {
             labelPreviewPlaceholder.setVisible(true);
@@ -139,8 +137,8 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
 
         disableControls();
 
-        getImageProperties().setImage(file);
-        getImageProperties().setTypeImage(DetermineType.determineFormat(file).orElse(null));
+        imageProperties.setImage(file);
+        imageProperties.setTypeImage(DetermineType.determineFormat(file).orElse(null));
 
         if (nonNull(labelSelectFile)) labelSelectFile.setText("Select image: " + file.getName());
 
@@ -161,7 +159,7 @@ public abstract class AbstractImageToolController extends AbstractMediaControlle
             }
         } catch (Exception e) {
             ErrorLogger.error("Failed to load preview: " + e.getMessage());
-            showErrorMessage(labelSuccess, "Failed to load image: " + e.getMessage(), getImageProperties().getHideSuccessMessageTimer());
+            showErrorMessage(labelSuccess, "Failed to load image: " + e.getMessage(), imageProperties.getHideSuccessMessageTimer());
             labelSuccess.setManaged(true);
         }
 
