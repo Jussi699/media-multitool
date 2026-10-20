@@ -9,13 +9,6 @@
     <version>1.0-SNAPSHOT</version>
     <name>Media-Multitool</name>
 
-    <repositories>
-        <repository>
-            <id>in-project-repo</id>
-            <url>file://${project.basedir}/repo</url>
-        </repository>
-    </repositories>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.1.3</junit.version>
