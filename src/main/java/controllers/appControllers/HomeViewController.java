@@ -10,15 +10,7 @@ import visual.dialogs.Alerts;
 import static java.util.Objects.nonNull;
 
 public class HomeViewController {
-    @FXML private Button btnImageConverter, btnVideoConverter, btnAudioConverter, btnHelp, btnApplicationInfo, btnMetadata;
-    @FXML private Button btnMediaTagEditor, btnWatermarkVideo, btnWatermarkPdf, btnWatermarkImage, btnSplitPdf;
-    @FXML private Button btnMergePdf, btnPdfCompress, btnUnlockPdf, btnProtectPdf, btnRemovePagesPdf, btnPdfToImage;
-    @FXML private Button btnImagesToPdf, btnImageToPdf, btnCrop, btnColorReplace, btnFindPixel, btnSpotBlur;
-    @FXML private Button btnBlur, btnBlackAndWhite, btnColorize, btnDarken, btnLighten, btnRotate, btnNegative;
-    @FXML private Button btnCompressPdf, btnCompressVideo, btnCompressImage;
-
-    @Setter
-    private ViewController mainController;
+    @Setter private ViewController mainController;
 
     @FXML
     public void initialize() {}
@@ -62,6 +54,8 @@ public class HomeViewController {
                 case "btnPdfCompress"    -> mainController.onActionChoiceActionPdf(27);
                 case "btnMergePdf"       -> mainController.onActionChoiceActionPdf(28);
                 case "btnSplitPdf"       -> mainController.onActionChoiceActionPdf(29);
+                case "btnPdfToWord"      -> mainController.onActionChoiceActionPdf(30);
+                case "btnWordToPdf"      -> mainController.onActionChoiceActionPdf(31);
 
                 // Watermark
                 case "btnWatermarkImage" -> mainController.onActionChoiceActionWatermark(41);

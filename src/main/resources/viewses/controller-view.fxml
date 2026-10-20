@@ -295,56 +295,9 @@
         </ScrollPane>
     </VBox>
 
-    <StackPane prefHeight="820.0"
+    <StackPane fx:id="mainContentPane"
+               prefHeight="820.0"
                prefWidth="630.0"
                style="-fx-background-color: #2b2b2b;"
-               HBox.hgrow="ALWAYS">
-
-        <fx:include fx:id="homeView" source="home-view.fxml"/>
-
-        <!--Converter-->
-        <fx:include fx:id="converterImagePage"      source="converter-views/converter-image-view.fxml"/>
-        <fx:include fx:id="converterVideoPage"      source="converter-views/converter-video-view.fxml"/>
-        <fx:include fx:id="converterMP3Page"        source="converter-views/converter-audio-view.fxml"/>
-
-        <!--Compressor-->
-        <fx:include fx:id="compressorVideoPage"     source="compressor-views/compressor-video-view.fxml"/>
-        <fx:include fx:id="compressorImagePage"     source="compressor-views/compressor-image-view.fxml"/>
-
-        <!--Image-Tools-->
-        <fx:include fx:id="negativeImagePage"       source="image-tools-views/negative-image-view.fxml"/>
-        <fx:include fx:id="rotateImagePage"         source="image-tools-views/rotate-image-view.fxml"/>
-        <fx:include fx:id="lightenPage"             source="image-tools-views/lighten-image-view.fxml"/>
-        <fx:include fx:id="darkenPage"              source="image-tools-views/darken-image-view.fxml"/>
-        <fx:include fx:id="colorizePage"            source="image-tools-views/colorize-image-view.fxml"/>
-        <fx:include fx:id="blackAndWhitePage"       source="image-tools-views/black-white-image-view.fxml"/>
-        <fx:include fx:id="blurPage"                source="image-tools-views/blur-image-view.fxml"/>
-        <fx:include fx:id="spotBlurPage"            source="image-tools-views/spot-blur-image-view.fxml"/>
-        <fx:include fx:id="findPixelPage"           source="image-tools-views/find-color-pixel-image-view.fxml"/>
-        <fx:include fx:id="colorReplaceInImagePage" source="image-tools-views/color-replace-image-view.fxml"/>
-        <fx:include fx:id="cropPage"                source="image-tools-views/crop-image-view.fxml"/>
-
-        <!--PDF-Tools-->
-        <fx:include fx:id="imageToPdfPage"          source="pdf-views/converter-image-to-pdf-view.fxml"/>
-        <fx:include fx:id="imagesToPdfPage"         source="pdf-views/images-to-pdf-view.fxml"/>
-        <fx:include fx:id="pdfToImagePage"          source="pdf-views/converter-pdf-to-image-view.fxml"/>
-        <fx:include fx:id="removePagesPdfPage"      source="pdf-views/remove-pages-pdf-view.fxml"/>
-        <fx:include fx:id="protectPdfPage"          source="pdf-views/protect-pdf-view.fxml"/>
-        <fx:include fx:id="unlockPdfPage"           source="pdf-views/unlock-pdf-view.fxml"/>
-        <fx:include fx:id="compressPdfPage"         source="pdf-views/compressor-pdf-view.fxml"/>
-        <fx:include fx:id="mergePdfPage"            source="pdf-views/merge-pdf-view.fxml"/>
-        <fx:include fx:id="splitPdfPage"            source="pdf-views/split-pdf-view.fxml"/>
-
-        <!--Watermark-Tools-->
-        <fx:include fx:id="watermarkImagePane"      source="watermark-views/watermark-image-view.fxml"/>
-        <fx:include fx:id="watermarkPdfPane"        source="watermark-views/watermark-pdf-view.fxml"/>
-        <fx:include fx:id="watermarkVideoPane"      source="watermark-views/watermark-video-view.fxml"/>
-
-        <!--Media-Tools-->
-        <fx:include fx:id="mediaTagEditorPage"      source="media-tools/media-tag-editor-view.fxml"/>
-        <fx:include fx:id="metaDataPage"            source="media-tools/meta-data.fxml"/>
-
-        <!--Media-Tools-->
-        <fx:include fx:id="infoPage"                source="info-view.fxml"/>
-    </StackPane>
+               HBox.hgrow="ALWAYS"/>
 </HBox>

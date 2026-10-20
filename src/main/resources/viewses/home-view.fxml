@@ -57,21 +57,21 @@
                               vgap="14.0"
                               styleClass="flowpane-home-page">
 
-                        <Button fx:id="btnImageConverter"
+                        <Button id="btnImageConverter"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Image Converter"/>
 
-                        <Button fx:id="btnVideoConverter"
+                        <Button id="btnVideoConverter"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Video Converter"/>
 
-                        <Button fx:id="btnAudioConverter"
+                        <Button id="btnAudioConverter"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
@@ -97,21 +97,21 @@
                               vgap="14.0"
                               styleClass="flowpane-home-page">
 
-                        <Button fx:id="btnCompressImage"
+                        <Button id="btnCompressImage"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Compress Image"/>
 
-                        <Button fx:id="btnCompressVideo"
+                        <Button id="btnCompressVideo"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Compress Video"/>
 
-                        <Button fx:id="btnCompressPdf"
+                        <Button id="btnCompressPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
@@ -132,77 +132,77 @@
                               vgap="14.0"
                               styleClass="flowpane-home-page">
 
-                        <Button fx:id="btnNegative"
+                        <Button id="btnNegative"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Negative"/>
 
-                        <Button fx:id="btnRotate"
+                        <Button id="btnRotate"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Rotate"/>
 
-                        <Button fx:id="btnLighten"
+                        <Button id="btnLighten"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Lighten"/>
 
-                        <Button fx:id="btnDarken"
+                        <Button id="btnDarken"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Darken"/>
 
-                        <Button fx:id="btnColorize"
+                        <Button id="btnColorize"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Colorize"/>
 
-                        <Button fx:id="btnBlackAndWhite"
+                        <Button id="btnBlackAndWhite"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="B&amp;W"/>
 
-                        <Button fx:id="btnBlur"
+                        <Button id="btnBlur"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Blur"/>
 
-                        <Button fx:id="btnSpotBlur"
+                        <Button id="btnSpotBlur"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Spot Blur"/>
 
-                        <Button fx:id="btnFindPixel"
+                        <Button id="btnFindPixel"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Find Pixel"/>
 
-                        <Button fx:id="btnColorReplace"
+                        <Button id="btnColorReplace"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Color Replace"/>
 
-                        <Button fx:id="btnCrop"
+                        <Button id="btnCrop"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
@@ -223,68 +223,82 @@
                               vgap="14.0"
                               styleClass="flowpane-home-page">
 
-                        <Button fx:id="btnImageToPdf"
+                        <Button id="btnImageToPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Image to PDF"/>
 
-                        <Button fx:id="btnImagesToPdf"
+                        <Button id="btnImagesToPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Image(s) to PDF"/>
 
-                        <Button fx:id="btnPdfToImage"
+                        <Button id="btnPdfToImage"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="PDF to Image"/>
 
-                        <Button fx:id="btnRemovePagesPdf"
+                        <Button id="btnRemovePagesPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Remove Pages"/>
 
-                        <Button fx:id="btnProtectPdf"
+                        <Button id="btnProtectPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Protect PDF"/>
 
-                        <Button fx:id="btnUnlockPdf"
+                        <Button id="btnUnlockPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Unlock PDF"/>
 
-                        <Button fx:id="btnPdfCompress"
+                        <Button id="btnPdfCompress"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Compress PDF"/>
 
-                        <Button fx:id="btnMergePdf"
+                        <Button id="btnMergePdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Merge PDF"/>
 
-                        <Button fx:id="btnSplitPdf"
+                        <Button id="btnSplitPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Split PDF"/>
+
+                        <Button id="btnPdfToWord"
+                                mnemonicParsing="false"
+                                onAction="#onOpenPagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="PDF To Word"/>
+
+                        <Button id="btnWordToPdf"
+                                mnemonicParsing="false"
+                                onAction="#onOpenPagePressed"
+                                prefWidth="160.0"
+                                styleClass="tool-button"
+                                text="Word To PDF"/>
                     </FlowPane>
                 </VBox>
 
@@ -300,21 +314,21 @@
                               vgap="14.0"
                               styleClass="flowpane-home-page">
 
-                        <Button fx:id="btnWatermarkImage"
+                        <Button id="btnWatermarkImage"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Watermark Image"/>
 
-                        <Button fx:id="btnWatermarkPdf"
+                        <Button id="btnWatermarkPdf"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Watermark PDF"/>
 
-                        <Button fx:id="btnWatermarkVideo"
+                        <Button id="btnWatermarkVideo"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
@@ -335,14 +349,14 @@
                               vgap="14.0"
                               styleClass="flowpane-home-page">
 
-                        <Button fx:id="btnMediaTagEditor"
+                        <Button id="btnMediaTagEditor"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Media Tag Editor"/>
 
-                        <Button fx:id="btnMetadata"
+                        <Button id="btnMetadata"
                                 mnemonicParsing="false"
                                 onAction="#onOpenPagePressed"
                                 prefWidth="160.0"
@@ -352,7 +366,7 @@
                 </VBox>
 
                 <HBox alignment="CENTER">
-                    <Button fx:id="btnApplicationInfo"
+                    <Button id="btnApplicationInfo"
                             mnemonicParsing="false"
                             onAction="#onOpenPagePressed"
                             styleClass="info-tool-button"
@@ -364,7 +378,7 @@
 
     </VBox>
 
-    <Button fx:id="btnHelp"
+    <Button id="btnHelp"
             text="?"
             onAction="#showInfo"
             styleClass="info-button"

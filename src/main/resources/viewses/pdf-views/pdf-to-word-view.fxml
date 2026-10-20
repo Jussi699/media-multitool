@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="controllers.pdfTools.ConverterPdfToWordController">
+    <VBox alignment="TOP_CENTER"
+          prefHeight="820.0"
+          prefWidth="630.0"
+          spacing="12.0"
+          styleClass="gradient-background">
+
+        <Label styleClass="main-label-name-page" text="PDF To Word">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="20.0">
+            <Button fx:id="btnSelectFile"
+                    mnemonicParsing="false"
+                    onAction="#selectPdfFile"
+                    prefWidth="180.0"
+                    text="Select PDF"/>
+
+            <Button fx:id="btnChoiceDirForSave"
+                    mnemonicParsing="false"
+                    onAction="#chooseSaveDirectory"
+                    prefWidth="180.0"
+                    text="Directory for save">
+
+                <tooltip>
+                    <Tooltip text="Default directory: Desktop"/>
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <Label fx:id="labelSuccess"
+                   styleClass="labelSuccess"
+                   text="Conversion status"
+                   visible="false"/>
+
+            <ProgressBar fx:id="progressBar"
+                         prefWidth="240.0"
+                         progress="0.0"
+                         visible="false"
+                         managed="false"/>
+
+            <HBox alignment="CENTER" spacing="16.0">
+                <Button fx:id="btnSubmit"
+                        mnemonicParsing="false"
+                        onAction="#submitAndDownload"
+                        prefWidth="240.0"
+                        text="Convert and Download"/>
+
+                <Button fx:id="btnCancel"
+                        mnemonicParsing="false"
+                        onAction="#cancelProcessing"
+                        prefWidth="240.0"
+                        text="Cancel Conversion"
+                        disable="true"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+            <StackPane fx:id="previewContainer"
+                       minWidth="200"
+                       VBox.vgrow="ALWAYS">
+
+                <Label fx:id="labelPreviewPlaceholder" text="PDF preview"/>
+                <ImageView fx:id="imageViewPdf"
+                           pickOnBounds="true"
+                           preserveRatio="true"/>
+            </StackPane>
+            <StackPane fx:id="dropZone"
+                       styleClass="drop-zone"
+                       HBox.hgrow="ALWAYS">
+
+                <Label fx:id="textDragZone" text="Drag PDF here"/>
+            </StackPane>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="4.0">
+            <Label fx:id="labelSelectFileName"
+                   styleClass="labelSelect"
+                   text="Selected PDF file: none"/>
+
+            <Button fx:id="btnReset"
+                    mnemonicParsing="false"
+                    onAction="#isPressedReset"
+                    prefWidth="240.0"
+                    text="Reset"/>
+        </VBox>
+
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="8.0"/>
+        </padding>
+    </VBox>
+
+    <Button onAction="#showInfo"
+            styleClass="info-button"
+            text="?"
+            StackPane.alignment="TOP_LEFT">
+
+        <StackPane.margin>
+            <Insets left="10.0" top="10.0"/>
+        </StackPane.margin>
+    </Button>
+</StackPane>

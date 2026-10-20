@@ -2,31 +2,27 @@ package controllers.appControllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import model.logger.ErrorLogger;
 import visual.controls.ComboBoxItem;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.function.IntConsumer;
 
 import static java.util.Objects.nonNull;
 
 public class ViewController {
-
-    @FXML private StackPane mediaTagEditorPage, blurPage, blackAndWhitePage, colorizePage, darkenPage, lightenPage, infoPage, metaDataPage;
-    @FXML private StackPane compressorVideoPage, converterMP3Page, homeView, converterImagePage, converterVideoPage, compressorImagePage;
-    @FXML private StackPane negativeImagePage, rotateImagePage, currentPageFromComboBoxAction, findPixelPage, cropPage, imageToPdfPage;
-    @FXML private StackPane pdfToImagePage, imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage, removePagesPdfPage;
-    @FXML private StackPane compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane, watermarkPdfPane, watermarkVideoPane, spotBlurPage;
-
-    @FXML private HomeViewController homeViewController;
+    @FXML private StackPane mainContentPane;
 
     @FXML private Button navHomeButton, navConverterImageButton, navConverterVideoButton, navConverterAudioButton;
     @FXML private Button navCompressorImage, navCompressorVideo, navInfo, navMediaEditorTag, navCompressorPdf, navMetaData;
@@ -34,54 +30,49 @@ public class ViewController {
     @FXML private VBox imageToolsContent, pdfToolsContent, watermarkContent, mediaToolsContent;
     @FXML private ToggleButton btnConverters, btnCompressors, btnImageTools, btnPdfTools, btnWatermark, btnMediaTools;
 
-    @FXML private InfoController infoPageController;
-
-    private final Map<Integer, StackPane> stackPaneMapImageTools = new HashMap<>();
-    private final Map<Integer, StackPane> stackPaneMapPdfTools = new HashMap<>();
-    private final Map<Integer, StackPane> stackPaneMapWatermark = new HashMap<>();
-
     private final List<Button> listSubBtn = new ArrayList<>();
+
+    private final Map<Integer, String> fxmlMapImageTools = Map.ofEntries(
+            Map.entry(1,  "image-tools-views/negative-image-view.fxml"),
+            Map.entry(2,  "image-tools-views/rotate-image-view.fxml"),
+            Map.entry(3,  "image-tools-views/lighten-image-view.fxml"),
+            Map.entry(4,  "image-tools-views/darken-image-view.fxml"),
+            Map.entry(5,  "image-tools-views/colorize-image-view.fxml"),
+            Map.entry(6,  "image-tools-views/black-white-image-view.fxml"),
+            Map.entry(7,  "image-tools-views/blur-image-view.fxml"),
+            Map.entry(8,  "image-tools-views/spot-blur-image-view.fxml"),
+            Map.entry(9,  "image-tools-views/find-color-pixel-image-view.fxml"),
+            Map.entry(10, "image-tools-views/color-replace-image-view.fxml"),
+            Map.entry(11, "image-tools-views/crop-image-view.fxml")
+    );
+
+    private final Map<Integer, String> fxmlMapPdfTools = Map.ofEntries(
+            Map.entry(21, "pdf-views/converter-image-to-pdf-view.fxml"),
+            Map.entry(22, "pdf-views/images-to-pdf-view.fxml"),
+            Map.entry(23, "pdf-views/converter-pdf-to-image-view.fxml"),
+            Map.entry(24, "pdf-views/remove-pages-pdf-view.fxml"),
+            Map.entry(25, "pdf-views/protect-pdf-view.fxml"),
+            Map.entry(26, "pdf-views/unlock-pdf-view.fxml"),
+            Map.entry(27, "pdf-views/compressor-pdf-view.fxml"),
+            Map.entry(28, "pdf-views/merge-pdf-view.fxml"),
+            Map.entry(29, "pdf-views/split-pdf-view.fxml"),
+            Map.entry(30, "pdf-views/pdf-to-word-view.fxml"),
+            Map.entry(31, "pdf-views/word-to-pdf-view.fxml")
+    );
+
+    private final Map<Integer, String> fxmlMapWatermark = Map.ofEntries(
+            Map.entry(41, "watermark-views/watermark-image-view.fxml"),
+            Map.entry(42, "watermark-views/watermark-pdf-view.fxml"),
+            Map.entry(43, "watermark-views/watermark-video-view.fxml")
+    );
+
+    private record ViewEntry(Node root, Object controller) {}
+    private final Map<String, ViewEntry> viewCache = new HashMap<>();
 
     @FXML
     public void initialize() {
         listSubBtn.addAll(List.of(navConverterImageButton, navConverterVideoButton, navConverterAudioButton,
                 navCompressorImage, navCompressorVideo, navCompressorPdf, navMediaEditorTag, navMetaData));
-
-        if (nonNull(homeViewController)) {
-            homeViewController.setMainController(this);
-        }
-
-        stackPaneMapImageTools.putAll(Map.ofEntries(
-                Map.entry(1,  negativeImagePage),
-                Map.entry(2,  rotateImagePage),
-                Map.entry(3,  lightenPage),
-                Map.entry(4,  darkenPage),
-                Map.entry(5,  colorizePage),
-                Map.entry(6,  blackAndWhitePage),
-                Map.entry(7,  blurPage),
-                Map.entry(8,  spotBlurPage),
-                Map.entry(9,  findPixelPage),
-                Map.entry(10, colorReplaceInImagePage),
-                Map.entry(11, cropPage)
-        ));
-
-        stackPaneMapPdfTools.putAll(Map.of(
-                21, imageToPdfPage,
-                22, imagesToPdfPage,
-                23, pdfToImagePage,
-                24, removePagesPdfPage,
-                25, protectPdfPage,
-                26, unlockPdfPage,
-                27, compressPdfPage,
-                28, mergePdfPage,
-                29, splitPdfPage
-        ));
-
-        stackPaneMapWatermark.putAll(Map.of(
-                41, watermarkImagePane,
-                42, watermarkPdfPane,
-                43, watermarkVideoPane
-        ));
 
         populateVBox(imageToolsContent, List.of(
                 new ComboBoxItem(1, "Negative photo"),
@@ -106,7 +97,9 @@ public class ViewController {
                 new ComboBoxItem(26, "Unlock PDF"),
                 new ComboBoxItem(27, "Compress PDF"),
                 new ComboBoxItem(28, "Merge PDF"),
-                new ComboBoxItem(29, "Split PDF")
+                new ComboBoxItem(29, "Split PDF"),
+                new ComboBoxItem(30, "PDF to Word"),
+                new ComboBoxItem(31, "Word to PDF")
         ), this::onActionChoiceActionPdf);
 
         populateVBox(watermarkContent, List.of(
@@ -136,15 +129,49 @@ public class ViewController {
         }
     }
 
-    public void setActive(StackPane page, Button button) {
-        setActivePage(page, button);
+    private ViewEntry loadView(String fxmlPath) {
+        return viewCache.computeIfAbsent(fxmlPath, path -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewses/" + path));
+                Node root = loader.load();
+                Object controller = loader.getController();
+
+                if (controller instanceof HomeViewController home) {
+                    home.setMainController(this);
+                }
+
+                return new ViewEntry(root, controller);
+            } catch (IOException e) {
+                ErrorLogger.error(getClass(), "Failed to load view: " + path + ", " + e.getMessage());
+                throw new IllegalStateException("Failed to load view: " + path, e);
+            }
+        });
+    }
+
+    private void setActiveStandalone(String fxmlPath, Button button) {
+        ViewEntry entry = loadView(fxmlPath);
+        mainContentPane.getChildren().setAll(entry.root());
+
         if (nonNull(btnConverters) && nonNull(btnConverters.getToggleGroup())) {
             btnConverters.getToggleGroup().selectToggle(null);
         }
+
+        navHomeButton.getStyleClass().remove("standalone-btn-active");
+        navInfo.getStyleClass().remove("standalone-btn-active");
+
+        if (nonNull(button)) {
+            button.getStyleClass().add("standalone-btn-active");
+        }
+        setActiveSubButton(null);
     }
 
-    public void setActive(StackPane page, Button button, ToggleButton toggleButton) {
-        setActivePage(page, null);
+    private void setActiveSub(String fxmlPath, Button button, ToggleButton toggleButton) {
+        ViewEntry entry = loadView(fxmlPath);
+        mainContentPane.getChildren().setAll(entry.root());
+
+        navHomeButton.getStyleClass().remove("standalone-btn-active");
+        navInfo.getStyleClass().remove("standalone-btn-active");
+
         setActiveSubButton(button);
         if (nonNull(toggleButton)) {
             toggleButton.setSelected(true);
@@ -153,79 +180,83 @@ public class ViewController {
 
     @FXML
     public void showHomePage() {
-        setActive(homeView, navHomeButton);
+        setActiveStandalone("home-view.fxml", navHomeButton);
     }
 
     @FXML
     public void showInfoPage() {
-        setActive(infoPage, navInfo);
-        if (nonNull(infoPageController)) {
-            infoPageController.callReloadLogArea();
+        setActiveStandalone("info-view.fxml", navInfo);
+        ViewEntry entry = viewCache.get("info-view.fxml");
+        if (nonNull(entry) && entry.controller() instanceof InfoController infoController) {
+            infoController.callReloadLogArea();
         }
     }
 
     @FXML
     public void showConverterImagePage() {
-        setActive(converterImagePage, navConverterImageButton, btnConverters);
+        setActiveSub("converter-views/converter-image-view.fxml", navConverterImageButton, btnConverters);
     }
 
     @FXML
     public void showConverterVideoPage() {
-        setActive(converterVideoPage, navConverterVideoButton, btnConverters);
+        setActiveSub("converter-views/converter-video-view.fxml", navConverterVideoButton, btnConverters);
     }
 
     @FXML
     public void showConverterAudioPage() {
-        setActive(converterMP3Page, navConverterAudioButton, btnConverters);
+        setActiveSub("converter-views/converter-audio-view.fxml", navConverterAudioButton, btnConverters);
     }
 
     @FXML
     public void showCompressorImagePage() {
-        setActive(compressorImagePage, navCompressorImage, btnCompressors);
+        setActiveSub("compressor-views/compressor-image-view.fxml", navCompressorImage, btnCompressors);
     }
 
     @FXML
     public void showCompressorVideoPage() {
-        setActive(compressorVideoPage, navCompressorVideo, btnCompressors);
+        setActiveSub("compressor-views/compressor-video-view.fxml", navCompressorVideo, btnCompressors);
     }
 
     @FXML
     public void showCompressorPdfPage() {
-        setActive(compressPdfPage, navCompressorPdf, btnCompressors);
+        setActiveSub("pdf-views/compressor-pdf-view.fxml", navCompressorPdf, btnCompressors);
     }
 
     @FXML
     public void showMediaEditorTagPage() {
-        setActive(mediaTagEditorPage, navMediaEditorTag, btnMediaTools);
+        setActiveSub("media-tools/media-tag-editor-view.fxml", navMediaEditorTag, btnMediaTools);
     }
 
     @FXML
     public void showMetaDataPage() {
-        setActive(metaDataPage, navMetaData, btnMediaTools);
+        setActiveSub("media-tools/meta-data.fxml", navMetaData, btnMediaTools);
     }
 
     @FXML
     public void onActionChoiceActionPdf(int index) {
-        currentPageFromComboBoxAction = stackPaneMapPdfTools.get(index);
-        setActivePage(currentPageFromComboBoxAction, null);
-        btnPdfTools.setSelected(true);
-        highlightSubButtonByUserData(pdfToolsContent, index);
+        String fxml = fxmlMapPdfTools.get(index);
+        if (nonNull(fxml)) {
+            setActiveSub(fxml, null, btnPdfTools);
+            highlightSubButtonByUserData(pdfToolsContent, index);
+        }
     }
 
     @FXML
     public void onActionChoiceActionWatermark(int index) {
-        currentPageFromComboBoxAction = stackPaneMapWatermark.get(index);
-        setActivePage(currentPageFromComboBoxAction, null);
-        btnWatermark.setSelected(true);
-        highlightSubButtonByUserData(watermarkContent, index);
+        String fxml = fxmlMapWatermark.get(index);
+        if (nonNull(fxml)) {
+            setActiveSub(fxml, null, btnWatermark);
+            highlightSubButtonByUserData(watermarkContent, index);
+        }
     }
 
     @FXML
     public void onActionChoiceActionImage(int index) {
-        currentPageFromComboBoxAction = stackPaneMapImageTools.get(index);
-        setActivePage(currentPageFromComboBoxAction, null);
-        btnImageTools.setSelected(true);
-        highlightSubButtonByUserData(imageToolsContent, index);
+        String fxml = fxmlMapImageTools.get(index);
+        if (nonNull(fxml)) {
+            setActiveSub(fxml, null, btnImageTools);
+            highlightSubButtonByUserData(imageToolsContent, index);
+        }
     }
 
     private void highlightSubButtonByUserData(VBox box, int index) {
@@ -254,51 +285,21 @@ public class ViewController {
         }
     }
 
-    private void setActivePage(StackPane pageToShow, Button activeButton) {
-        StackPane[] allPages = {
-                homeView, converterImagePage, converterVideoPage, converterMP3Page,
-                compressorImagePage, compressorVideoPage, negativeImagePage, rotateImagePage,
-                infoPage, lightenPage, darkenPage, colorizePage, blackAndWhitePage, blurPage,
-                mediaTagEditorPage, findPixelPage, cropPage, imageToPdfPage, pdfToImagePage,
-                imagesToPdfPage, protectPdfPage, colorReplaceInImagePage, unlockPdfPage,
-                removePagesPdfPage, compressPdfPage, mergePdfPage, splitPdfPage, watermarkImagePane,
-                watermarkPdfPane, watermarkVideoPane, spotBlurPage, metaDataPage
-        };
-
-        for (StackPane page : allPages) {
-            if (nonNull(page)) {
-                page.setVisible(page == pageToShow);
-                page.setManaged(page == pageToShow);
-            }
-        }
-
-        navHomeButton.getStyleClass().remove("standalone-btn-active");
-        navInfo.getStyleClass().remove("standalone-btn-active");
-
-        if (nonNull(activeButton)) {
-            activeButton.getStyleClass().add("standalone-btn-active");
-            setActiveSubButton(null);
-        }
-    }
-
     @FXML
     public void showPage(ActionEvent actionEvent) {
         Button button = (Button) actionEvent.getSource();
 
         switch (button.getId()) {
-            case "navHomeButton"           -> setActive(homeView, navHomeButton);
-            case "navConverterImageButton" -> setActive(converterImagePage, navConverterImageButton, btnConverters);
-            case "navConverterVideoButton" -> setActive(converterVideoPage, navConverterVideoButton, btnConverters);
-            case "navConverterAudioButton" -> setActive(converterMP3Page, navConverterAudioButton, btnConverters);
-            case "navCompressorImage"      -> setActive(compressorImagePage, navCompressorImage, btnCompressors);
-            case "navCompressorVideo"      -> setActive(compressorVideoPage, navCompressorVideo, btnCompressors);
-            case "navCompressorPdf"        -> setActive(compressPdfPage, navCompressorPdf, btnCompressors);
-            case "navMediaEditorTag"       -> setActive(mediaTagEditorPage, navMediaEditorTag, btnMediaTools);
-            case "navMetaData"             -> setActive(metaDataPage, navMetaData, btnMediaTools);
-            case "navInfo"                 ->  {
-                setActive(infoPage, navInfo);
-                showInfoPage();
-            }
+            case "navHomeButton"           -> showHomePage();
+            case "navConverterImageButton" -> showConverterImagePage();
+            case "navConverterVideoButton" -> showConverterVideoPage();
+            case "navConverterAudioButton" -> showConverterAudioPage();
+            case "navCompressorImage"      -> showCompressorImagePage();
+            case "navCompressorVideo"      -> showCompressorVideoPage();
+            case "navCompressorPdf"        -> showCompressorPdfPage();
+            case "navMediaEditorTag"       -> showMediaEditorTagPage();
+            case "navMetaData"             -> showMetaDataPage();
+            case "navInfo"                 -> showInfoPage();
             default -> throw new IllegalArgumentException("Unexpected id: " + button.getId());
         }
     }
