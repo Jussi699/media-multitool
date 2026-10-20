@@ -4,9 +4,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.logger.ErrorLogger;
@@ -20,6 +22,11 @@ import static java.util.Objects.nonNull;
 
 public class MediaMultitoolApp extends Application {
     private static final String PATH_MAIN_ICON = "/assets/tools.png";
+    private static final double DEFAULT_WINDOW_WIDTH = 1040;
+    private static final double DEFAULT_WINDOW_HEIGHT = 860;
+    private static final double MIN_WINDOW_WIDTH = 840;
+    private static final double MIN_WINDOW_HEIGHT = 560;
+    private static final double SCREEN_SIZE_RATIO = 0.9;
 
     @Override
     public void start(Stage loadingStage) throws IOException {
@@ -75,7 +82,7 @@ public class MediaMultitoolApp extends Application {
 
     private Scene createMainScene() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MediaMultitoolApp.class.getResource("/viewses/controller-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1040, 860);
+        Scene scene = new Scene(fxmlLoader.load(), DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/style.css")));
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/root.css")));
         scene.getStylesheets().add(String.valueOf(getClass().getResource("/styles/home_page&control_panel.css")));
@@ -98,14 +105,25 @@ public class MediaMultitoolApp extends Application {
         mainStage.setResizable(true);
         mainStage.setTitle("Media multitool!");
         mainStage.setScene(mainScene);
+
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double availableWidth = screenBounds.getWidth() * SCREEN_SIZE_RATIO;
+        double availableHeight = screenBounds.getHeight() * SCREEN_SIZE_RATIO;
+
+        mainStage.setMinWidth(Math.min(MIN_WINDOW_WIDTH, availableWidth));
+        mainStage.setMinHeight(Math.min(MIN_WINDOW_HEIGHT, availableHeight));
+        mainStage.setWidth(Math.min(DEFAULT_WINDOW_WIDTH, availableWidth));
+        mainStage.setHeight(Math.min(DEFAULT_WINDOW_HEIGHT, availableHeight));
+
         WindowsDwmUtils.enableDarkMode(mainStage);
         mainStage.show();
+        mainStage.centerOnScreen();
     }
 
     private void onAppLoadFailed(Stage loadingStage, Throwable ex) {
         if (nonNull(ex)) {
             String rootCauseMessage = extractRootCauseMessage(ex);
-            ErrorLogger.error("Failed to load application", ex);
+            ErrorLogger.error(getClass(), "Failed to load application", ex);
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Failed load app",
                     "Application startup failed.\nRoot cause: " + rootCauseMessage
                             + "\n\nFull details are available in the application log.");
@@ -132,7 +150,7 @@ public class MediaMultitoolApp extends Application {
         try {
             stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(PATH_MAIN_ICON))));
         } catch (NullPointerException e) {
-            ErrorLogger.error("The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
+            ErrorLogger.error(getClass(), "The icon for the application is missing or damaged: " + e + " (" + PATH_MAIN_ICON + ")");
         }
     }
 
