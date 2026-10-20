@@ -6,7 +6,7 @@
 
     <groupId>Jussi669</groupId>
     <artifactId>Media-Multitool</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.7</version>
     <name>Media-Multitool</name>
 
     <properties>
@@ -19,6 +19,8 @@
         <ffmpeg.version>8.1.2-${javacpp.version}</ffmpeg.version>
         <jave.version>4.2.0</jave.version>
         <maven.compiler.release>25</maven.compiler.release>
+        <twelvemonkeys.imageio.version>3.13.1</twelvemonkeys.imageio.version>
+        <logback-classic.version>1.6.4</logback-classic.version>
     </properties>
 
     <dependencies>
@@ -78,19 +80,19 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
-            <version>3.13.1</version>
+            <version>${twelvemonkeys.imageio.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-jpeg</artifactId>
-            <version>3.13.1</version>
+            <version>${twelvemonkeys.imageio.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-tiff</artifactId>
-            <version>3.13.1</version>
+            <version>${twelvemonkeys.imageio.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -118,7 +120,7 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-pnm</artifactId>
-            <version>3.13.1</version>
+            <version>${twelvemonkeys.imageio.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -139,7 +141,7 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-batik</artifactId>
-            <version>3.13.1</version>
+            <version>${twelvemonkeys.imageio.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -166,13 +168,13 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.6.4</version>
+            <version>${logback-classic.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.6.4</version>
+            <version>${logback-classic.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
