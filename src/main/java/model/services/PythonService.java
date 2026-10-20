@@ -2,6 +2,8 @@ package model.services;
 
 import model.enums.PythonScript;
 import model.logger.ErrorLogger;
+import model.utility.io.AppPathManager;
+import model.utility.io.EnvironmentSetup;
 import model.utility.system.OS;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -109,16 +111,14 @@ public class PythonService {
         Objects.requireNonNull(inputFilePath, "Input file path cannot be null");
         Objects.requireNonNull(outputFilePath, "Output file path cannot be null");
 
-        preparePython();
+        EnvironmentSetup.setupPythonIfNeeded();
 
-        Path pythonExePath = APP_DIR.resolve("python.exe");
-        Path scriptPath    = APP_DIR.resolve(script.getNameScript());
-        Path inputPath     = Paths.get(inputFilePath);
-        Path outputPath    = Paths.get(outputFilePath);
+        Path pythonExe = AppPathManager.getBaseDir().resolve("python_script/python.exe");
+        Path scriptPath = AppPathManager.getBaseDir().resolve("python_script").resolve(script.getNameScript());
+        Path inputPath  = Paths.get(inputFilePath);
+        Path outputPath = Paths.get(outputFilePath);
 
-        File inputFile = new File(inputFilePath);
-
-        validatePythonEnvironment(pythonExePath, scriptPath);
+        validatePythonEnvironment(pythonExe, scriptPath);
         validateInputFile(inputPath);
 
         Path parentDir = outputPath.getParent();
@@ -131,12 +131,12 @@ public class PythonService {
                 Script Path: %s
                 Input: %s
                 Output: %s
-        """.formatted(pythonExePath, scriptPath, inputPath.toAbsolutePath(), outputPath.toAbsolutePath()));
+        """.formatted(pythonExe, scriptPath, inputPath.toAbsolutePath(), outputPath.toAbsolutePath()));
 
         ProcessBuilder pb = new ProcessBuilder(
-                pythonExePath.toString(),
+                pythonExe.toString(),
                 scriptPath.toString(),
-                inputFile.getAbsolutePath(),
+                inputPath.toAbsolutePath().toString(),
                 outputPath.toAbsolutePath().toString()
         );
         pb.redirectErrorStream(true);

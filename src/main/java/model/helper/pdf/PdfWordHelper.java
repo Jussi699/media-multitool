@@ -3,6 +3,7 @@ package model.helper.pdf;
 import javafx.concurrent.Task;
 import model.enums.PythonScript;
 import model.services.PythonService;
+import model.utility.io.EnvironmentSetup;
 import model.utility.io.FileUtils;
 import org.jspecify.annotations.NonNull;
 
