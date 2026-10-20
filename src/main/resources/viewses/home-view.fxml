@@ -285,20 +285,6 @@
                                 prefWidth="160.0"
                                 styleClass="tool-button"
                                 text="Split PDF"/>
-
-                        <Button id="btnPdfToWord"
-                                mnemonicParsing="false"
-                                onAction="#onOpenPagePressed"
-                                prefWidth="160.0"
-                                styleClass="tool-button"
-                                text="PDF To Word"/>
-
-                        <Button id="btnWordToPdf"
-                                mnemonicParsing="false"
-                                onAction="#onOpenPagePressed"
-                                prefWidth="160.0"
-                                styleClass="tool-button"
-                                text="Word To PDF"/>
                     </FlowPane>
                 </VBox>
 

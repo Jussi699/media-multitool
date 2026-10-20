@@ -55,9 +55,7 @@ public class ViewController {
             Map.entry(26, "pdf-views/unlock-pdf-view.fxml"),
             Map.entry(27, "pdf-views/compressor-pdf-view.fxml"),
             Map.entry(28, "pdf-views/merge-pdf-view.fxml"),
-            Map.entry(29, "pdf-views/split-pdf-view.fxml"),
-            Map.entry(30, "pdf-views/pdf-to-word-view.fxml"),
-            Map.entry(31, "pdf-views/word-to-pdf-view.fxml")
+            Map.entry(29, "pdf-views/split-pdf-view.fxml")
     );
 
     private final Map<Integer, String> fxmlMapWatermark = Map.ofEntries(
@@ -97,9 +95,7 @@ public class ViewController {
                 new ComboBoxItem(26, "Unlock PDF"),
                 new ComboBoxItem(27, "Compress PDF"),
                 new ComboBoxItem(28, "Merge PDF"),
-                new ComboBoxItem(29, "Split PDF"),
-                new ComboBoxItem(30, "PDF to Word"),
-                new ComboBoxItem(31, "Word to PDF")
+                new ComboBoxItem(29, "Split PDF")
         ), this::onActionChoiceActionPdf);
 
         populateVBox(watermarkContent, List.of(

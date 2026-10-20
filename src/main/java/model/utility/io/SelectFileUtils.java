@@ -33,6 +33,14 @@ public class SelectFileUtils {
     private static final Object NFD_LOCK = new Object();
 
     public static Optional<File> choiceFile(Stage stage, FileChooser.ExtensionFilter filter) {
+        if (OS.getOS() != OS.TypeOS.WINDOWS) {
+            File selectedFile = createFileChooser(filter).showOpenDialog(stage);
+            if (selectedFile != null) {
+                saveInputPath(selectedFile);
+            }
+            return Optional.ofNullable(selectedFile);
+        }
+
         synchronized (NFD_LOCK) {
             boolean initialized = false;
             try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -66,6 +74,14 @@ public class SelectFileUtils {
     }
 
     public static Optional<List<File>> showOpenMultipleDialog(Stage stage, FileChooser.ExtensionFilter filter) {
+        if (OS.getOS() != OS.TypeOS.WINDOWS) {
+            List<File> selectedFiles = createFileChooser(filter).showOpenMultipleDialog(stage);
+            if (selectedFiles != null && !selectedFiles.isEmpty()) {
+                saveInputPath(selectedFiles.getFirst());
+            }
+            return Optional.ofNullable(selectedFiles);
+        }
+
         synchronized (NFD_LOCK) {
             boolean initialized = false;
             try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -109,6 +125,14 @@ public class SelectFileUtils {
                 }
             }
         }
+    }
+
+    private static FileChooser createFileChooser(FileChooser.ExtensionFilter filter) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(filter.getDescription());
+        fileChooser.getExtensionFilters().add(filter);
+        fileChooser.setInitialDirectory(getSavedInputPath());
+        return fileChooser;
     }
 
     private static NFDFilterItem.Buffer createFilter(MemoryStack stack, FileChooser.ExtensionFilter filter) {

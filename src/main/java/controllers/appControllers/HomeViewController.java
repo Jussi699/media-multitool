@@ -54,8 +54,6 @@ public class HomeViewController {
                 case "btnPdfCompress"    -> mainController.onActionChoiceActionPdf(27);
                 case "btnMergePdf"       -> mainController.onActionChoiceActionPdf(28);
                 case "btnSplitPdf"       -> mainController.onActionChoiceActionPdf(29);
-                case "btnPdfToWord"      -> mainController.onActionChoiceActionPdf(30);
-                case "btnWordToPdf"      -> mainController.onActionChoiceActionPdf(31);
 
                 // Watermark
                 case "btnWatermarkImage" -> mainController.onActionChoiceActionWatermark(41);

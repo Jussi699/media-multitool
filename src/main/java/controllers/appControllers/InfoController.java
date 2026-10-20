@@ -91,15 +91,26 @@ public class InfoController {
 
         try {
             if (!dirLog.exists() && !dirLog.mkdirs()) {
-                ErrorLogger.error("Error create directory!");
+                throw new IOException("Could not create logs directory: " + dirLog.getAbsolutePath());
+            }
+
+            if (OS.getOS() == OS.TypeOS.LINUX) {
+                new ProcessBuilder("xdg-open", dirLog.getAbsolutePath())
+                        .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                        .redirectError(ProcessBuilder.Redirect.DISCARD)
+                        .start();
+                return;
             }
 
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(dirLog);
+                return;
             }
+
+            throw new IOException("Desktop integration is not available.");
         } catch (IOException e) {
             Alerts.alertDialog(Alert.AlertType.WARNING, "Error opening directory", "IO Error", "Could not open logs directory!");
-            ErrorLogger.error("Could not open logs directory: " + e.getMessage());
+            ErrorLogger.error(getClass(),"Could not open logs directory: " + e.getMessage());
         }
     }
 
@@ -138,7 +149,7 @@ public class InfoController {
                     });
                 }
             } catch (IOException e) {
-                ErrorLogger.error("Error reading log file: " + e.getMessage());
+                ErrorLogger.error(getClass(), "Error reading log file: " + e.getMessage());
                 Platform.runLater(() ->
                         Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Error reading",
                                 "Error reading the log file.\nCheck log file for more details!")
@@ -156,7 +167,7 @@ public class InfoController {
                     logArea.positionCaret(0);
                 });
             } catch (IOException e) {
-                ErrorLogger.error("Error clearing the log file: " + currentFile.getAbsolutePath() + "\n" + e.getMessage());
+                ErrorLogger.error(getClass(), "Error clearing the log file: " + currentFile.getAbsolutePath() + "\n" + e.getMessage());
                 Platform.runLater(() ->
                         Alerts.alertDialog(Alert.AlertType.ERROR, "Error", "Error clearing",
                                 "Error clearing the log file.\nCheck log file for more details!")
@@ -175,7 +186,7 @@ public class InfoController {
     @FXML
     private void redirectToGithub() {
         if (isNull(btnGithub)) {
-            ErrorLogger.error("The GitHub redirect button has a null value!");
+            ErrorLogger.error(getClass(),"The GitHub redirect button has a null value!");
             return;
         }
 
@@ -184,7 +195,7 @@ public class InfoController {
                 Desktop.getDesktop().browse(new URI("https://github.com/Jussi699/media-multitool"));
             }
         } catch (Exception e) {
-            ErrorLogger.error("An error occurred while opening the page: " + e);
+            ErrorLogger.error(getClass(),"An error occurred while opening the page: " + e);
             Alerts.alertDialog(Alert.AlertType.ERROR, "Error opening page", "Error opening page",
                     "An error occurred while opening the page.\nCheck log file for more details!");
         }
