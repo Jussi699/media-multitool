@@ -15,6 +15,9 @@
         <javafx.version>25.0.2</javafx.version>
         <jna.version>5.19.1</jna.version>
         <lwjgl.version>3.4.3</lwjgl.version>
+        <javacpp.version>1.5.14</javacpp.version>
+        <ffmpeg.version>8.1.2-${javacpp.version}</ffmpeg.version>
+        <jave.version>4.2.0</jave.version>
         <maven.compiler.release>25</maven.compiler.release>
     </properties>
 
@@ -71,20 +74,6 @@
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-nfd</artifactId>
             <version>${lwjgl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>natives-windows</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-nfd</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>natives-windows</classifier>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
@@ -144,9 +133,8 @@
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>
-            <artifactId>javacv-platform</artifactId>
+            <artifactId>javacv</artifactId>
             <version>1.5.14</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
@@ -157,12 +145,7 @@
         <dependency>
             <groupId>ws.schild</groupId>
             <artifactId>jave-core</artifactId>
-            <version>4.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>ws.schild</groupId>
-            <artifactId>jave-all-deps</artifactId>
-            <version>4.2.0</version>
+            <version>${jave.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -248,6 +231,234 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>windows-x64</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>javacpp</artifactId>
+                    <version>${javacpp.version}</version>
+                    <classifier>windows-x86_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>ffmpeg</artifactId>
+                    <version>${ffmpeg.version}</version>
+                    <classifier>windows-x86_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>ws.schild</groupId>
+                    <artifactId>jave-nativebin-win64</artifactId>
+                    <version>${jave.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-windows</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl-nfd</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-windows</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>linux-x64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>javacpp</artifactId>
+                    <version>${javacpp.version}</version>
+                    <classifier>linux-x86_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>ffmpeg</artifactId>
+                    <version>${ffmpeg.version}</version>
+                    <classifier>linux-x86_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>ws.schild</groupId>
+                    <artifactId>jave-nativebin-linux64</artifactId>
+                    <version>${jave.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-linux</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl-nfd</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-linux</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>linux-arm64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>javacpp</artifactId>
+                    <version>${javacpp.version}</version>
+                    <classifier>linux-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>ffmpeg</artifactId>
+                    <version>${ffmpeg.version}</version>
+                    <classifier>linux-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>ws.schild</groupId>
+                    <artifactId>jave-nativebin-linux-arm64</artifactId>
+                    <version>${jave.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-linux-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl-nfd</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-linux-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>macos-x64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>javacpp</artifactId>
+                    <version>${javacpp.version}</version>
+                    <classifier>macosx-x86_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>ffmpeg</artifactId>
+                    <version>${ffmpeg.version}</version>
+                    <classifier>macosx-x86_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>ws.schild</groupId>
+                    <artifactId>jave-nativebin-osx64</artifactId>
+                    <version>${jave.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-macos</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl-nfd</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-macos</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>macos-arm64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>javacpp</artifactId>
+                    <version>${javacpp.version}</version>
+                    <classifier>macosx-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.bytedeco</groupId>
+                    <artifactId>ffmpeg</artifactId>
+                    <version>${ffmpeg.version}</version>
+                    <classifier>macosx-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>ws.schild</groupId>
+                    <artifactId>jave-nativebin-osxm1</artifactId>
+                    <version>${jave.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-macos-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl-nfd</artifactId>
+                    <version>${lwjgl.version}</version>
+                    <classifier>natives-macos-arm64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -278,6 +489,7 @@
                         --add-opens controllers/model.converterImage=org.junit.platform.commons,ALL-UNNAMED
                         --add-opens controllers/model.preprocessing=org.junit.platform.commons,ALL-UNNAMED
                         --add-opens controllers/model.helper.pdf=org.junit.platform.commons,ALL-UNNAMED
+                        --add-opens controllers/model.enums=org.junit.platform.commons,ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>

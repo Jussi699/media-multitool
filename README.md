@@ -161,6 +161,7 @@ cd media-multitool
 ```bash
 mvn clean install
 ```
+Maven automatically selects the matching native dependencies for Windows x64, Linux x64/ARM64, or macOS x64/ARM64. JavaCV and JAVE native binaries, as well as LWJGL natives, are resolved only for the build machine's supported platform.
 
 #### 3. Run the application
 ```bash
