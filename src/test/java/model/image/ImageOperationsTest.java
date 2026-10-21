@@ -1,4 +1,4 @@
-package model.converterImage;
+package model.image;
 
 import model.mediaTools.converterImage.strategy.ImageConversionStrategy;
 import model.mediaTools.converterImage.strategy.ImageStrategyFactory;
@@ -9,6 +9,7 @@ import model.properties.ImageProperties;
 import model.mediaTools.compressorImage.CompressionResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import services.ImageTestService;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -18,50 +19,51 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ImageOperationsTest {
+class ImageOperationsTest {
 
     @TempDir
     Path tempDir;
 
     @Test
-    public void testConvertPngToAllFormats() throws IOException {
-        String PATH_TO_PNG = "E:\\test\\srcImage\\PNG.png";
-        File source = new File(PATH_TO_PNG);
+    void testConvertPngToAllFormats() throws IOException {
+        File source = ImageTestService.createPng(tempDir, "sample.png");
         String[] formats = {"jpg", "bmp", "webp", "ico", "svg", "tiff", "ppm", "pgm", "pam"};
-        
+
         for (String format : formats) {
             ImageConversionStrategy strategy = ImageStrategyFactory.getStrategy(source, format);
             File result = strategy.convert(source, tempDir.toFile(), format);
-            assertNotNull(result);
-            assertTrue(result.exists());
-            assertTrue(result.length() > 0);
+            assertNotNull(result, "Result file is null for format: " + format);
+            assertTrue(result.exists(), "File should exist: " + result.getName());
+            assertTrue(result.length() > 0, "File shouldn't be empty: " + result.getName());
         }
     }
 
     @Test
-    public void testConvertIcoToPng() throws IOException {
-        String PATH_TO_ICO = "E:\\test\\srcImage\\ICO.ico";
-        File source = new File(PATH_TO_ICO);
+    void testConvertIcoToPng() throws IOException {
+        File source = ImageTestService.createIco(tempDir, "sample.ico");
+
         ImageConversionStrategy strategy = ImageStrategyFactory.getStrategy(source, "png");
         File result = strategy.convert(source, tempDir.toFile(), "png");
         assertNotNull(result);
         assertTrue(result.exists());
+        assertTrue(result.length() > 0);
     }
 
     @Test
-    public void testConvertSvgToPng() throws IOException {
-        String PATH_TO_SVG = "E:\\test\\srcImage\\SVG.svg";
-        File source = new File(PATH_TO_SVG);
+    void testConvertSvgToPng() throws IOException {
+        File source = ImageTestService.createSvg(tempDir, "sample.svg");
+
         ImageConversionStrategy strategy = ImageStrategyFactory.getStrategy(source, "png");
         File result = strategy.convert(source, tempDir.toFile(), "png");
         assertNotNull(result);
         assertTrue(result.exists());
+        assertTrue(result.length() > 0);
     }
 
     @Test
-    public void testImageCompression() {
-        String PATH_TO_JPG = "E:\\test\\srcImage\\JPEG.jpeg";
-        File source = new File(PATH_TO_JPG);
+    void testImageCompression() throws IOException {
+        File source = ImageTestService.createJpg(tempDir, "sample.jpg");
+
         ImageProperties props = new ImageProperties();
         props.setImage(source);
         props.setOutput(tempDir.toFile());
@@ -70,17 +72,17 @@ public class ImageOperationsTest {
 
         Compressor compressor = new Compressor();
         Optional<CompressionResult> result = compressor.compressorStandardImage(props);
-        
+
         assertTrue(result.isPresent());
         assertTrue(result.get().outputFile().exists());
     }
 
     @Test
-    public void testTurnImage() {
+    void testTurnImage() {
         int width = 100;
         int height = 50;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        
+        BufferedImage image = ImageTestService.createBufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
         Optional<BufferedImage> flippedH = ImageTools.rotateImage(image, RotateSide.HORIZONTALLY);
         assertTrue(flippedH.isPresent());
         assertEquals(width, flippedH.get().getWidth());

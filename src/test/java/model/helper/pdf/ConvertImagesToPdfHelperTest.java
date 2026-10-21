@@ -4,9 +4,8 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import services.ImageTestService;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +13,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,8 +23,8 @@ class ConvertImagesToPdfHelperTest {
 
     @Test
     void mergesConvertedImagesAndRetainsPageResources() throws IOException {
-        File firstImage = createImage("first.png", 40, 30);
-        File secondImage = createImage("second.png", 20, 50);
+        File firstImage = ImageTestService.createPng(tempDir, "first.png", 40, 30);
+        File secondImage = ImageTestService.createPng(tempDir, "second.png", 20, 50);
         File output = tempDir.resolve("merged.pdf").toFile();
         ConvertImagesToPdfHelper helper = new ConvertImagesToPdfHelper();
 
@@ -44,13 +44,11 @@ class ConvertImagesToPdfHelperTest {
         File invalidImage = tempDir.resolve("invalid.png").toFile();
         Files.writeString(invalidImage.toPath(), "not an image");
 
-        assertThrows(IOException.class, () -> new ConvertImagesToPdfHelper().convertImagesToPdf(
-                List.of(invalidImage), "no margin", "fix", "portrait", null));
-    }
-
-    private File createImage(String name, int width, int height) throws IOException {
-        File image = tempDir.resolve(name).toFile();
-        assertTrue(ImageIO.write(new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png", image));
-        return image;
+        assertThrows(IOException.class, () -> {
+            try (PDDocument doc = new ConvertImagesToPdfHelper().convertImagesToPdf(
+                    List.of(invalidImage), "no margin", "fix", "portrait", null)) {
+                assertNotNull(doc);
+            }
+        });
     }
 }

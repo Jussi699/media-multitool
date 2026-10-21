@@ -487,8 +487,8 @@
                         --enable-native-access=javafx.graphics,org.bytedeco.javacpp,org.bytedeco.ffmpeg,com.sun.jna,org.lwjgl,org.lwjgl.nfd,ALL-UNNAMED
                         --sun-misc-unsafe-memory-access=allow
                         --add-reads controllers=org.junit.jupiter.api
-                        --add-opens controllers/model.converterVideo=org.junit.platform.commons,ALL-UNNAMED
-                        --add-opens controllers/model.converterImage=org.junit.platform.commons,ALL-UNNAMED
+                        --add-opens controllers/model.video=org.junit.platform.commons,ALL-UNNAMED
+                        --add-opens controllers/model.image=org.junit.platform.commons,ALL-UNNAMED
                         --add-opens controllers/model.preprocessing=org.junit.platform.commons,ALL-UNNAMED
                         --add-opens controllers/model.helper.pdf=org.junit.platform.commons,ALL-UNNAMED
                         --add-opens controllers/model.enums=org.junit.platform.commons,ALL-UNNAMED
