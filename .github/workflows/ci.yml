@@ -1,0 +1,74 @@
+name: Cross-Platform Build CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  matrix-profile-build:
+    name: Build Profile (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: windows-x64
+            desc: "Windows x86_64"
+          - profile: linux-x64
+            desc: "Linux x86_64"
+          - profile: linux-arm64
+            desc: "Linux ARM64"
+          - profile: macos-x64
+            desc: "macOS Intel"
+          - profile: macos-arm64
+            desc: "macOS Apple Silicon"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
+
+      - name: Compile and Test-Compile for ${{ matrix.desc }}
+        run: |
+          ./mvnw clean test-compile -B -P ${{ matrix.profile }} -DskipTests
+
+  native-os-test:
+    name: Native Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Make Maven Wrapper executable
+        if: runner.os != 'Windows'
+        run: chmod +x ./mvnw
+
+      - name: Run Maven Tests (Unix)
+        if: runner.os != 'Windows'
+        run: ./mvnw clean test -B
+
+      - name: Run Maven Tests (Windows)
+        if: runner.os == 'Windows'
+        run: .\mvnw.cmd clean test -B
