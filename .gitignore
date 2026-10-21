@@ -2,6 +2,15 @@
 /out
 src/main/resources/META-INF
 
+# Logs
+logs/
+
+# IntelliJ Shelf
+.idea/shelf/
+
+# Local act config
+.actrc
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
