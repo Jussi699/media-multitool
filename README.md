@@ -158,9 +158,16 @@ cd media-multitool
 ```
 
 #### 2. Build the project
+If you are cloning the repository directly instead of downloading a pre-built binary from the releases, build the project with:
+
 ```bash
-mvn clean install
+mvn clean install -Dmaven.test.skip=true
 ```
+
+> [!TIP]
+> **Why skip tests during build?**
+> If you run `mvn clean install` without arguments, Maven executes the full automated test suite at the end of the build cycle. These tests perform real media generation, format conversions, and compression routines (via test fixture services like `ImageTestService` and `VideoTestService`), which can take considerable time. Using `-Dmaven.test.skip=true` skips test compilation and execution, allowing you to build the application much faster. If you explicitly wish to run all unit tests, execute `mvn clean install`.
+
 Maven automatically selects the matching native dependencies for Windows x64, Linux x64/ARM64, or macOS x64/ARM64. JavaCV and JAVE native binaries, as well as LWJGL natives, are resolved only for the build machine's supported platform.
 
 #### 3. Run the application
