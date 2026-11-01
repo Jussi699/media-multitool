@@ -155,11 +155,6 @@
             <version>${javafx.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-media</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.github.darkxanter</groupId>
             <artifactId>webp-imageio</artifactId>
             <version>0.3.3</version>
@@ -196,12 +191,6 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-web</artifactId>
-            <version>${javafx.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.jthink</groupId>

@@ -8,8 +8,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.StackPane?>
-
 <?import javafx.scene.shape.SVGPath?>
+
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="controllers.appControllers.HomeViewController">
