@@ -6,14 +6,14 @@
 <h1 align="center">Media-Multitool</h1>
 <p align="center">
   <b>Stop uploading private files to sketchy converter websites.</b><br>
-  Media-Multitool converts, compresses, and edits video, audio, images, and PDFs 100% locally on your machine — zero tracking, completely offline, and free forever.
+  Media-Multitool converts, compresses, and edits video, audio, images, and PDFs locally on your machine — your files stay on your device, with no tracking.
 </p>
 
 <p align="center">
   <a href="https://www.oracle.com/java/technologies/downloads/"><img src="https://img.shields.io/badge/Java-25-orange?style=flat-square&logo=openjdk&logoColor=white" alt="Java 25" /></a>
   <a href="https://gluonhq.com/products/javafx/"><img src="https://img.shields.io/badge/JavaFX-25-blue?style=flat-square" alt="JavaFX" /></a>
   <a href="https://ffmpeg.org/download.html"><img src="https://img.shields.io/badge/FFmpeg-Latest-red?style=flat-square&logo=ffmpeg&logoColor=white" alt="FFmpeg" /></a>
-  <a href="https://maven.apache.org/download.cgi"><img src="https://img.shields.io/badge/Maven-3.9+-C71A36?style=flat-square&logo=apachemaven&logoColor=white" alt="Maven" /></a>
+  <a href="https://maven.apache.org/download.cgi"><img src="https://img.shields.io/badge/Maven-3.8+-C71A36?style=flat-square&logo=apachemaven&logoColor=white" alt="Maven" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" /></a>
 </p>
 <p align="center">
@@ -38,7 +38,7 @@
 - **Transparency Handling:** Automatically converts transparent backgrounds to white when converting to JPEG
 
 ### 🎥 Video & Audio Conversion
-- **Powered by JAVE2 (FFmpeg):** Reliable and fast conversion using industrial-grade codecs
+- **Powered by JAVE2 and JavaCV (FFmpeg):** Media conversion and processing using FFmpeg
 - **Video Formats:** MP4, AVI, MKV, WEBM, MOV, FLV, WMV, 3GP, animated GIF
 - **GIF Conversion:** Convert videos to GIF and animated GIFs back to video. GIF output uses a 256-color palette, has no audio, and may create large files; frame rate and resolution can be adjusted.
 - **Audio Formats:** MP3, AAC, OGG (Vorbis), OPUS, FLAC, ALAC (M4A), WAV, AIFF
@@ -59,8 +59,8 @@
 ### 🗜️ Media Compression
 #### Image Compression
 - **Formats:** JPG, PNG, WEBP, TIFF, BMP, and more
-- **Quality Control:** 5%-100% quality settings
-- **Scale Options:** 5%-100% size reduction
+- **Quality Control:** 5%-100% for JPEG and WebP
+- **Scale Options:** Output dimensions from 5%-100% of the original
 - **Live Preview:** See compressed result before saving
 - **Smart Compression:** Skips compression if file would be larger
 
@@ -76,7 +76,7 @@
 - **Spot Blur:** Apply Gaussian blur with adjustable intensity and the ability to select your own custom blur zones
 - **Colorize:** Apply color tint with custom color picker
 - **Color Replace:** Replace specific colors or all colors with smoothing/enhancement
-- **Crop:** Interactive cropping with 14 aspect ratio presets (1:1, 16:9, 9:16, 4:5, 3:4, etc.)
+- **Crop:** Interactive cropping with 13 aspect ratio presets (1:1, 16:9, 9:16, 4:5, 3:4, etc.)
 - **Darken/Lighten:** Adjust image brightness with real-time preview
 - **Find Pixel:** Click to get RGB/HEX color values at any pixel
 - **Negative:** Invert image colors
@@ -93,6 +93,10 @@
 - **Unlock PDF:** Remove password protection from encrypted PDFs
 - **Remove Pages:** Delete specific pages from PDF with visual preview
 
+### 🏷️ Watermark Tools
+- Add text or image watermarks to images, videos, and PDFs
+- Preview and adjust watermark placement and appearance before saving
+
 ### 🎵 Media Tag Editor
 - **Type-aware Metadata Editing:** Available tag fields vary by audio, photo, or video; unsupported fields are locked and marked
 - **Audio Metadata:** Title, Artist, Album, Album Artist, Composer, Genre, Year, Track, Disc Number, Comment
@@ -102,7 +106,11 @@
 - **Cover Art:** View, change, or remove album artwork
 - **Batch Editing:** Edit multiple audio files at once
 - **Search/Filter:** Find files in loaded batch by filename or metadata
-- **Format Support:** MP3, AAC, OGG, OPUS, FLAC, M4A, WAV, AIFF
+- **Format Support:** MP3, AAC, OGG, FLAC, M4A, WAV, WMA, AIFF, and other supported audio formats
+
+### 🔎 Metadata Inspector
+- View technical and embedded metadata in images, audio, video, and PDF files
+- Search metadata, copy values, delete individual editable tags, or remove all metadata where supported
 
 ### 🎨 User Interface
 - **Modern JavaFX GUI:** Clean, intuitive interface with dark theme
@@ -123,13 +131,14 @@ Media Multitool processes your media files locally on your computer. We take you
 ## 🛠️ Tech Stack
 
 - **Java 25** (OpenJDK)
-- **JavaFX 25/21** (GUI Framework)
+- **JavaFX 25** (GUI Framework)
 - **Maven** (Build Tool)
 - **JAVE2** (FFmpeg wrapper for video/audio encoding)
 - **Apache PDFBox** (PDF manipulation and rendering)
 - **JAudioTagger** (Audio metadata editing)
 - **Image4j** (ICO format support)
-- **TwelveMonkeys & Sejda ImageIO** (Advanced image format support including WebP)
+- **TwelveMonkeys, JAI ImageIO, and WebP ImageIO** (Additional image format support)
+- **JavaCV** (FFmpeg bindings for video processing)
 - **Lombok** (Code generation)
 - **Logback & SLF4J** (Logging)
 
@@ -146,7 +155,7 @@ Media Multitool processes your media files locally on your computer. We take you
 
 ## 📥 Installation & Running
  <a href="https://github.com/Jussi699/media-multitool/releases/latest">
-    <img src="https://img.shields.io/badge/Скачать-Release-brightgreen?style=for-the-badge&logo=github&logoColor=white" alt="Download">
+    <img src="https://img.shields.io/badge/Download-Release-brightgreen?style=for-the-badge&logo=github&logoColor=white" alt="Download">
  </a>
 
 ---
@@ -187,11 +196,11 @@ mvn javafx:run
 **Activate the Lombok plugin:**
 `File` → `Settings` → `Plugins` → search for **Lombok** → install and enable it → restart the IDE
 
-After that, open the project, let Maven sync finish, then run via `mvn javafx:run` or use the built-in Maven panel on the right.
+After that, open the project, let Maven sync finish, then run with `mvn javafx:run` or use the built-in Maven panel on the right.
    
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-Developed by [Jussi669](https://github.com/Jussi699)
+Developed by [Jussi699](https://github.com/Jussi699)
