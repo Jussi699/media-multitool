@@ -4,7 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| v1.6   | :white_check_mark: |
+| v1.7   | :white_check_mark: |
 | Old version  | :x:                |
 
 I recommend always running the latest version of Media-Multitool.
